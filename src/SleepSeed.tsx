@@ -282,10 +282,13 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
   font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;transition:all .2s;border:1.5px solid}
 .ctrl-btn.read{background:rgba(212,160,48,.1);border-color:rgba(212,160,48,.28);color:var(--gold2)}
 .ctrl-btn.read.active{background:rgba(212,160,48,.24);border-color:var(--gold2)}
-.ctrl-btn.auto{background:rgba(76,200,144,.07);border-color:rgba(76,200,144,.26);color:var(--green2)}
-.ctrl-btn.auto.active{background:rgba(76,200,144,.2);border-color:var(--green2)}
 .ctrl-btn.save{background:rgba(100,130,220,.07);border-color:rgba(100,130,220,.24);color:var(--ui)}
 .ctrl-btn.fresh{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.11);color:var(--dim)}
+.ctrl-btn.dl{background:rgba(100,180,255,.07);border-color:rgba(100,180,255,.28);color:rgba(140,200,255,.9)}
+.ctrl-btn.dl:hover{background:rgba(100,180,255,.15)}
+.ctrl-btn.vc-btn{background:rgba(240,100,120,.07);border-color:rgba(240,100,120,.32);color:rgba(240,140,150,.9)}
+.ctrl-btn.vc-btn:hover{background:rgba(240,100,120,.18)}
+.ctrl-btn.vc-btn.active{background:rgba(240,100,120,.2);border-color:rgba(240,100,120,.7)}
 .ctrl-btn:hover{opacity:.85}
 .snd-bar{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;flex-wrap:wrap}
 .snd-tog{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;cursor:pointer;
@@ -608,511 +611,44 @@ const preloadImg = (url,onLoad,onErr) => {
 /* ══════════════════════════════════════════════════════════════
    SLEEP AUDIO ENGINE  —  all Web Audio, zero file downloads
 ══════════════════════════════════════════════════════════════ */
-const SleepAudio = (() => {
-  let _ctx = null;
-  let _ambient = null;       // { gainNode, lfo, nodes[] }
-  let _ambientVol = 0.18;    // current target volume
-  let _sessionActive = false;
-  let _sfxEnabled = true;
-  let _ambientEnabled = true;
-  let _fadeTimer = null;
+const SleepUtils = {
+  getSpeechRate(p) {
+    if(p > 0.82) return 0.60;
+    if(p > 0.65) return 0.66;
+    return 0.72;
+  },
+  getPostPagePause(p) {
+    if(p > 0.82) return 2200;
+    if(p > 0.65) return 1400;
+    return 850;
+  },
+};
 
-  // ── AudioContext ──────────────────────────────────────────────
-  const ctx = () => {
-    if(!_ctx) _ctx = new (window.AudioContext||window.webkitAudioContext)();
-    if(_ctx.state==="suspended") _ctx.resume();
-    return _ctx;
-  };
-
-  // ── Envelope helper ──────────────────────────────────────────
-  const env = (gainNode, vol, attackT, decayT, now) => {
-    const g = gainNode.gain;
-    g.cancelScheduledValues(now);
-    g.setValueAtTime(0, now);
-    g.linearRampToValueAtTime(vol, now+attackT);
-    g.linearRampToValueAtTime(0, now+attackT+decayT);
-  };
-
-  // ── Noise buffer (2 s white noise, reusable) ─────────────────
-  let _noiseBuf = null;
-  const noiseBuf = () => {
-    if(_noiseBuf) return _noiseBuf;
-    const c = ctx();
-    const buf = c.createBuffer(1, c.sampleRate*2, c.sampleRate);
-    const d = buf.getChannelData(0);
-    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1);
-    _noiseBuf = buf;
-    return buf;
-  };
-
-  const makeNoise = (dest) => {
-    const c = ctx();
-    const src = c.createBufferSource();
-    src.buffer = noiseBuf();
-    src.loop = true;
-    const filt = c.createBiquadFilter();
-    filt.type = "bandpass";
-    const g = c.createGain();
-    src.connect(filt); filt.connect(g); g.connect(dest);
-    src.start();
-    return {src, filt, g};
-  };
-
-  const makeOsc = (dest, freq, type="sine", vol=0.12) => {
-    const c = ctx();
-    const osc = c.createOscillator();
-    const g = c.createGain();
-    osc.type = type;
-    osc.frequency.value = freq;
-    g.gain.value = vol;
-    osc.connect(g); g.connect(dest);
-    osc.start();
-    return {osc, g};
-  };
-
-  const makeLFO = (target, rate, depth, centre) => {
-    const c = ctx();
-    const lfo = c.createOscillator();
-    const lfoG = c.createGain();
-    lfo.frequency.value = rate;
-    lfoG.gain.value = depth;
-    target.setValueAtTime(centre, c.currentTime);
-    lfo.connect(lfoG); lfoG.connect(target);
-    lfo.start();
-    return {lfo, lfoG};
-  };
-
-  // ── Bell / chime synthesis ────────────────────────────────────
-  const playBell = (freq, vol=0.18, dur=1.8) => {
-    const c = ctx(); const now = c.currentTime;
-    const osc = c.createOscillator();
-    const g = c.createGain();
-    osc.type = "sine"; osc.frequency.value = freq;
-    env(g, vol, 0.005, dur, now);
-    osc.connect(g); g.connect(c.destination);
-    osc.start(now); osc.stop(now+dur+0.05);
-    // add shimmer partials
-    [2.756, 5.404].forEach(ratio => {
-      const o2 = c.createOscillator();
-      const g2 = c.createGain();
-      o2.type = "sine"; o2.frequency.value = freq*ratio;
-      env(g2, vol*0.25, 0.005, dur*0.5, now);
-      o2.connect(g2); g2.connect(c.destination);
-      o2.start(now); o2.stop(now+dur*0.5+0.05);
-    });
-  };
-
-  // ── Lullaby melody ────────────────────────────────────────────
-  // Pentatonic: C4 E4 G4 A4 C5
-  const NOTES = [261.63, 329.63, 392, 440, 523.25];
-  const INTRO_SEQ  = [2, 4, 3, 1, 0, 2, 4]; // indices into NOTES
-  const OUTRO_SEQ  = [4, 3, 2, 0, 1, 2, 0]; // reversed, slower
-
-  const playMelody = (seq, spacing=0.38, vol=0.13, dur=1.0, cb) => {
-    const c = ctx(); let t = c.currentTime + 0.05;
-    seq.forEach((ni, i) => {
-      const freq = NOTES[ni];
-      const osc = c.createOscillator();
-      const g = c.createGain();
-      const rev = c.createBiquadFilter();
-      rev.type = "lowpass"; rev.frequency.value = 2800;
-      osc.type = "sine"; osc.frequency.value = freq;
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(vol, t+0.04);
-      g.gain.linearRampToValueAtTime(0, t+dur);
-      osc.connect(g); g.connect(rev); rev.connect(c.destination);
-      osc.start(t); osc.stop(t+dur+0.05);
-      t += spacing;
-    });
-    if(cb) setTimeout(cb, (t - c.currentTime)*1000 + 100);
-  };
-
-  // ── Page turn sound ───────────────────────────────────────────
-  const playPageTurn = () => {
-    if(!_ambientEnabled&&!_sfxEnabled) return;
-    const c = ctx(); const now = c.currentTime;
-    const buf = c.createBuffer(1, c.sampleRate*0.12, c.sampleRate);
-    const d = buf.getChannelData(0);
-    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
-    const src = c.createBufferSource();
-    src.buffer = buf;
-    const filt = c.createBiquadFilter();
-    filt.type = "bandpass"; filt.frequency.value = 2400; filt.Q.value = 0.8;
-    const g = c.createGain(); g.gain.value = 0.22;
-    src.connect(filt); filt.connect(g); g.connect(c.destination);
-    src.start(now);
-  };
-
-  // ── Keyword SFX bank ─────────────────────────────────────────
-  const SFX = {
-    thunder: () => {
-      const c = ctx(); const now = c.currentTime;
-      [40,55,70].forEach((f,i) => {
-        const o = c.createOscillator(); const g = c.createGain();
-        o.type="sawtooth"; o.frequency.value=f;
-        g.gain.setValueAtTime(0,now+i*0.04);
-        g.gain.linearRampToValueAtTime(0.18,now+i*0.04+0.08);
-        g.gain.linearRampToValueAtTime(0,now+i*0.04+0.7);
-        o.connect(g); g.connect(c.destination);
-        o.start(now+i*0.04); o.stop(now+1.2);
-      });
-    },
-    rain: () => {
-      const c = ctx(); const now = c.currentTime;
-      const n = makeNoise(c.destination);
-      n.filt.type="bandpass"; n.filt.frequency.value=1200; n.filt.Q.value=0.5;
-      n.g.gain.setValueAtTime(0,now);
-      n.g.gain.linearRampToValueAtTime(0.14,now+0.3);
-      n.g.gain.linearRampToValueAtTime(0,now+2.5);
-      setTimeout(()=>{ try{n.src.stop();}catch(_){} },3000);
-    },
-    wind: () => {
-      const c = ctx(); const now = c.currentTime;
-      const n = makeNoise(c.destination);
-      n.filt.type="lowpass"; n.filt.frequency.value=400;
-      n.g.gain.setValueAtTime(0,now);
-      n.g.gain.linearRampToValueAtTime(0.12,now+0.5);
-      n.g.gain.linearRampToValueAtTime(0,now+2.2);
-      setTimeout(()=>{ try{n.src.stop();}catch(_){} },3000);
-    },
-    giggle: () => {
-      const c = ctx();
-      [880,1046,1318].forEach((f,i) => {
-        setTimeout(()=>playBell(f,0.09,0.3),i*110);
-      });
-    },
-    roar: () => {
-      const c = ctx(); const now = c.currentTime;
-      const o = c.createOscillator(); const g = c.createGain();
-      const dist = c.createWaveShaper();
-      const curve = new Float32Array(256);
-      for(let i=0;i<256;i++) curve[i]=((i*2/256-1)*3)/(1+Math.abs((i*2/256-1)*3));
-      dist.curve=curve;
-      o.type="sawtooth"; o.frequency.value=80;
-      o.frequency.linearRampToValueAtTime(55,now+0.8);
-      g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(0.3,now+0.1);
-      g.gain.linearRampToValueAtTime(0,now+0.9);
-      o.connect(dist); dist.connect(g); g.connect(c.destination);
-      o.start(now); o.stop(now+1.0);
-    },
-    twinkle: () => {
-      const c = ctx();
-      [1318,1568,1760,2093].forEach((f,i)=>setTimeout(()=>playBell(f,0.11,0.8),i*80));
-    },
-    splash: () => {
-      const c = ctx(); const now = c.currentTime;
-      const n = makeNoise(c.destination);
-      n.filt.type="highpass"; n.filt.frequency.value=800;
-      n.g.gain.setValueAtTime(0,now);
-      n.g.gain.linearRampToValueAtTime(0.2,now+0.02);
-      n.g.gain.exponentialRampToValueAtTime(0.001,now+0.4);
-      setTimeout(()=>{ try{n.src.stop();}catch(_){} },600);
-    },
-    whoosh: () => {
-      const c = ctx(); const now = c.currentTime;
-      const n = makeNoise(c.destination);
-      n.filt.type="bandpass";
-      n.filt.frequency.setValueAtTime(400,now);
-      n.filt.frequency.linearRampToValueAtTime(2400,now+0.6);
-      n.g.gain.setValueAtTime(0,now);
-      n.g.gain.linearRampToValueAtTime(0.15,now+0.1);
-      n.g.gain.linearRampToValueAtTime(0,now+0.65);
-      setTimeout(()=>{ try{n.src.stop();}catch(_){} },800);
-    },
-    yawn: () => {
-      const c = ctx(); const now = c.currentTime;
-      const o = c.createOscillator(); const g = c.createGain();
-      o.type="sine";
-      o.frequency.setValueAtTime(440,now);
-      o.frequency.linearRampToValueAtTime(220,now+1.0);
-      o.frequency.linearRampToValueAtTime(280,now+1.5);
-      g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(0.08,now+0.2);
-      g.gain.linearRampToValueAtTime(0,now+1.6);
-      o.connect(g); g.connect(c.destination);
-      o.start(now); o.stop(now+1.7);
-    },
-    bells: () => {
-      [523.25,659.25,783.99].forEach((f,i)=>setTimeout(()=>playBell(f,0.15,1.4),i*200));
-    },
-    creak: () => {
-      const c = ctx(); const now = c.currentTime;
-      const o = c.createOscillator(); const g = c.createGain();
-      o.type="sawtooth";
-      o.frequency.setValueAtTime(180,now);
-      o.frequency.linearRampToValueAtTime(120,now+0.25);
-      g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(0.06,now+0.02);
-      g.gain.linearRampToValueAtTime(0,now+0.28);
-      o.connect(g); g.connect(c.destination);
-      o.start(now); o.stop(now+0.32);
-    },
-  };
-
-  const KEYWORD_MAP = [
-    [/\b(thunder|thundered|thunderclap)\b/i, "thunder"],
-    [/\b(rain|raining|raindrops?|drizzle|pitter.?patter)\b/i, "rain"],
-    [/\b(wind|windy|breeze|gust|whooshed?|whoooosh)\b/i, "wind"],
-    [/\b(giggl|laugh|haha|tee.?hee|chuckl)\w*/i, "giggle"],
-    [/\b(roar|roared|growl|grumbled)\b/i, "roar"],
-    [/\b(twinkl|sparkl|shimmer|glitter|fizzing|glimmer)\w*/i, "twinkle"],
-    [/\b(splash|splashed|plop|drip|ripple|bubble)\w*/i, "splash"],
-    [/\b(whoosh|whooshed|flew|fluttered|swooped|zoomed)\b/i, "whoosh"],
-    [/\b(yawn|snore|sleepy|drowsy|drooping|dozed?)\w*/i, "yawn"],
-    [/\b(bell|bells|chime|chimed|ding|ring|rang)\b/i, "bells"],
-    [/\b(creak|creaked|groan|crack|snap)\b/i, "creak"],
-  ];
-
-  const scanSFX = (text) => {
-    const hits = [];
-    KEYWORD_MAP.forEach(([re,name]) => { if(re.test(text)) hits.push(name); });
-    return [...new Set(hits)].slice(0,2); // max 2 sfx per page
-  };
-
-  // ── World ambient beds ────────────────────────────────────────
-  const AMBIENT_DEFS = {
-    "Enchanted Forest": (dest) => {
-      const c = ctx();
-      const nodes = [];
-      // Low hum
-      const drone = makeOsc(dest,55,"sine",0.04); nodes.push(drone);
-      // Cricket chorus: noise + fast tremolo
-      const cricket = makeNoise(dest);
-      cricket.filt.type="bandpass"; cricket.filt.frequency.value=3200; cricket.filt.Q.value=8;
-      cricket.g.gain.value=0.0;
-      const cLFO = makeLFO(cricket.g.gain, 14, 0.07, 0.07); nodes.push(cricket,cLFO);
-      // Wind layer
-      const wind = makeNoise(dest);
-      wind.filt.type="lowpass"; wind.filt.frequency.value=280;
-      wind.g.gain.value=0.06;
-      const wLFO = makeLFO(wind.filt.frequency, 0.08, 80, 280); nodes.push(wind,wLFO);
-      return nodes;
-    },
-    "Cloud Kingdom": (dest) => {
-      const c = ctx(); const nodes = [];
-      const pad1 = makeOsc(dest,523.25,"sine",0.05); nodes.push(pad1);
-      const pad2 = makeOsc(dest,659.25,"sine",0.03); nodes.push(pad2);
-      const wind = makeNoise(dest);
-      wind.filt.type="lowpass"; wind.filt.frequency.value=200; wind.g.gain.value=0.05;
-      const wLFO = makeLFO(wind.g.gain,0.06,0.03,0.05); nodes.push(wind,wLFO);
-      const shimmer = makeNoise(dest);
-      shimmer.filt.type="highpass"; shimmer.filt.frequency.value=3000; shimmer.g.gain.value=0.02;
-      nodes.push(shimmer);
-      return nodes;
-    },
-    "Ocean World": (dest) => {
-      const c = ctx(); const nodes = [];
-      const wave = makeOsc(dest,55,"sine",0.08); nodes.push(wave);
-      const waveLFO = makeLFO(wave.g.gain,0.22,0.06,0.08); nodes.push(waveLFO);
-      const surge = makeNoise(dest);
-      surge.filt.type="lowpass"; surge.filt.frequency.value=180; surge.g.gain.value=0.09;
-      const sLFO = makeLFO(surge.filt.frequency,0.18,60,180); nodes.push(surge,sLFO);
-      return nodes;
-    },
-    "Magic Bakery": (dest) => {
-      const c = ctx(); const nodes = [];
-      const hum = makeOsc(dest,220,"sine",0.05); nodes.push(hum);
-      const hum2 = makeOsc(dest,330,"sine",0.03); nodes.push(hum2);
-      const warmth = makeNoise(dest);
-      warmth.filt.type="lowpass"; warmth.filt.frequency.value=300; warmth.g.gain.value=0.04;
-      nodes.push(warmth);
-      return nodes;
-    },
-    "Dragon Mountain": (dest) => {
-      const c = ctx(); const nodes = [];
-      const cave = makeOsc(dest,40,"sine",0.08); nodes.push(cave);
-      const cave2 = makeOsc(dest,80,"sine",0.05); nodes.push(cave2);
-      const rumble = makeNoise(dest);
-      rumble.filt.type="lowpass"; rumble.filt.frequency.value=120; rumble.g.gain.value=0.07;
-      const rLFO = makeLFO(rumble.g.gain,0.12,0.04,0.07); nodes.push(rumble,rLFO);
-      return nodes;
-    },
-    "Fairy Garden": (dest) => {
-      const c = ctx(); const nodes = [];
-      const shimmer = makeOsc(dest,880,"sine",0.03);
-      const shLFO = makeLFO(shimmer.g.gain,4,0.02,0.03); nodes.push(shimmer,shLFO);
-      const shimmer2 = makeOsc(dest,1047,"sine",0.02); nodes.push(shimmer2);
-      const cricket = makeNoise(dest);
-      cricket.filt.type="bandpass"; cricket.filt.frequency.value=3400; cricket.filt.Q.value=10;
-      cricket.g.gain.value=0.0;
-      const cLFO = makeLFO(cricket.g.gain,16,0.06,0.06); nodes.push(cricket,cLFO);
-      const breeze = makeNoise(dest);
-      breeze.filt.type="lowpass"; breeze.filt.frequency.value=240; breeze.g.gain.value=0.04;
-      nodes.push(breeze);
-      return nodes;
-    },
-    "Toy Town": (dest) => {
-      const c = ctx(); const nodes = [];
-      const tick = makeNoise(dest);
-      tick.filt.type="bandpass"; tick.filt.frequency.value=1800; tick.filt.Q.value=5;
-      tick.g.gain.value=0.0;
-      const tLFO = makeLFO(tick.g.gain,4,0.05,0.05); nodes.push(tick,tLFO);
-      const warmth = makeOsc(dest,220,"sine",0.03); nodes.push(warmth);
-      const warmth2 = makeOsc(dest,440,"triangle",0.02); nodes.push(warmth2);
-      return nodes;
-    },
-    "The Moon": (dest) => {
-      const c = ctx(); const nodes = [];
-      const drone = makeOsc(dest,432,"sine",0.06); nodes.push(drone);
-      const dLFO = makeLFO(drone.g.gain,0.04,0.02,0.06); nodes.push(dLFO);
-      const upper = makeOsc(dest,864,"sine",0.02); nodes.push(upper);
-      const shimmer = makeNoise(dest);
-      shimmer.filt.type="highpass"; shimmer.filt.frequency.value=4000; shimmer.g.gain.value=0.01;
-      nodes.push(shimmer);
-      return nodes;
-    },
-  };
-
-  const DEFAULT_AMBIENT = AMBIENT_DEFS["Enchanted Forest"];
-
-  // ── Ambient control ───────────────────────────────────────────
-  const stopAmbient = () => {
-    if(!_ambient) return;
-    try {
-      _ambient.masterGain.gain.setValueAtTime(_ambient.masterGain.gain.value, ctx().currentTime);
-      _ambient.masterGain.gain.linearRampToValueAtTime(0, ctx().currentTime+1.5);
-      setTimeout(() => {
-        try {
-          _ambient.nodes.forEach(n => {
-            if(n.osc) n.osc.stop();
-            if(n.src) n.src.stop();
-            if(n.lfo) n.lfo.stop();
-          });
-          _ambient.masterGain.disconnect();
-        } catch(_) {}
-        _ambient = null;
-      }, 1800);
-    } catch(_) { _ambient = null; }
-  };
-
-  const startAmbient = (themeLabel) => {
-    if(!_ambientEnabled || _ambient) return;
-    const c = ctx();
-    const masterGain = c.createGain();
-    masterGain.gain.value = 0;
-    masterGain.connect(c.destination);
-    const builder = AMBIENT_DEFS[themeLabel] || DEFAULT_AMBIENT;
-    const nodes = builder(masterGain);
-    _ambient = { masterGain, nodes };
-    // Fade in
-    masterGain.gain.linearRampToValueAtTime(_ambientVol, c.currentTime+2.0);
-  };
-
-  const duckAmbient = () => {
-    if(!_ambient) return;
-    const c = ctx();
-    _ambient.masterGain.gain.cancelScheduledValues(c.currentTime);
-    _ambient.masterGain.gain.setValueAtTime(_ambient.masterGain.gain.value, c.currentTime);
-    _ambient.masterGain.gain.linearRampToValueAtTime(0.04, c.currentTime+0.3);
-  };
-
-  const unduckAmbient = (targetVol) => {
-    if(!_ambient) return;
-    const c = ctx();
-    const v = targetVol ?? _ambientVol;
-    _ambient.masterGain.gain.cancelScheduledValues(c.currentTime);
-    _ambient.masterGain.gain.setValueAtTime(_ambient.masterGain.gain.value, c.currentTime);
-    _ambient.masterGain.gain.linearRampToValueAtTime(v, c.currentTime+0.8);
-  };
-
-  // ── Public API ────────────────────────────────────────────────
-  return {
-    // Called when Read Aloud session begins
-    startSession(themeLabel, onReady) {
-      _sessionActive = true;
-      ctx(); // create context on user gesture
-      startAmbient(themeLabel);
-      // Intro ceremony: chime → 0.5s pause → speak
-      playMelody(INTRO_SEQ, 0.36, 0.13, 0.9, () => {
-        setTimeout(onReady, 400);
-      });
-    },
-
-    // Called when session ends (pause or final page done)
-    endSession(isFinal) {
-      _sessionActive = false;
-      if(isFinal) {
-        // Outro melody then fade ambient
-        playMelody(OUTRO_SEQ, 0.48, 0.10, 1.2, () => {
-          unduckAmbient(0);
-          setTimeout(() => stopAmbient(), 5000);
-        });
-      } else {
-        stopAmbient();
-      }
-    },
-
-    // Called just before speech starts on a page
-    onSpeechStart(text, pageProgress) {
-      // Sleepification: lower ambient on last 2 pages
-      _ambientVol = pageProgress > 0.8 ? 0.09 : pageProgress > 0.65 ? 0.13 : 0.18;
-      duckAmbient();
-      // Schedule SFX at 1.5s into speech
-      if(_sfxEnabled) {
-        const hits = scanSFX(text);
-        hits.forEach((name, i) => {
-          setTimeout(() => { if(SFX[name]) SFX[name](); }, 1500 + i*2200);
-        });
-      }
-      // Refrain chime check
-      return scanSFX(text); // returns sfx list (used for debug)
-    },
-
-    // Called when a page finishes being spoken
-    onSpeechEnd(isLastPage, isSecondToLast) {
-      unduckAmbient(_ambientVol);
-      playPageTurn();
-    },
-
-    // Check if refrain is in text
-    checkRefrain(text, refrain) {
-      if(!refrain||!text) return false;
-      return text.toLowerCase().includes(refrain.slice(0,20).toLowerCase());
-    },
-
-    playRefrainChime() {
-      if(!_sfxEnabled) return;
-      setTimeout(() => {
-        playBell(659.25, 0.12, 1.0);
-        setTimeout(() => playBell(783.99, 0.10, 1.2), 280);
-      }, 200);
-    },
-
-    // Speech rate — slower on final pages
-    getSpeechRate(pageProgress) {
-      if(pageProgress > 0.82) return 0.60;
-      if(pageProgress > 0.65) return 0.66;
-      return 0.72;
-    },
-
-    // Post-page pause — longer near end
-    getPostPagePause(pageProgress) {
-      if(pageProgress > 0.82) return 2200;
-      if(pageProgress > 0.65) return 1400;
-      return 850;
-    },
-
-    // Settings
-    setAmbient(on) { _ambientEnabled = on; if(!on) stopAmbient(); },
-    setSFX(on) { _sfxEnabled = on; },
-    isSession() { return _sessionActive; },
-  };
-})();
-
-
-/* ── ElevenLabs TTS — calls /api/tts (Vercel proxy, key stays server-side) ── */
-// NARRATOR_VOICE_ID is your cloned voice from elevenlabs.io
-// Set it in Vercel env vars as ELEVENLABS_VOICE_ID — or paste directly here for local dev
-const NARRATOR_VOICE_ID = typeof __NARRATOR_VOICE_ID__ !== "undefined" ? __NARRATOR_VOICE_ID__ : "";
-
+/* ── ElevenLabs helpers ── */
 const elTTS = async (text, voiceId, speed=1.0) => {
-  const elSpeed = Math.max(0.7, Math.min(1.0, speed / 0.72));
   const resp = await fetch("/api/tts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, voiceId, speed: elSpeed }),
+    body: JSON.stringify({ text, voiceId, speed }),
   });
   if(!resp.ok) throw new Error(`TTS error ${resp.status}`);
   const blob = await resp.blob();
   return URL.createObjectURL(blob);
+};
+
+const elCloneVoice = async (audioFile) => {
+  const form = new FormData();
+  form.append("name", `SleepSeed Voice ${Date.now()}`);
+  form.append("description", "Parent voice for SleepSeed bedtime stories");
+  form.append("files", audioFile, audioFile.name || "voice_sample.m4a");
+  const resp = await fetch("/api/clone", { method: "POST", body: form });
+  const data = await resp.json();
+  if(!resp.ok) throw new Error(data.error?.message || data.error || `Clone failed (${resp.status})`);
+  return data.voice_id;
+};
+
+const elDeleteVoice = async (vid) => {
+  try { await fetch(`/api/clone?voice_id=${vid}`, { method: "DELETE" }); } catch(_) {}
 };
 
 /* ── API ── */
@@ -1571,30 +1107,20 @@ export default function SleepSeed() {
   const [fromCache,      setFromCache]      = useState(false);
   const [gen,            setGen]            = useState({stepIdx:0,progress:0,label:"",dots:[]});
   const [isReading,      setIsReading]      = useState(false);
-  const [autoOn,         setAutoOn]         = useState(false);
-  const [autoPct,        setAutoPct]        = useState(0);
   const [sparkles,       setSparkles]       = useState([]);
   const [cachedChars,    setCachedChars]    = useState({});
   const [imgLoaded,      setImgLoaded]      = useState({});
   const [memories,       setMemories]       = useState([]);
-  const [ambientOn,      setAmbientOn]      = useState(true);
-  const [sfxOn,          setSfxOn]          = useState(true);
-  const [showSoundCtrl,  setShowSoundCtrl]  = useState(false);
-  const [voiceId,        setVoiceId]        = useState(NARRATOR_VOICE_ID||null); // EL voice
+  const [voiceId,        setVoiceId]        = useState(null); // EL cloned voice
   const [vcStage,        setVcStage]        = useState("idle"); // idle|recording|uploading|ready|error
   const [vcError,        setVcError]        = useState("");
   const [showVcModal,    setShowVcModal]    = useState(false);
 
-  const autoTimer     = useRef(null);
-  const autoStart     = useRef(null);
   const totalPagesRef = useRef(0);
   const fileRefs      = useRef({});
   const autoReadRef   = useRef(false);
   const goPageRef     = useRef(null);
-  const audioSessionRef = useRef(false);  // tracks active read-aloud session
-  const pageTotalRef    = useRef(1);      // updated per render for SleepAudio
   const elAudioRef      = useRef(null);   // current ElevenLabs Audio element
-  const AUTO_MS       = 10000;
 
   const imgReady = (url) => !!imgLoaded[strHash(url)];
 
@@ -1609,48 +1135,25 @@ export default function SleepSeed() {
 
   useEffect(() => {
     sGet("memories").then(s => { if(s?.items) setMemories(s.items); });
-    sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); else if(NARRATOR_VOICE_ID) setVoiceId(NARRATOR_VOICE_ID); });
+    sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); });
   },[]);
 
-  useEffect(() => { SleepAudio.setAmbient(ambientOn); },[ambientOn]);
-  useEffect(() => { SleepAudio.setSFX(sfxOn); },[sfxOn]);
 
   useEffect(() => {
     if("speechSynthesis" in window) window.speechSynthesis.cancel();
     if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current = null; }
-    if(autoReadRef.current && isStoryPage) {
-      const total = pageTotalRef.current || 1;
+    if(autoReadRef.current) {
+      const total = totalPagesRef.current || 1;
       const progress = total > 1 ? pageIdx / (total-1) : 0.5;
-      if(voiceId) {
-        speakTextEL(getCurrentPageText(), progress);
-      } else {
-        speakText(getCurrentPageText(), progress);
-      }
+      if(voiceId) speakTextEL(getCurrentPageText(), progress);
+      else speakText(getCurrentPageText(), progress);
     } else {
-      autoReadRef.current = false;
       setIsReading(false);
     }
   },[pageIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    clearInterval(autoTimer.current);
-    if(!autoOn){ setAutoPct(0); return; }
-    autoStart.current = Date.now();
-    autoTimer.current = setInterval(() => {
-      const pct = Math.min(100,((Date.now()-autoStart.current)/AUTO_MS)*100);
-      setAutoPct(pct);
-      if(pct>=100){
-        autoStart.current = Date.now();
-        setAutoPct(0);
-        setPageIdx(p => {
-          if(p>=totalPagesRef.current-1){ setAutoOn(false); return p; }
-          return p+1;
-        });
-      }
-    },120);
-    return () => clearInterval(autoTimer.current);
-  },[autoOn]);
 
+  // ── Web Speech narration ───────────────────────────────────────────────
   const speakText = useCallback((text, pageProgress=0.5) => {
     if(!("speechSynthesis" in window)||!text) return;
     window.speechSynthesis.cancel();
@@ -1660,158 +1163,220 @@ export default function SleepSeed() {
       "Aria","Jenny","Michelle","Elizabeth","Clara","Zira",
       "Google UK English Female","Google US English",
     ];
-
     const pickVoice = () => {
-      const voices = window.speechSynthesis.getVoices();
-      for(const name of CALMING_VOICES){
-        const v = voices.find(v => v.name.includes(name));
-        if(v) return v;
-      }
-      return voices.find(v => v.lang.startsWith("en") && /female|woman|girl/i.test(v.name))
-        || voices.find(v => v.lang.startsWith("en"))
-        || null;
+      const vs = window.speechSynthesis.getVoices();
+      for(const n of CALMING_VOICES){ const v=vs.find(v=>v.name.includes(n)); if(v) return v; }
+      return vs.find(v=>v.lang.startsWith("en")&&/female|woman|girl/i.test(v.name))||vs.find(v=>v.lang.startsWith("en"))||null;
     };
 
     const speak = () => {
       const utt = new SpeechSynthesisUtterance(text);
-      // Sleepification: speech slows on final pages
-      utt.rate   = SleepAudio.getSpeechRate(pageProgress);
+      utt.rate   = SleepUtils.getSpeechRate(pageProgress);
       utt.pitch  = 0.95;
       utt.volume = 1.0;
       const voice = pickVoice();
       if(voice) utt.voice = voice;
 
-      // Notify audio engine: duck ambient + schedule SFX
-      SleepAudio.onSpeechStart(text, pageProgress);
-
-      // Refrain chime — play just before speech
-      if(book?.refrain && SleepAudio.checkRefrain(text, book.refrain)) {
-        SleepAudio.playRefrainChime();
-      }
-
       utt.onend = () => {
-        const isLast = pageProgress >= 0.98;
-        const pause = SleepAudio.getPostPagePause(pageProgress);
-        SleepAudio.onSpeechEnd(isLast, pageProgress > 0.65);
-
+        const isLast = pageIdx >= totalPagesRef.current - 1;
+        const pause  = SleepUtils.getPostPagePause(pageProgress);
         if(autoReadRef.current) {
-          if(isLast) {
-            // Final page — play outro then end
-            SleepAudio.endSession(true);
-            audioSessionRef.current = false;
-            autoReadRef.current = false;
-            setIsReading(false);
-          } else {
-            // Post-page pause before turning
-            setTimeout(() => goPageRef.current?.(1), pause);
-          }
-        } else {
-          setIsReading(false);
-        }
+          if(isLast) { autoReadRef.current = false; setIsReading(false); }
+          else setTimeout(() => goPageRef.current?.(1), pause);
+        } else { setIsReading(false); }
       };
-      utt.onerror = () => {
-        autoReadRef.current = false;
-        audioSessionRef.current = false;
-        setIsReading(false);
-      };
+      utt.onerror = () => { autoReadRef.current = false; setIsReading(false); };
       setIsReading(true);
       window.speechSynthesis.speak(utt);
     };
 
     const voices = window.speechSynthesis.getVoices();
-    if(voices.length > 0) {
-      speak();
-    } else {
-      window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.onvoiceschanged = null;
-        speak();
-      };
-    }
-  },[book]);
+    if(voices.length > 0) speak();
+    else { window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.onvoiceschanged=null; speak(); }; }
+  },[book, pageIdx]);
 
-  // ── ElevenLabs-powered speakText (falls back to Web Speech if no voiceId) ─
+  // ── ElevenLabs narration ───────────────────────────────────────────────
   const speakTextEL = useCallback(async (text, pageProgress=0.5) => {
     if(!text) return;
-    // Stop any playing EL audio
-    if(elAudioRef.current) { elAudioRef.current.pause(); elAudioRef.current = null; }
-
-    const rate = SleepAudio.getSpeechRate(pageProgress);
-    SleepAudio.onSpeechStart(text, pageProgress);
-    if(book?.refrain && SleepAudio.checkRefrain(text, book.refrain)) SleepAudio.playRefrainChime();
+    if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current = null; }
 
     const onEnd = () => {
-      const isLast = pageProgress >= 0.98;
-      const pause  = SleepAudio.getPostPagePause(pageProgress);
-      SleepAudio.onSpeechEnd(isLast, pageProgress > 0.65);
+      const isLast = pageIdx >= totalPagesRef.current - 1;
+      const pause  = SleepUtils.getPostPagePause(pageProgress);
       if(autoReadRef.current) {
-        if(isLast) {
-          SleepAudio.endSession(true);
-          audioSessionRef.current = false;
-          autoReadRef.current = false;
-          setIsReading(false);
-        } else {
-          setTimeout(() => goPageRef.current?.(1), pause);
-        }
-      } else {
-        setIsReading(false);
-      }
+        if(isLast) { autoReadRef.current = false; setIsReading(false); }
+        else setTimeout(() => goPageRef.current?.(1), pause);
+      } else { setIsReading(false); }
     };
 
     setIsReading(true);
     try {
-      const url = await elTTS(text, voiceId, rate);
+      const rate = SleepUtils.getSpeechRate(pageProgress);
+      const url  = await elTTS(text, voiceId, rate);
       const audio = new Audio(url);
       elAudioRef.current = audio;
-      audio.onended = () => { URL.revokeObjectURL(url); elAudioRef.current = null; onEnd(); };
-      audio.onerror = () => { URL.revokeObjectURL(url); elAudioRef.current = null; onEnd(); };
+      audio.onended = () => { URL.revokeObjectURL(url); elAudioRef.current=null; onEnd(); };
+      audio.onerror = () => { URL.revokeObjectURL(url); elAudioRef.current=null; onEnd(); };
       await audio.play();
     } catch(err) {
       console.error("EL TTS error:", err);
       // Fall back to Web Speech
-      onEnd();
+      speakText(text, pageProgress);
     }
-  }, [voiceId, book]);
+  }, [voiceId, pageIdx, speakText]);
 
+  // ── Toggle read aloud ──────────────────────────────────────────────────
   const toggleRead = useCallback((text, pageProgress=0.5) => {
-    if(isReading){
+    if(isReading) {
       window.speechSynthesis.cancel();
-      if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current = null; }
+      if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
       autoReadRef.current = false;
-      audioSessionRef.current = false;
-      SleepAudio.endSession(false);
       setIsReading(false);
     } else {
       autoReadRef.current = true;
-      audioSessionRef.current = true;
-      // Story-start ceremony: intro chime → brief pause → speak
-      SleepAudio.startSession(theme?.label || "", () => {
-        if(voiceId) {
-          speakTextEL(text, pageProgress);
-        } else {
-          speakText(text, pageProgress);
-        }
-      });
+      if(voiceId) speakTextEL(text, pageProgress);
+      else speakText(text, pageProgress);
     }
-  },[isReading, speakText, speakTextEL, voiceId, theme]);
+  },[isReading, speakText, speakTextEL, voiceId]);
 
-  // ── Voice Clone: paste Voice ID from elevenlabs.io ─────────────────────
-  const [vcIdInput, setVcIdInput] = useState("");
-
-  const saveVoiceId = async () => {
-    const id = vcIdInput.trim();
-    if(!id) { setVcError("Please paste your Voice ID first."); return; }
-    setVoiceId(id);
-    await sSet("voice_id", { id });
-    setVcStage("ready");
-    setVcError("");
+  // ── Voice clone: file upload ───────────────────────────────────────────
+  const pickVoiceFile = () => {
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = "audio/*,.m4a,.mp3,.wav,.webm,.ogg,.aac";
+    inp.onchange = async (e) => {
+      const file = e.target.files?.[0];
+      if(!file) return;
+      setVcStage("uploading");
+      setVcError("");
+      try {
+        if(voiceId) await elDeleteVoice(voiceId);
+        const newId = await elCloneVoice(file);
+        setVoiceId(newId);
+        await sSet("voice_id", { id: newId });
+        setVcStage("ready");
+      } catch(err) {
+        setVcError(err.message || "Upload failed. Please try again.");
+        setVcStage("error");
+      }
+    };
+    inp.click();
   };
 
   const resetVoice = async () => {
+    if(voiceId) await elDeleteVoice(voiceId);
     await sDel("voice_id");
     setVoiceId(null);
-    setVcIdInput("");
     setVcStage("idle");
     setVcError("");
+  };
+
+  // ── PDF Download ──────────────────────────────────────────────────────
+  const downloadStory = async () => {
+    if(!book) return;
+    try {
+      const jspdfUrl = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+      const mod = await import(/* @vite-ignore */ jspdfUrl);
+      const jsPDF = mod.jsPDF || (mod as any).default?.jsPDF;
+      const doc = new jsPDF({ orientation:"portrait", unit:"mm", format:"a5" });
+      const W = 148, H = 210;
+      const BG:[number,number,number]  = [8,12,28];
+      const GOLD:[number,number,number] = [212,160,48];
+      const CREAM:[number,number,number] = [235,225,200];
+      const DIM:[number,number,number]  = [140,130,160];
+
+      const darkPage = () => {
+        doc.setFillColor(...BG); doc.rect(0,0,W,H,"F");
+        doc.setDrawColor(50,45,80); doc.setLineWidth(0.4); doc.rect(4,4,W-8,H-8);
+      };
+
+      const loadImg = (url:string):Promise<string|null> => new Promise(res => {
+        const img = new Image(); img.crossOrigin="anonymous";
+        img.onload = () => {
+          const c=document.createElement("canvas"); c.width=img.width; c.height=img.height;
+          (c.getContext("2d") as any).drawImage(img,0,0);
+          res(c.toDataURL("image/jpeg",0.7));
+        };
+        img.onerror=()=>res(null); img.src=url;
+      });
+
+      // ── COVER ──────────────────────────────────────────────────────────
+      darkPage();
+      doc.setTextColor(...GOLD); doc.setFontSize(11); doc.setFont("helvetica","normal");
+      doc.text("✦  ★  ✦", W/2, 20, {align:"center"});
+      if(book.coverUrl) {
+        const d=await loadImg(book.coverUrl); if(d) doc.addImage(d,"JPEG",12,26,W-24,60,undefined,"FAST");
+      }
+      doc.setFontSize(18); doc.setFont("helvetica","bold"); doc.setTextColor(...CREAM);
+      const tLines = doc.splitTextToSize(book.title, W-24);
+      doc.text(tLines, W/2, 100, {align:"center"});
+      doc.setFontSize(10); doc.setFont("helvetica","italic"); doc.setTextColor(...DIM);
+      doc.text(`A bedtime story for ${book.heroName}`, W/2, 100+tLines.length*8, {align:"center"});
+      doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.setTextColor(...GOLD);
+      doc.text("🌙 SleepSeed", W/2, H-14, {align:"center"});
+      doc.setFontSize(7); doc.setFont("helvetica","normal"); doc.setTextColor(...DIM);
+      doc.text("sleepseed.app", W/2, H-9, {align:"center"});
+
+      // ── CHARACTERS ─────────────────────────────────────────────────────
+      doc.addPage(); darkPage();
+      doc.setFontSize(16); doc.setFont("helvetica","bold"); doc.setTextColor(...CREAM);
+      doc.text("Meet the Characters", W/2, 28, {align:"center"});
+      doc.setFontSize(10); doc.setFont("helvetica","italic"); doc.setTextColor(...DIM);
+      doc.text("in tonight's story…", W/2, 36, {align:"center"});
+      let cy=50;
+      for(const c of book.allChars) {
+        const icon = (CHAR_ICONS as any)[c.type]||"⭐";
+        doc.setFontSize(11); doc.setFont("helvetica","bold"); doc.setTextColor(...CREAM);
+        doc.text(`${icon}  ${c.name||capitalize(c.type)}`, 16, cy);
+        doc.setFontSize(8); doc.setFont("helvetica","normal"); doc.setTextColor(...DIM);
+        doc.text(c.classify||c.type||"", 16, cy+5); cy+=16;
+      }
+      doc.setFontSize(7); doc.setTextColor(...DIM);
+      doc.text("sleepseed.app", W/2, H-9, {align:"center"});
+
+      // ── STORY PAGES ────────────────────────────────────────────────────
+      const pages = book.isAdventure
+        ? [...(book.setup_pages||[]), ...(book.path_a||[]), ...(book.path_b||[])]
+        : (book.pages||[]);
+      for(let i=0;i<pages.length;i++) {
+        const pg = pages[i];
+        doc.addPage(); darkPage();
+        let pgY = 14;
+        if(pg.imgUrl) {
+          const d=await loadImg(pg.imgUrl);
+          if(d){ doc.addImage(d,"JPEG",10,8,W-20,52,undefined,"FAST"); pgY=68; }
+        }
+        doc.setFontSize(7); doc.setFont("helvetica","normal"); doc.setTextColor(...DIM);
+        doc.text(`Page ${i+1}`, 12, pgY);
+        doc.setFontSize(11); doc.setTextColor(...CREAM);
+        const lines = doc.splitTextToSize(pg.text||"", W-24);
+        doc.text(lines, 12, pgY+7);
+        if(book.refrain && (pg.text||"").toLowerCase().includes((book.refrain||"").slice(0,15).toLowerCase())) {
+          const ry = pgY+7+lines.length*4.8+6;
+          doc.setFontSize(9); doc.setFont("helvetica","italic"); doc.setTextColor(...GOLD);
+          doc.text(`✦ ${book.refrain} ✦`, W/2, ry, {align:"center"});
+        }
+        doc.setFontSize(8); doc.setTextColor(...GOLD);
+        doc.text("✦ ✦ ✦", W/2, H-14, {align:"center"});
+        doc.setFontSize(7); doc.setTextColor(...DIM);
+        doc.text("sleepseed.app", W/2, H-9, {align:"center"});
+      }
+
+      // ── END PAGE ───────────────────────────────────────────────────────
+      doc.addPage(); darkPage();
+      doc.setFontSize(24); doc.setFont("helvetica","bold"); doc.setTextColor(...CREAM);
+      doc.text("The End", W/2, H/2-18, {align:"center"});
+      doc.setFontSize(11); doc.setFont("helvetica","italic"); doc.setTextColor(...DIM);
+      doc.text(`Sweet dreams, ${book.heroName}.`, W/2, H/2, {align:"center"});
+      doc.text("Tomorrow night, another adventure awaits…", W/2, H/2+10, {align:"center"});
+      doc.setFontSize(8); doc.setTextColor(...GOLD);
+      doc.text("🌙 SleepSeed · sleepseed.app", W/2, H-14, {align:"center"});
+
+      doc.save(`${book.title.replace(/[^a-z0-9]/gi,"_").toLowerCase()}.pdf`);
+    } catch(err) {
+      console.error("PDF error:", err);
+      alert("Could not generate PDF — please try again.");
+    }
   };
 
   const addSparkle = useCallback((e) => {
@@ -2163,7 +1728,6 @@ ${adventure ? advSchema : simpleSchema}`;
     : 2+(book.pages?.length||0)+1;
 
   totalPagesRef.current = totalPages;
-  pageTotalRef.current  = totalPages;
 
   const goPage = (dir) => {
     if(dir>0&&onChoicePg&&!chosenPath) return;
@@ -2472,15 +2036,27 @@ ${adventure ? advSchema : simpleSchema}`;
 
                   {/* Guide the story */}
                   <div>
-                    <div className="section-label" style={{marginBottom:4}}>📖 Tell me what happens</div>
-                    <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:8,lineHeight:1.5}}>
-                      Describe a moment, a character, anything — the more specific, the more magical.
+                    <div className="section-label" style={{marginBottom:4}}>✏️ What's on your mind tonight?</div>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+                      {["What happened today?","How are you feeling?","What do you want in the story?"].map(h=>(
+                        <span key={h} style={{fontSize:10,color:"var(--dimmer)",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",borderRadius:99,padding:"3px 9px"}}>{h}</span>
+                      ))}
                     </div>
                     <textarea className="ftarea" rows={2}
-                      placeholder="e.g. Lily finds a tiny lost dragon hiding under her bed…"
+                      placeholder="e.g. 'Lily had a hard day at school' or 'add a funny dragon' or 'very sleepy ending'…" 
                       value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)} maxLength={500} />
+                    <div style={{fontSize:10,color:"var(--dimmer)",margin:"6px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Today's moments</div>
+                    <div className="guidance-chips" style={{marginBottom:6}}>
+                      {["😟 Hard day","🆕 Tried something new","👋 Made a new friend","😬 Feeling nervous","🎉 Something exciting","😤 Had a disagreement"].map(chip => (
+                        <button key={chip} className="guidance-chip"
+                          onClick={()=>setStoryGuidance(g=>(g?g+", ":"")+chip.replace(/^\S+ /,""))}>
+                          {chip}
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{fontSize:10,color:"var(--dimmer)",margin:"4px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Story ingredients</div>
                     <div className="guidance-chips">
-                      {["🐉 Add a dragon","😂 Make it funny","🎵 Include a song","🌙 Very sleepy ending","🐾 A talking animal","🍪 Something delicious","🔮 A surprise twist"].map(chip => (
+                      {["🐉 Add a dragon","😂 Make it funny","🌙 Sleepy ending","🐾 Talking animal","🔮 Surprise twist","🎲 Surprise me"].map(chip => (
                         <button key={chip} className="guidance-chip"
                           onClick={()=>setStoryGuidance(g=>(g?g+", ":"")+chip.replace(/^\S+ /,""))}>
                           {chip}
@@ -2608,10 +2184,6 @@ ${adventure ? advSchema : simpleSchema}`;
               ))}
             </div>
 
-            <div className="auto-bar" style={{opacity:autoOn?1:0}}>
-              <div className="auto-fill" style={{width:`${autoPct}%`}} />
-            </div>
-
             <div className="book-nav" style={{marginTop:8}}>
               <button className="nav-btn" disabled={pageIdx===0} onClick={()=>goPage(-1)}>← Back</button>
               <div className="dots">
@@ -2626,40 +2198,29 @@ ${adventure ? advSchema : simpleSchema}`;
             </div>
 
             <div className="ctrl-bar">
-              {isStoryPage && (
-                <button className={`ctrl-btn read${isReading?" active":""}`} onClick={()=>{ const prog=totalPages>1?pageIdx/(totalPages-1):0.5; toggleRead(getCurrentPageText(),prog); }}>
+              {pageIdx >= 1 && (
+                <button className={`ctrl-btn read${isReading?" active":""}`}
+                  onClick={()=>{ const prog=totalPages>1?pageIdx/(totalPages-1):0.5; toggleRead(getCurrentPageText(),prog); }}>
                   {isReading ? "⏸ Pause" : voiceId ? "🎤 Read aloud" : "🔊 Read aloud"}
                 </button>
               )}
-              <button className={`ctrl-btn auto${autoOn?" active":""}`} onClick={()=>setAutoOn(o=>!o)}>
-                {autoOn ? "⏹ Stop" : "▶ Auto"}
-              </button>
               <button className="ctrl-btn save" onClick={async()=>{ await saveMemory(book); setStage("memories"); }}>
                 💾 Save
               </button>
               <button className="ctrl-btn fresh" onClick={async()=>{
                 const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance);
                 await sDel(`book_${s}`);
-                setStage("home"); setBook(null); setChosenPath(null); setAutoOn(false);
-                if(audioSessionRef.current){ SleepAudio.endSession(false); audioSessionRef.current=false; }
+                window.speechSynthesis?.cancel();
+                if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
+                autoReadRef.current = false;
+                setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
               }}>🔄 New</button>
-              <button className="snd-gear" onClick={()=>setShowSoundCtrl(o=>!o)} title="Sound settings">🔧</button>
+              <button className="ctrl-btn dl" onClick={downloadStory}>📄 Download</button>
+              <button className={`ctrl-btn vc-btn${voiceId?" active":""}`}
+                onClick={()=>{ setVcStage(voiceId?"ready":"idle"); setShowVcModal(true); }}>
+                🎤 {voiceId ? "Voice ✓" : "My Voice"}
+              </button>
             </div>
-            {showSoundCtrl && (
-              <div className="snd-bar">
-                <button className={`snd-tog${ambientOn?" on":""}`} onClick={()=>setAmbientOn(o=>!o)}>
-                  <span className="snd-dot" />
-                  🎵 Ambient {ambientOn?"On":"Off"}
-                </button>
-                <button className={`snd-tog${sfxOn?" on":""}`} onClick={()=>setSfxOn(o=>!o)}>
-                  <span className="snd-dot" />
-                  ✨ Sound FX {sfxOn?"On":"Off"}
-                </button>
-                <button className={`vc-badge${voiceId?" active":""}`} onClick={()=>{ setVcStage(voiceId?"ready":"idle"); setShowVcModal(true); }}>
-                  🎤 {voiceId ? "Your Voice ✓" : "Clone Voice"}
-                </button>
-              </div>
-            )}
 
             {/* ── Voice Clone Modal ── */}
             {showVcModal && (
@@ -2667,33 +2228,24 @@ ${adventure ? advSchema : simpleSchema}`;
                 <div className="vc-card">
                   <div className="vc-title">🎤 Use Your Voice</div>
                   <div className="vc-sub">
-                    Create a voice clone on ElevenLabs, then paste your Voice ID here.
-                    SleepSeed will narrate every story in your voice. ✨
-                  </div>
-
-                  <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:12,padding:"12px 14px",marginBottom:16,fontSize:12,color:"var(--cream)",lineHeight:2.1}}>
-                    <div style={{fontWeight:700,fontSize:10,color:"var(--dim)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:6}}>How to get your Voice ID:</div>
-                    <div>1️⃣ Go to <strong>elevenlabs.io</strong> → sign in</div>
-                    <div>2️⃣ <strong>Voices</strong> → <strong>Add a new voice</strong> → <strong>Instant Voice Clone</strong></div>
-                    <div>3️⃣ Upload a 30–60 sec clear recording of your voice</div>
-                    <div>4️⃣ Save it, then click the voice → copy the <strong>Voice ID</strong></div>
-                    <div>5️⃣ Paste it below 👇</div>
+                    Record yourself reading the script below, upload it, and SleepSeed will narrate every story in your voice. ✨
                   </div>
 
                   {(vcStage==="idle"||vcStage==="error") && (
                     <>
-                      <div className="vc-script-label">Your ElevenLabs Voice ID:</div>
-                      <input
-                        className="finput"
-                        style={{marginBottom:10,fontSize:12,fontFamily:"monospace",letterSpacing:".03em"}}
-                        placeholder="Paste Voice ID here…"
-                        value={vcIdInput}
-                        onChange={e=>setVcIdInput(e.target.value)}
-                        onKeyDown={e=>{ if(e.key==="Enter") saveVoiceId(); }}
-                      />
+                      <div className="vc-script-label">Step 1 — Record yourself reading this aloud (30–60 sec):</div>
+                      <div className="vc-script">
+                        Once upon a time, in a land where the stars came out to play, a little child looked up at the sky and smiled. "Good evening," said the moon. "Are you ready for tonight's adventure?" And the child, heart full of wonder, whispered: "I'm always ready." So together they set off into the most magical night imaginable, where every shadow hid a friendly surprise, and every sound was the beginning of a brand new story.
+                      </div>
+                      <div style={{fontSize:11,color:"var(--dim)",marginBottom:14,lineHeight:1.7}}>
+                        📱 <strong style={{color:"var(--cream)"}}>iPhone:</strong> Voice Memos app → record → share file here<br/>
+                        🤖 <strong style={{color:"var(--cream)"}}>Android:</strong> Recorder app → record → upload below<br/>
+                        🎧 <strong style={{color:"var(--cream)"}}>Tips:</strong> Quiet room · speak warmly and clearly
+                      </div>
+                      <div className="vc-script-label">Step 2 — Upload your recording:</div>
                       {vcError && <div style={{fontSize:11,color:"#f09080",marginBottom:10,lineHeight:1.5}}>{vcError}</div>}
-                      <button className="btn" style={{marginBottom:8}} onClick={saveVoiceId} disabled={!vcIdInput.trim()}>
-                        ✓ Connect My Voice
+                      <button className="btn" style={{marginBottom:8}} onClick={pickVoiceFile}>
+                        📂 Upload Voice Recording
                       </button>
                       {voiceId && (
                         <button className="btn-ghost" style={{width:"100%",fontSize:12,marginBottom:8}} onClick={resetVoice}>
@@ -2706,21 +2258,32 @@ ${adventure ? advSchema : simpleSchema}`;
                     </>
                   )}
 
+                  {vcStage==="uploading" && (
+                    <div style={{textAlign:"center",padding:"24px 0"}}>
+                      <div style={{fontSize:36,marginBottom:12}}>✨</div>
+                      <div className="vc-status">Learning your voice…</div>
+                      <div style={{fontSize:11,color:"var(--dimmer)",marginTop:6}}>This takes about 15 seconds</div>
+                    </div>
+                  )}
+
                   {vcStage==="ready" && (
                     <>
-                      <div style={{textAlign:"center",padding:"8px 0 12px"}}>
+                      <div style={{textAlign:"center",padding:"16px 0 12px"}}>
                         <div style={{fontSize:40,marginBottom:8}}>🎉</div>
-                        <div className="vc-status" style={{color:"var(--green2)"}}>Voice connected!</div>
-                        <div style={{fontSize:10,color:"var(--dimmer)",marginTop:6,fontFamily:"monospace",wordBreak:"break-all",padding:"0 8px"}}>{voiceId}</div>
+                        <div className="vc-status" style={{color:"var(--green2)"}}>Your voice is ready!</div>
+                        <div style={{fontSize:11,color:"var(--dim)",marginTop:6}}>Every story will now be read in your voice.</div>
                       </div>
                       <div style={{display:"flex",gap:8}}>
                         <button className="btn" style={{flex:1,padding:11,fontSize:14}} onClick={()=>setShowVcModal(false)}>
                           Done ✓
                         </button>
-                        <button className="btn-ghost" style={{flex:1,padding:11,fontSize:13}} onClick={()=>{ setVcStage("idle"); setVcIdInput(""); }}>
-                          Change
+                        <button className="btn-ghost" style={{flex:1,padding:11,fontSize:13}} onClick={()=>{ setVcStage("idle"); }}>
+                          Re-record
                         </button>
                       </div>
+                      <button className="btn-ghost" style={{width:"100%",fontSize:12,marginTop:8}} onClick={resetVoice}>
+                        🗑 Remove voice
+                      </button>
                     </>
                   )}
                 </div>
