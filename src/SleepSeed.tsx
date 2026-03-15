@@ -1124,7 +1124,12 @@ const callClaude = async (messages, system="", maxTokens=4000) => {
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify(body),
   });
-  const d = await r.json();
+  // Safely parse — Vercel may return a plain-text error page on timeout/crash
+  const raw = await r.text();
+  let d;
+  try { d = JSON.parse(raw); } catch(_) {
+    throw new Error(`Server error (${r.status}): ${raw.slice(0,120)}`);
+  }
   if(!r.ok) throw new Error(d.error?.message||`API error ${r.status}`);
   const text = d.content?.find(b=>b.type==="text")?.text||"";
   if(!text) throw new Error("Empty response from API");

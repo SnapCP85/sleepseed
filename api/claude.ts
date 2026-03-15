@@ -1,26 +1,31 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// Extend timeout to 60s — story generation takes 15–30s
 export const maxDuration = 60;
 
 export const config = {
   api: {
-    bodyParser: {
-      sizeLimit: '1mb',
-    },
+    bodyParser: { sizeLimit: '1mb' },
   },
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') return res.status(405).end();
+  // Always return JSON — never let Vercel serve its own error page
+  res.setHeader('Content-Type', 'application/json');
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: { message: 'Method not allowed' } });
+  }
 
   const key = process.env.ANTHROPIC_KEY;
   if (!key) {
-    return res.status(500).json({ error: { message: 'ANTHROPIC_KEY environment variable is not set' } });
+    return res.status(500).json({
+      error: { message: 'ANTHROPIC_KEY is not configured. Add it in Vercel → Settings → Environment Variables, then redeploy.' }
+    });
   }
 
+  let response: Response;
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -29,10 +34,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
       body: JSON.stringify(req.body),
     });
-
-    const data = await response.json();
-    res.status(response.status).json(data);
   } catch (err: any) {
-    res.status(500).json({ error: { message: err.message || 'Internal error' } });
+    return res.status(502).json({
+      error: { message: `Could not reach Anthropic API: ${err.message}` }
+    });
   }
+
+  // Safely parse Anthropic's response
+  const text = await response.text();
+  let data: any;
+  try {
+    data = JSON.parse(text);
+  } catch (_) {
+    return res.status(502).json({
+      error: { message: `Unexpected response from Anthropic (${response.status}): ${text.slice(0, 200)}` }
+    });
+  }
+
+  return res.status(response.status).json(data);
 }
