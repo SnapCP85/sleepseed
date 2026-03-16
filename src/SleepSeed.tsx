@@ -2364,73 +2364,65 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
             </div>
 
             {/* ── About section ── */}
-            <div style={{marginTop:32,paddingTop:26,borderTop:"1px solid rgba(212,160,48,.18)"}}>
+            <div style={{marginTop:32,paddingTop:22}}>
+
+              {/* Divider 5 — centred stack */}
+              <div style={{textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:4,marginBottom:16}}>
+                <span style={{fontSize:16,filter:"opacity(.55)"}}>🌙</span>
+                <span style={{fontSize:8.5,fontWeight:700,letterSpacing:".13em",textTransform:"uppercase",color:"rgba(212,160,48,.5)"}}>About SleepSeed</span>
+                <div style={{width:26,height:1,background:"rgba(212,160,48,.3)",marginTop:1}} />
+              </div>
 
               {/* Headline */}
-              <div style={{textAlign:"center",marginBottom:20}}>
+              <div style={{textAlign:"center",marginBottom:14}}>
                 <div style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700,
-                  color:"var(--gold2)",marginBottom:10,fontStyle:"italic",lineHeight:1.25,
+                  color:"var(--gold2)",marginBottom:8,fontStyle:"italic",lineHeight:1.25,
                   textShadow:"0 0 40px rgba(212,160,48,.3)"}}>
                   Bedtime, but better.
                 </div>
-                <div style={{width:40,height:2,background:"linear-gradient(90deg,transparent,rgba(212,160,48,.6),transparent)",
+                <div style={{width:36,height:2,background:"linear-gradient(90deg,transparent,rgba(212,160,48,.55),transparent)",
                   margin:"0 auto 12px"}} />
-                <div style={{fontSize:12,color:"rgba(220,225,245,.85)",lineHeight:1.9,maxWidth:320,margin:"0 auto"}}>
-                  Every night, your child hears a story written just for them —
-                  about their day, their world, or wherever their imagination wants to go.
-                  You stop searching. They stop stalling. Bedtime becomes the best part of the day.
+                <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
+                  color:"rgba(212,160,48,.78)",lineHeight:1.85,maxWidth:300,margin:"0 auto",padding:"0 4px"}}>
+                  A bedtime story written{" "}
+                  <span style={{color:"var(--gold2)",fontStyle:"italic"}}>just for your child, in seconds</span>
+                  {" "}— about their day, their feelings, or the wildest adventure their imagination can dream up.{" "}
+                  Every night. Always different. Always theirs.
                 </div>
               </div>
 
-              {/* Three cards */}
-              <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>
+              {/* Three compact cards */}
+              <div style={{display:"flex",gap:6,marginBottom:16}}>
                 {[
-                  {icon:"🌟", title:"Their story. Their world.",
-                   body:"Real life or pure fantasy — dragons, mysteries, talking socks, or the hard day they had at school. You guide it. They feel it.",
-                   accent:"rgba(212,160,48,.5)"},
-                  {icon:"💛", title:"Ten minutes that actually matter.",
-                   body:"Not another screen. A story that's yours to share — a quiet moment of connection in the middle of the ordinary.",
-                   accent:"rgba(76,200,144,.45)"},
-                  {icon:"📄", title:"A real book to keep forever.",
-                   body:"Print it, staple it, put it on the shelf. In ten years, it's still there. That's not content. That's a memory.",
-                   accent:"rgba(160,120,255,.45)"},
-                ].map(({icon,title,body,accent}) => (
-                  <div key={title} style={{
-                    background:"rgba(255,255,255,.055)",
-                    border:"1px solid rgba(255,255,255,.1)",
-                    borderLeft:`3px solid ${accent}`,
-                    borderRadius:12,
-                    padding:"13px 14px",
-                    display:"flex",alignItems:"flex-start",gap:12}}>
-                    <div style={{fontSize:22,flexShrink:0,marginTop:1}}>{icon}</div>
-                    <div>
-                      <div style={{fontSize:12,fontWeight:700,color:"var(--cream)",marginBottom:4,lineHeight:1.3}}>{title}</div>
-                      <div style={{fontSize:11,color:"rgba(200,210,240,.75)",lineHeight:1.65}}>{body}</div>
-                    </div>
+                  {icon:"🌟", title:"Their world", body:"Real life or pure fantasy", accent:"rgba(212,160,48,.15)", border:"rgba(212,160,48,.2)"},
+                  {icon:"💛", title:"Real bonding", body:"Connection every night",    accent:"rgba(76,200,144,.1)",  border:"rgba(76,200,144,.2)"},
+                  {icon:"📄", title:"Keep forever", body:"A real printed book",       accent:"rgba(160,120,255,.1)", border:"rgba(160,120,255,.2)"},
+                ].map(({icon,title,body,accent,border}) => (
+                  <div key={title} style={{flex:1,background:accent,border:`1px solid ${border}`,
+                    borderRadius:11,padding:"10px 8px",textAlign:"center"}}>
+                    <div style={{fontSize:18,marginBottom:5}}>{icon}</div>
+                    <div style={{fontSize:10,fontWeight:700,color:"var(--cream)",marginBottom:3,lineHeight:1.3}}>{title}</div>
+                    <div style={{fontSize:9,color:"rgba(190,200,240,.6)",lineHeight:1.4}}>{body}</div>
                   </div>
                 ))}
               </div>
 
               {/* Quote */}
-              <div style={{
-                padding:"16px 18px",
-                background:"linear-gradient(135deg,rgba(212,160,48,.08),rgba(180,130,30,.04))",
-                border:"1px solid rgba(212,160,48,.22)",
-                borderRadius:14,
-                marginBottom:16,
-                position:"relative"}}>
-                <div style={{fontSize:28,color:"rgba(212,160,48,.25)",fontFamily:"Georgia,serif",
-                  lineHeight:1,marginBottom:6,fontWeight:700}}>"</div>
-                <div style={{fontFamily:"'Fraunces',serif",fontSize:13,fontStyle:"italic",
-                  color:"var(--gold3)",lineHeight:1.85,textAlign:"center",padding:"0 4px"}}>
+              <div style={{padding:"14px 16px",
+                background:"linear-gradient(135deg,rgba(212,160,48,.07),rgba(180,130,30,.03))",
+                border:"1px solid rgba(212,160,48,.2)",borderRadius:13,marginBottom:14}}>
+                <div style={{fontSize:26,color:"rgba(212,160,48,.22)",fontFamily:"Georgia,serif",
+                  lineHeight:1,marginBottom:5,fontWeight:700}}>"</div>
+                <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
+                  color:"var(--gold3)",lineHeight:1.85,textAlign:"center"}}>
                   Children don't remember the nights they fell asleep quickly.
                   They remember the nights someone made something just for them.
                 </div>
-                <div style={{fontSize:28,color:"rgba(212,160,48,.25)",fontFamily:"Georgia,serif",
+                <div style={{fontSize:26,color:"rgba(212,160,48,.22)",fontFamily:"Georgia,serif",
                   lineHeight:1,marginTop:4,fontWeight:700,textAlign:"right"}}>"</div>
               </div>
 
-              <div style={{textAlign:"center",paddingBottom:4}}>
+              <div style={{textAlign:"center",paddingBottom:6}}>
                 <div style={{fontSize:9,color:"rgba(212,160,48,.4)",letterSpacing:".12em",textTransform:"uppercase",fontWeight:700}}>
                   Made with love · sleepseed.app
                 </div>
