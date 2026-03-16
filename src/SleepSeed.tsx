@@ -1390,99 +1390,198 @@ export default function SleepSeed() {
     if(!book) return;
     try {
       const { jsPDF } = await import("jspdf");
-      const doc = new jsPDF({ orientation:"portrait", unit:"mm", format:"a5" });
-      const W = 148, H = 210;
-      const BG:[number,number,number]  = [8,12,28];
-      const GOLD:[number,number,number] = [212,160,48];
-      const CREAM:[number,number,number] = [235,225,200];
-      const DIM:[number,number,number]  = [140,130,160];
+      // A4 landscape: 297 × 210 mm
+      const doc = new jsPDF({ orientation:"landscape", unit:"mm", format:"a4" });
+      const W = 297, H = 210;
 
-      const darkPage = () => {
-        doc.setFillColor(...BG); doc.rect(0,0,W,H,"F");
-        doc.setDrawColor(50,45,80); doc.setLineWidth(0.4); doc.rect(4,4,W-8,H-8);
+      // Colours
+      const NAVY:  [number,number,number] = [13,  21,  53];
+      const GOLD:  [number,number,number] = [212, 160, 48];
+      const WHITE: [number,number,number] = [255, 255, 255];
+      const CREAM_BG:[number,number,number] = [253, 248, 242];
+      const INK:   [number,number,number] = [26,  20,  16];
+      const RULE:  [number,number,number] = [228, 220, 216];
+      const PG_NUM:[number,number,number] = [184, 168, 152];
+      const URL_C: [number,number,number] = [200, 189, 176];
+      const REFRAIN:[number,number,number]= [74,  56,  128];
+      const FOR_LBL:[number,number,number]= [176, 160, 144];
+
+      // Moon crescent helper (drawn with two circles)
+      const drawMoon = (cx:number, cy:number, r:number) => {
+        doc.setFillColor(...GOLD);
+        doc.circle(cx, cy, r, "F");
+        doc.setFillColor(...NAVY);
+        doc.circle(cx - r*0.35, cy - r*0.1, r*0.82, "F");
       };
 
-      const loadImg = (url:string):Promise<string|null> => new Promise(res => {
-        const img = new Image(); img.crossOrigin="anonymous";
-        img.onload = () => {
-          const c=document.createElement("canvas"); c.width=img.width; c.height=img.height;
-          (c.getContext("2d") as any).drawImage(img,0,0);
-          res(c.toDataURL("image/jpeg",0.7));
-        };
-        img.onerror=()=>res(null); img.src=url;
-      });
+      // Thin rule line helper
+      const rule = (x:number, y:number, w:number) => {
+        doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
+        doc.line(x, y, x+w, y);
+      };
 
-      // ── COVER ──────────────────────────────────────────────────────────
-      darkPage();
-      doc.setTextColor(...GOLD); doc.setFontSize(11); doc.setFont("helvetica","normal");
-      doc.text("✦  ★  ✦", W/2, 20, {align:"center"});
-      if(book.coverUrl) {
-        const d=await loadImg(book.coverUrl); if(d) doc.addImage(d,"JPEG",12,26,W-24,60,undefined,"FAST");
-      }
-      doc.setFontSize(18); doc.setFont("helvetica","bold"); doc.setTextColor(...CREAM);
-      const tLines = doc.splitTextToSize(book.title, W-24);
-      doc.text(tLines, W/2, 100, {align:"center"});
-      doc.setFontSize(10); doc.setFont("helvetica","italic"); doc.setTextColor(...DIM);
-      doc.text(`A bedtime story for ${book.heroName}`, W/2, 100+tLines.length*8, {align:"center"});
-      doc.setFontSize(9); doc.setFont("helvetica","bold"); doc.setTextColor(...GOLD);
-      doc.text("🌙 SleepSeed", W/2, H-14, {align:"center"});
-      doc.setFontSize(7); doc.setFont("helvetica","normal"); doc.setTextColor(...DIM);
-      doc.text("sleepseed.app", W/2, H-9, {align:"center"});
+      // ── SHEET 1: COVER ────────────────────────────────────────────────
+      // Left brand panel
+      const LP = 108; // left panel width mm
+      doc.setFillColor(...NAVY);
+      doc.rect(0, 0, LP, H, "F");
 
-      // ── CHARACTERS ─────────────────────────────────────────────────────
-      doc.addPage(); darkPage();
-      doc.setFontSize(16); doc.setFont("helvetica","bold"); doc.setTextColor(...CREAM);
-      doc.text("Meet the Characters", W/2, 28, {align:"center"});
-      doc.setFontSize(10); doc.setFont("helvetica","italic"); doc.setTextColor(...DIM);
-      doc.text("in tonight's story…", W/2, 36, {align:"center"});
-      let cy=50;
-      for(const c of book.allChars) {
-        const icon = (CHAR_ICONS as any)[c.type]||"⭐";
-        doc.setFontSize(11); doc.setFont("helvetica","bold"); doc.setTextColor(...CREAM);
-        doc.text(`${icon}  ${c.name||capitalize(c.type)}`, 16, cy);
-        doc.setFontSize(8); doc.setFont("helvetica","normal"); doc.setTextColor(...DIM);
-        doc.text(c.classify||c.type||"", 16, cy+5); cy+=16;
-      }
-      doc.setFontSize(7); doc.setTextColor(...DIM);
-      doc.text("sleepseed.app", W/2, H-9, {align:"center"});
+      // Moon centred in left panel, upper third
+      drawMoon(LP/2, 68, 8);
 
-      // ── STORY PAGES ────────────────────────────────────────────────────
-      const pages = book.isAdventure
+      // SleepSeed wordmark
+      doc.setFont("times", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(...WHITE);
+      doc.text("SleepSeed", LP/2, 85, { align:"center" });
+
+      // Tagline
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(212, 160, 48);
+      doc.text("BEDTIME STORIES", LP/2, 93, { align:"center" });
+
+      // URL at bottom of brand panel
+      doc.setFontSize(6.5);
+      doc.setTextColor(255, 255, 255, 0.18 as any);
+      doc.setTextColor(100, 100, 130);
+      doc.text("sleepseed.app", LP/2, H-12, { align:"center" });
+
+      // Right title panel
+      doc.setFillColor(...WHITE);
+      doc.rect(LP, 0, W-LP, H, "F");
+
+      const RX = LP + 24; // text left margin in right panel
+      const RW = W - LP - 48; // text width
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...FOR_LBL);
+      doc.text("A BEDTIME STORY FOR", RX, 62);
+
+      doc.setFont("times", "bold");
+      doc.setFontSize(34);
+      doc.setTextColor(...INK);
+      doc.text(book.heroName, RX, 80);
+
+      doc.setFont("times", "normal");
+      doc.setFontSize(15);
+      doc.setTextColor(...INK);
+      const titleLines = doc.splitTextToSize(book.title, RW);
+      doc.text(titleLines, RX, 96);
+
+      rule(RX, 96 + titleLines.length*7 + 4, RW);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...FOR_LBL);
+      doc.text("Written just for tonight", RX, 96 + titleLines.length*7 + 12);
+      doc.text("sleepseed.app", RX, 96 + titleLines.length*7 + 19);
+
+      // ── STORY PAGES: 2 per sheet ──────────────────────────────────────
+      const allPages = book.isAdventure
         ? [...(book.setup_pages||[]), ...(book.path_a||[]), ...(book.path_b||[])]
         : (book.pages||[]);
-      for(let i=0;i<pages.length;i++) {
-        const pg = pages[i];
-        doc.addPage(); darkPage();
-        let pgY = 14;
-        if(pg.imgUrl) {
-          const d=await loadImg(pg.imgUrl);
-          if(d){ doc.addImage(d,"JPEG",10,8,W-20,52,undefined,"FAST"); pgY=68; }
+
+      const PW = W / 2; // each panel = 148.5mm
+      const PAD_X = 18;  // horizontal padding inside each panel
+      const PAD_TOP = 20;
+      const PAD_BOT = 18;
+      const TEXT_W = PW - PAD_X*2;
+      const TEXT_H = H - PAD_TOP - PAD_BOT - 14; // reserve footer
+
+      const drawStoryPage = (
+        pgIndex: number,    // 0-based index in allPages
+        side: "left"|"right"
+      ) => {
+        const pg = allPages[pgIndex];
+        if(!pg) return;
+        const X0 = side === "left" ? 0 : PW;
+        const isEven = pgIndex % 2 === 1; // alternate tint
+        const bgColor = isEven ? CREAM_BG : WHITE;
+
+        doc.setFillColor(...bgColor);
+        doc.rect(X0, 0, PW, H, "F");
+
+        // Divider between panels (only draw on left side to avoid double)
+        if(side === "left") {
+          doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
+          doc.line(PW, 8, PW, H-8);
         }
-        doc.setFontSize(7); doc.setFont("helvetica","normal"); doc.setTextColor(...DIM);
-        doc.text(`Page ${i+1}`, 12, pgY);
-        doc.setFontSize(11); doc.setTextColor(...CREAM);
-        const lines = doc.splitTextToSize(pg.text||"", W-24);
-        doc.text(lines, 12, pgY+7);
-        if(book.refrain && (pg.text||"").toLowerCase().includes((book.refrain||"").slice(0,15).toLowerCase())) {
-          const ry = pgY+7+lines.length*4.8+6;
-          doc.setFontSize(9); doc.setFont("helvetica","italic"); doc.setTextColor(...GOLD);
-          doc.text(`✦ ${book.refrain} ✦`, W/2, ry, {align:"center"});
+
+        // Page text
+        doc.setFont("times", "normal");
+        doc.setFontSize(11);
+        doc.setTextColor(...INK);
+        const lines = doc.splitTextToSize(pg.text||"", TEXT_W);
+        doc.text(lines, X0+PAD_X, PAD_TOP);
+
+        // Refrain — show on every even-index page (right-side feel)
+        const hasRefrain = book.refrain && pgIndex % 2 === 1;
+        if(hasRefrain) {
+          const refrainY = H - PAD_BOT - 14;
+          rule(X0+PAD_X, refrainY - 3, TEXT_W);
+          doc.setFont("times", "italic");
+          doc.setFontSize(9.5);
+          doc.setTextColor(...REFRAIN);
+          const rLines = doc.splitTextToSize(`"${book.refrain}"`, TEXT_W);
+          doc.text(rLines, X0+PAD_X, refrainY + 4);
         }
-        doc.setFontSize(8); doc.setTextColor(...GOLD);
-        doc.text("✦ ✦ ✦", W/2, H-14, {align:"center"});
-        doc.setFontSize(7); doc.setTextColor(...DIM);
-        doc.text("sleepseed.app", W/2, H-9, {align:"center"});
+
+        // Footer rule
+        rule(X0+PAD_X, H - PAD_BOT + 1, TEXT_W);
+
+        // Page number
+        doc.setFont("times", "italic");
+        doc.setFontSize(7);
+        doc.setTextColor(...PG_NUM);
+        doc.text(String(pgIndex+1), X0+PAD_X, H - PAD_BOT + 7);
+
+        // URL
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6);
+        doc.setTextColor(...URL_C);
+        doc.text("sleepseed.app", X0+PW-PAD_X, H - PAD_BOT + 7, { align:"right" });
+      };
+
+      // Pair pages onto sheets
+      for(let i=0; i<allPages.length; i+=2) {
+        doc.addPage();
+        drawStoryPage(i, "left");
+        drawStoryPage(i+1, "right");
       }
 
-      // ── END PAGE ───────────────────────────────────────────────────────
-      doc.addPage(); darkPage();
-      doc.setFontSize(24); doc.setFont("helvetica","bold"); doc.setTextColor(...CREAM);
-      doc.text("The End", W/2, H/2-18, {align:"center"});
-      doc.setFontSize(11); doc.setFont("helvetica","italic"); doc.setTextColor(...DIM);
-      doc.text(`Sweet dreams, ${book.heroName}.`, W/2, H/2, {align:"center"});
-      doc.text("Tomorrow night, another adventure awaits…", W/2, H/2+10, {align:"center"});
-      doc.setFontSize(8); doc.setTextColor(...GOLD);
-      doc.text("🌙 SleepSeed · sleepseed.app", W/2, H-14, {align:"center"});
+      // ── FINAL SHEET: The End ──────────────────────────────────────────
+      doc.addPage();
+      // Left: brand panel (matching cover)
+      doc.setFillColor(...NAVY);
+      doc.rect(0, 0, LP, H, "F");
+      drawMoon(LP/2, 68, 8);
+      doc.setFont("times", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(...WHITE);
+      doc.text("SleepSeed", LP/2, 85, { align:"center" });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(...GOLD);
+      doc.text("BEDTIME STORIES", LP/2, 93, { align:"center" });
+      doc.setFontSize(6.5);
+      doc.setTextColor(100, 100, 130);
+      doc.text("sleepseed.app", LP/2, H-12, { align:"center" });
+
+      // Right: The End
+      doc.setFillColor(...WHITE);
+      doc.rect(LP, 0, W-LP, H, "F");
+      doc.setFont("times", "bold");
+      doc.setFontSize(28);
+      doc.setTextColor(...INK);
+      doc.text("The End.", RX, H/2 - 8);
+      rule(RX, H/2 - 2, RW);
+      doc.setFont("times", "italic");
+      doc.setFontSize(10);
+      doc.setTextColor(...FOR_LBL);
+      doc.text(`Sweet dreams, ${book.heroName}.`, RX, H/2 + 7);
+      doc.text("Tomorrow night, another adventure awaits.", RX, H/2 + 15);
 
       doc.save(`${book.title.replace(/[^a-z0-9]/gi,"_").toLowerCase()}.pdf`);
     } catch(err) {
