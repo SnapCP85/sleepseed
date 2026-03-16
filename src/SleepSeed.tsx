@@ -2370,51 +2370,56 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                     Read the script below into your microphone — SleepSeed will learn your voice and narrate every story. ✨
                   </div>
 
-                  {(vcStage==="idle"||vcStage==="error") && (
+                  {/* Script always visible in idle, error, and recording states */}
+                  {(vcStage==="idle"||vcStage==="error"||vcStage==="recording") && (
                     <>
-                      <div className="vc-script-label">Read this aloud — warmly and clearly:</div>
-                      <div className="vc-script">
-                        Once upon a time, in a land where the stars came out to play, a little child looked up at the sky and smiled. "Good evening," said the moon. "Are you ready for tonight's adventure?" And the child, heart full of wonder, whispered: "I'm always ready." So together they set off into the most magical night imaginable, where every shadow hid a friendly surprise, and every sound was the beginning of a brand new story.
+                      <div className="vc-script-label">
+                        {vcStage==="recording" ? "🔴 Recording — keep reading at a calm, warm pace:" : "Read this aloud — warmly and clearly:"}
                       </div>
-                      <div style={{fontSize:11,color:"var(--dim)",marginBottom:14,lineHeight:1.6}}>
-                        🎧 <strong style={{color:"var(--cream)"}}>Tips:</strong> Quiet room · speak at a calm bedtime pace · aim for 30–60 seconds
+                      <div className="vc-script" style={{opacity:vcStage==="recording"?1:1,transition:"opacity .3s"}}>
+                        Once upon a time, in a land where the stars came out to play, a little child looked up at the sky and smiled. "Good evening," said the moon. "Are you ready for tonight's adventure?" And the child, heart full of wonder, whispered: "I'm always ready." So together they set off into the most magical night imaginable, where every shadow hid a friendly surprise, and every sound was the beginning of a brand new story. The trees whispered secrets. The fireflies wrote messages in the dark. And somewhere, not too far away, something wonderful was waiting — just for them.
                       </div>
-                      {vcError && <div style={{fontSize:11,color:"#f09080",marginBottom:10,lineHeight:1.5}}>{vcError}</div>}
-                      <button className="btn" style={{marginBottom:8}} onClick={startRecording}>
-                        🔴 Start Recording
-                      </button>
-                      {voiceId && (
-                        <button className="btn-ghost" style={{width:"100%",fontSize:12,marginBottom:8}} onClick={resetVoice}>
-                          🗑 Remove current voice
-                        </button>
-                      )}
-                      <button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={()=>setShowVcModal(false)}>
-                        Close
-                      </button>
-                    </>
-                  )}
 
-                  {vcStage==="recording" && (
-                    <div style={{textAlign:"center",padding:"8px 0 16px"}}>
-                      <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:12}}>
-                        🔴 Recording… read the script above at a calm, warm pace
-                      </div>
-                      <div style={{fontSize:40,fontFamily:"monospace",fontWeight:700,color:"var(--gold2)",marginBottom:6,letterSpacing:2}}>
-                        {String(Math.floor(vcSeconds/60)).padStart(2,"0")}:{String(vcSeconds%60).padStart(2,"0")}
-                      </div>
-                      <div style={{height:4,background:"rgba(255,255,255,.08)",borderRadius:99,margin:"0 0 16px",overflow:"hidden"}}>
-                        <div style={{height:"100%",borderRadius:99,background:"var(--gold2)",width:`${Math.min(100,(vcSeconds/60)*100)}%`,transition:"width 1s linear"}} />
-                      </div>
-                      <div style={{fontSize:11,color:"var(--dim)",marginBottom:18}}>
-                        {vcSeconds < 15 ? "Keep going — aim for 30 seconds or more" : vcSeconds < 30 ? "Great! A little more…" : "Ready to stop whenever you like ✓"}
-                      </div>
-                      <button className="btn" onClick={stopRecording}>
-                        ⏹ Stop &amp; Use This Recording
-                      </button>
-                      <button className="btn-ghost" style={{width:"100%",marginTop:8,fontSize:12}} onClick={cancelRecording}>
-                        Cancel
-                      </button>
-                    </div>
+                      {vcStage==="recording" ? (
+                        <div style={{marginBottom:8}}>
+                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                            <div style={{fontSize:11,color:"var(--dim)"}}>
+                              {vcSeconds < 15 ? "Keep going — aim for 30 seconds" : vcSeconds < 30 ? "Great! A little more…" : "✓ Ready to stop"}
+                            </div>
+                            <div style={{fontSize:22,fontFamily:"monospace",fontWeight:700,color:"var(--gold2)",letterSpacing:1}}>
+                              {String(Math.floor(vcSeconds/60)).padStart(2,"0")}:{String(vcSeconds%60).padStart(2,"0")}
+                            </div>
+                          </div>
+                          <div style={{height:4,background:"rgba(255,255,255,.08)",borderRadius:99,marginBottom:14,overflow:"hidden"}}>
+                            <div style={{height:"100%",borderRadius:99,background:"var(--gold2)",width:`${Math.min(100,(vcSeconds/60)*100)}%`,transition:"width 1s linear"}} />
+                          </div>
+                          <button className="btn" style={{marginBottom:8}} onClick={stopRecording}>
+                            ⏹ Stop &amp; Use This Recording
+                          </button>
+                          <button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={cancelRecording}>
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{fontSize:11,color:"var(--dim)",marginBottom:14,lineHeight:1.6}}>
+                            🎧 <strong style={{color:"var(--cream)"}}>Tips:</strong> Quiet room · calm bedtime pace · aim for 30–60 seconds
+                          </div>
+                          {vcError && <div style={{fontSize:11,color:"#f09080",marginBottom:10,lineHeight:1.5}}>{vcError}</div>}
+                          <button className="btn" style={{marginBottom:8}} onClick={startRecording}>
+                            🔴 Start Recording
+                          </button>
+                          {voiceId && (
+                            <button className="btn-ghost" style={{width:"100%",fontSize:12,marginBottom:8}} onClick={resetVoice}>
+                              🗑 Remove current voice
+                            </button>
+                          )}
+                          <button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={()=>setShowVcModal(false)}>
+                            Close
+                          </button>
+                        </>
+                      )}
+                    </>
                   )}
 
                   {vcStage==="uploading" && (
