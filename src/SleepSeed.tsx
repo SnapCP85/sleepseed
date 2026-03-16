@@ -1223,7 +1223,7 @@ export default function SleepSeed() {
   const [imgLoaded,      setImgLoaded]      = useState({});
   const [memories,       setMemories]       = useState([]);
   const [voiceId,        setVoiceId]        = useState(null); // EL cloned voice
-  const [selectedVoiceId,setSelectedVoiceId]= useState(null); // chosen preset or cloned voice
+  const [selectedVoiceId,setSelectedVoiceId]= useState("0mLOQqwA3kovxF1ID7z6"); // chosen preset or cloned voice — defaults to Linda
   const [showVoicePicker,setShowVoicePicker]= useState(false); // voice picker modal
   const [vcStage,        setVcStage]        = useState("idle"); // idle|recording|uploading|ready|error
   const [vcError,        setVcError]        = useState("");
@@ -1336,7 +1336,7 @@ export default function SleepSeed() {
       // Fall back to Web Speech
       speakText(text, pageProgress);
     }
-  }, [voiceId, pageIdx, speakText]);
+  }, [voiceId, selectedVoiceId, pageIdx, speakText]);
 
   // ── Toggle read aloud ──────────────────────────────────────────────────
   const toggleRead = useCallback((text, pageProgress=0.5) => {
@@ -1350,7 +1350,7 @@ export default function SleepSeed() {
       if(selectedVoiceId||voiceId) speakTextEL(text, pageProgress);
       else speakText(text, pageProgress);
     }
-  },[isReading, speakText, speakTextEL, voiceId]);
+  },[isReading, speakText, speakTextEL, voiceId, selectedVoiceId]);
 
   // ── Voice clone: microphone recording ────────────────────────────────
   const [vcSeconds, setVcSeconds] = useState(0);
