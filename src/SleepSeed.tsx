@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Nunito:wght@400;600;700&family=Kalam:wght@400;700&display=swap');`;
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Cormorant+Garamond:ital,wght@1,600&family=Nunito:wght@400;600;700&family=Kalam:wght@400;700&display=swap');`;
 
 const CSS = `
 ${FONTS}
@@ -2376,9 +2376,9 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
               {/* Headline */}
               <div style={{textAlign:"center",marginBottom:14}}>
-                <div style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700,
-                  color:"var(--gold2)",marginBottom:8,fontStyle:"italic",lineHeight:1.25,
-                  textShadow:"0 0 40px rgba(212,160,48,.3)"}}>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:600,
+                  color:"var(--gold2)",marginBottom:8,fontStyle:"italic",lineHeight:1.15,
+                  letterSpacing:".01em"}}>
                   Bedtime, but better.
                 </div>
                 <div style={{width:36,height:2,background:"linear-gradient(90deg,transparent,rgba(212,160,48,.55),transparent)",
