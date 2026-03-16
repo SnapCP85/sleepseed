@@ -584,7 +584,7 @@ const strHash = (s) => {
 const photoFP = (b64) => b64 ? strHash(b64.slice(0,120)) : null;
 
 const makeStorySeed = (heroName,theme,chars,occasion,occasionCustom,lesson,adventure,len,gender,classify,guidance) => {
-  const occ = occasion==="other" ? occasionCustom : occasion;
+  const occ = occasionCustom || occasion;
   const sig = `${heroName.toLowerCase()}|${chars.map(c=>`${c.type}:${c.name}:${c.classify||""}:${c.gender||""}`).join(",")}|${occ}|${lesson}|${adventure}|${len}|${gender}|${classify}|${guidance.slice(0,60)}`;
   return (parseInt(strHash(sig),36)%88888)+11111;
 };
@@ -1482,7 +1482,7 @@ export default function SleepSeed() {
   };
 
   const saveMemory = useCallback(async (bookData) => {
-    const occ = occasion==="other" ? occasionCustom : occasion;
+    const occ = occasionCustom || occasion;
     const entry = {id:uid(),title:bookData.title,heroName:bookData.heroName,
       date:new Date().toISOString().split("T")[0],occasion:occ,bookData};
     const next = [entry,...memories];
@@ -1616,7 +1616,7 @@ export default function SleepSeed() {
         `${c.name||c.type}${visualDescs[c.id]?`(${visualDescs[c.id]})`:c.classify?`(${c.classify})`:""}`
       ).join(", ");
 
-      const occasionFinal = resolvedOcc==="other" ? resolvedOccCust.trim() : (resolvedOcc||"");
+      const occasionFinal = resolvedOccCust.trim() || resolvedOcc;
       const occLine  = occasionFinal ? `\nSPECIAL OCCASION: ${occasionFinal}` : "";
       const lesArr = Array.isArray(resolvedLesson) ? resolvedLesson : (resolvedLesson ? [resolvedLesson] : []);
       const lesLine  = lesArr.length ? `\nLESSONS (weave ALL of these in through action, never state them as a moral):\n${lesArr.map(l=>`• ${l}`).join("\n")}` : "";
@@ -2095,7 +2095,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
                 {/* Characters */}
                 <div>
-                  <div className="section-label" style={{marginBottom:8}}>👥 Who's in the story?</div>
+                  <div className="section-label" style={{marginBottom:8}}>👥 Who's in the story with {heroName}?</div>
                   {extraChars.length<4 && (
                     <div style={{marginBottom:extraChars.length?10:0}}>
                       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
@@ -2135,13 +2135,13 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                   <div className="section-label" style={{marginBottom:4}}>✏️ What's on your mind tonight?</div>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
                     {["What happened today?","How are you feeling?","What do you want in the story?"].map(h=>(
-                      <span key={h} style={{fontSize:10,color:"var(--dimmer)",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",borderRadius:99,padding:"3px 9px"}}>{h}</span>
+                      <span key={h} style={{fontSize:10,color:"rgba(190,200,240,.85)",background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.15)",borderRadius:99,padding:"3px 9px"}}>{h}</span>
                     ))}
                   </div>
                   <textarea className="ftarea" rows={2}
                     placeholder="e.g. 'Lily had a hard day at school' or 'add a funny dragon' or 'very sleepy ending'…"
                     value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)} maxLength={500} />
-                  <div style={{fontSize:10,color:"var(--dimmer)",margin:"6px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Today's moments</div>
+                  <div style={{fontSize:10,color:"rgba(190,200,240,.75)",margin:"6px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Today's moments</div>
                   <div className="guidance-chips" style={{marginBottom:6}}>
                     {["😟 Hard day","🆕 Tried something new","👋 Made a new friend","😬 Feeling nervous","🎉 Something exciting","😤 Had a disagreement"].map(chip => (
                       <button key={chip} className="guidance-chip"
@@ -2150,7 +2150,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                       </button>
                     ))}
                   </div>
-                  <div style={{fontSize:10,color:"var(--dimmer)",margin:"4px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Story ingredients</div>
+                  <div style={{fontSize:10,color:"rgba(190,200,240,.75)",margin:"4px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Story ingredients</div>
                   <div className="guidance-chips">
                     {["🐉 Add a dragon","😂 Make it funny","🌙 Sleepy ending","🐾 Talking animal","🔮 Surprise twist","🎲 Surprise me"].map(chip => (
                       <button key={chip} className="guidance-chip"
@@ -2165,20 +2165,10 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
                 {/* Special occasion */}
                 <div>
-                  <div className="section-label" style={{marginBottom:8}}>🎉 Is tonight a special night?</div>
-                  <div className="occ-pills">
-                    {OCCASIONS.filter(o=>o.value).map(o => (
-                      <button key={o.value} className={`occ-pill${occasion===o.value?" on":""}`}
-                        onClick={()=>{ setOccasion(occasion===o.value?"":o.value); setOccasionCustom(""); }}>
-                        {o.label}
-                      </button>
-                    ))}
-                  </div>
-                  {occasion==="other" && (
-                    <input className="finput" style={{marginTop:8,fontSize:13}}
-                      placeholder="What's the occasion? e.g. lost a tooth, first haircut…"
-                      value={occasionCustom} onChange={e=>setOccasionCustom(e.target.value)} maxLength={100} />
-                  )}
+                  <div className="section-label" style={{marginBottom:6}}>🎉 Is tonight a special night? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"rgba(190,200,240,.65)",fontSize:10}}>(optional)</span></div>
+                  <input className="finput" style={{fontSize:13}}
+                    placeholder="e.g. Birthday, 1st day of school tomorrow, lost a tooth, new baby…"
+                    value={occasionCustom} onChange={e=>setOccasionCustom(e.target.value)} maxLength={120} />
                 </div>
 
                 <div className="divider" />
