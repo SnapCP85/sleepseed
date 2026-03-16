@@ -159,6 +159,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
   border:1.5px solid rgba(255,255,255,.1);color:var(--dim);background:transparent;
   font-family:'Nunito',sans-serif;transition:all .18s}
 .guidance-chip:hover{border-color:rgba(212,160,48,.4);color:var(--gold2);background:rgba(212,160,48,.06)}
+.guidance-chip.on{background:rgba(76,200,144,.12);border-color:rgba(76,200,144,.5);color:#80d8a8}
 .magic-hint{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(200,160,255,.7);margin-top:3px}
 .magic-hint-badge{background:rgba(160,80,255,.1);border:1px solid rgba(160,80,255,.25);
   border-radius:7px;padding:2px 8px;font-size:10px;font-weight:700;color:rgba(210,170,255,.85)}
@@ -504,7 +505,7 @@ STRUCTURE \u2014 model: Eric Carle, Mem Fox, Dr Seuss:
 \u2022 One sentence per page. Two maximum. Three is too many.
 \u2022 Every page has a natural clapping beat when read aloud.
 \u2022 The refrain MUST appear three times: page 2 (introduction), the middle page (a variation \u2014 different character says it, or it goes slightly wrong), and the LAST page (warm, closing).
-\u2022 8 pages total. At this age, shorter is always better.
+\u2022 Page count: follow the chosen story length (short=8, standard=8, long=10). At this age shorter is ALWAYS better \u2014 never exceed 10 pages regardless of length setting.
 
 HERO AGENCY: Even at 3\u20134, ${name} must DO something \u2014 not watch. They press the button. They say the magic word. They share the thing. One tiny action by ${name} changes everything.
 
@@ -520,7 +521,7 @@ STRUCTURE \u2014 model: Julia Donaldson (The Gruffalo), Mo Willems (Pigeon serie
 \u2022 RULE OF THREE (preferred): ${name} tries something on page 3, page 5, and page 7. Attempt 1 fails hilariously. Attempt 2 fails differently and even more hilariously. Attempt 3 succeeds \u2014 but not how anyone expected.
 \u2022 OR RUNNING JOKE: A silly thing happens on page 1 and keeps happening. On the last page it happens one final time with a twist.
 \u2022 Every page must have at least one line of dialogue. Characters say the WRONG thing, the BRAVE thing, the FUNNY thing.
-\u2022 10 pages total. Three attempts land on pages 3, 5, 7. Resolution on page 9. Sleep on page 10.
+\u2022 Page count: follow the chosen story length (short=8, standard=10, long=12). Fit the Rule of Three to whatever page count is chosen: attempt 1 at ~30% through, attempt 2 at ~55%, attempt 3 at ~75%. Last page is always sleep.
 
 HERO AGENCY (critical): ${name} must make ONE decision that changes everything. Not "helped" \u2014 decided. PASSIVE (bad): "${name} watched as the dragon flew away." ACTIVE (good): "${name} knew exactly what to do. She climbed up. She knocked three times. And she asked the question nobody else had thought to ask."
 
@@ -537,7 +538,7 @@ STRUCTURE \u2014 model: Roald Dahl (The Enormous Crocodile), Arnold Lobel (Frog 
 \u2022 The hero must be underestimated by at least one other character \u2014 and prove them spectacularly, satisfyingly wrong.
 \u2022 Running joke: one funny thing escalates across 3\u20134 pages and pays off just before the ending.
 \u2022 Characters have contradictions: brave but secretly nervous, bossy but genuinely kind underneath.
-\u2022 12 pages total. Plant the seed by page 2. Twist lands on page 11. Sleep on page 12.
+\u2022 Page count: follow the chosen story length (short=8, standard=12, long=16). Plant seed by page 2. Twist lands on the penultimate page. Final page is always the sleep landing.
 
 HERO AGENCY (critical): ${name} must make one decision under pressure that only THEY could make \u2014 using something specific about who they are. Not luck. Not help from others. Them.
 
@@ -554,7 +555,7 @@ STRUCTURE \u2014 model: Roald Dahl (Fantastic Mr Fox), A.A. Milne (Winnie-the-Po
 \u2022 EMOTIONAL TURN: At least one moment where something genuinely difficult happens \u2014 real doubt, a mistake with consequences, something that matters. Then a resolution that feels earned, not given.
 \u2022 SECONDARY CHARACTER ARC: One supporting character has their own small journey that intersects with ${name}'s at the climax in an unexpected way.
 \u2022 Characters have genuine contradictions AND growth: someone starts wrong about something important and ends changed.
-\u2022 14 pages total. Clue by page 3. Emotional turn on pages 9\u201310. Revelation on pages 12\u201313. Sleep on page 14.
+\u2022 Page count: follow the chosen story length (short=8, standard=12, long=16). Clue in first 25% of pages. Emotional turn at 65\u201375% through. Revelation on penultimate page. Final page is always the sleep landing.
 
 HERO AGENCY (critical): ${name} must face a moment where the easy path is genuinely tempting \u2014 and choose the harder, right thing instead. The reader must feel the weight of that choice.
 
@@ -1141,7 +1142,13 @@ export default function SleepSeed() {
   const [ageGroup,       setAgeGroup]       = useState("age5");
   const [storyGuidance,  setStoryGuidance]  = useState("");
   const [customize,      setCustomize]      = useState(false);
-  const [builderMode,    setBuilderMode]    = useState(false); // true = from builder, false = quick
+  const [builderMode,    setBuilderMode]    = useState(false);
+  const [storyMood,      setStoryMood]      = useState("");        // calm|silly|exciting|heartfelt
+  const [storyPace,      setStoryPace]      = useState("normal");  // normal|sleepy|snappy
+  const [storyStyle,     setStoryStyle]     = useState("standard");// standard|rhyming|adventure|mystery
+  const [heroTraits,     setHeroTraits]     = useState<string[]>([]);
+  const [moreOpen,       setMoreOpen]       = useState(false);
+  const [quickChars,     setQuickChars]     = useState<string[]>([]);
   const [error,          setError]          = useState("");
   const [book,           setBook]           = useState(null);
   const [pageIdx,        setPageIdx]        = useState(0);
@@ -1498,14 +1505,19 @@ export default function SleepSeed() {
 
   /* ══ GENERATE ══ */
   const generate = async (overrides:any={}) => {
-    const resolvedTheme   = overrides.theme        ?? theme;
-    const resolvedChars   = overrides.extraChars   ?? extraChars;
-    const resolvedOcc     = overrides.occasion     ?? occasion;
+    const resolvedTheme   = overrides.theme         ?? theme;
+    const resolvedChars   = overrides.extraChars    ?? extraChars;
+    const resolvedOcc     = overrides.occasion      ?? occasion;
     const resolvedOccCust = overrides.occasionCustom ?? occasionCustom;
-    const resolvedLesson  = overrides.lessons ?? lessons;
-    const resolvedAdv     = overrides.adventure    ?? adventure;
-    const resolvedLen     = overrides.storyLen     ?? storyLen;
-    const resolvedGuidance= overrides.storyGuidance?? storyGuidance;
+    const resolvedLesson  = overrides.lessons       ?? lessons;
+    const resolvedAdv     = (overrides.storyStyle ?? storyStyle) === "adventure" || (overrides.adventure ?? adventure);
+    const resolvedLen     = overrides.storyLen      ?? storyLen;
+    const resolvedAge    = overrides.ageGroup      ?? ageGroup;
+    const resolvedGuidance= overrides.storyGuidance ?? storyGuidance;
+    const resolvedMood    = overrides.storyMood     ?? storyMood;
+    const resolvedPace    = overrides.storyPace     ?? storyPace;
+    const resolvedStyle   = overrides.storyStyle    ?? storyStyle;
+    const resolvedTraits  = overrides.heroTraits    ?? heroTraits;
     setError(""); setStage("generating"); setFromCache(false); setChosenPath(null);
     const name = heroName.trim();
     const seed = makeStorySeed(name,resolvedTheme,resolvedChars,resolvedOcc,resolvedOccCust,Array.isArray(resolvedLesson)?resolvedLesson.join("|"):resolvedLesson,resolvedAdv,resolvedLen,heroGender,heroClassify,resolvedGuidance);
@@ -1619,7 +1631,7 @@ export default function SleepSeed() {
       const occasionFinal = resolvedOccCust.trim() || resolvedOcc;
       const occLine  = occasionFinal ? `\nSPECIAL OCCASION: ${occasionFinal}` : "";
       const lesArr = Array.isArray(resolvedLesson) ? resolvedLesson : (resolvedLesson ? [resolvedLesson] : []);
-      const lesLine  = lesArr.length ? `\nLESSONS (weave ALL of these in through action, never state them as a moral):\n${lesArr.map(l=>`• ${l}`).join("\n")}` : "";
+      const lesLine  = lesArr.length ? `\nLESSONS (weave these in through action only — never state as a moral): ${lesArr.length > 2 ? "You have been given multiple lessons. Prioritise the one or two that fit most naturally into the story. A story that gently embodies one lesson is far more powerful than a story that forces three. Choose wisely. " : ""}${lesArr.map(l=>"• "+l).join("\n")}` : "";
       const guidanceSafe = resolvedGuidance.trim().slice(0, 300).replace(/[\u201C\u201D""]/g, '"');
       const guidLine = guidanceSafe ? `\nSTORY GUIDANCE — highest priority, incorporate naturally:\n${guidanceSafe}` : "";
 
@@ -1630,9 +1642,13 @@ export default function SleepSeed() {
         ? null  // let AI pick
         : THEMES[Math.floor(Math.random() * THEMES.length)];
       const worldLine = autoTheme
-        ? `SETTING:\n${autoTheme.value}\n\nSet the entire story in this real-world place — make it recognisable to a child, but silly, warm, and full of surprising life.`
-        : `SETTING SELECTION: Based on the characters, occasion, lessons, and story guidance provided, choose the single most fitting setting from the real-world options below. Pick the one that will make this particular story feel most vivid, funny, and familiar to a child. Then set the entire story there.\n\nAVAILABLE SETTINGS:\n${THEMES.map((t,i)=>`${i+1}. ${t.label}: ${t.value.split("\n")[0]}`).join("\n")}`;
-      const ageCfg = AGES.find(a=>a.value===ageGroup)||AGES[1];
+        ? `SETTING:\n${autoTheme.value}\n\nSet the entire story in this real-world place. Ground it in what a child knows — then make it delightfully surprising. The setting is active: things in it talk, move, have opinions, and cause problems. It is not a backdrop.`
+        : `SETTING SELECTION: Based on the characters, occasion, lessons, and story guidance provided, choose the single most fitting setting from the real-world options below. Pick the one where the story context will feel most vivid, funny, and natural. The chosen setting must be active — not a backdrop but a participant. Things in it have personalities and opinions.\n\nAVAILABLE SETTINGS:\n${THEMES.map((t,i)=>`${i+1}. ${t.label}: ${t.value.split("\n")[0]}`).join("\n")}`;
+      const moodLine  = resolvedMood ? `\nSTORY MOOD: ${resolvedMood==="calm"?"Calm and cosy — warm, gentle, soothing throughout. Every page should feel like a soft blanket.":resolvedMood==="silly"?"Silly and funny — lean into humour and absurdity on every page. At least one thing per page should make a child laugh.":resolvedMood==="exciting"?"Exciting and adventurous — high energy and wonder throughout the adventure pages. The final 2-3 pages still wind down gently and land safely in sleep.":resolvedMood==="heartfelt"?"Warm and heartfelt — emotionally resonant and tender. Prioritise genuine feeling over plot twists.":""} This mood shapes the story flavour but never overrides age-appropriate vocabulary, the sleep landing, or the story's fundamental safety.` : "";
+      const paceLine  = resolvedPace && resolvedPace!=="normal" ? `\nNARRATION PACE: ${resolvedPace==="sleepy"?"Extra sleepy — from the first page the world is soft and quiet. Short gentle sentences. Long pauses. Characters move slowly. The whole story drifts toward sleep.":"Quick and snappy — punchy sentences and fast energy through the adventure pages. The final 2-3 pages MUST still slow down, grow quiet, and land the child in sleep. Snappy applies to the adventure, never the ending."}` : "";
+      const styleLine = resolvedStyle && resolvedStyle!=="standard" && resolvedStyle!=="adventure" ? `\nSTORY STYLE: ${resolvedStyle==="rhyming"?"Rhyming — the ENTIRE story must rhyme with a consistent scheme that scans naturally when read aloud (AABB, ABCB, or AABBA all work — choose whichever fits the story best). Every line must feel musical and effortless, never forced. Rhymes must serve the story, not the other way around. The sleep landing must still rhyme warmly. Adventure/choice-path format is automatically disabled for rhyming stories.":resolvedStyle==="mystery"?"Mystery — structure as a gentle child-friendly mystery. Something is missing or unexplained on page 1. Clues discovered naturally across the middle pages. The solution is revealed on the penultimate page — surprising but obvious in hindsight. The final page is always the warm sleep landing, NOT more mystery.":""}` : "";
+      const traitLine = resolvedTraits.length ? `\nHERO PERSONALITY: ${heroName||name} is ${resolvedTraits.join(", ")}. Let these traits shape every decision they make and every line of dialogue they speak.` : "";
+      const ageCfg = AGES.find(a=>a.value===resolvedAge)||AGES[1];
       const ageLine = ageCfg.prompt;
 
       setGen(g => ({...g,stepIdx:1,progress:26,label:"Writing tonight's story…"}));
@@ -1676,7 +1692,7 @@ FINAL PAGE — THE MOST IMPORTANT PAGE IN THE STORY:
       )).join(",");
 
       const simpleSchema = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","refrain":"a short bouncy phrase (4-8 words) — it appears on page 2, varies in the middle, and closes the final page. A child must want to say it before you do by the third reading. Make it musical, make it specific, make it slightly silly.","pages":[${pgSchema(totalN)}]}`;
-      const advSchema    = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","refrain":"a short bouncy phrase (4-8 words) — it appears on page 2, varies in the middle, and closes the final page. A child must want to say it before you do by the third reading. Make it musical, make it specific, make it slightly silly.","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"What does ${name} do next?","option_a_label":"4-7 fun exciting words","option_b_label":"4-7 fun exciting words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}]}`;
+      const advSchema    = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","refrain":"a short bouncy phrase (4-8 words) — it appears on page 2, varies in the middle, and closes the final page. A child must want to say it before you do by the third reading. Make it musical, make it specific, make it slightly silly.","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"Write a short, exciting, specific choice question for ${name} — not generic. It must follow directly from what just happened on the last setup page. Make it feel urgent. Two paths must feel genuinely different.","option_a_label":"4-7 fun exciting words","option_b_label":"4-7 fun exciting words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}]}`;
 
       // ── Master story prompt ───────────────────────────────────────────────
       const storyPrompt = `You are writing a children's picture book that will be read aloud at bedtime. Your models are Roald Dahl, Julia Donaldson, Mo Willems, Eric Carle, and A.A. Milne. Every page must feel like it belongs in a book a child could buy at a bookstore and memorise by the third reading.
@@ -1730,7 +1746,7 @@ The difference: SHORT lines. SOUND WORDS. SILLY unexpected things. A reason to t
 ${charCtx}
 
 ━━━ SETTING, OCCASION, AND CONTEXT ━━━
-${worldLine}${occLine}${lesLine}${guidLine}
+${worldLine}${guidLine}${occLine}${lesLine}${moodLine}${paceLine}${styleLine}${traitLine}
 
 ━━━ STORY CRAFT ━━━
 
@@ -1778,7 +1794,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
       const raw = await callClaude(
         [{role:"user",content:storyPrompt}],
-        "You are a master children's picture book author writing in the tradition of Roald Dahl, Julia Donaldson, Mo Willems, and A.A. Milne. Every story must have: a hero who makes a real decision, a refrain that recurs three times with variation, one moment of genuine emotional truth, and an ending that echoes page 1. Return ONLY a valid JSON object — no markdown, no explanation, no text outside the JSON. The story must feel like it could be published, sold, and memorised by a child within three readings.",
+        "You are a master children's picture book author. Write at the exact age level specified. Honour every instruction in the prompt — especially: (1) the hero makes one real decision, (2) the refrain appears three times with variation, (3) one moment of genuine emotional truth, (4) the final page echoes page 1. If a rhyming style is requested, every line must rhyme naturally. If a mystery is requested, the solution lands on the penultimate page. The story always ends with the child safely, warmly asleep. Return ONLY a valid JSON object — no markdown, no explanation, no text outside the JSON.",
         4000
       );
 
@@ -2035,8 +2051,6 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
               )}
             </div>
             <div style={{height:14}} />
-
-            {/* Name + gender */}
             <div className="card" style={{marginBottom:10}}>
               <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:"var(--cream)",marginBottom:12,textAlign:"center",fontStyle:"italic"}}>
                 ✨ Tonight's story is for…
@@ -2050,24 +2064,19 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                 ))}
               </div>
             </div>
-
-            {/* Two path buttons side by side */}
             {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
             <div className="path-row">
               <button className="path-btn quick" disabled={heroName.trim().length<2}
-                onClick={()=>{
-                  if(heroName.trim().length<2) return;
-                  generate({extraChars:[],occasion:"",occasionCustom:"",lessons:[],adventure:false,storyLen:"standard",storyGuidance:""});
-                }}>
+                onClick={()=>{ if(heroName.trim().length<2) return; setStage("quick"); }}>
                 <div className="path-icon">⚡</div>
                 <div className="path-title">Quick Story</div>
-                <div className="path-sub">Instant story,<br/>AI picks the setting</div>
+                <div className="path-sub">3 questions,<br/>then generate</div>
               </button>
               <button className="path-btn build" disabled={heroName.trim().length<2}
                 onClick={()=>{ if(heroName.trim().length<2) return; setStage("builder"); }}>
                 <div className="path-icon">🎨</div>
                 <div className="path-title">Build My Story</div>
-                <div className="path-sub">Add characters,<br/>lessons & more</div>
+                <div className="path-sub">Full customise,<br/>more control</div>
               </button>
             </div>
             {heroName.trim().length<2 && (
@@ -2076,6 +2085,88 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
           </div>
         )}
 
+        {/* QUICK STORY */}
+        {stage==="quick" && (
+          <div className="screen">
+            <div className="brand-row">
+              <button className="btn-ghost" style={{fontSize:12,padding:"6px 12px",marginRight:8}} onClick={()=>setStage("home")}>← Back</button>
+              <div className="brand-gem">⚡</div>
+              <div>
+                <div className="brand-name" style={{fontSize:16}}>Quick Story</div>
+                <div className="brand-tag">for {heroName}</div>
+              </div>
+            </div>
+            <div style={{height:10}} />
+            <div className="card" style={{marginBottom:10}}>
+              <div style={{display:"flex",flexDirection:"column",gap:18}}>
+
+                {/* Age */}
+                <div>
+                  <div className="section-label" style={{marginBottom:8}}>🎓 How old is {heroName}?</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
+                    {AGES.map(a => (
+                      <button key={a.value}
+                        style={{padding:"10px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",
+                          border:`1.5px solid ${ageGroup===a.value?"rgba(100,160,255,.7)":"rgba(255,255,255,.1)"}`,
+                          background:ageGroup===a.value?"rgba(100,160,255,.13)":"rgba(255,255,255,.04)",
+                          transition:"all .2s"}}
+                        onClick={()=>setAgeGroup(a.value)}>
+                        <div style={{fontSize:13,fontWeight:700,color:ageGroup===a.value?"#a8c8ff":"var(--cream)"}}>{a.label}</div>
+                        <div style={{fontSize:9,color:"var(--dimmer)",marginTop:2,textTransform:"uppercase",letterSpacing:".06em"}}>{a.grade}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="divider" />
+
+                {/* Length */}
+                <div>
+                  <div className="section-label" style={{marginBottom:8}}>⏱ How long tonight?</div>
+                  <div className="pill-row">
+                    {LENGTHS.map(l => (
+                      <button key={l.value} className={`pill${storyLen===l.value?" on":""}`} onClick={()=>setStoryLen(l.value)}>
+                        {l.label} <span style={{opacity:.6,fontWeight:400}}>({l.desc})</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="divider" />
+
+                {/* Characters */}
+                <div>
+                  <div className="section-label" style={{marginBottom:8}}>👥 Anyone else in it? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
+                  <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+                    {CHAR_TYPES.map(t => (
+                      <button key={t.value}
+                        style={{display:"flex",alignItems:"center",gap:6,padding:"8px 13px",borderRadius:11,cursor:"pointer",fontSize:12,fontWeight:700,
+                          border:`1.5px solid ${quickChars.includes(t.value)?"rgba(76,200,144,.5)":"rgba(255,255,255,.12)"}`,
+                          background:quickChars.includes(t.value)?"rgba(76,200,144,.12)":"rgba(255,255,255,.04)",
+                          color:quickChars.includes(t.value)?"#80d8a8":"var(--dim)",transition:"all .18s"}}
+                        onClick={()=>setQuickChars(qs=>qs.includes(t.value)?qs.filter(q=>q!==t.value):[...qs,t.value])}>
+                        <span style={{fontSize:18}}>{t.icon}</span> {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
+            <button className="btn" style={{marginBottom:10}} onClick={()=>{
+              const chars = quickChars.map(v => ({...newChar(), type:v}));
+              generate({extraChars:chars, occasion:"", occasionCustom:"", lessons:[], adventure:false, storyGuidance:"", storyMood:"", storyPace:"normal", storyStyle:"standard", heroTraits:[]});
+            }}>
+              ✨ Make {heroName}'s story!
+            </button>
+            <div style={{textAlign:"center",fontSize:12,color:"var(--dimmer)",cursor:"pointer"}}
+              onClick={()=>setStage("builder")}>
+              Want more control? → Build My Story
+            </div>
+          </div>
+        )}
         {/* BUILDER */}
         {stage==="builder" && (
           <div className="screen">
@@ -2089,11 +2180,52 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
             </div>
             <div style={{height:10}} />
 
-            {/* All options */}
             <div className="card" style={{marginBottom:10}}>
-              <div style={{display:"flex",flexDirection:"column",gap:16}}>
+              <div style={{display:"flex",flexDirection:"column",gap:14}}>
 
-                {/* Characters */}
+                {/* ── Main prompt ── */}
+                <div>
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:700,color:"var(--cream)",marginBottom:8}}>
+                    What should be in tonight's story?
+                  </div>
+                  <textarea className="ftarea" rows={3}
+                    placeholder="e.g. 'Lily had a rough day at school' or 'add a talking dog' or 'something funny happens at bedtime'…"
+                    value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)} maxLength={500} />
+
+                  <div style={{fontSize:10,color:"rgba(190,200,240,.75)",margin:"8px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Today's moments</div>
+                  <div className="guidance-chips" style={{marginBottom:8}}>
+                    {["😟 Hard day","🆕 Tried something new","👋 Made a new friend","😬 Feeling nervous","🎉 Something exciting","😤 Had a disagreement"].map(chip => (
+                      <button key={chip} className="guidance-chip"
+                        onClick={()=>setStoryGuidance(g=>(g?g+", ":"")+chip.replace(/^\S+ /,""))}>
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{fontSize:10,color:"rgba(190,200,240,.75)",margin:"4px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Story ingredients</div>
+                  <div className="guidance-chips" style={{marginBottom:8}}>
+                    {["😂 Make it funny","🐾 Talking animal","🌙 Sleepy ending","🔮 Surprise twist","🐉 Add a dragon","🎲 Surprise me"].map(chip => (
+                      <button key={chip} className="guidance-chip"
+                        onClick={()=>setStoryGuidance(g=>(g?g+", ":"")+chip.replace(/^\S+ /,""))}>
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{fontSize:10,color:"rgba(190,200,240,.75)",margin:"4px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Sneak in a lesson</div>
+                  <div className="guidance-chips">
+                    {[...LESSONS_CHARACTER,...LESSONS_EMOTIONAL].map(l => (
+                      <button key={l.value} className={`guidance-chip${lessons.includes(l.value)?" on":""}`}
+                        onClick={()=>setLessons(ls=>ls.includes(l.value)?ls.filter(x=>x!==l.value):[...ls,l.value])}>
+                        {l.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="divider" />
+
+                {/* ── Characters ── */}
                 <div>
                   <div className="section-label" style={{marginBottom:8}}>👥 Who's in the story with {heroName}?</div>
                   {extraChars.length<4 && (
@@ -2119,8 +2251,6 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                           <input className="char-name-in" placeholder={`${CHAR_TYPES.find(t=>t.value===c.type)?.label||"Friend"}'s name…`}
                             value={c.name} maxLength={16} style={{flex:1}}
                             onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
-                          <ClassifySelect value={c.classify} onChange={e=>updateExtraChar(c.id,{classify:e.target.value})}
-                            className="char-cls-sel" style={{width:90,fontSize:10}} />
                           <button className="btn-danger" style={{flexShrink:0}} onClick={()=>removeExtraChar(c.id)}>✕</button>
                         </div>
                       ))}
@@ -2130,83 +2260,20 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
                 <div className="divider" />
 
-                {/* What's on your mind */}
+                {/* ── Settings strip ── */}
                 <div>
-                  <div className="section-label" style={{marginBottom:4}}>✏️ What's on your mind tonight?</div>
-                  <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
-                    {["What happened today?","How are you feeling?","What do you want in the story?"].map(h=>(
-                      <span key={h} style={{fontSize:10,color:"rgba(190,200,240,.85)",background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.15)",borderRadius:99,padding:"3px 9px"}}>{h}</span>
-                    ))}
-                  </div>
-                  <textarea className="ftarea" rows={2}
-                    placeholder="e.g. 'Lily had a hard day at school' or 'add a funny dragon' or 'very sleepy ending'…"
-                    value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)} maxLength={500} />
-                  <div style={{fontSize:10,color:"rgba(190,200,240,.75)",margin:"6px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Today's moments</div>
-                  <div className="guidance-chips" style={{marginBottom:6}}>
-                    {["😟 Hard day","🆕 Tried something new","👋 Made a new friend","😬 Feeling nervous","🎉 Something exciting","😤 Had a disagreement"].map(chip => (
-                      <button key={chip} className="guidance-chip"
-                        onClick={()=>setStoryGuidance(g=>(g?g+", ":"")+chip.replace(/^\S+ /,""))}>
-                        {chip}
-                      </button>
-                    ))}
-                  </div>
-                  <div style={{fontSize:10,color:"rgba(190,200,240,.75)",margin:"4px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Story ingredients</div>
-                  <div className="guidance-chips">
-                    {["🐉 Add a dragon","😂 Make it funny","🌙 Sleepy ending","🐾 Talking animal","🔮 Surprise twist","🎲 Surprise me"].map(chip => (
-                      <button key={chip} className="guidance-chip"
-                        onClick={()=>setStoryGuidance(g=>(g?g+", ":"")+chip.replace(/^\S+ /,""))}>
-                        {chip}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="divider" />
-
-                {/* Special occasion */}
-                <div>
-                  <div className="section-label" style={{marginBottom:6}}>🎉 Is tonight a special night? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"rgba(190,200,240,.65)",fontSize:10}}>(optional)</span></div>
-                  <input className="finput" style={{fontSize:13}}
-                    placeholder="e.g. Birthday, 1st day of school tomorrow, lost a tooth, new baby…"
-                    value={occasionCustom} onChange={e=>setOccasionCustom(e.target.value)} maxLength={120} />
-                </div>
-
-                <div className="divider" />
-
-                {/* Lesson */}
-                <div>
-                  <div className="section-label" style={{marginBottom:8}}>💛 Sneak in a lesson? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
-                  <div style={{fontSize:10,color:"var(--dimmer)",marginBottom:5,fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Character lessons</div>
-                  <div className="les-pills" style={{marginBottom:10}}>
-                    {LESSONS_CHARACTER.map(l => (
-                      <button key={l.value} className={`les-pill${lessons.includes(l.value)?" on":""}`}
-                        onClick={()=>setLessons(ls=>ls.includes(l.value)?ls.filter(x=>x!==l.value):[...ls,l.value])}>
-                        {l.label}
-                      </button>
-                    ))}
-                  </div>
-                  <div style={{fontSize:10,color:"var(--dimmer)",marginBottom:5,fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Emotional &amp; social skills</div>
-                  <div className="les-pills">
-                    {LESSONS_EMOTIONAL.map(l => (
-                      <button key={l.value} className={`les-pill${lessons.includes(l.value)?" on":""}`}
-                        onClick={()=>setLessons(ls=>ls.includes(l.value)?ls.filter(x=>x!==l.value):[...ls,l.value])}>
-                        {l.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="divider" />
-
-                {/* Age */}
-                <div>
-                  <div className="section-label" style={{marginBottom:8}}>🎓 How old is {heroName}?</div>
-                  <div className="age-pills">
+                  <div className="section-label" style={{marginBottom:8}}>📖 Story settings</div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                     {AGES.map(a => (
-                      <button key={a.value} className={`age-pill${ageGroup===a.value?" on":""}`}
-                        onClick={()=>setAgeGroup(a.value)}>
-                        <span>{a.label}</span>
-                        <span className="age-pill-grade">{a.grade}</span>
+                      <button key={a.value} className={`pill${ageGroup===a.value?" on":""}`} onClick={()=>setAgeGroup(a.value)}>
+                        {a.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="pill-row" style={{marginTop:8}}>
+                    {LENGTHS.map(l => (
+                      <button key={l.value} className={`pill${storyLen===l.value?" on":""}`} onClick={()=>setStoryLen(l.value)}>
+                        {l.label} <span style={{opacity:.6,fontWeight:400}}>({l.desc})</span>
                       </button>
                     ))}
                   </div>
@@ -2214,43 +2281,100 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
                 <div className="divider" />
 
-                {/* Length + Adventure */}
-                <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                  <div>
-                    <div className="section-label" style={{marginBottom:6}}>⏱ Story length</div>
-                    <div className="pill-row">
-                      {LENGTHS.map(l => (
-                        <button key={l.value} className={`pill${storyLen===l.value?" on":""}`} onClick={()=>setStoryLen(l.value)}>
-                          {l.label} <span style={{opacity:.6,fontWeight:400}}>({l.desc})</span>
-                        </button>
-                      ))}
+                {/* ── More options toggle ── */}
+                <div>
+                  <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
+                    background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:12,
+                    padding:"10px 14px",cursor:"pointer",color:"var(--dim)",fontSize:13,fontWeight:700}}
+                    onClick={()=>setMoreOpen(o=>!o)}>
+                    <div style={{textAlign:"left"}}>
+                      <div style={{color:"var(--cream)"}}>✨ More options</div>
+                      <div style={{fontSize:10,fontWeight:400,color:"var(--dimmer)",marginTop:2}}>Special night · mood · style · {heroName}'s personality</div>
                     </div>
-                  </div>
-                  <div className="tog-row">
-                    <div>
-                      <div className="tog-label">🔀 Choose Your Adventure</div>
-                      <div className="tog-sub">Your child picks the story's path</div>
+                    <span style={{fontSize:12,transition:"transform .25s",transform:moreOpen?"rotate(180deg)":"none"}}>▼</span>
+                  </button>
+
+                  {moreOpen && (
+                    <div style={{display:"flex",flexDirection:"column",gap:14,marginTop:14}}>
+
+                      {/* Special night */}
+                      <div>
+                        <div className="section-label" style={{marginBottom:6}}>🎉 Is tonight a special night? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"rgba(190,200,240,.65)",fontSize:10}}>(optional)</span></div>
+                        <input className="finput" style={{fontSize:13}}
+                          placeholder="e.g. Birthday, 1st day of school tomorrow, lost a tooth, new baby…"
+                          value={occasionCustom} onChange={e=>setOccasionCustom(e.target.value)} maxLength={120} />
+                      </div>
+
+                      <div className="divider" />
+
+                      {/* Mood */}
+                      <div>
+                        <div className="section-label" style={{marginBottom:8}}>🌡️ Tonight's mood</div>
+                        <div className="les-pills">
+                          {[{v:"calm",l:"🌙 Calm & cosy"},{v:"silly",l:"😂 Silly & funny"},{v:"exciting",l:"⚡ Exciting"},{v:"heartfelt",l:"💛 Warm & heartfelt"}].map(o => (
+                            <button key={o.v} className={`les-pill${storyMood===o.v?" on":""}`}
+                              onClick={()=>setStoryMood(storyMood===o.v?"":o.v)}>{o.l}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="divider" />
+
+                      {/* Pace */}
+                      <div>
+                        <div className="section-label" style={{marginBottom:8}}>💤 Narration pace</div>
+                        <div className="les-pills">
+                          {[{v:"normal",l:"Normal"},{v:"sleepy",l:"😴 Extra sleepy"},{v:"snappy",l:"⚡ Quick & snappy"}].map(o => (
+                            <button key={o.v} className={`les-pill${storyPace===o.v?" on":""}`}
+                              onClick={()=>setStoryPace(o.v)}>{o.l}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="divider" />
+
+                      {/* Story style */}
+                      <div>
+                        <div className="section-label" style={{marginBottom:8}}>📚 Story style</div>
+                        <div className="les-pills">
+                          {[{v:"standard",l:"Standard"},{v:"rhyming",l:"🎵 Rhyming"},{v:"adventure",l:"🔀 Choose-your-adventure"},{v:"mystery",l:"🔍 Mystery"}].map(o => (
+                            <button key={o.v} className={`les-pill${storyStyle===o.v?" on":""}`}
+                              onClick={()=>setStoryStyle(o.v)}>{o.l}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="divider" />
+
+                      {/* Hero personality */}
+                      <div>
+                        <div className="section-label" style={{marginBottom:8}}>✨ {heroName} is… <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
+                        <div className="les-pills">
+                          {["Brave","Silly","Curious","Kind","Adventurous","Shy","Clever","Caring"].map(t => (
+                            <button key={t} className={`les-pill${heroTraits.includes(t)?" on":""}`}
+                              onClick={()=>setHeroTraits(ts=>ts.includes(t)?ts.filter(x=>x!==t):[...ts,t])}>
+                              {t}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
                     </div>
-                    <label className="tog">
-                      <input type="checkbox" checked={adventure} onChange={e=>setAdventure(e.target.checked)} />
-                      <div className="tog-track" /><div className="tog-thumb" />
-                    </label>
-                  </div>
+                  )}
                 </div>
 
               </div>
             </div>
 
-            {/* Generate */}
-            <div style={{marginBottom:16}}>
-              {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
-              <button className="btn" onClick={()=>generate()}>
-                ✨ Make {heroName}'s story!
-              </button>
-            </div>
+            {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
+            <button className="btn" style={{marginBottom:16}} onClick={()=>generate()}>
+              ✨ Make {heroName}'s story!
+            </button>
           </div>
         )}
-
         {/* GENERATING */}
         {/* GENERATING */}
         {stage==="generating" && (
