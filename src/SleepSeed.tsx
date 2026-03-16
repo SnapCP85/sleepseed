@@ -606,7 +606,7 @@ TONE: Intelligent, funny, and emotionally honest. Not condescending. The best mo
 ];
 const CHAR_ICONS = {hero:"⭐",friend:"👫",sibling:"👶",parent:"🧑‍🍼",pet:"🐾",toy:"🧸"};
 const PRESET_VOICES = [
-  {id:"pNInz6obpgDQGcFmaJgB", name:"Adam",          emoji:"🎙️", desc:"Deep & warm"},
+  {id:"0mLOQqwA3kovxF1ID7z6", name:"Linda",         emoji:"🎙️", desc:"Deep & warm"},
   {id:"EXAVITQu4vr4xnSDxMaL", name:"Bella",         emoji:"🌸", desc:"Soft & gentle"},
   {id:"ErXwobaYiN019PkySvjV", name:"Antoni",        emoji:"🌟", desc:"Calm narrator"},
   {id:"VR6AewLTigWG4xSOukaG", name:"Arnold",        emoji:"💪", desc:"Strong & clear"},
