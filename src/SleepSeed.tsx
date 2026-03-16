@@ -554,7 +554,7 @@ const photoFP = (b64) => b64 ? strHash(b64.slice(0,120)) : null;
 
 const makeStorySeed = (heroName,theme,chars,occasion,occasionCustom,lesson,adventure,len,gender,classify,guidance) => {
   const occ = occasion==="other" ? occasionCustom : occasion;
-  const sig = `${heroName.toLowerCase()}|${resolvedTheme.value}|${chars.map(c=>`${c.type}:${c.name}:${c.classify||""}:${c.gender||""}`).join(",")}|${occ}|${lesson}|${adventure}|${len}|${gender}|${classify}|${guidance.slice(0,60)}`;
+  const sig = `${heroName.toLowerCase()}|${theme.value}|${chars.map(c=>`${c.type}:${c.name}:${c.classify||""}:${c.gender||""}`).join(",")}|${occ}|${lesson}|${adventure}|${len}|${gender}|${classify}|${guidance.slice(0,60)}`;
   return (parseInt(strHash(sig),36)%88888)+11111;
 };
 
@@ -1659,7 +1659,7 @@ WHAT TO NEVER DO:
 • Never make ${name} a passive observer — they drive the story
 
 ━━━ STORY ARC ━━━
-${adventure
+${resolvedAdv
   ? `CHOOSE-YOUR-ADVENTURE FORMAT:\nWrite ${setupN} setup pages, then a choice moment, then ${resN} resolution pages per path. Both paths end with ${name} safely, warmly asleep.\n\n${buildArc(setupN)}`
   : buildArc(totalN)}
 
