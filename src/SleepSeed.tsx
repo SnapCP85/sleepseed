@@ -1681,6 +1681,8 @@ export default function SleepSeed() {
 
 This is not a rigid script. It is a shape. The story is always the priority.
 
+PAGE WEIGHT GUIDE: Vary the feel of every page. Some pages: 1-2 short punchy sentences (action moment). Some: 3-5 sentences (adventure unfolding). Some: mostly dialogue (characters revealing themselves). Final pages: slow, warm, drifting (sleep arriving). Never write two consecutive pages with the same rhythm or energy.
+
 OPENING (pages 1–2): Drop ${name} into something surprising, funny, or urgent IMMEDIATELY. No scene-setting. No describing the world. Something HAPPENS on page 1. A sound word. An action. End page 1 with a reason it is impossible not to turn the page.
 
 EARLY PAGES: The problem or adventure establishes itself. Characters reveal their personalities through what they SAY and DO — especially through funny mistakes, wrong guesses, and terrible plans that almost work. The REFRAIN appears naturally for the first time around page 2. Write it so a child wants to say it along with you.
