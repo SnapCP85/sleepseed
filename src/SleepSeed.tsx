@@ -2332,7 +2332,15 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </div>
               <input className="finput hero-input" placeholder="Your child's name…"
                 value={heroName} onChange={e=>setHeroName(e.target.value)} maxLength={20}
-                style={{marginBottom:10,textAlign:"center"}} />
+                style={{marginBottom:heroName.trim().length<2?6:10,textAlign:"center",
+                  borderColor:heroName.trim().length<2?"rgba(212,160,48,.35)":"rgba(255,255,255,.1)",
+                  transition:"border-color .3s"}} />
+              {heroName.trim().length<2 && (
+                <div style={{textAlign:"center",fontSize:11,color:"rgba(212,160,48,.85)",
+                  marginBottom:10,fontWeight:700,letterSpacing:".02em",animation:"fadeUp .4s ease"}}>
+                  ✦ Type a name to unlock your story ✦
+                </div>
+              )}
               <div className="gender-row" style={{marginBottom:0}}>
                 {[{v:"",l:"✨ Any",cls:"sel-any"},{v:"girl",l:"👧 Girl",cls:"sel-girl"},{v:"boy",l:"👦 Boy",cls:"sel-boy"}].map(o => (
                   <button key={o.v} className={`gender-pill${heroGender===o.v?" "+o.cls:""}`} onClick={()=>setHeroGender(o.v)}>{o.l}</button>
@@ -2354,9 +2362,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 <div className="path-sub">Full customise,<br/>more control</div>
               </button>
             </div>
-            {heroName.trim().length<2 && (
-              <div style={{textAlign:"center",fontSize:12,color:"var(--dimmer)",marginTop:4}}>Enter a name to begin ↑</div>
-            )}
+
 
           </div>
         )}
