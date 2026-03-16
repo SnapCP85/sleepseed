@@ -2363,6 +2363,52 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </button>
             </div>
 
+            {/* ── About section ── */}
+            <div style={{marginTop:28,paddingTop:20,borderTop:"1px solid rgba(255,255,255,.07)"}}>
+
+              <div style={{textAlign:"center",marginBottom:18}}>
+                <div style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700,
+                  color:"var(--cream)",marginBottom:6,fontStyle:"italic"}}>
+                  What is SleepSeed?
+                </div>
+                <div style={{fontSize:12,color:"rgba(190,200,240,.75)",lineHeight:1.8,maxWidth:420,margin:"0 auto"}}>
+                  SleepSeed writes a personalised bedtime story for your child in under a minute —
+                  built around their name, their age, and what actually happened today.
+                  Every story is different. Every story is theirs.
+                </div>
+              </div>
+
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:18}}>
+                {[
+                  {icon:"✍️", title:"Written for tonight", body:"Not a template. A real story built around your child's day."},
+                  {icon:"📚", title:"Age-matched",         body:"Vocabulary, structure and length matched to your child's age."},
+                  {icon:"📄", title:"Print & keep",        body:"Download a real book to print, staple and read for years."},
+                ].map(({icon,title,body}) => (
+                  <div key={title} style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",
+                    borderRadius:12,padding:"11px 10px",textAlign:"center"}}>
+                    <div style={{fontSize:18,marginBottom:5}}>{icon}</div>
+                    <div style={{fontSize:10,fontWeight:700,color:"var(--cream)",marginBottom:4,lineHeight:1.3}}>{title}</div>
+                    <div style={{fontSize:9,color:"var(--dimmer)",lineHeight:1.5}}>{body}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{textAlign:"center",padding:"12px 16px",background:"rgba(212,160,48,.05)",
+                border:"1px solid rgba(212,160,48,.12)",borderRadius:12,marginBottom:10}}>
+                <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
+                  color:"rgba(212,160,48,.85)",lineHeight:1.7}}>
+                  "The best bedtime stories don't just put children to sleep —
+                  they make them feel seen before they close their eyes."
+                </div>
+              </div>
+
+              <div style={{textAlign:"center"}}>
+                <div style={{fontSize:9,color:"var(--dimmer)",letterSpacing:".08em",textTransform:"uppercase",marginBottom:4}}>
+                  Made with love · sleepseed.app
+                </div>
+              </div>
+
+            </div>
 
           </div>
         )}
