@@ -1730,7 +1730,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
       const raw = await callClaude(
         [{role:"user",content:storyPrompt}],
         "You are writing a children's picture book in the tradition of Roald Dahl, Julia Donaldson, and Mo Willems. The story is ALWAYS the priority — write as many pages as needed. Return ONLY a valid JSON object with no markdown, no explanation, no text outside the JSON. The story must feel like it could be published and sold in a children's bookstore.",
-        12000
+        4000
       );
 
       const story = extractJSON(raw);
