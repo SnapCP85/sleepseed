@@ -2299,9 +2299,35 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 </button>
               )}
             </div>
-            <div style={{height:14}} />
+            <div style={{height:10}} />
+
+            {/* ── Demo story strip ── */}
+            <div onClick={()=>{ setBook({...DEMO_BOOK}); setPageIdx(0); setStage("book"); setFromCache(false); }}
+              style={{borderRadius:14,overflow:"hidden",border:"1px solid rgba(212,160,48,.18)",
+                cursor:"pointer",marginBottom:10,transition:"transform .15s"}}
+              onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
+              onMouseLeave={e=>(e.currentTarget.style.transform="none")}>
+              <div style={{background:"linear-gradient(135deg,rgba(13,21,53,.95),rgba(26,32,96,.9))",
+                padding:"11px 14px",display:"flex",alignItems:"center",gap:11}}>
+                <div style={{fontSize:26,flexShrink:0}}>🌙</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
+                    color:"rgba(212,160,48,.7)",marginBottom:3}}>Example story</div>
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:13,fontWeight:700,
+                    color:"var(--cream)",lineHeight:1.3,marginBottom:2}}>The Stone in Her Pocket</div>
+                  <div style={{fontSize:9,color:"rgba(140,100,220,.9)",fontWeight:700}}>Tap to read →</div>
+                </div>
+              </div>
+              <div style={{background:"rgba(255,255,255,.04)",padding:"8px 14px",
+                borderTop:"1px solid rgba(255,255,255,.06)",
+                fontFamily:"'Fraunces',serif",fontSize:11,fontStyle:"italic",
+                color:"rgba(190,200,240,.75)",lineHeight:1.6}}>
+                "That wasn't you, Adina."
+              </div>
+            </div>
+
             <div className="card" style={{marginBottom:10}}>
-              <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:"var(--cream)",marginBottom:12,textAlign:"center",fontStyle:"italic"}}>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:17,fontWeight:700,color:"var(--cream)",marginBottom:12,textAlign:"center",fontStyle:"italic"}}>
                 ✨ Tonight's story is for…
               </div>
               <input className="finput hero-input" placeholder="Your child's name…"
@@ -2331,14 +2357,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
             {heroName.trim().length<2 && (
               <div style={{textAlign:"center",fontSize:12,color:"var(--dimmer)",marginTop:4}}>Enter a name to begin ↑</div>
             )}
-            <div style={{textAlign:"center",marginTop:16}}>
-              <button style={{background:"none",border:"none",cursor:"pointer",
-                fontSize:12,color:"var(--dimmer)",textDecoration:"underline",fontFamily:"'Nunito',sans-serif",
-                padding:"4px 8px"}}
-                onClick={()=>{ setBook({...DEMO_BOOK}); setPageIdx(0); setStage("book"); setFromCache(false); }}>
-                ✨ See an example story →
-              </button>
-            </div>
+
           </div>
         )}
 
