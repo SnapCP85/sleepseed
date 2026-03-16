@@ -461,18 +461,17 @@ const DEMO_BOOK = {
     {id:"c1",name:"Rabbit",type:"toy",gender:"",classify:"rabbit"},
   ],
   pages:[
-    {text:"At lunch today, Mia said something.\n\nIt wasn\u2019t a nice something.\n\nOn the way home, Adina found a stone on the path.\n\nIt was smooth and grey and heavy.\n\nShe put it in her pocket. It seemed right.", imgUrl:"https://image.pollinations.ai/prompt/a%20small%20girl%20picking%20up%20a%20smooth%20grey%20stone%20from%20a%20path%2C%20school%20bag%20on%20her%20back%2C%20autumn%20leaves%2C%20golden%20afternoon%20light%2C%20children%27s%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=43&nofeed=true"},
-    {text:"That night, Adina sat on her bed.\n\nShe didn\u2019t say anything.\n\nRabbit looked at the stone on the pillow.\n\nRabbit looked at Adina.\n\n\u201CThat wasn\u2019t you,\u201D said Rabbit.\n\nAdina looked up. \u201CWhat wasn\u2019t?\u201D\n\n\u201CWhatever Mia said. That wasn\u2019t you.\u201D", imgUrl:"https://image.pollinations.ai/prompt/a%20small%20girl%20sitting%20on%20her%20bed%20holding%20a%20grey%20stone%2C%20a%20stuffed%20rabbit%20beside%20her%2C%20warm%20lamplight%2C%20cosy%20bedroom%2C%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=44&nofeed=true"},
-    {text:"Adina held the stone.\n\nIt was still heavy.\n\n\u201CBut what IS me?\u201D she asked.\n\nRabbit thought. This was an important question.\n\n\u201CWell,\u201D said Rabbit. \u201CThis morning you saved a worm from the puddle.\u201D\n\n\u201CI didn\u2019t want it to drown,\u201D said Adina.\n\n\u201CI know,\u201D said Rabbit. \u201CThat\u2019s the point.\u201D", imgUrl:"https://image.pollinations.ai/prompt/a%20child%20rescuing%20a%20worm%20from%20a%20puddle%20in%20the%20morning%2C%20school%20uniform%2C%20gentle%20concentration%2C%20children%27s%20book%20watercolor%2C%20warm?width=400&height=190&nologo=true&model=turbo&seed=45&nofeed=true"},
-    {text:"The stone felt a tiny bit lighter.\n\nJust a tiny bit.\n\n\u201CWhat else?\u201D said Adina.\n\n\u201CYou let the new boy sit with you.\u201D\n\n\u201CHe looked like he didn\u2019t know where to go.\u201D\n\n\u201CTHAT,\u201D said Rabbit, very firmly, \u201Cwas very much you.\u201D\n\nThat wasn\u2019t you, Adina.\n\nThe stone got lighter.", imgUrl:"https://image.pollinations.ai/prompt/two%20children%20sitting%20together%20at%20lunch%2C%20one%20welcoming%20the%20other%2C%20school%20canteen%2C%20warm%20light%2C%20cheerful%20children%27s%20book%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=46&nofeed=true"},
-    {text:"\u201CWhat about the thing Mia said?\u201D asked Adina. \u201CShe said it right in front of everyone.\u201D\n\nRabbit was quiet for a moment.\n\n\u201CThat must have felt awful,\u201D said Rabbit.\n\n\u201CIt did,\u201D said Adina, very quietly.\n\n\u201CI know,\u201D said Rabbit. \u201CBut her words are her stone. Not yours. You don\u2019t have to carry it.\u201D", imgUrl:"https://image.pollinations.ai/prompt/a%20small%20girl%20and%20stuffed%20rabbit%20having%20a%20serious%20conversation%20on%20a%20bed%2C%20warm%20bedroom%2C%20moonlight%20beginning%2C%20tender%20children%27s%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=47&nofeed=true"},
+    {text:"At lunch today, Mia said something.\n\nIt wasn\u2019t a nice something.\n\nOn the way home, Adina found a stone on the path.\n\nSmooth and grey and heavy.\n\nShe put it in her pocket. It seemed right.", imgUrl:"https://image.pollinations.ai/prompt/a%20small%20girl%20picking%20up%20a%20smooth%20grey%20stone%20from%20a%20path%2C%20school%20bag%20on%20her%20back%2C%20autumn%20leaves%2C%20golden%20afternoon%20light%2C%20children%27s%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=43&nofeed=true"},
+    {text:"That night, Adina sat on her bed.\n\nShe didn\u2019t say anything.\n\nRabbit looked at the stone on the pillow.\n\nRabbit looked at Adina.\n\n\u201CThat wasn\u2019t you,\u201D said Rabbit.\n\nAdina looked up.\n\n\u201CWhatever Mia said. That wasn\u2019t you, Adina.\u201D", imgUrl:"https://image.pollinations.ai/prompt/a%20small%20girl%20sitting%20on%20her%20bed%20holding%20a%20grey%20stone%2C%20a%20stuffed%20rabbit%20beside%20her%2C%20warm%20lamplight%2C%20cosy%20bedroom%2C%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=44&nofeed=true"},
+    {text:"Adina held the stone.\n\nIt was still heavy.\n\n\u201CBut what IS me?\u201D she asked.\n\n\u201CThis morning,\u201D said Rabbit, \u201Cyou saved a worm from the puddle.\u201D\n\n\u201CI didn\u2019t want it to drown,\u201D said Adina.\n\n\u201CI know,\u201D said Rabbit. \u201CThat\u2019s the point.\u201D", imgUrl:"https://image.pollinations.ai/prompt/a%20child%20rescuing%20a%20worm%20from%20a%20puddle%20in%20the%20morning%2C%20school%20uniform%2C%20gentle%20concentration%2C%20children%27s%20book%20watercolor%2C%20warm?width=400&height=190&nologo=true&model=turbo&seed=45&nofeed=true"},
+    {text:"The stone felt a tiny bit lighter.\n\nJust a tiny bit.\n\n\u201CWhat else?\u201D said Adina.\n\n\u201CYou let the new boy sit with you. He looked like he didn\u2019t know where to go.\u201D\n\n\u201CTHAT,\u201D said Rabbit, very firmly, \u201Cwas very much you.\u201D", imgUrl:"https://image.pollinations.ai/prompt/two%20children%20sitting%20together%20at%20lunch%2C%20one%20welcoming%20the%20other%2C%20school%20canteen%2C%20warm%20light%2C%20cheerful%20children%27s%20book%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=46&nofeed=true"},
+    {text:"\u201CWhat about the thing Mia said?\u201D asked Adina. \u201CShe said it right in front of everyone.\u201D\n\nRabbit was quiet for a moment.\n\n\u201CThat must have felt awful,\u201D said Rabbit.\n\n\u201CIt did,\u201D said Adina, very quietly.\n\n\u201CBut her words are her stone. Not yours. You don\u2019t have to carry it.\u201D\n\nThat wasn\u2019t you, Adina.", imgUrl:"https://image.pollinations.ai/prompt/a%20small%20girl%20and%20stuffed%20rabbit%20having%20a%20serious%20conversation%20on%20a%20bed%2C%20warm%20bedroom%2C%20moonlight%20beginning%2C%20tender%20children%27s%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=47&nofeed=true"},
     {text:"Adina looked at the stone in her hand.\n\nShe walked to the window.\n\nThe moon was out.\n\nShe put the stone on the windowsill, right in the moonlight.\n\nShe didn\u2019t put it back in her pocket.\n\nShe left it there.", imgUrl:"https://image.pollinations.ai/prompt/a%20child%20placing%20a%20stone%20on%20a%20moonlit%20windowsill%2C%20peaceful%20expression%2C%20night%20sky%20visible%2C%20warm%20bedroom%20glow%2C%20children%27s%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=48&nofeed=true"},
     {text:"She got back into bed.\n\nHer shoulders felt different. Lower. Softer.\n\nLike something had been put down.\n\n\u201CRabbit?\u201D\n\n\u201CYes?\u201D\n\n\u201CThat wasn\u2019t me, was it.\u201D\n\nIt was not a question anymore.\n\n\u201CNo,\u201D said Rabbit. \u201CIt really, truly wasn\u2019t.\u201D", imgUrl:"https://image.pollinations.ai/prompt/a%20small%20girl%20back%20in%20bed%20looking%20relaxed%2C%20stuffed%20rabbit%20beside%20her%2C%20stone%20visible%20on%20windowsill%20in%20moonlight%2C%20children%27s%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=49&nofeed=true"},
-    {text:"The room was very quiet.\n\nThe moon shone on the stone on the windowsill.\n\nAdina yawned the kind of yawn that means everything is okay now.\n\nThe stone stayed where it was.\n\nIt was not hers to carry.", imgUrl:"https://image.pollinations.ai/prompt/a%20cosy%20bedroom%20at%20night%2C%20moonlight%20on%20a%20stone%20on%20a%20windowsill%2C%20child%20sleepy%20in%20bed%2C%20warm%20and%20peaceful%2C%20children%27s%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=50&nofeed=true"},
+    {text:"The room was very quiet.\n\nThe moon shone on the stone.\n\nAdina\u2019s pocket was empty now.\n\nThat was a good feeling.\n\nA light feeling.\n\nExactly the right feeling.", imgUrl:"https://image.pollinations.ai/prompt/a%20cosy%20bedroom%20at%20night%2C%20moonlight%20on%20a%20stone%20on%20a%20windowsill%2C%20child%20sleepy%20in%20bed%2C%20warm%20and%20peaceful%2C%20children%27s%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=50&nofeed=true"},
     {text:"That wasn\u2019t you, Adina.\n\nShe pulled the covers all the way up to her chin.\n\nThe stone glowed softly in the moonlight, right where she had left it.\n\nAnd Adina \u2014 all the brave, kind, worm-saving, lonely-boy-noticing parts of Adina \u2014 closed her eyes, and let go, and drifted into the deepest, warmest, most entirely-herself sleep she had had in a very long time.", imgUrl:"https://image.pollinations.ai/prompt/a%20child%20asleep%20in%20a%20cosy%20bed%2C%20stuffed%20rabbit%20tucked%20in%20beside%20her%2C%20stone%20glowing%20on%20windowsill%20in%20moonlight%2C%20final%20page%20watercolor%2C%20peaceful?width=400&height=190&nologo=true&model=turbo&seed=51&nofeed=true"},
   ],
 };
-
 
 const CHAR_TYPES = [
   {value:"friend",label:"Friend",icon:"👫"},
@@ -2303,12 +2302,14 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
             {/* ── Demo story strip ── */}
             <div onClick={()=>{ setBook({...DEMO_BOOK}); setPageIdx(0); setStage("book"); setFromCache(false); }}
-              style={{borderRadius:14,overflow:"hidden",border:"1px solid rgba(212,160,48,.18)",
-                cursor:"pointer",marginBottom:10,transition:"transform .15s"}}
+              style={{borderRadius:14,overflow:"hidden",
+                border:"1.5px solid rgba(212,160,48,.5)",
+                boxShadow:"0 0 0 3px rgba(212,160,48,.06)",
+                cursor:"pointer",marginBottom:18,transition:"transform .15s",
+                background:"rgba(13,21,53,.95)"}}
               onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
               onMouseLeave={e=>(e.currentTarget.style.transform="none")}>
-              <div style={{background:"linear-gradient(135deg,rgba(13,21,53,.95),rgba(26,32,96,.9))",
-                padding:"11px 14px",display:"flex",alignItems:"center",gap:11}}>
+              <div style={{padding:"11px 14px",display:"flex",alignItems:"center",gap:11}}>
                 <div style={{fontSize:26,flexShrink:0}}>🌙</div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
@@ -2318,11 +2319,11 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                   <div style={{fontSize:9,color:"rgba(140,100,220,.9)",fontWeight:700}}>Tap to read →</div>
                 </div>
               </div>
-              <div style={{background:"rgba(255,255,255,.04)",padding:"8px 14px",
-                borderTop:"1px solid rgba(255,255,255,.06)",
+              <div style={{background:"rgba(212,160,48,.05)",padding:"8px 14px",
+                borderTop:"1px solid rgba(212,160,48,.12)",
                 fontFamily:"'Fraunces',serif",fontSize:11,fontStyle:"italic",
-                color:"rgba(190,200,240,.75)",lineHeight:1.6}}>
-                "That wasn't you, Adina."
+                color:"rgba(240,210,130,.85)",lineHeight:1.6}}>
+                "Adina yawned the kind of yawn that means everything is okay now."
               </div>
             </div>
 
