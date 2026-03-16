@@ -2445,7 +2445,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                   </button>
                 )}
                 {/* PWA install button */}
-                {!window.matchMedia("(display-mode: standalone)").matches && (
+                {!(typeof window !== "undefined" && window.matchMedia?.("(display-mode: standalone)")?.matches) && (
                   <button className="btn-ghost" style={{fontSize:11,padding:"6px 10px",borderColor:"rgba(212,160,48,.3)",color:"rgba(212,160,48,.8)"}}
                     onClick={async()=>{
                       if(installPrompt) {
