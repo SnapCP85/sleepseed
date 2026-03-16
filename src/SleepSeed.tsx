@@ -338,16 +338,18 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .mem-title{font-family:'Fraunces',serif;font-size:13px;font-weight:700;color:var(--cream);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
 .mem-meta{font-size:11px;color:var(--dim)}
-.path-btn{display:flex;align-items:center;gap:14px;width:100%;padding:18px 20px;border-radius:18px;
-  cursor:pointer;border:1.5px solid;text-align:left;margin-bottom:10px;transition:all .2s;position:relative;overflow:hidden}
+.path-row{display:flex;gap:10px;margin-bottom:10px}
+.path-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;flex:1;
+  padding:20px 12px;border-radius:18px;cursor:pointer;border:1.5px solid;text-align:center;
+  transition:all .2s;position:relative;overflow:hidden;min-height:110px}
 .path-btn:disabled{opacity:.4;cursor:not-allowed}
 .path-btn.quick{background:rgba(212,160,48,.08);border-color:rgba(212,160,48,.3);color:var(--gold2)}
-.path-btn.quick:not(:disabled):hover{background:rgba(212,160,48,.18);border-color:var(--gold2);transform:translateY(-1px)}
+.path-btn.quick:not(:disabled):hover{background:rgba(212,160,48,.18);border-color:var(--gold2);transform:translateY(-2px)}
 .path-btn.build{background:rgba(120,80,220,.08);border-color:rgba(160,100,255,.3);color:rgba(180,140,255,.9)}
-.path-btn.build:not(:disabled):hover{background:rgba(120,80,220,.18);border-color:rgba(160,100,255,.7);transform:translateY(-1px)}
-.path-icon{font-size:28px;flex-shrink:0;line-height:1}
-.path-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;line-height:1.2}
-.path-sub{font-size:11px;opacity:.7;margin-top:3px;font-weight:400}
+.path-btn.build:not(:disabled):hover{background:rgba(120,80,220,.18);border-color:rgba(160,100,255,.7);transform:translateY(-2px)}
+.path-icon{font-size:32px;line-height:1}
+.path-title{font-family:'Fraunces',serif;font-size:15px;font-weight:700;line-height:1.2}
+.path-sub{font-size:10px;opacity:.7;font-weight:400;line-height:1.4}
 .brand-row{display:flex;align-items:center;gap:9px;margin-bottom:6px}
 .brand-gem{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#1a2870,#2840b0);
   border:1.5px solid rgba(212,160,48,.4);display:flex;align-items:center;justify-content:center;font-size:18px}
@@ -358,77 +360,77 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 
 /* ── Data ── */
 const THEMES = [
-  {label:"Enchanted Forest",emoji:"🌲",value:`WORLD: An enchanted forest where the trees talk in big, rumbling, friendly voices and every animal knows your name. The mushrooms glow like little orange nightlights. Fireflies zigzag like tiny flying torches. The biggest tree — so wide you couldn't hug it — only wakes up when a child knocks three times and asks a really good question. The moss is soft as carpet, and a stream goes "tinkle tinkle tinkle" through the dark.
+  {label:"The Bedroom",emoji:"🌙",value:`SETTING: The child's very own bedroom — but tonight something magical is different. The toys on the shelf are whispering. The shadows on the wall are friendly shapes. The wardrobe door opens just a crack and something small and curious peeks out. The glow-in-the-dark stars have rearranged into a secret message.
 
 STORY HOOKS — use one or blend several:
-• The biggest tree only answers THREE questions. What if the hero has already used two? What does the third question turn out to be?
-• The fireflies are writing a message in the dark. What does it say? Who is it for?
-• Every animal in the forest knows the hero's name — except one. Why? That mystery drives the whole story.
-• Something in the forest is lost and needs to get home. The hero is the only one who can help.
-• A Rule of Three: the hero asks three animals for help. Two get it hilariously wrong. The third gets it exactly right — in the most unexpected way.`},
+• The toys have been waiting all day for bedtime so they can hold their nightly meeting. Tonight the child secretly watches.
+• Something under the bed is NOT a monster — it's something much funnier and more unexpected.
+• The child's favourite stuffed animal has been trying to tell them something important for weeks. Tonight they finally understand.
+• Three things in the bedroom are not what they appear to be. The hero figures out all three.
+• The bedroom ceiling turns into a real sky, with stars that can actually be visited.`},
 
-  {label:"Cloud Kingdom",emoji:"☁️",value:`WORLD: A kingdom made of clouds you can actually walk on — squashy and cool, like the world's softest pillow. The castles make a gentle "BOING!" when you bump into a wall. Rain falls upward here, in silver droplets that tickle your nose. Friendly cloud-creatures with floppy ears leave pawprints in the frost. At bedtime the sky turns pink and gold, and a small bell rings that can be heard all the way down on Earth.
-
-STORY HOOKS — use one or blend several:
-• The bell only rings when everyone in the Cloud Kingdom is safe and happy. Tonight it isn't ringing. Why?
-• One of the cloud-creatures has lost something important — it's fallen all the way down to Earth. Someone needs to go and fetch it.
-• The upward rain is going the wrong way tonight — it's falling DOWN. The whole kingdom is very confused. Only the hero knows how to fix it.
-• A new cloud-creature has just arrived and doesn't know ANY of the rules. The hero must teach them three things. Guess which three things turn out to matter most.
-• The cloud castle has a door that nobody has ever opened. Tonight it opens by itself.`},
-
-  {label:"Ocean World",emoji:"🌊",value:`WORLD: A warm, sparkling world under the waves where water glows green and gold. The coral palaces are pink and orange and purple, with fish in party colours zipping in and out of every window. Sea-turtles carry books on their shells and will read to you if you ask nicely. The seafloor lights up at night — hundreds of tiny creatures going blink, blink, blink, like a city full of fairy lights.
+  {label:"The Backyard",emoji:"🌳",value:`SETTING: The back garden — ordinary by day, completely extraordinary tonight. The grass hums. The shed has a light on that nobody left on. The neighbourhood cats are holding a very important meeting by the fence. Every flower has an opinion and is not shy about sharing it.
 
 STORY HOOKS — use one or blend several:
-• The blink-blink-blink lights are going out one by one. The hero must find out why before the whole seafloor goes dark.
-• A sea-turtle has lost the most important page of the most important book. It fluttered away in the current. The whole ocean is looking for it.
-• There is a shipwreck nobody is allowed to go near. Everybody says it's dangerous. The hero goes anyway — and finds something wonderful inside.
-• Three sea creatures each claim they found the same magical shell. The hero must figure out who it really belongs to.
-• The biggest fish in the ocean is scared of something tiny. The hero is the only one brave enough to ask what.`},
+• The garden creatures have a whole society — with rules, disagreements, and one very dramatic dispute the hero must resolve.
+• Something has gone missing from the garden and all the plants have a different theory.
+• There is a door in the garden wall that wasn't there yesterday.
+• The neighbourhood cats have chosen the hero for a secret mission. They are extremely serious about this.
+• A tiny creature has just moved in and doesn't know a single rule yet. The hero shows them around.`},
 
-  {label:"Magic Bakery",emoji:"🍰",value:`WORLD: A bakery at the end of a lane where everything smells wonderful — warm cinnamon, melted chocolate, fresh bread. The gingerbread biscuits hop off the tray and scuttle about. The bread loaves breathe in and out while they sleep. Cakes grant one wish each, but ONLY if you ask very politely. The baker is a very old cat in a floury apron who has been making cakes since before anyone can remember.
-
-STORY HOOKS — use one or blend several:
-• A cake has granted the wrong wish — it misheard completely. Now something very strange is happening and it must be fixed before midnight.
-• The gingerbread biscuits have gone on strike. They refuse to be eaten. The hero must negotiate with them.
-• Someone used their one wish on something silly. They want it back. But the bakery's rules are very clear: one wish only. Or ARE they?
-• A mysterious customer comes in and orders something that isn't on the menu. The cat baker says it's impossible. The hero isn't sure.
-• Three different magical cakes, each with a different power. The hero can only choose one. This is a very difficult decision.`},
-
-  {label:"Dragon Mountain",emoji:"🐉",value:`WORLD: A tall warm mountain full of friendly dragons who love visitors and are excellent at toasting marshmallows. Inside each cave it's cosy and orange-glowing. Dragon snoring sounds exactly like a very happy thunderstorm. The dragons collect kind things — a giggle caught in a jar, a drawing someone made for them, a song they've been humming for fifty years. The oldest dragon has silver scales and knows every child's name.
+  {label:"A Road Trip",emoji:"🚗",value:`SETTING: A car journey — windows fogged, the world going past in the dark. Service stations glow like little planets. The sat-nav keeps giving slightly wrong and increasingly ridiculous directions. Every bend in the road might lead somewhere extraordinary.
 
 STORY HOOKS — use one or blend several:
-• The oldest dragon has lost her voice — and with it, she's forgotten every child's name. The hero must help her remember.
-• One dragon's special treasure — a giggle caught in a jar — has escaped. It's been spreading mischief all over the mountain. Someone has to catch it.
-• A small dragon is too scared to breathe fire for the first time. Everyone is watching. The hero knows exactly how that feels.
-• The mountain has a cave that every dragon says leads nowhere. The hero knows it leads SOMEWHERE. They're right.
-• Three dragons give three different answers to the same question. Only one is telling the truth. The hero figures out which one — and why the other two were wrong in such funny ways.`},
+• The sat-nav has become sentient and is directing them somewhere much more interesting than planned.
+• Every time the car stops, the hero notices something strange and wonderful that nobody else sees.
+• Another car keeps appearing alongside them — its passengers clearly on the same adventure from the other direction.
+• Something small and alive has stowed away in the boot and is causing polite havoc.
+• A motorway service station is secretly the most interesting place in the country, if you know where to look.`},
 
-  {label:"Fairy Garden",emoji:"🌸",value:`WORLD: A garden that saves its best magic for night-time. The flowers open wide and breathe out the most beautiful smell — sweet, warm, and a little fizzy on your tongue. The fairies are no bigger than a thumb, their wings making a sound like the highest note on a piano. They hang lanterns on spiderwebs and use fireflies as fairy lights for their festivals. Every tiny fairy footprint glows on the path.
-
-STORY HOOKS — use one or blend several:
-• The festival lanterns have all gone out and the fairy queen's grand party is about to begin. Three fairies try to fix it. Each attempt makes things funnier. The hero finds the real solution.
-• A fairy has accidentally made something grow SO enormously, ridiculously big that it's blocking the whole garden path. It keeps growing. Every page it's bigger.
-• The tiniest fairy in the whole garden can do the biggest magic — but she doesn't know it yet. The hero sees it before she does.
-• Someone has been leaving mysterious footprints in the garden. They're far too big to be a fairy. Everyone is very worried. The truth is much sillier than anyone expected.
-• The fairies have lost their most important song — nobody can remember how it goes. The hero hears a few notes coming from somewhere unexpected.`},
-
-  {label:"Toy Town",emoji:"🪆",value:`WORLD: A little town that wakes the moment the last bedroom light goes off. Toy soldiers march in wobbly lines. Stuffed animals swap stories. Clockwork birds sing one cheerful note over and over. Everything smells of warm wood, old cloth, and something that feels like being small and safe and loved. Every toy here remembers the child who first held them, and thinks about them every night.
+  {label:"School",emoji:"🏫",value:`SETTING: School — familiar by day, completely different after the bell. The classroom chairs push themselves into rows. The whiteboard writes messages nobody put there. The corridor that always feels too long goes somewhere tonight that it definitely doesn't go during school hours.
 
 STORY HOOKS — use one or blend several:
-• One toy has never been played with. Not even once. The whole town knows it, but nobody talks about it. Tonight that changes.
-• The clockwork birds have all learned the wrong tune and now they can't stop playing it. EVERYWHERE. The whole town is going slightly mad.
-• A toy soldier is convinced there's a monster living under the big toy box. Three times they set a trap. Three times something goes wrong in a new and funnier way.
-• Something has gone missing from the toy town square. Everyone has a different theory. They're all wrong. The hero finds it somewhere obvious that everyone was too busy arguing to check.
-• The toys have decided to put on a play. It's a disaster in the best possible way. The hero ends up being the star, completely by accident.`},
+• After everyone leaves, the classroom objects hold their own lessons — far more interesting than normal school.
+• The school library's books have been wandering into each other's stories and getting muddled. Someone must sort it out.
+• There is a door in the school that is always locked. Tonight it isn't.
+• The school pet (or a stray that's moved in) is in charge of everything after 4pm and takes this very seriously.
+• Three things the hero thought they knew about school turn out to be completely different from what they believed.`},
 
-  {label:"The Moon",emoji:"🌙",value:`WORLD: The moon up close is warm and softly glowing, covered in meadows of white flowers that sway with no wind. Astronaut rabbits in round spacesuits hop about tending craters and planting starseeds. Everything is bouncier — one jump floats you up, up, up before you drift gently down. From the moon you can see the whole Earth, round and blue, hanging like a giant night-light. One small warm window — that's home, waiting.
+  {label:"The Supermarket",emoji:"🛒",value:`SETTING: A supermarket — bright and familiar, but tonight the hero is still inside after closing. The food items have personalities and long-running disagreements. The cereals consider themselves the aristocracy. The vegetables are unionised. The biscuit aisle is chaotic and proud of it.
 
 STORY HOOKS — use one or blend several:
-• The moon is slightly less bright tonight. The astronaut rabbits are very worried. Three of them have three different theories about why. Only one is right — and it leads to an adventure nobody expected.
-• A starseed has been planted in the wrong spot. Now something extraordinary is growing and nobody knows what it will be.
-• One of the astronaut rabbits floated too high on a big jump and can't get back down. The hero must figure out how to help — without floating away themselves.
-• The hero can see their house from the moon. They can see a light is still on. They know exactly who left it on — and they know why. That knowledge becomes the heart of the story.
-• Something small and lost has drifted all the way up from Earth and landed on the moon. It belongs to someone. The hero knows who. Getting it home is the whole adventure.`},
+• The food holds a late-night gathering and the hero has accidentally been invited.
+• There is a disagreement between two food sections that has been running for years. The hero must help.
+• Something has gone missing from its shelf and every item has a different suspect.
+• The hero finds an aisle that definitely wasn't there before, selling things that definitely don't exist.
+• One very old item — at the back of the shelf — has been waiting a very long time for someone to notice it.`},
+
+  {label:"Grandma's House",emoji:"👵",value:`SETTING: A grandparent's house — warm, slightly cluttered, smelling of biscuits and something floral. Every drawer holds something interesting. The garden has been growing for decades. The old photographs on the wall show people who lean forward slightly when nobody's watching.
+
+STORY HOOKS — use one or blend several:
+• The objects in the house have long memories and will share them if asked nicely.
+• Grandma or Grandpa has a secret room, a secret skill, or a secret talent about to be discovered.
+• Something that's been in the family forever turns out to be the most important magical object imaginable.
+• An old friend of Grandma's arrives — not entirely ordinary, not at all.
+• The garden holds a secret that only shows itself to children.`},
+
+  {label:"The Park",emoji:"🏖️",value:`SETTING: A local park or playground — somewhere the hero knows well, but today feels different. The old oak tree has seen everything. The ducks on the pond have strong opinions. The ice cream van is in a slightly different spot than last time, as always, and nobody has ever mentioned this.
+
+STORY HOOKS — use one or blend several:
+• The park has a secret that only appears at a particular time of day — the hero arrives at exactly that moment.
+• The ducks are running a very important operation and the hero keeps accidentally interfering.
+• The ice cream van goes to places it absolutely should not be able to go.
+• There is a corner of the park that everyone walks past but nobody enters. Today the hero goes in.
+• Something has been left on a bench. Finding who it belongs to becomes the whole adventure.`},
+
+  {label:"The Kitchen",emoji:"🍳",value:`SETTING: The kitchen — the warmest room in the house, and after bedtime the most surprising one. The fridge hums a tune. The mugs have a strict hierarchy. The wooden spoon has been in this family longer than anyone and knows things it absolutely should not know.
+
+STORY HOOKS — use one or blend several:
+• The kitchen holds a late-night gathering once everyone is asleep. Tonight the hero sneaks down and is welcomed.
+• Something is baking — but nobody baked it. It rose by itself and appears to be trying to say something.
+• The cutlery drawer is very, very organised. There is a reason for this.
+• The oldest thing in the kitchen — the battered pot, the chipped mug, the wooden board — has the best story.
+• An ingredient has gone missing and every kitchen object has a completely different theory.`},
 ];
 const CHAR_TYPES = [
   {value:"friend",label:"Friend",icon:"👫"},
@@ -493,56 +495,72 @@ const LENGTHS = [
   {value:"long",    label:"Full Adventure",target:16, advSetup:8, advRes:7, desc:"~8 min"},
 ];
 const AGES = [
-  {value:"age3",label:"Age 3–4",grade:"Pre-K",prompt:`READER AGE: 3–4 years old (Pre-K).
+  {value:"age3",label:"Age 3\u20134",grade:"Pre-K",prompt:`READER AGE: 3\u20134 years old (Pre-K).
 
-VOCABULARY: Use ONLY the simplest words a toddler knows. Sentences of 3–6 words maximum. If a word might confuse a 3-year-old, replace it.
+VOCABULARY: ONLY the simplest words a toddler knows. Sentences of 3\u20135 words maximum. If a word might confuse a 3-year-old, cut it.
 
-STRUCTURE — write like Eric Carle (Brown Bear) or Mem Fox (Time for Bed):
-• Heavy repetition — the same phrase or pattern returns every 2 pages, getting funnier or warmer each time
-• One sentence per page is perfect. Two is fine. Three is the maximum.
-• Clap-along rhythm — every page should have a natural beat when read aloud
-• The refrain must appear at least 3 times
-• Aim for ~8 pages. Write more if the story truly needs it.
+STRUCTURE \u2014 model: Eric Carle, Mem Fox, Dr Seuss:
+\u2022 The ENTIRE story is built on ONE repeated pattern. Same rhythm, every 2 pages. Gets funnier or warmer each time.
+\u2022 One sentence per page. Two maximum. Three is too many.
+\u2022 Every page has a natural clapping beat when read aloud.
+\u2022 The refrain MUST appear three times: page 2 (introduction), the middle page (a variation \u2014 different character says it, or it goes slightly wrong), and the LAST page (warm, closing).
+\u2022 8 pages total. At this age, shorter is always better.
 
-TONE: Very silly. Very safe. LOTS of sound words — SPLAT, BOING, WHOOSH, KERPLUNK. Characters say "Oh no!" and "Uh oh!" and "Wow wow WOW!" Things fall over. Things go wrong in funny ways. Everything ends up fine.`},
+HERO AGENCY: Even at 3\u20134, ${name} must DO something \u2014 not watch. They press the button. They say the magic word. They share the thing. One tiny action by ${name} changes everything.
 
-  {value:"age5",label:"Age 5–6",grade:"Kindergarten",prompt:`READER AGE: 5–6 years old (Kindergarten).
+ONE TRUE THING: Include one tiny moment a 3-year-old would recognise from their own life \u2014 losing something and finding it, not wanting to share and then doing it anyway, being scared of something small. Never name it as a lesson. Just let it happen.
 
-VOCABULARY: Simple everyday words. Sentences of 6–10 words. It's fine to use one or two fun new words if the meaning is obvious from context.
+TONE: Extremely silly. Extremely safe. SPLAT. BOING. WHOOSH. Characters say "Oh no!" and "Uh oh!" and things fall over in funny ways. The ending must feel like a warm hug.`},
 
-STRUCTURE — write like Julia Donaldson (The Gruffalo) or Mo Willems (Pigeon):
-• Use a Rule of Three: the hero tries something three times. First attempt fails funny. Second attempt fails differently. Third attempt succeeds — but not the way anyone expected.
-• OR use a Running Joke: something silly happens on page 1. It keeps happening throughout. On the last page it happens one final time with a twist.
-• Dialogue drives the story — characters say the wrong thing, the funny thing, the brave thing. Every page should have at least one line of dialogue.
-• Aim for ~10 pages. Write more if the story needs it.
+  {value:"age5",label:"Age 5\u20136",grade:"Kindergarten",prompt:`READER AGE: 5\u20136 years old (Kindergarten).
 
-TONE: Warm and funny. Characters are confidently wrong about things. Someone always has a terrible plan that sort of works anyway. Sound words on at least 3 pages.`},
+VOCABULARY: Simple everyday words plus 1\u20132 fun new words that are obviously explained by context. Sentences of 6\u201310 words. Short sentences for big moments. Longer for travelling or calm.
 
-  {value:"age7",label:"Age 7–8",grade:"1st–2nd Grade",prompt:`READER AGE: 7–8 years old (1st–2nd Grade).
+STRUCTURE \u2014 model: Julia Donaldson (The Gruffalo), Mo Willems (Pigeon series):
+\u2022 RULE OF THREE (preferred): ${name} tries something on page 3, page 5, and page 7. Attempt 1 fails hilariously. Attempt 2 fails differently and even more hilariously. Attempt 3 succeeds \u2014 but not how anyone expected.
+\u2022 OR RUNNING JOKE: A silly thing happens on page 1 and keeps happening. On the last page it happens one final time with a twist.
+\u2022 Every page must have at least one line of dialogue. Characters say the WRONG thing, the BRAVE thing, the FUNNY thing.
+\u2022 10 pages total. Three attempts land on pages 3, 5, 7. Resolution on page 9. Sleep on page 10.
 
-VOCABULARY: Can handle sentences of 8–14 words and a few interesting new words — but always clear from context. One "delicious word" per page that sounds good when read aloud.
+HERO AGENCY (critical): ${name} must make ONE decision that changes everything. Not "helped" \u2014 decided. PASSIVE (bad): "${name} watched as the dragon flew away." ACTIVE (good): "${name} knew exactly what to do. She climbed up. She knocked three times. And she asked the question nobody else had thought to ask."
 
-STRUCTURE — write like Roald Dahl's shorter books (The Enormous Crocodile) or Arnold Lobel (Frog and Toad):
-• Give the story a real twist — something revealed at the end that recontextualises page 1. The child goes "OH!" and wants to read it again.
-• Include a Running Joke that builds and pays off big on the final pages.
-• The hero must be underestimated by someone — and prove them spectacularly wrong.
-• Characters have contradictions: brave but secretly nervous, clever but makes silly mistakes.
-• Aim for ~12 pages. Write more if the story needs it.
+ONE TRUE THING: One moment of genuine emotional recognition \u2014 the flutter of nerves before something new, the warm feeling of being the one who fixed it, the sting of being left out and then included. It lives in what happens, never in what is said.
 
-TONE: Wry and warm. Some Dahl-style exaggeration — things aren't just big, they're SO ENORMOUSLY, RIDICULOUSLY big. The ending should be surprising AND satisfying.`},
+TONE: Warm and funny. Someone always has a terrible plan. It sort of works anyway. Sound words on at least 3 pages.`},
 
-  {value:"age9",label:"Age 9–10",grade:"3rd–4th Grade",prompt:`READER AGE: 9–10 years old (3rd–4th Grade).
+  {value:"age7",label:"Age 7\u20138",grade:"1st\u20132nd Grade",prompt:`READER AGE: 7\u20138 years old (1st\u20132nd Grade).
 
-VOCABULARY: Richer, more varied vocabulary is welcome. Sentences can be longer and more complex. Introduce 1–2 genuinely interesting words per page — the kind children will use the next day to impress someone.
+VOCABULARY: Sentences of 8\u201314 words. One genuinely interesting word per page \u2014 sounds good read aloud (e.g. "preposterous", "magnificent", "thunderous"). Always clear from context.
 
-STRUCTURE — write like Roald Dahl (Fantastic Mr Fox) or A.A. Milne (Winnie-the-Pooh):
-• Real emotional depth: a challenge that genuinely matters, a moment of real doubt, a resolution that feels earned
-• A twist ending that recontextualises the whole story — not just a surprise, but a revelation
-• Characters have real contradictions and growth: someone starts wrong and learns something true
-• A subplot or secondary character whose story intersects with the hero's in an unexpected way
-• Aim for ~14 pages. Write more if the story needs it.
+STRUCTURE \u2014 model: Roald Dahl (The Enormous Crocodile), Arnold Lobel (Frog and Toad):
+\u2022 PLANT AND PAYOFF: On page 1 or 2, introduce something small \u2014 an object, a word, a detail \u2014 that seems unimportant. On the last two pages, it turns out to be the most important thing in the story. The child goes "OH!" and wants to read it again immediately.
+\u2022 The hero must be underestimated by at least one other character \u2014 and prove them spectacularly, satisfyingly wrong.
+\u2022 Running joke: one funny thing escalates across 3\u20134 pages and pays off just before the ending.
+\u2022 Characters have contradictions: brave but secretly nervous, bossy but genuinely kind underneath.
+\u2022 12 pages total. Plant the seed by page 2. Twist lands on page 11. Sleep on page 12.
 
-TONE: Intelligent, funny, and emotionally honest. Not condescending. Children this age can handle bittersweet moments as long as the ending is warm. The best moment in the story should make both the child AND the parent feel something.`},
+HERO AGENCY (critical): ${name} must make one decision under pressure that only THEY could make \u2014 using something specific about who they are. Not luck. Not help from others. Them.
+
+ONE TRUE THING: One moment must contain genuine emotional honesty \u2014 real doubt, real disappointment, real courage, or real joy. Not performed. Felt. This is the moment a parent will remember long after the story ends.
+
+TONE: Wry and warm. Not "big" but "SO ENORMOUSLY, RIDICULOUSLY big that three families of sparrows had moved into its left ear". The ending is surprising AND deeply satisfying.`},
+
+  {value:"age9",label:"Age 9\u201310",grade:"3rd\u20134th Grade",prompt:`READER AGE: 9\u201310 years old (3rd\u20134th Grade).
+
+VOCABULARY: Rich vocabulary welcomed. 1\u20132 genuinely interesting words per page \u2014 the kind children will use tomorrow to impress someone. Sentences can be complex. Paragraphs of 3\u20134 sentences are fine on journey pages.
+
+STRUCTURE \u2014 model: Roald Dahl (Fantastic Mr Fox), A.A. Milne (Winnie-the-Pooh), E.B. White (Charlotte's Web):
+\u2022 REVELATION ENDING: The twist must recontextualise the entire story \u2014 not just surprise, but make the reader see everything differently. Plant the clue no later than page 3.
+\u2022 EMOTIONAL TURN: At least one moment where something genuinely difficult happens \u2014 real doubt, a mistake with consequences, something that matters. Then a resolution that feels earned, not given.
+\u2022 SECONDARY CHARACTER ARC: One supporting character has their own small journey that intersects with ${name}'s at the climax in an unexpected way.
+\u2022 Characters have genuine contradictions AND growth: someone starts wrong about something important and ends changed.
+\u2022 14 pages total. Clue by page 3. Emotional turn on pages 9\u201310. Revelation on pages 12\u201313. Sleep on page 14.
+
+HERO AGENCY (critical): ${name} must face a moment where the easy path is genuinely tempting \u2014 and choose the harder, right thing instead. The reader must feel the weight of that choice.
+
+ONE TRUE THING: One moment should feel so emotionally true that it could only have been written for THIS child on THIS night. The feeling of being small in a big world and discovering you are braver than you thought.
+
+TONE: Intelligent, funny, and emotionally honest. Not condescending. The best moment should make both the child AND the parent feel something real.`},
 ];
 const CHAR_ICONS = {hero:"⭐",friend:"👫",sibling:"👶",parent:"🧑‍🍼",pet:"🐾",toy:"🧸"};
 const SPARK_COLORS = ["#fde68a","#fbbf24","#f0cc60","#fdf5e0","#fff"];
@@ -1117,7 +1135,7 @@ export default function SleepSeed() {
   const [extraChars,     setExtraChars]     = useState([]);
   const [occasion,       setOccasion]       = useState("");
   const [occasionCustom, setOccasionCustom] = useState("");
-  const [lesson,         setLesson]         = useState("");
+  const [lessons,        setLessons]        = useState<string[]>([]);
   const [adventure,      setAdventure]      = useState(false);
   const [storyLen,       setStoryLen]       = useState("standard");
   const [ageGroup,       setAgeGroup]       = useState("age5");
@@ -1484,13 +1502,13 @@ export default function SleepSeed() {
     const resolvedChars   = overrides.extraChars   ?? extraChars;
     const resolvedOcc     = overrides.occasion     ?? occasion;
     const resolvedOccCust = overrides.occasionCustom ?? occasionCustom;
-    const resolvedLesson  = overrides.lesson       ?? lesson;
+    const resolvedLesson  = overrides.lessons ?? lessons;
     const resolvedAdv     = overrides.adventure    ?? adventure;
     const resolvedLen     = overrides.storyLen     ?? storyLen;
     const resolvedGuidance= overrides.storyGuidance?? storyGuidance;
     setError(""); setStage("generating"); setFromCache(false); setChosenPath(null);
     const name = heroName.trim();
-    const seed = makeStorySeed(name,resolvedTheme,resolvedChars,resolvedOcc,resolvedOccCust,resolvedLesson,resolvedAdv,resolvedLen,heroGender,heroClassify,resolvedGuidance);
+    const seed = makeStorySeed(name,resolvedTheme,resolvedChars,resolvedOcc,resolvedOccCust,Array.isArray(resolvedLesson)?resolvedLesson.join("|"):resolvedLesson,resolvedAdv,resolvedLen,heroGender,heroClassify,resolvedGuidance);
     const bKey = `book_${seed}`;
     const mk = (n,st="p") => Array.from({length:n},()=>st);
 
@@ -1600,18 +1618,20 @@ export default function SleepSeed() {
 
       const occasionFinal = resolvedOcc==="other" ? resolvedOccCust.trim() : (resolvedOcc||"");
       const occLine  = occasionFinal ? `\nSPECIAL OCCASION: ${occasionFinal}` : "";
-      const lesLine  = resolvedLesson ? `\nLESSON (show through action only, never state as moral): ${resolvedLesson}` : "";
+      const lesArr = Array.isArray(resolvedLesson) ? resolvedLesson : (resolvedLesson ? [resolvedLesson] : []);
+      const lesLine  = lesArr.length ? `\nLESSONS (weave ALL of these in through action, never state them as a moral):\n${lesArr.map(l=>`• ${l}`).join("\n")}` : "";
       const guidanceSafe = resolvedGuidance.trim().slice(0, 300).replace(/[\u201C\u201D""]/g, '"');
       const guidLine = guidanceSafe ? `\nSTORY GUIDANCE — highest priority, incorporate naturally:\n${guidanceSafe}` : "";
 
       // World: AI picks based on context, or random if no inputs
-      const hasContext = !!(resolvedOcc || resolvedLesson || guidanceSafe || resolvedChars.length > 0);
+      const lesArrCheck = Array.isArray(resolvedLesson) ? resolvedLesson : (resolvedLesson ? [resolvedLesson] : []);
+      const hasContext = !!(resolvedOcc || lesArrCheck.length || guidanceSafe || resolvedChars.length > 0);
       const autoTheme = hasContext
         ? null  // let AI pick
         : THEMES[Math.floor(Math.random() * THEMES.length)];
       const worldLine = autoTheme
-        ? `WORLD:\n${autoTheme.value}\n\nBuild the story inside this world — use its specific details, characters, and story hooks.`
-        : `WORLD SELECTION: Based on the characters, occasion, lesson, and story guidance provided, choose the single most fitting world from the options below. Pick whichever world will make the story feel most magical, resonant, and delightful for this specific child tonight. Then build the entire story inside that world.\n\nAVAILABLE WORLDS:\n${THEMES.map((t,i)=>`${i+1}. ${t.label}: ${t.value.split("\n")[0]}`).join("\n")}`;
+        ? `SETTING:\n${autoTheme.value}\n\nSet the entire story in this real-world place — make it recognisable to a child, but silly, warm, and full of surprising life.`
+        : `SETTING SELECTION: Based on the characters, occasion, lessons, and story guidance provided, choose the single most fitting setting from the real-world options below. Pick the one that will make this particular story feel most vivid, funny, and familiar to a child. Then set the entire story there.\n\nAVAILABLE SETTINGS:\n${THEMES.map((t,i)=>`${i+1}. ${t.label}: ${t.value.split("\n")[0]}`).join("\n")}`;
       const ageCfg = AGES.find(a=>a.value===ageGroup)||AGES[1];
       const ageLine = ageCfg.prompt;
 
@@ -1623,36 +1643,53 @@ export default function SleepSeed() {
       const resN   = lenCfg.advRes;
       const totalN = lenCfg.target;
 
-      // ── Story arc guidance ────────────────────────────────────────────────
+      // ── Story arc guidance ────────────────────────────────────────────
       const buildArc = (n) => {
-        return `STORY STRUCTURE GUIDANCE (target ~${n} pages — write more if the story needs it):
+        return `STORY STRUCTURE GUIDANCE (target ~${n} pages — write more if the story genuinely needs it):
 
-This is not a rigid page-by-page script. It is a shape to aim for. The story is always the priority.
+This is not a rigid script. It is a shape. The story is always the priority.
 
-OPENING (pages 1–2): Drop ${name} into something surprising, funny, or wonderful IMMEDIATELY. No setup. No describing the world. Something HAPPENS. Use a sound word. End page 1 with something that makes it impossible not to turn the page.
+OPENING (pages 1–2): Drop ${name} into something surprising, funny, or urgent IMMEDIATELY. No scene-setting. No describing the world. Something HAPPENS on page 1. A sound word. An action. End page 1 with a reason it is impossible not to turn the page.
 
-EARLY PAGES: Establish the problem, mystery, or adventure. Characters reveal their personalities through what they SAY and DO — especially through funny mistakes, wrong guesses, and terrible plans that almost work. The refrain appears naturally for the first time.
+EARLY PAGES: The problem or adventure establishes itself. Characters reveal their personalities through what they SAY and DO — especially through funny mistakes, wrong guesses, and terrible plans that almost work. The REFRAIN appears naturally for the first time around page 2. Write it so a child wants to say it along with you.
 
-MIDDLE PAGES: The adventure deepens. Use your chosen structure — Rule of Three, Running Joke, Cumulative Build, or Small Hero Wins. Each page should feel different in energy from the last. At least one character should say something hilarious, brave, or unexpectedly wise. ${name} makes real choices. Sound words on at least 3 pages.
+MIDDLE PAGES: The adventure deepens. Use Rule of Three, Running Joke, or Cumulative Build. Each page must feel different in rhythm and energy from the one before. ${name} makes REAL CHOICES — not observations. The refrain returns in the middle with a small variation: said by a different character, or going slightly wrong in a funny way. At least one character says something hilarious, brave, or unexpectedly wise. Sound words on at least 3 pages.
 
-NEAR THE END: The big moment. The twist, the payoff, the surprise that recontextualises everything. If you've been building a running joke — this is where it pays off gloriously. If you've been using Rule of Three — this is the third attempt that succeeds in an unexpected way. The refrain returns.
+THE HERO'S MOMENT: ${name} must make one decision that only THEY could make — using something specific about who they are. Not luck. Not rescue. A choice. The resolution must come FROM ${name}, not happen TO ${name}.
 
-FINAL PAGES (last 2–3): The world gets quieter and softer. Characters yawn. Lights dim. Voices drop to whispers. The last page echoes something from page 1 — a word, an image, a sound — making the story feel beautifully circular and complete. End with a long, slow, warm sentence that carries ${name} all the way to sleep.`;
+THE ONE TRUE THING: Somewhere in the story — not the ending, not a lesson, just a moment — something emotionally true must happen. A small, specific thing a child would recognise from their own life. The warmth of being seen by exactly the right person. The relief when the scary thing turns out to be okay. The flutter before something new. Never state it. Just let it happen. This is what children remember.
+
+PENULTIMATE PAGE: The world begins to wind down. A yawn appears. Lights get softer. Voices drop. Movement slows. This is the beginning of sleep, not a separate chapter.
+
+FINAL PAGE — THE MOST IMPORTANT PAGE IN THE STORY:
+• Echo something specific from page 1: the same word, the same image, the same sound. The story must feel circular and complete.
+• The refrain returns here — for the last time — as the emotional close. Quieter. Warmer. Final.
+• No new information. No new characters. No new events. Only warmth and resolution.
+• The final sentence must be the longest, slowest, warmest sentence in the entire story. It should carry ${name} all the way to sleep.
+• Weak final page: "And everyone went to sleep. The end."
+• Strong final page: "${name} closed both eyes, and listened to the quiet, and thought: yes. This is exactly where I am supposed to be. [REFRAIN — whispered]. Goodnight."`;
       };
-
       // ── JSON schema ────────────────────────────────────────────────────────
       // Page schema: allow variable-weight pages for real picture-book feel
       const pgSchema = (n) => Array.from({length:n},()=>(
         '{"text":"Write the RIGHT amount for this page — not a fixed word count. Big moment pages can be 1-2 SHORT punchy sentences. Journey pages can be 3-5 sentences. Dialogue pages can be almost entirely speech. Quiet sleep pages should be slow and drifting. Every page must feel distinct in rhythm and energy from the pages before and after it. Prioritise storytelling over length targets.","illustration_prompt":"one warm playful moment under 30 words, name every visible character, bright cosy mood"}'
       )).join(",");
 
-      const simpleSchema = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","refrain":"a short bouncy phrase (4-8 words) that will recur 2-3 times and that a child will whisper along to on the third reading","pages":[${pgSchema(totalN)}]}`;
-      const advSchema    = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","refrain":"a short bouncy phrase (4-8 words) that will recur 2-3 times and that a child will whisper along to on the third reading","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"What does ${name} do next?","option_a_label":"4-7 fun exciting words","option_b_label":"4-7 fun exciting words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}]}`;
+      const simpleSchema = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","refrain":"a short bouncy phrase (4-8 words) — it appears on page 2, varies in the middle, and closes the final page. A child must want to say it before you do by the third reading. Make it musical, make it specific, make it slightly silly.","pages":[${pgSchema(totalN)}]}`;
+      const advSchema    = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","refrain":"a short bouncy phrase (4-8 words) — it appears on page 2, varies in the middle, and closes the final page. A child must want to say it before you do by the third reading. Make it musical, make it specific, make it slightly silly.","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"What does ${name} do next?","option_a_label":"4-7 fun exciting words","option_b_label":"4-7 fun exciting words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}]}`;
 
       // ── Master story prompt ───────────────────────────────────────────────
       const storyPrompt = `You are writing a children's picture book that will be read aloud at bedtime. Your models are Roald Dahl, Julia Donaldson, Mo Willems, Eric Carle, and A.A. Milne. Every page must feel like it belongs in a book a child could buy at a bookstore and memorise by the third reading.
 
-THE PRIME DIRECTIVE: The story is ALWAYS the priority. Page count is a target, not a ceiling. Write as many pages as the story needs to be truly wonderful. All other rules exist to serve the story — if breaking a rule makes the story better, break it. The only rule that cannot be broken is writing at the correct age level.
+THE PRIME DIRECTIVE: The story is ALWAYS the priority. Page count is a target, not a ceiling. All rules exist to serve the story.
+
+FOUR THINGS EVERY STORY MUST HAVE — these cannot be skipped:
+1. A hero who makes one real decision that changes everything (not watches, not helps — decides)
+2. A refrain that appears three times: introduced, varied, and closed
+3. One moment of genuine emotional truth a child would recognise from their own life
+4. A final page that echoes page 1 and ends with the longest, warmest sentence in the story
+
+The only other unbreakable rule: write at the correct age level.
 
 ━━━ READER AGE ━━━
 ${ageLine}
@@ -1671,50 +1708,64 @@ BAD (do NOT write like this — adult prose with a child's name in it):
 
 The difference: SHORT lines. SOUND WORDS. SILLY unexpected things. A reason to turn the page. Characters who say funny things.
 
-━━━ THE SIX TECHNIQUES THAT MAKE CHILDREN MEMORISE BOOKS ━━━
+━━━ THE TECHNIQUES THAT MAKE CHILDREN MEMORISE BOOKS ━━━
 
-1. REPETITION: A phrase, image, or pattern that recurs — and gets funnier or warmer each time.
-   Example: "Oh no," said the dragon. / "Oh no," said ${name}. / "Oh no," said EVERYONE.
+1. REPETITION WITH VARIATION: A phrase, image, or pattern that recurs — and gets funnier or warmer each time. The first appearance sets it up. The second makes them laugh. The third makes them feel it.
+   Example: "Oh no," said the dragon. / "Oh no," said ${name}. / "Oh no," said ABSOLUTELY EVERYONE.
 
-2. SOUND WORDS: At least 3 per story. WHOOSH. SPLAT. BOING. KERPLUNK. CRASH. SQUELCH.
-   These are what children repeat to each other the next day.
+2. SOUND WORDS: At least 3 per story. WHOOSH. SPLAT. BOING. KERPLUNK. CRASH. SQUELCH. THWUMP.
+   These are what children shout at each other the next day. Put them on their own line. In capitals.
 
-3. EXAGGERATION: Not "it was big" — "it was SO ENORMOUSLY, RIDICULOUSLY big that a family of hedgehogs had moved into its left nostril."
+3. EXAGGERATION: Not "it was big" — "it was SO ENORMOUSLY, RIDICULOUSLY big that a family of hedgehogs had moved into its left nostril and were very happy there."
 
-4. DIALOGUE CARRIES THE STORY: Characters say the wrong thing, the funny thing, the brave thing. Minimum one line of dialogue per page. Let characters argue, misunderstand, and be confidently wrong about things.
+4. DIALOGUE DRIVES EVERYTHING: Characters say the wrong thing, the funny thing, the brave thing. One line of dialogue minimum per page. Let characters argue, misunderstand, and be confidently wrong. Dialogue is where personality lives.
 
-5. THE SURPRISE / TWIST: The ending recontextualises something from page 1. The child goes "OH!" and immediately asks to read it again. Plant the seed early; deliver the payoff at the end.
+5. PLANT AND PAYOFF: Something small on page 1 or 2 — an object, a word, a detail that seems like nothing — becomes the most important thing in the story by the end. The child goes "OH!" and immediately asks to read it again. This is the difference between a story that is forgotten and one that is remembered.
 
 6. CHARACTERS ARE WRONG: The best children's book characters are confidently, hilariously wrong about something important. That wrongness drives the plot. The moment they realise they're wrong — or succeed despite being wrong — is the heart of the story.
+
+7. THE TURN-THE-PAGE HOOK: Every single page must end with a reason to turn to the next one. A question. A sound. A cliffhanger. An impossibility. A character saying exactly the wrong thing at exactly the wrong moment. Never let a page end with resolution — save that for the last page only.
 
 ━━━ CHARACTERS ━━━
 ${charCtx}
 
-━━━ WORLD, OCCASION, AND CONTEXT ━━━
+━━━ SETTING, OCCASION, AND CONTEXT ━━━
 ${worldLine}${occLine}${lesLine}${guidLine}
 
 ━━━ STORY CRAFT ━━━
 
-PAGE RHYTHM — vary this on EVERY page:
+PAGE RHYTHM — vary on EVERY page without exception:
 • Explosive pages: 1–2 very short punchy lines. Something just happened.
-• Journey pages: 3–5 sentences. The adventure unfolds.
+• Journey pages: 3–5 sentences. The adventure moves forward.
 • Dialogue pages: Almost entirely speech. Characters reveal themselves.
-• Quiet pages: Near the end only. One slow, drifting sentence.
-• Never write two pages in a row with the same rhythm or energy.
+• Quiet pages: Near the end only. One slow, warm, drifting sentence.
+• Never write two pages in a row with the same rhythm or energy. Ever.
 
-THE REFRAIN: A 4-8 word bouncy phrase that recurs naturally 2–3 times. It should feel like a song the child will sing along to. Write it as the "refrain" field in the JSON.
+THE REFRAIN — three appearances, each distinct:
+• Page 2 (introduction): the refrain arrives naturally, as if it was always there.
+• Middle of story (variation): the same phrase, but something is slightly different — a different character says it, it goes slightly wrong, or it gets funnier. This is what makes children laugh the second time.
+• Final page (close): the refrain returns one last time, quieter and warmer than before. This is the emotional landing of the whole story. The child should feel it like a hug.
+The refrain must feel like a song. 4–8 words. Write it so a child will say it before you do on the third reading.
 
-THE CIRCULAR ENDING: The last page must echo something specific from page 1 — a word, an image, a sound — so the story feels complete and round. After the last page, the child should feel deeply safe and ready for sleep.
+HERO AGENCY — the most important craft rule:
+${name} must make one decision in the story that only THEY could make — using something specific about who they are. The resolution must come FROM ${name}, not happen TO ${name}.
+PASSIVE (never write this): "${name} watched as the problem was solved."
+ACTIVE (always write this): "${name} had one idea. It was a bit silly. But it was exactly right."
 
-SLEEPING DOWN: On the last 2-3 pages, the world must grow gradually quieter — yawns appear, lights soften, voices drop to whispers, movement slows. This is not an afterthought; it is the most important part of a bedtime story.
+THE ONE TRUE THING:
+Somewhere in the story — not the ending, not named as a lesson — one small emotionally true moment must happen. Something a child would recognise from their own life without being told to. The relief when the scary thing is fine. The warmth of being seen. The flutter before something new. Never explain it. Just let it happen quietly. This is what children remember for years.
+
+THE ENDING — the most important pages in the story:
+PENULTIMATE PAGE: The world begins to slow. A yawn appears somewhere. Light gets softer. Voices drop. Movement stills. This is not an afterthought — it is the transition into sleep beginning.
+FINAL PAGE: Echo one specific thing from page 1 — a word, a sound, an image — so the story feels perfectly circular. The refrain returns, whispered. No new information. No new events. Only resolution and warmth. The final sentence must be the longest, slowest, most comforting sentence in the entire story. It should carry ${name} all the way to sleep.
 
 WHAT TO NEVER DO:
-• Never use adult literary language or metaphors
+• Never use adult literary language or metaphors a child wouldn't know
 • Never state a lesson — let it live only in what happens
-• Never use a word the target age child wouldn't know
 • Never write two consecutive sentences the same length
-• Never make the story feel dark, ominous, or unsafe
-• Never make ${name} a passive observer — they drive the story
+• Never make the story feel dark, unsafe, or unresolved
+• Never make ${name} a passive observer — they drive everything
+• Never end a page without a reason to turn to the next one
 
 ━━━ STORY ARC ━━━
 ${resolvedAdv
@@ -1727,7 +1778,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
       const raw = await callClaude(
         [{role:"user",content:storyPrompt}],
-        "You are writing a children's picture book in the tradition of Roald Dahl, Julia Donaldson, and Mo Willems. The story is ALWAYS the priority — write as many pages as needed. Return ONLY a valid JSON object with no markdown, no explanation, no text outside the JSON. The story must feel like it could be published and sold in a children's bookstore.",
+        "You are a master children's picture book author writing in the tradition of Roald Dahl, Julia Donaldson, Mo Willems, and A.A. Milne. Every story must have: a hero who makes a real decision, a refrain that recurs three times with variation, one moment of genuine emotional truth, and an ending that echoes page 1. Return ONLY a valid JSON object — no markdown, no explanation, no text outside the JSON. The story must feel like it could be published, sold, and memorised by a child within three readings.",
         4000
       );
 
@@ -2000,29 +2051,27 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
               </div>
             </div>
 
-            {/* Two path buttons */}
+            {/* Two path buttons side by side */}
             {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
-            <button className="path-btn quick" disabled={heroName.trim().length<2}
-              onClick={()=>{
-                if(heroName.trim().length<2) return;
-                generate({extraChars:[],occasion:"",occasionCustom:"",lesson:"",adventure:false,storyLen:"standard",storyGuidance:""});
-              }}>
-              <div className="path-icon">⚡</div>
-              <div className="path-text">
+            <div className="path-row">
+              <button className="path-btn quick" disabled={heroName.trim().length<2}
+                onClick={()=>{
+                  if(heroName.trim().length<2) return;
+                  generate({extraChars:[],occasion:"",occasionCustom:"",lessons:[],adventure:false,storyLen:"standard",storyGuidance:""});
+                }}>
+                <div className="path-icon">⚡</div>
                 <div className="path-title">Quick Story</div>
-                <div className="path-sub">Generate a story instantly</div>
-              </div>
-            </button>
-            <button className="path-btn build" disabled={heroName.trim().length<2}
-              onClick={()=>{ if(heroName.trim().length<2) return; setStage("builder"); }}>
-              <div className="path-icon">🎨</div>
-              <div className="path-text">
+                <div className="path-sub">Instant story,<br/>AI picks the setting</div>
+              </button>
+              <button className="path-btn build" disabled={heroName.trim().length<2}
+                onClick={()=>{ if(heroName.trim().length<2) return; setStage("builder"); }}>
+                <div className="path-icon">🎨</div>
                 <div className="path-title">Build My Story</div>
-                <div className="path-sub">Choose world, characters & more</div>
-              </div>
-            </button>
+                <div className="path-sub">Add characters,<br/>lessons & more</div>
+              </button>
+            </div>
             {heroName.trim().length<2 && (
-              <div style={{textAlign:"center",fontSize:12,color:"var(--dimmer)",marginTop:8}}>Enter a name to begin ↑</div>
+              <div style={{textAlign:"center",fontSize:12,color:"var(--dimmer)",marginTop:4}}>Enter a name to begin ↑</div>
             )}
           </div>
         )}
@@ -2047,33 +2096,34 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                 {/* Characters */}
                 <div>
                   <div className="section-label" style={{marginBottom:8}}>👥 Who's in the story?</div>
-                  <div className="char-simple-list">
-                    {extraChars.map(c => (
-                      <div className="char-simple-row" key={c.id}>
-                        <div className="char-photo" style={{width:34,height:34,fontSize:16,borderRadius:8,flexShrink:0}} onClick={()=>pickPhoto(c.id)}>
-                          {c.photo ? <img src={c.photo.preview} alt={c.name} /> : <span>{CHAR_ICONS[c.type]||"👫"}</span>}
-                        </div>
-                        <input className="char-name-in" placeholder={`${CHAR_TYPES.find(t=>t.value===c.type)?.label||"Friend"}'s name…`}
-                          value={c.name} maxLength={16} style={{flex:1}}
-                          onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
-                        <ClassifySelect value={c.classify} onChange={e=>updateExtraChar(c.id,{classify:e.target.value})}
-                          className="char-cls-sel" style={{width:90,fontSize:10}} />
-                        <button className="btn-danger" style={{flexShrink:0}} onClick={()=>removeExtraChar(c.id)}>✕</button>
-                      </div>
-                    ))}
-                  </div>
                   {extraChars.length<4 && (
-                    <div style={{marginTop:10}}>
-                      <div className="section-label" style={{marginBottom:8}}>Add a character:</div>
+                    <div style={{marginBottom:extraChars.length?10:0}}>
                       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                         {CHAR_TYPES.map(t => (
                           <button key={t.value} className="char-add-pill"
                             onClick={()=>setExtraChars(cs=>[...cs,{...newChar(),type:t.value}])}>
                             <span className="char-add-pill-icon">{t.icon}</span>
-                            <span>{t.label}</span>
+                            <span>+ {t.label}</span>
                           </button>
                         ))}
                       </div>
+                    </div>
+                  )}
+                  {extraChars.length>0 && (
+                    <div className="char-simple-list">
+                      {extraChars.map(c => (
+                        <div className="char-simple-row" key={c.id}>
+                          <div className="char-photo" style={{width:34,height:34,fontSize:16,borderRadius:8,flexShrink:0}} onClick={()=>pickPhoto(c.id)}>
+                            {c.photo ? <img src={c.photo.preview} alt={c.name} /> : <span>{CHAR_ICONS[c.type]||"👫"}</span>}
+                          </div>
+                          <input className="char-name-in" placeholder={`${CHAR_TYPES.find(t=>t.value===c.type)?.label||"Friend"}'s name…`}
+                            value={c.name} maxLength={16} style={{flex:1}}
+                            onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
+                          <ClassifySelect value={c.classify} onChange={e=>updateExtraChar(c.id,{classify:e.target.value})}
+                            className="char-cls-sel" style={{width:90,fontSize:10}} />
+                          <button className="btn-danger" style={{flexShrink:0}} onClick={()=>removeExtraChar(c.id)}>✕</button>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -2139,8 +2189,8 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                   <div style={{fontSize:10,color:"var(--dimmer)",marginBottom:5,fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Character lessons</div>
                   <div className="les-pills" style={{marginBottom:10}}>
                     {LESSONS_CHARACTER.map(l => (
-                      <button key={l.value} className={`les-pill${lesson===l.value?" on":""}`}
-                        onClick={()=>setLesson(lesson===l.value?"":l.value)}>
+                      <button key={l.value} className={`les-pill${lessons.includes(l.value)?" on":""}`}
+                        onClick={()=>setLessons(ls=>ls.includes(l.value)?ls.filter(x=>x!==l.value):[...ls,l.value])}>
                         {l.label}
                       </button>
                     ))}
@@ -2148,8 +2198,8 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                   <div style={{fontSize:10,color:"var(--dimmer)",marginBottom:5,fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Emotional &amp; social skills</div>
                   <div className="les-pills">
                     {LESSONS_EMOTIONAL.map(l => (
-                      <button key={l.value} className={`les-pill${lesson===l.value?" on":""}`}
-                        onClick={()=>setLesson(lesson===l.value?"":l.value)}>
+                      <button key={l.value} className={`les-pill${lessons.includes(l.value)?" on":""}`}
+                        onClick={()=>setLessons(ls=>ls.includes(l.value)?ls.filter(x=>x!==l.value):[...ls,l.value])}>
                         {l.label}
                       </button>
                     ))}
