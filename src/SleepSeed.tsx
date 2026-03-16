@@ -44,7 +44,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .ftarea{width:100%;padding:11px 14px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);
   border-radius:12px;color:var(--cream);font-family:'Nunito',sans-serif;font-size:13px;outline:none;
   transition:all .2s;resize:vertical;min-height:76px;line-height:1.6}
-.ftarea::placeholder{color:rgba(90,110,170,.38)}
+.ftarea::placeholder{color:rgba(175,185,225,.7)}
 .ftarea:focus{border-color:rgba(212,160,48,.55)}
 .hero-input{font-size:22px;font-family:'Fraunces',serif;font-weight:600;padding:16px 20px;text-align:center;border-radius:16px}
 .hero-input::placeholder{font-size:18px;font-style:italic}
@@ -2316,16 +2316,25 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
                 {/* Open prompt */}
                 <div>
-                  <div style={{fontSize:13,fontWeight:700,color:"var(--cream)",marginBottom:3}}>
-                    Anything you want in the story?
+                  <div className="section-label" style={{marginBottom:8}}>
+                    ✏️ Make it yours <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:9}}>(optional)</span>
                   </div>
-                  <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:8,lineHeight:1.5}}>
-                    Optional — but gives your quick story a personal touch
+                  <div style={{display:"flex",gap:6,marginBottom:9}}>
+                    {["Who","What","Where"].map(w => (
+                      <div key={w} style={{padding:"3px 9px",borderRadius:99,fontSize:9,fontWeight:700,letterSpacing:".04em",
+                        border:"1px solid rgba(255,255,255,.12)",color:"rgba(190,200,240,.6)",background:"rgba(255,255,255,.04)"}}>
+                        {w}
+                      </div>
+                    ))}
                   </div>
-                  <textarea className="ftarea" rows={3}
-                    style={{fontSize:12,border:"1.5px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.07)"}}
-                    placeholder={`e.g. '${heroName} and her best friend Jack go looking for a missing dragon' or '${heroName} is nervous about her first swimming lesson tomorrow' or 'a funny story about a talking sock who hates baths'…`}
+                  <textarea className="ftarea"
+                    style={{fontSize:12,border:"1.5px solid rgba(255,255,255,.2)",background:"rgba(255,255,255,.07)",
+                      minHeight:78,"--placeholder-color":"rgba(175,185,225,.7)" as any}}
+                    placeholder={`e.g. '${heroName} and her dog Biscuit find a dragon who is scared of the dark' or 'something funny happens at bedtime involving a very grumpy sock'…`}
                     value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)} maxLength={300} />
+                  <div style={{fontSize:10,color:"var(--dimmer)",marginTop:6,lineHeight:1.5}}>
+                    For more control, use Build My Story →
+                  </div>
                 </div>
 
               </div>
