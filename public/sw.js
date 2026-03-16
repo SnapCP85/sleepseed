@@ -1,88 +1,42 @@
-const CACHE_NAME = 'sleepseed-v1';
+const CACHE = 'sleepseed-v2';
 
-// Core app shell — cached on install
-const SHELL = [
-  '/',
-  '/index.html',
-];
+// Install — skip waiting immediately
+self.addEventListener('install', () => self.skipWaiting());
 
-// Install: cache the app shell
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL))
+// Activate — clear old caches, claim all clients
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
-  self.skipWaiting();
 });
 
-// Activate: clean up old caches
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
-      )
-    )
-  );
-  self.clients.claim();
-});
+// Fetch — network first, always. Cache is only a bonus fallback.
+self.addEventListener('fetch', (e) => {
+  const url = new URL(e.request.url);
 
-// Fetch strategy:
-// - API calls (claude, tts, clone): network only — never cache
-// - Google Fonts / Pollinations images: network first, cache fallback
-// - App shell (JS/CSS/HTML): cache first, network fallback
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-
-  // API calls — always network, never cache
+  // Never intercept API calls — let them go straight to the network
   if (
     url.pathname.startsWith('/api/') ||
-    url.hostname.includes('anthropic.com') ||
-    url.hostname.includes('elevenlabs.io')
+    url.hostname.includes('anthropic') ||
+    url.hostname.includes('elevenlabs')
   ) {
-    event.respondWith(fetch(event.request));
     return;
   }
 
-  // Pollinations images — network first, cache on success
-  if (url.hostname.includes('pollinations.ai')) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
-    return;
-  }
-
-  // Google Fonts — cache first
-  if (url.hostname.includes('fonts.googleapis.com') || url.hostname.includes('fonts.gstatic.com')) {
-    event.respondWith(
-      caches.match(event.request).then((cached) => {
-        if (cached) return cached;
-        return fetch(event.request).then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          return response;
-        });
+  // Everything else: network first, cache as fallback
+  e.respondWith(
+    fetch(e.request)
+      .then((res) => {
+        if (e.request.method === 'GET' && res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, clone)).catch(() => {});
+        }
+        return res;
       })
-    );
-    return;
-  }
-
-  // App shell — cache first, network fallback, offline fallback to index.html
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request)
-        .then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          return response;
-        })
-        .catch(() => caches.match('/index.html'));
-    })
+      .catch(() =>
+        caches.match(e.request).then((cached) => cached || Response.error())
+      )
   );
 });
