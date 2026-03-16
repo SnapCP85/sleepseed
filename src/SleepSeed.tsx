@@ -528,7 +528,7 @@ HERO AGENCY: Even at 3\u20134, ${name} must DO something \u2014 not watch. They 
 
 ONE TRUE THING: Include one tiny moment a 3-year-old would recognise from their own life \u2014 losing something and finding it, not wanting to share and then doing it anyway, being scared of something small. Never name it as a lesson. Just let it happen.
 
-TONE: Extremely silly. Extremely safe. SPLAT. BOING. WHOOSH. Characters say "Oh no!" and "Uh oh!" and things fall over in funny ways. The ending must feel like a warm hug.`},
+TONE: Always safe. Always warm. The ending must feel like a hug. The DEFAULT tone is very silly — SPLAT. BOING. WHOOSH. Characters say "Oh no!" and "Uh oh!" and things fall over hilariously. BUT: if the story premise is tender or emotional (missing someone, first day of something, a worried feeling), lead with warmth and gentleness instead. Silly and safe are not the same thing — a story can be entirely gentle without a sound word and still be perfect for this age.`},
 
   {value:"age5",label:"Age 5\u20136",grade:"Kindergarten",prompt:`READER AGE: 5\u20136 years old (Kindergarten).
 
@@ -565,7 +565,7 @@ TONE: Wry and warm. Not "big" but "SO ENORMOUSLY, RIDICULOUSLY big that three fa
 
   {value:"age9",label:"Age 9\u201310",grade:"3rd\u20134th Grade",prompt:`READER AGE: 9\u201310 years old (3rd\u20134th Grade).
 
-VOCABULARY: Rich vocabulary welcomed. 1\u20132 genuinely interesting words per page \u2014 the kind children will use tomorrow to impress someone. Sentences can be complex. Paragraphs of 3\u20134 sentences are fine on journey pages.
+VOCABULARY: Rich vocabulary welcomed. 1\u20132 genuinely interesting words per page \u2014 the kind children will use tomorrow to impress someone. Sentences of 10\u201320 words on journey pages. Short punchy sentences (5\u20137 words) for high-tension moments \u2014 contrast is everything. Paragraphs of 3\u20134 sentences are fine on journey pages, but vary length deliberately: a long winding sentence followed by a short one. Never three consecutive sentences the same length.
 
 STRUCTURE \u2014 model: Roald Dahl (Fantastic Mr Fox), A.A. Milne (Winnie-the-Pooh), E.B. White (Charlotte's Web):
 \u2022 REVELATION ENDING: The twist must recontextualise the entire story \u2014 not just surprise, but make the reader see everything differently. Plant the clue no later than page 3.
@@ -1785,7 +1785,7 @@ export default function SleepSeed() {
         : THEMES[Math.floor(Math.random() * THEMES.length)];
       const worldLine = autoTheme
         ? `SETTING:\n${autoTheme.value}\n\nSet the entire story in this real-world place. Ground it in what a child knows — then make it delightfully surprising. The setting is active: things in it talk, move, have opinions, and cause problems. It is not a backdrop.`
-        : `SETTING SELECTION: Based on the characters, occasion, lessons, and story guidance provided, choose the single most fitting setting from the real-world options below. Pick the one where the story context will feel most vivid, funny, and natural. The chosen setting must be active — not a backdrop but a participant. Things in it have personalities and opinions.\n\nAVAILABLE SETTINGS:\n${THEMES.map((t,i)=>`${i+1}. ${t.label}: ${t.value.split("\n")[0]}`).join("\n")}`;
+        : `SETTING SELECTION: Based on the characters, occasion, lessons, and story guidance provided, choose the single most fitting setting from the real-world options below. Pick the one where this specific story will feel most vivid, surprising, and natural. The chosen setting must be active — not a backdrop but a participant with its own personality.\n\nAVAILABLE SETTINGS:\n${THEMES.map((t,i)=>{ const lines=t.value.split("\n"); const mechanism=lines.find(l=>l.includes("magic is ")||l.includes("This setting")); return `${i+1}. ${t.label}: ${lines[0]}${mechanism?" | "+mechanism.trim():""}`;}).join("\n")}`;
       const moodLine  = resolvedMood ? `\nSTORY MOOD: ${resolvedMood==="calm"?"Calm and cosy — warm, gentle, soothing throughout. Every page should feel like a soft blanket.":resolvedMood==="silly"?"Silly and funny — lean into humour and absurdity on every page. At least one thing per page should make a child laugh.":resolvedMood==="exciting"?"Exciting and adventurous — high energy and wonder throughout the adventure pages. The final 2-3 pages still wind down gently and land safely in sleep.":resolvedMood==="heartfelt"?"Warm and heartfelt — emotionally resonant and tender. Prioritise genuine feeling over plot twists.":""} This mood shapes the story flavour but never overrides age-appropriate vocabulary, the sleep landing, or the story's fundamental safety.` : "";
       const paceLine  = resolvedPace && resolvedPace!=="normal" ? `\nNARRATION PACE: ${resolvedPace==="sleepy"?"Extra sleepy — from the first page the world is soft and quiet. Short gentle sentences. Long pauses. Characters move slowly. The whole story drifts toward sleep.":"Quick and snappy — punchy sentences and fast energy through the adventure pages. The final 2-3 pages MUST still slow down, grow quiet, and land the child in sleep. Snappy applies to the adventure, never the ending."}` : "";
       const styleLine = resolvedStyle && resolvedStyle!=="standard" && resolvedStyle!=="adventure" ? `\nSTORY STYLE: ${resolvedStyle==="rhyming"?"Rhyming — the ENTIRE story must rhyme with a consistent scheme that scans naturally when read aloud (AABB, ABCB, or AABBA all work — choose whichever fits the story best). Every line must feel musical and effortless, never forced. Rhymes must serve the story, not the other way around. The sleep landing must still rhyme warmly. Adventure/choice-path format is automatically disabled for rhyming stories.":resolvedStyle==="mystery"?"Mystery — structure as a gentle child-friendly mystery. Something is missing or unexplained on page 1. Clues discovered naturally across the middle pages. The solution is revealed on the penultimate page — surprising but obvious in hindsight. The final page is always the warm sleep landing, NOT more mystery.":""}` : "";
@@ -1803,40 +1803,24 @@ export default function SleepSeed() {
 
       // ── Story arc guidance ────────────────────────────────────────────
       const buildArc = (n) => {
-        return `STORY STRUCTURE GUIDANCE (target ~${n} pages — write more if the story genuinely needs it):
+        return `STORY SHAPE (target ~${n} pages):
 
-This is not a rigid script. It is a shape. The story is always the priority.
+PAGE 1: Something happens. Immediately. No description. No world-building. An action, a sound, or a line of dialogue. End with a reason it is impossible not to turn the page.
 
-PAGE WEIGHT GUIDE: Vary the feel of every page. Some pages: 1-2 short punchy sentences (action moment). Some: 3-5 sentences (adventure unfolding). Some: mostly dialogue (characters revealing themselves). Final pages: slow, warm, drifting (sleep arriving). Never write two consecutive pages with the same rhythm or energy.
+PAGES 2-3: The premise establishes itself. The first appearance of the refrain — not announced, just present, as if it was always going to be there. Characters reveal who they are through what they DO and SAY.
 
-OPENING (pages 1–2): Drop ${name} into something surprising, funny, or urgent IMMEDIATELY. No scene-setting. No describing the world. Something HAPPENS on page 1. A sound word. An action. End page 1 with a reason it is impossible not to turn the page.
+MIDDLE: The age-appropriate structure plays out in full. Each page different in rhythm and energy from the one before. ${name} makes real choices. Sound words on at least 3 pages.
 
-EARLY PAGES: The problem or adventure establishes itself. Characters reveal their personalities through what they SAY and DO — especially through funny mistakes, wrong guesses, and terrible plans that almost work. The REFRAIN appears naturally for the first time around page 2. Write it so a child wants to say it along with you.
+NEAR THE END: ${name} makes the one decision only they could make. Resolution comes FROM ${name}.
 
-MIDDLE PAGES: The adventure deepens. Use Rule of Three, Running Joke, or Cumulative Build. Each page must feel different in rhythm and energy from the one before. ${name} makes REAL CHOICES — not observations. The refrain returns in the middle with a small variation: said by a different character, or going slightly wrong in a funny way. At least one character says something hilarious, brave, or unexpectedly wise. Sound words on at least 3 pages.
-
-THE HERO'S MOMENT: ${name} must make one decision that only THEY could make — using something specific about who they are. Not luck. Not rescue. A choice. The resolution must come FROM ${name}, not happen TO ${name}.
-
-THE ONE TRUE THING: Somewhere in the story — not the ending, not a lesson, just a moment — something emotionally true must happen. A small, specific thing a child would recognise from their own life. The warmth of being seen by exactly the right person. The relief when the scary thing turns out to be okay. The flutter before something new. Never state it. Just let it happen. This is what children remember.
-
-PENULTIMATE PAGE: The world begins to wind down. A yawn appears. Lights get softer. Voices drop. Movement slows. This is the beginning of sleep, not a separate chapter.
-
-FINAL PAGE — THE MOST IMPORTANT PAGE IN THE STORY:
-• Echo something specific from page 1: the same word, the same image, the same sound. The story must feel circular and complete.
-• The refrain returns here — for the last time — as the emotional close. Quieter. Warmer. Final.
-• No new information. No new characters. No new events. Only warmth and resolution.
-• The final sentence must be the longest, slowest, warmest sentence in the entire story. It should carry ${name} all the way to sleep.
-• Weak final page: "And everyone went to sleep. The end."
-• Strong final page: "${name} closed both eyes, and listened to the quiet, and thought: yes. This is exactly where I am supposed to be. [REFRAIN — whispered]. Goodnight."`;
+PENULTIMATE + FINAL PAGE: Follow the STORY CRAFT rules exactly — they are your most important instructions for this story.`;
       };
-      // ── JSON schema ────────────────────────────────────────────────────────
-      // Page schema: allow variable-weight pages for real picture-book feel
       const pgSchema = (n) => Array.from({length:n},()=>(
-        '{"text":"Write the RIGHT amount for this page — not a fixed word count. Big moment pages can be 1-2 SHORT punchy sentences. Journey pages can be 3-5 sentences. Dialogue pages can be almost entirely speech. Quiet sleep pages should be slow and drifting. Every page must feel distinct in rhythm and energy from the pages before and after it. Prioritise storytelling over length targets.","illustration_prompt":"one warm playful moment under 30 words, name every visible character, bright cosy mood"}'
+        '{"text":"[page text — vary length per PAGE RHYTHM rules]","illustration_prompt":"[scene under 20 words]"}'
       )).join(",");
 
-      const simpleSchema = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","refrain":"A 4-8 word phrase rooted in this story's central image or action — NOT generic (never: Off we go! / Here we come! / Let's do this!). SPECIFIC to this story only (e.g. for a mug-with-opinions story: That is NOT how you make tea. — for a sock-in-wrong-drawer story: One sock. Wrong drawer. Not good.). Appears on page 2, varies in the middle, closes the final page. A child must say it before you do by the third reading.","pages":[${pgSchema(totalN)}]}`;
-      const advSchema    = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","refrain":"A 4-8 word phrase rooted in this story's central image or action — NOT generic (never: Off we go! / Here we come! / Let's do this!). SPECIFIC to this story only (e.g. for a mug-with-opinions story: That is NOT how you make tea. — for a sock-in-wrong-drawer story: One sock. Wrong drawer. Not good.). Appears on page 2, varies in the middle, closes the final page. A child must say it before you do by the third reading.","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"Write a short, exciting, specific choice question for ${name} — not generic. It must follow directly from what just happened on the last setup page. Make it feel urgent. Two paths must feel genuinely different.","option_a_label":"4-7 fun exciting words","option_b_label":"4-7 fun exciting words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}]}`;
+      const simpleSchema = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","pages":[${pgSchema(totalN)}],"refrain":"Now that you have written all the pages: look back at what you wrote. The refrain must be a phrase that already appears in your story — a line of dialogue, a sound, a repeated image. It could only belong to THIS story. 4-8 words. Never generic. A child must say it before you on the third reading."}`;
+      const advSchema    = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"Write a short, exciting, specific choice question for ${name} — not generic. It must follow directly from what just happened on the last setup page. Make it feel urgent. Two paths must feel genuinely different.","option_a_label":"4-7 fun exciting words","option_b_label":"4-7 fun exciting words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}],"refrain":"Now that you have written all the pages: look back at what you wrote. The refrain must be a phrase that already appears in your story — a line of dialogue, a sound, a repeated image. It could only belong to THIS story. 4-8 words. Never generic. A child must say it before you on the third reading."}`;
 
       // ── Master story prompt ───────────────────────────────────────────────
       const storyPrompt = `You are writing a children's picture book that will be read aloud at bedtime. Your models are Roald Dahl, Julia Donaldson, Mo Willems, Eric Carle, and A.A. Milne. Every page must feel like it belongs in a book a child could buy at a bookstore and memorise by the third reading.
@@ -1865,32 +1849,55 @@ STRONG concept (specific, surprising, rooted in the child's world):
 WEAK concept (vague, generic, could be any story):
 "The hero goes on an adventure and learns about bravery." — this is a theme, not a concept.
 "The toys come alive and have fun." — this is a category, not a story.
+"${name} and friends solve a problem together." — this is a plot shape, not a story.
+"Something magical happens in the kitchen." — setting is not concept. WHAT happens? To WHOM? WHY is that specific, surprising, and inevitable?
 
 Once you have your concept, COMMIT to it. Every page, every line of dialogue, every joke must serve this one specific idea. A story with a strange clear premise will always beat a technically accomplished story with a vague one.
+
+Then ask: does this concept work at the age level specified? A concept that requires complex inference or irony will not land for a 4-year-old. A concept built entirely on single-word physical comedy will feel thin for a 9-year-old. Scale the concept's sophistication to the reader.
 
 ━━━ READER AGE ━━━
 ${ageLine}
 
 ━━━ WHAT GREAT PICTURE BOOK WRITING LOOKS AND SOUNDS LIKE ━━━
 
-GOOD (target — real-world setting, short punchy lines, sound word, silly dialogue, turn-the-page hook):
-${name} opened the fridge.
-The egg at the back had been there for a very long time.
-It cleared its throat.
-"AHEM," said the egg. "I have been waiting to speak to someone."
-${name} looked at the egg.
-The egg looked at ${name}.
-"There is," said the egg, "a PROBLEM."
+The correct register depends entirely on the age. Read your age section above, then match this example to the appropriate register:
 
-GOOD (the refrain in action — same four words, three times, each one different):
-"This," said the spoon, "is NOT how we do things."
-Later: "This," said the spoon again, somewhat louder, "is STILL not how we do things."
-At the end: "This," whispered the spoon, very quietly, "is exactly how we do things."
+AGE 3–4 TARGET REGISTER (one sentence per page, clapping rhythm, sound word does the work):
+SPLAT.
+The soup was everywhere.
+"Oh no," said ${name}.
+"Oh no," said the spoon.
+"Oh no," said the WALL.
 
-BAD (adult prose with a child's name dropped in — never write this):
+AGE 5–6 TARGET REGISTER (short punchy lines, funny dialogue, turn-the-page hook):
+${name} opened the kitchen drawer.
+Something at the back cleared its throat.
+"AHEM," said the sock. "I have been waiting."
+${name} looked at the sock.
+The sock looked at ${name}.
+"I," said the sock, "have a problem."
+
+AGE 7–8 TARGET REGISTER (wry voice, one interesting word, plant-and-payoff hinted):
+The most opinionated sock in the drawer had been there for three days.
+Three days in the wrong place was, as anyone who knew anything about socks would tell you, absolutely preposterous.
+It cleared its throat with tremendous dignity.
+"Someone," it announced, "has made a very significant error."
+
+AGE 9–10 TARGET REGISTER (complex sentences permitted, emotional undercurrent, character contradiction):
+The old wooden spoon had been in this kitchen for longer than anyone could remember — longer than the fridge, longer than the house, longer, some said, than the street itself.
+It had strong opinions about scrambled eggs. It had even stronger opinions about honesty.
+And it had been waiting, with the patience of someone who has absolutely nothing but time, for exactly the right moment to share both.
+
+GOOD (the refrain in action — same words, three times, each one different):
+"One sock. Wrong drawer. Not good." — said firmly on page 2.
+"One sock. Wrong drawer. Not good." — said by someone entirely unexpected in the middle.
+"One sock. Wrong drawer. Not good." — whispered at the end, so quietly it feels like sleep itself.
+
+BAD (adult prose with a child's name dropped in — never write this for any age):
 "${name} surveyed the kitchen, its familiar geometry rendered strange by the lateness of the hour. The refrigerator emitted a low, sonorous hum."
 
-The difference: SHORT lines. CONCRETE objects with OPINIONS. DIALOGUE that reveals character instantly. A reason — every single page — to turn to the next one.
+The test: read it aloud. If it sounds like a novel, it is wrong. If it sounds like a book a child would demand again tomorrow, it is right.
 
 ━━━ THE TECHNIQUES THAT MAKE CHILDREN MEMORISE BOOKS ━━━
 
@@ -1902,7 +1909,7 @@ The difference: SHORT lines. CONCRETE objects with OPINIONS. DIALOGUE that revea
 
 3. EXAGGERATION: Not "it was big" — "it was SO ENORMOUSLY, RIDICULOUSLY big that a family of hedgehogs had moved into its left nostril and were very happy there."
 
-4. DIALOGUE DRIVES EVERYTHING: Characters say the wrong thing, the funny thing, the brave thing. One line of dialogue minimum per page. Let characters argue, misunderstand, and be confidently wrong. Dialogue is where personality lives.
+4. DIALOGUE DRIVES EVERYTHING: Characters say the wrong thing, the funny thing, the brave thing. Let characters argue, misunderstand, and be confidently wrong. Dialogue is where personality lives. For age 5+: one line of dialogue minimum per page. For age 3–4: dialogue counts as the sentence — use it on pages where it fits, but never add extra sentences just to include it.
 
 5. PLANT AND PAYOFF: Something small on page 1 or 2 — an object, a word, a detail that seems like nothing — becomes the most important thing in the story by the end. The child goes "OH!" and immediately asks to read it again. This is the difference between a story that is forgotten and one that is remembered.
 
@@ -1968,8 +1975,8 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
       const raw = await callClaude(
         [{role:"user",content:storyPrompt}],
-        "You are a master children's picture book author. Before writing, commit to one specific irreplaceable story concept — the single weird idea that makes this story unlike any other. Write at the exact age level specified. Every story must have: a premise-driven title that names the odd specific thing at the heart of the story, a refrain rooted in this story's central image appearing three times with variation, a hero who makes one real decision that changes the outcome, one moment of genuine emotional truth a child would recognise from their own life, and a final page that echoes page 1 with the longest warmest sentence in the story. If rhyming is requested every line scans naturally. The story always ends with the child safely asleep. Return ONLY a valid JSON object — no markdown, no text outside the JSON.",
-        4000
+        "You are a master children's picture book author. Your most important obligation is age calibration — vocabulary, sentence length, structure, and emotional register must all match the specified age group exactly. Before writing: (1) commit to one specific irreplaceable concept, (2) confirm that concept works at the specified age. Every story must have: a premise-driven title, a refrain that appears three times with variation and is derived from something that happens in the story, a hero who makes one real decision, one moment of genuine emotional truth, and a final page echoing page 1 with the longest warmest sentence in the story. The story always ends with the child safely asleep. Return ONLY a valid JSON object — no markdown, no text outside the JSON.",
+        6000
       );
 
       const story = extractJSON(raw);
