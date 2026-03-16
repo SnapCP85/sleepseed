@@ -338,6 +338,16 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .mem-title{font-family:'Fraunces',serif;font-size:13px;font-weight:700;color:var(--cream);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
 .mem-meta{font-size:11px;color:var(--dim)}
+.path-btn{display:flex;align-items:center;gap:14px;width:100%;padding:18px 20px;border-radius:18px;
+  cursor:pointer;border:1.5px solid;text-align:left;margin-bottom:10px;transition:all .2s;position:relative;overflow:hidden}
+.path-btn:disabled{opacity:.4;cursor:not-allowed}
+.path-btn.quick{background:rgba(212,160,48,.08);border-color:rgba(212,160,48,.3);color:var(--gold2)}
+.path-btn.quick:not(:disabled):hover{background:rgba(212,160,48,.18);border-color:var(--gold2);transform:translateY(-1px)}
+.path-btn.build{background:rgba(120,80,220,.08);border-color:rgba(160,100,255,.3);color:rgba(180,140,255,.9)}
+.path-btn.build:not(:disabled):hover{background:rgba(120,80,220,.18);border-color:rgba(160,100,255,.7);transform:translateY(-1px)}
+.path-icon{font-size:28px;flex-shrink:0;line-height:1}
+.path-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;line-height:1.2}
+.path-sub{font-size:11px;opacity:.7;margin-top:3px;font-weight:400}
 .brand-row{display:flex;align-items:center;gap:9px;margin-bottom:6px}
 .brand-gem{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#1a2870,#2840b0);
   border:1.5px solid rgba(212,160,48,.4);display:flex;align-items:center;justify-content:center;font-size:18px}
@@ -544,7 +554,7 @@ const photoFP = (b64) => b64 ? strHash(b64.slice(0,120)) : null;
 
 const makeStorySeed = (heroName,theme,chars,occasion,occasionCustom,lesson,adventure,len,gender,classify,guidance) => {
   const occ = occasion==="other" ? occasionCustom : occasion;
-  const sig = `${heroName.toLowerCase()}|${theme.value}|${chars.map(c=>`${c.type}:${c.name}:${c.classify||""}:${c.gender||""}`).join(",")}|${occ}|${lesson}|${adventure}|${len}|${gender}|${classify}|${guidance.slice(0,60)}`;
+  const sig = `${heroName.toLowerCase()}|${resolvedTheme.value}|${chars.map(c=>`${c.type}:${c.name}:${c.classify||""}:${c.gender||""}`).join(",")}|${occ}|${lesson}|${adventure}|${len}|${gender}|${classify}|${guidance.slice(0,60)}`;
   return (parseInt(strHash(sig),36)%88888)+11111;
 };
 
@@ -1100,6 +1110,7 @@ export default function SleepSeed() {
   const [ageGroup,       setAgeGroup]       = useState("age5");
   const [storyGuidance,  setStoryGuidance]  = useState("");
   const [customize,      setCustomize]      = useState(false);
+  const [builderMode,    setBuilderMode]    = useState(false); // true = from builder, false = quick
   const [error,          setError]          = useState("");
   const [book,           setBook]           = useState(null);
   const [pageIdx,        setPageIdx]        = useState(0);
@@ -1418,10 +1429,18 @@ export default function SleepSeed() {
   },[memories]);
 
   /* ══ GENERATE ══ */
-  const generate = async () => {
+  const generate = async (overrides:any={}) => {
+    const resolvedTheme   = overrides.theme        ?? theme;
+    const resolvedChars   = overrides.extraChars   ?? extraChars;
+    const resolvedOcc     = overrides.occasion     ?? occasion;
+    const resolvedOccCust = overrides.occasionCustom ?? occasionCustom;
+    const resolvedLesson  = overrides.lesson       ?? lesson;
+    const resolvedAdv     = overrides.adventure    ?? adventure;
+    const resolvedLen     = overrides.storyLen     ?? storyLen;
+    const resolvedGuidance= overrides.storyGuidance?? storyGuidance;
     setError(""); setStage("generating"); setFromCache(false); setChosenPath(null);
     const name = heroName.trim();
-    const seed = makeStorySeed(name,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance);
+    const seed = makeStorySeed(name,resolvedTheme,resolvedChars,resolvedOcc,resolvedOccCust,resolvedLesson,resolvedAdv,resolvedLen,heroGender,heroClassify,resolvedGuidance);
     const bKey = `book_${seed}`;
     const mk = (n,st="p") => Array.from({length:n},()=>st);
 
@@ -1447,7 +1466,7 @@ export default function SleepSeed() {
 
       const allChars = [
         {id:"hero",name,type:"hero",photo:null,classify:heroClassify,gender:heroGender},
-        ...extraChars,
+        ...resolvedChars,
       ];
 
       const visualDescs = {};
@@ -1529,17 +1548,17 @@ export default function SleepSeed() {
         `${c.name||c.type}${visualDescs[c.id]?`(${visualDescs[c.id]})`:c.classify?`(${c.classify})`:""}`
       ).join(", ");
 
-      const occasionFinal = occasion==="other" ? occasionCustom.trim() : (occasion||"");
+      const occasionFinal = resolvedOcc==="other" ? resolvedOccCust.trim() : (resolvedOcc||"");
       const occLine  = occasionFinal ? `\nSPECIAL OCCASION: ${occasionFinal}` : "";
-      const lesLine  = lesson ? `\nLESSON (show through action only, never state as moral): ${lesson}` : "";
-      const guidanceSafe = storyGuidance.trim().slice(0, 300).replace(/[\u201C\u201D""]/g, '"');
+      const lesLine  = resolvedLesson ? `\nLESSON (show through action only, never state as moral): ${resolvedLesson}` : "";
+      const guidanceSafe = resolvedGuidance.trim().slice(0, 300).replace(/[\u201C\u201D""]/g, '"');
       const guidLine = guidanceSafe ? `\nSTORY GUIDANCE — highest priority, incorporate naturally:\n${guidanceSafe}` : "";
       const ageCfg = AGES.find(a=>a.value===ageGroup)||AGES[1];
       const ageLine = ageCfg.prompt;
 
       setGen(g => ({...g,stepIdx:1,progress:26,label:"Writing tonight's story…"}));
 
-      const lenCfg = LENGTHS.find(l=>l.value===storyLen)||LENGTHS[1];
+      const lenCfg = LENGTHS.find(l=>l.value===resolvedLen)||LENGTHS[1];
       // For adventure mode: split target into setup/resolution
       const setupN = lenCfg.advSetup;
       const resN   = lenCfg.advRes;
@@ -1614,7 +1633,7 @@ ${charCtx}
 
 ━━━ WORLD, OCCASION, AND CONTEXT ━━━
 Build the story FROM this world — use its specific details, characters, and story hooks. The world is not a backdrop; it is where the story lives.
-${theme.value}${occLine}${lesLine}${guidLine}
+${resolvedTheme.value}${occLine}${lesLine}${guidLine}
 
 ━━━ STORY CRAFT ━━━
 
@@ -1646,7 +1665,7 @@ ${adventure
 
 ━━━ OUTPUT ━━━
 Return ONLY this exact JSON object. No extra text, no markdown, no explanation:
-${adventure ? advSchema : simpleSchema}`;
+${resolvedAdv ? advSchema : simpleSchema}`;
 
       const raw = await callClaude(
         [{role:"user",content:storyPrompt}],
@@ -1657,15 +1676,15 @@ ${adventure ? advSchema : simpleSchema}`;
       const story = extractJSON(raw);
 
       if(!story.title) throw new Error("Response missing title");
-      if(!adventure && (!Array.isArray(story.pages)||story.pages.length===0)) throw new Error("Response missing pages array");
-      if(adventure && (!Array.isArray(story.setup_pages)||!Array.isArray(story.path_a)||!Array.isArray(story.path_b))) throw new Error("Response missing adventure paths");
+      if(!resolvedAdv && (!Array.isArray(story.pages)||story.pages.length===0)) throw new Error("Response missing pages array");
+      if(resolvedAdv && (!Array.isArray(story.setup_pages)||!Array.isArray(story.path_a)||!Array.isArray(story.path_b))) throw new Error("Response missing adventure paths");
 
       setGen(g => ({...g,stepIdx:2,progress:65,label:"Painting the illustrations…"}));
 
       const coverUrl = illoUrl(`${story.cover_prompt}, characters: ${charVisual}`,seed,520,220);
       let bookData, allUrls;
 
-      if(adventure && story.setup_pages){
+      if(resolvedAdv && story.setup_pages){
         const sU = story.setup_pages.map((p,i) => illoUrl(`${p.illustration_prompt}, ${charVisual}`,seed+i+1,400,190));
         const aU = story.path_a.map((p,i) => illoUrl(`${p.illustration_prompt}, ${charVisual}`,seed+100+i,400,190));
         const bU = story.path_b.map((p,i) => illoUrl(`${p.illustration_prompt}, ${charVisual}`,seed+200+i,400,190));
@@ -1908,10 +1927,10 @@ ${adventure ? advSchema : simpleSchema}`;
             </div>
             <div style={{height:14}} />
 
-            {/* ── STEP 1: Who is tonight's story for? ── */}
+            {/* Name + gender */}
             <div className="card" style={{marginBottom:10}}>
               <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:"var(--cream)",marginBottom:12,textAlign:"center",fontStyle:"italic"}}>
-                Tonight's story is for…
+                ✨ Tonight's story is for…
               </div>
               <input className="finput hero-input" placeholder="Your child's name…"
                 value={heroName} onChange={e=>setHeroName(e.target.value)} maxLength={20}
@@ -1923,7 +1942,48 @@ ${adventure ? advSchema : simpleSchema}`;
               </div>
             </div>
 
-            {/* ── STEP 2: Pick a world ── */}
+            {/* Two path buttons */}
+            {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
+            <button className="path-btn quick" disabled={heroName.trim().length<2}
+              onClick={()=>{
+                if(heroName.trim().length<2) return;
+                const t = THEMES[Math.floor(Math.random()*THEMES.length)];
+                generate({theme:t,extraChars:[],occasion:"",occasionCustom:"",lesson:"",adventure:false,storyLen:"standard",storyGuidance:""});
+              }}>
+              <div className="path-icon">⚡</div>
+              <div className="path-text">
+                <div className="path-title">Quick Story</div>
+                <div className="path-sub">Generate a story instantly</div>
+              </div>
+            </button>
+            <button className="path-btn build" disabled={heroName.trim().length<2}
+              onClick={()=>{ if(heroName.trim().length<2) return; setStage("builder"); }}>
+              <div className="path-icon">🎨</div>
+              <div className="path-text">
+                <div className="path-title">Build My Story</div>
+                <div className="path-sub">Choose world, characters & more</div>
+              </div>
+            </button>
+            {heroName.trim().length<2 && (
+              <div style={{textAlign:"center",fontSize:12,color:"var(--dimmer)",marginTop:8}}>Enter a name to begin ↑</div>
+            )}
+          </div>
+        )}
+
+        {/* BUILDER */}
+        {stage==="builder" && (
+          <div className="screen">
+            <div className="brand-row">
+              <button className="btn-ghost" style={{fontSize:12,padding:"6px 12px",marginRight:8}} onClick={()=>setStage("home")}>← Back</button>
+              <div className="brand-gem">🌙</div>
+              <div>
+                <div className="brand-name" style={{fontSize:16}}>{heroName}'s Story</div>
+                <div className="brand-tag">Build your adventure</div>
+              </div>
+            </div>
+            <div style={{height:10}} />
+
+            {/* World picker */}
             <div className="card" style={{marginBottom:10}}>
               <div className="section-label" style={{marginBottom:10}}>🌍 Pick a world</div>
               <div className="theme-grid">
@@ -1936,183 +1996,168 @@ ${adventure ? advSchema : simpleSchema}`;
               </div>
             </div>
 
-            {/* ── GENERATE — always visible ── */}
-            <div style={{marginBottom:10}}>
-              {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
-              <button className="btn" disabled={heroName.trim().length<2} onClick={generate}>
-                {heroName.trim().length>=2 ? `✨ Make ${heroName.trim()}'s story!` : "Enter a name to begin ↑"}
-              </button>
-            </div>
+            {/* All options */}
+            <div className="card" style={{marginBottom:10}}>
+              <div style={{display:"flex",flexDirection:"column",gap:16}}>
 
-            {/* ── STEP 3: Make it extra special (optional) ── */}
-            <div style={{background:"linear-gradient(150deg,rgba(22,32,84,.72),rgba(11,18,42,.88))",border:"1px solid rgba(212,160,48,.1)",borderRadius:22,padding:16,backdropFilter:"blur(20px)",boxShadow:"0 20px 64px rgba(0,0,0,.55)"}}>
-              <div className={`cust-toggle${customize?" open":""}`} onClick={()=>setCustomize(o=>!o)} style={{marginBottom:0}}>
+                {/* Characters */}
                 <div>
-                  <div className="cust-label">✨ Make it extra special</div>
-                  {!customize && (
-                    <div className="magic-hint" style={{marginTop:3}}>
-                      <span className="magic-hint-badge">Characters</span>
-                      <span className="magic-hint-badge">Occasion</span>
-                      <span className="magic-hint-badge">Story ideas</span>
-                    </div>
-                  )}
-                </div>
-                <span className="cust-chevron">▼</span>
-              </div>
-
-              {customize && (
-                <div style={{display:"flex",flexDirection:"column",gap:16,marginTop:14}}>
-
-                  {/* Who's in the story */}
-                  <div>
-                    <div className="section-label" style={{marginBottom:8}}>👥 Who's in the story?</div>
-                    <div className="char-simple-list">
-                      {extraChars.map(c => (
-                        <div className="char-simple-row" key={c.id}>
-                          <div className="char-photo" style={{width:34,height:34,fontSize:16,borderRadius:8,flexShrink:0}} onClick={()=>pickPhoto(c.id)}>
-                            {c.photo ? <img src={c.photo.preview} alt={c.name} /> : <span>{CHAR_ICONS[c.type]||"👫"}</span>}
-                          </div>
-                          <input className="char-name-in" placeholder={`${CHAR_TYPES.find(t=>t.value===c.type)?.label||"Friend"}'s name…`}
-                            value={c.name} maxLength={16} style={{flex:1}}
-                            onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
-                          <ClassifySelect value={c.classify} onChange={e=>updateExtraChar(c.id,{classify:e.target.value})}
-                            className="char-cls-sel" style={{width:90,fontSize:10}} />
-                          <button className="btn-danger" style={{flexShrink:0}} onClick={()=>removeExtraChar(c.id)}>✕</button>
+                  <div className="section-label" style={{marginBottom:8}}>👥 Who's in the story?</div>
+                  <div className="char-simple-list">
+                    {extraChars.map(c => (
+                      <div className="char-simple-row" key={c.id}>
+                        <div className="char-photo" style={{width:34,height:34,fontSize:16,borderRadius:8,flexShrink:0}} onClick={()=>pickPhoto(c.id)}>
+                          {c.photo ? <img src={c.photo.preview} alt={c.name} /> : <span>{CHAR_ICONS[c.type]||"👫"}</span>}
                         </div>
-                      ))}
-                    </div>
-                    {extraChars.length<4 && (
-                      <div style={{marginTop:10}}>
-                        <div className="section-label" style={{marginBottom:8}}>Add a character:</div>
-                        <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-                          {CHAR_TYPES.map(t => (
-                            <button key={t.value} className="char-add-pill"
-                              onClick={()=>setExtraChars(cs=>[...cs,{...newChar(),type:t.value}])}>
-                              <span className="char-add-pill-icon">{t.icon}</span>
-                              <span>{t.label}</span>
-                            </button>
-                          ))}
-                        </div>
+                        <input className="char-name-in" placeholder={`${CHAR_TYPES.find(t=>t.value===c.type)?.label||"Friend"}'s name…`}
+                          value={c.name} maxLength={16} style={{flex:1}}
+                          onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
+                        <ClassifySelect value={c.classify} onChange={e=>updateExtraChar(c.id,{classify:e.target.value})}
+                          className="char-cls-sel" style={{width:90,fontSize:10}} />
+                        <button className="btn-danger" style={{flexShrink:0}} onClick={()=>removeExtraChar(c.id)}>✕</button>
                       </div>
-                    )}
+                    ))}
                   </div>
-
-                  <div className="divider" />
-
-                  {/* Is tonight special? */}
-                  <div>
-                    <div className="section-label" style={{marginBottom:8}}>🎉 Is tonight a special night?</div>
-                    <div className="occ-pills">
-                      {OCCASIONS.filter(o=>o.value).map(o => (
-                        <button key={o.value} className={`occ-pill${occasion===o.value?" on":""}`}
-                          onClick={()=>{ setOccasion(occasion===o.value?"":o.value); setOccasionCustom(""); }}>
-                          {o.label}
-                        </button>
-                      ))}
-                    </div>
-                    {occasion==="other" && (
-                      <input className="finput" style={{marginTop:8,fontSize:13}}
-                        placeholder="What's the occasion? e.g. lost a tooth, first haircut…"
-                        value={occasionCustom} onChange={e=>setOccasionCustom(e.target.value)} maxLength={100} />
-                    )}
-                  </div>
-
-                  <div className="divider" />
-
-                  {/* Sneak in a lesson */}
-                  <div>
-                    <div className="section-label" style={{marginBottom:8}}>💛 Sneak in a lesson? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
-                    <div className="les-pills">
-                      {LESSONS.filter(l=>l.value).map(l => (
-                        <button key={l.value} className={`les-pill${lesson===l.value?" on":""}`}
-                          onClick={()=>setLesson(lesson===l.value?"":l.value)}>
-                          {l.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="divider" />
-
-                  {/* Guide the story */}
-                  <div>
-                    <div className="section-label" style={{marginBottom:4}}>✏️ What's on your mind tonight?</div>
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
-                      {["What happened today?","How are you feeling?","What do you want in the story?"].map(h=>(
-                        <span key={h} style={{fontSize:10,color:"var(--dimmer)",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",borderRadius:99,padding:"3px 9px"}}>{h}</span>
-                      ))}
-                    </div>
-                    <textarea className="ftarea" rows={2}
-                      placeholder="e.g. 'Lily had a hard day at school' or 'add a funny dragon' or 'very sleepy ending'…" 
-                      value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)} maxLength={500} />
-                    <div style={{fontSize:10,color:"var(--dimmer)",margin:"6px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Today's moments</div>
-                    <div className="guidance-chips" style={{marginBottom:6}}>
-                      {["😟 Hard day","🆕 Tried something new","👋 Made a new friend","😬 Feeling nervous","🎉 Something exciting","😤 Had a disagreement"].map(chip => (
-                        <button key={chip} className="guidance-chip"
-                          onClick={()=>setStoryGuidance(g=>(g?g+", ":"")+chip.replace(/^\S+ /,""))}>
-                          {chip}
-                        </button>
-                      ))}
-                    </div>
-                    <div style={{fontSize:10,color:"var(--dimmer)",margin:"4px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Story ingredients</div>
-                    <div className="guidance-chips">
-                      {["🐉 Add a dragon","😂 Make it funny","🌙 Sleepy ending","🐾 Talking animal","🔮 Surprise twist","🎲 Surprise me"].map(chip => (
-                        <button key={chip} className="guidance-chip"
-                          onClick={()=>setStoryGuidance(g=>(g?g+", ":"")+chip.replace(/^\S+ /,""))}>
-                          {chip}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="divider" />
-
-                  {/* Age / grade level */}
-                  <div>
-                    <div className="section-label" style={{marginBottom:8}}>🎓 How old is {heroName||"your child"}?</div>
-                    <div className="age-pills">
-                      {AGES.map(a => (
-                        <button key={a.value} className={`age-pill${ageGroup===a.value?" on":""}`}
-                          onClick={()=>setAgeGroup(a.value)}>
-                          <span>{a.label}</span>
-                          <span className="age-pill-grade">{a.grade}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="divider" />
-
-                  {/* Length + Adventure in one row */}
-                  <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                    <div>
-                      <div className="section-label" style={{marginBottom:6}}>⏱ Story length</div>
-                      <div className="pill-row">
-                        {LENGTHS.map(l => (
-                          <button key={l.value} className={`pill${storyLen===l.value?" on":""}`} onClick={()=>setStoryLen(l.value)}>
-                            {l.label} <span style={{opacity:.6,fontWeight:400}}>({l.desc})</span>
+                  {extraChars.length<4 && (
+                    <div style={{marginTop:10}}>
+                      <div className="section-label" style={{marginBottom:8}}>Add a character:</div>
+                      <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+                        {CHAR_TYPES.map(t => (
+                          <button key={t.value} className="char-add-pill"
+                            onClick={()=>setExtraChars(cs=>[...cs,{...newChar(),type:t.value}])}>
+                            <span className="char-add-pill-icon">{t.icon}</span>
+                            <span>{t.label}</span>
                           </button>
                         ))}
                       </div>
                     </div>
-                    <div className="tog-row">
-                      <div>
-                        <div className="tog-label">🔀 Choose Your Adventure</div>
-                        <div className="tog-sub">Your child picks the story's path</div>
-                      </div>
-                      <label className="tog">
-                        <input type="checkbox" checked={adventure} onChange={e=>setAdventure(e.target.checked)} />
-                        <div className="tog-track" /><div className="tog-thumb" />
-                      </label>
+                  )}
+                </div>
+
+                <div className="divider" />
+
+                {/* What's on your mind */}
+                <div>
+                  <div className="section-label" style={{marginBottom:4}}>✏️ What's on your mind tonight?</div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+                    {["What happened today?","How are you feeling?","What do you want in the story?"].map(h=>(
+                      <span key={h} style={{fontSize:10,color:"var(--dimmer)",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",borderRadius:99,padding:"3px 9px"}}>{h}</span>
+                    ))}
+                  </div>
+                  <textarea className="ftarea" rows={2}
+                    placeholder="e.g. 'Lily had a hard day at school' or 'add a funny dragon' or 'very sleepy ending'…"
+                    value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)} maxLength={500} />
+                  <div style={{fontSize:10,color:"var(--dimmer)",margin:"6px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Today's moments</div>
+                  <div className="guidance-chips" style={{marginBottom:6}}>
+                    {["😟 Hard day","🆕 Tried something new","👋 Made a new friend","😬 Feeling nervous","🎉 Something exciting","😤 Had a disagreement"].map(chip => (
+                      <button key={chip} className="guidance-chip"
+                        onClick={()=>setStoryGuidance(g=>(g?g+", ":"")+chip.replace(/^\S+ /,""))}>
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{fontSize:10,color:"var(--dimmer)",margin:"4px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Story ingredients</div>
+                  <div className="guidance-chips">
+                    {["🐉 Add a dragon","😂 Make it funny","🌙 Sleepy ending","🐾 Talking animal","🔮 Surprise twist","🎲 Surprise me"].map(chip => (
+                      <button key={chip} className="guidance-chip"
+                        onClick={()=>setStoryGuidance(g=>(g?g+", ":"")+chip.replace(/^\S+ /,""))}>
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="divider" />
+
+                {/* Special occasion */}
+                <div>
+                  <div className="section-label" style={{marginBottom:8}}>🎉 Is tonight a special night?</div>
+                  <div className="occ-pills">
+                    {OCCASIONS.filter(o=>o.value).map(o => (
+                      <button key={o.value} className={`occ-pill${occasion===o.value?" on":""}`}
+                        onClick={()=>{ setOccasion(occasion===o.value?"":o.value); setOccasionCustom(""); }}>
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                  {occasion==="other" && (
+                    <input className="finput" style={{marginTop:8,fontSize:13}}
+                      placeholder="What's the occasion? e.g. lost a tooth, first haircut…"
+                      value={occasionCustom} onChange={e=>setOccasionCustom(e.target.value)} maxLength={100} />
+                  )}
+                </div>
+
+                <div className="divider" />
+
+                {/* Lesson */}
+                <div>
+                  <div className="section-label" style={{marginBottom:8}}>💛 Sneak in a lesson? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
+                  <div className="les-pills">
+                    {LESSONS.filter(l=>l.value).map(l => (
+                      <button key={l.value} className={`les-pill${lesson===l.value?" on":""}`}
+                        onClick={()=>setLesson(lesson===l.value?"":l.value)}>
+                        {l.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="divider" />
+
+                {/* Age */}
+                <div>
+                  <div className="section-label" style={{marginBottom:8}}>🎓 How old is {heroName}?</div>
+                  <div className="age-pills">
+                    {AGES.map(a => (
+                      <button key={a.value} className={`age-pill${ageGroup===a.value?" on":""}`}
+                        onClick={()=>setAgeGroup(a.value)}>
+                        <span>{a.label}</span>
+                        <span className="age-pill-grade">{a.grade}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="divider" />
+
+                {/* Length + Adventure */}
+                <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                  <div>
+                    <div className="section-label" style={{marginBottom:6}}>⏱ Story length</div>
+                    <div className="pill-row">
+                      {LENGTHS.map(l => (
+                        <button key={l.value} className={`pill${storyLen===l.value?" on":""}`} onClick={()=>setStoryLen(l.value)}>
+                          {l.label} <span style={{opacity:.6,fontWeight:400}}>({l.desc})</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
-
+                  <div className="tog-row">
+                    <div>
+                      <div className="tog-label">🔀 Choose Your Adventure</div>
+                      <div className="tog-sub">Your child picks the story's path</div>
+                    </div>
+                    <label className="tog">
+                      <input type="checkbox" checked={adventure} onChange={e=>setAdventure(e.target.checked)} />
+                      <div className="tog-track" /><div className="tog-thumb" />
+                    </label>
+                  </div>
                 </div>
-              )}
+
+              </div>
+            </div>
+
+            {/* Generate */}
+            <div style={{marginBottom:16}}>
+              {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
+              <button className="btn" onClick={()=>generate()}>
+                ✨ Make {heroName}'s story!
+              </button>
             </div>
           </div>
         )}
 
+        {/* GENERATING */}
         {/* GENERATING */}
         {stage==="generating" && (
           <div className="screen" style={{maxWidth:420}}>
