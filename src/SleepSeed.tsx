@@ -1338,9 +1338,7 @@ export default function SleepSeed() {
   const downloadStory = async () => {
     if(!book) return;
     try {
-      const jspdfUrl = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-      const mod = await import(/* @vite-ignore */ jspdfUrl);
-      const jsPDF = mod.jsPDF || (mod as any).default?.jsPDF;
+      const { jsPDF } = await import("jspdf");
       const doc = new jsPDF({ orientation:"portrait", unit:"mm", format:"a5" });
       const W = 148, H = 210;
       const BG:[number,number,number]  = [8,12,28];
