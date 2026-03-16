@@ -21,6 +21,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .app{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px}
 .screen{width:100%;max-width:540px;animation:fup .5s cubic-bezier(.16,1,.3,1) both}
 @keyframes fup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .card{background:linear-gradient(150deg,rgba(22,32,84,.72),rgba(11,18,42,.88));
   border:1px solid rgba(212,160,48,.15);border-radius:22px;padding:26px;
   backdrop-filter:blur(20px);box-shadow:0 20px 64px rgba(0,0,0,.55)}
@@ -1157,6 +1158,9 @@ export default function SleepSeed() {
   const [storyLen,       setStoryLen]       = useState("standard");
   const [ageGroup,       setAgeGroup]       = useState("age5");
   const [storyGuidance,  setStoryGuidance]  = useState("");
+  const [storyContext,   setStoryContext]   = useState(""); // "what happened today"
+  const [lessonContext,  setLessonContext]  = useState(""); // "why tonight" for selected lesson
+  const [todayPrompt,    setTodayPrompt]    = useState(""); // focused placeholder from chip
   const [customize,      setCustomize]      = useState(false);
   const [builderMode,    setBuilderMode]    = useState(false);
   const [storyMood,      setStoryMood]      = useState("");        // calm|silly|exciting|heartfelt
@@ -1164,6 +1168,12 @@ export default function SleepSeed() {
   const [storyStyle,     setStoryStyle]     = useState("standard");// standard|rhyming|adventure|mystery
   const [heroTraits,     setHeroTraits]     = useState<string[]>([]);
   const [moreOpen,       setMoreOpen]       = useState(false);
+  const [briefStep1Open, setBriefStep1Open] = useState(true);
+  const [briefStep2Open, setBriefStep2Open] = useState(false);
+  const [storyBrief1,    setStoryBrief1]    = useState(""); // "Tonight, [name] is..."
+  const [realLifeCtx,   setRealLifeCtx]   = useState(""); // optional detail for real-life chip
+  const [realLifeChip,  setRealLifeChip]  = useState(""); // which real-life chip is active
+  const [storyBrief2,    setStoryBrief2]    = useState(""); // "The story should feel..."
   const [quickChars,     setQuickChars]     = useState<string[]>([]);
   const [error,          setError]          = useState("");
   const [book,           setBook]           = useState(null);
@@ -1488,7 +1498,7 @@ export default function SleepSeed() {
     setTimeout(() => setSparkles(s => s.filter(sp => sp.id!==id)),700);
   },[]);
 
-  const newChar = () => ({id:uid(),type:"friend",name:"",photo:null,classify:"",gender:""});
+  const newChar = () => ({id:uid(),type:"friend",name:"",photo:null,classify:"",gender:"",note:""});
   const addExtraChar    = () => setExtraChars(cs => cs.length<4 ? [...cs,newChar()] : cs);
   const removeExtraChar = (id) => setExtraChars(cs => cs.filter(c => c.id!==id));
   const updateExtraChar = (id,patch) => setExtraChars(cs => cs.map(c => c.id===id ? {...c,...patch} : c));
@@ -1530,6 +1540,10 @@ export default function SleepSeed() {
     const resolvedLen     = overrides.storyLen      ?? storyLen;
     const resolvedAge    = overrides.ageGroup      ?? ageGroup;
     const resolvedGuidance= overrides.storyGuidance ?? storyGuidance;
+    const resolvedBrief1  = overrides.storyBrief1   ?? storyBrief1;
+    const resolvedBrief2  = overrides.storyBrief2   ?? storyBrief2;
+    const resolvedContext = overrides.storyContext  ?? storyContext;
+    const resolvedLesCtx  = overrides.lessonContext ?? lessonContext;
     const resolvedMood    = overrides.storyMood     ?? storyMood;
     const resolvedPace    = overrides.storyPace     ?? storyPace;
     const resolvedStyle   = overrides.storyStyle    ?? storyStyle;
@@ -1637,7 +1651,8 @@ export default function SleepSeed() {
           : c.type==="pet" ? "beloved pet"
           : c.type==="toy" ? "beloved toy that comes alive in this world"
           : "friend and companion";
-        return `• ${c.name||capitalize(c.type)}: ${typeLabel}${cls}${proStr}${desc}${voice}`;
+        const noteStr = c.note ? `\n  Story context: ${c.note}` : "";
+        return `• ${c.name||capitalize(c.type)}: ${typeLabel}${cls}${proStr}${desc}${voice}${noteStr}`;
       }).join("\n");
 
       const charVisual = allChars.map(c =>
@@ -1649,11 +1664,23 @@ export default function SleepSeed() {
       const lesArr = Array.isArray(resolvedLesson) ? resolvedLesson : (resolvedLesson ? [resolvedLesson] : []);
       const lesLine  = lesArr.length ? `\nLESSONS (weave these in through action only — never state as a moral): ${lesArr.length > 2 ? "You have been given multiple lessons. Prioritise the one or two that fit most naturally into the story. A story that gently embodies one lesson is far more powerful than a story that forces three. Choose wisely. " : ""}${lesArr.map(l=>"• "+l).join("\n")}` : "";
       const guidanceSafe = resolvedGuidance.trim().slice(0, 300).replace(/[\u201C\u201D""]/g, '"');
-      const guidLine = guidanceSafe ? `\nSTORY GUIDANCE — highest priority, incorporate naturally:\n${guidanceSafe}` : "";
+      const contextSafe  = resolvedContext.trim().slice(0, 300).replace(/[\u201C\u201D""]/g, '"');
+      const lesCtxSafe   = resolvedLesCtx.trim().slice(0, 200).replace(/[\u201C\u201D""]/g, '"');
+      const resolvedRealCtx = overrides.realLifeCtx ?? realLifeCtx;
+      const realCtxSafe  = resolvedRealCtx.trim().slice(0,200).replace(/[\u201C\u201D""]/g,'"');
+      const brief1Safe = resolvedBrief1.trim().slice(0,200).replace(/[\u201C\u201D""]/g,'"');
+      const brief2Safe = resolvedBrief2.trim().slice(0,150).replace(/[\u201C\u201D""]/g,'"');
+      const guidLine = [
+        brief1Safe   ? `TONIGHT'S STORY PREMISE (highest priority — this defines what the story is fundamentally about):\n${name} is ${brief1Safe}${realCtxSafe ? ". Specific context: " + realCtxSafe : ""}` : "",
+        brief2Safe   ? `STORY TONE: The story should feel ${brief2Safe}` : "",
+        contextSafe  ? `ADDITIONAL CONTEXT (incorporate naturally):\n${contextSafe}` : "",
+        guidanceSafe ? `ADDITIONAL GUIDANCE (incorporate naturally):\n${guidanceSafe}` : "",
+        lesCtxSafe   ? `WHY THIS LESSON TONIGHT (weave this specific situation in naturally):\n${lesCtxSafe}` : "",
+      ].filter(Boolean).map(s => "\n" + s).join("");
 
       // World: AI picks based on context, or random if no inputs
       const lesArrCheck = Array.isArray(resolvedLesson) ? resolvedLesson : (resolvedLesson ? [resolvedLesson] : []);
-      const hasContext = !!(resolvedOcc || lesArrCheck.length || guidanceSafe || resolvedChars.length > 0);
+      const hasContext = !!(resolvedOcc || lesArrCheck.length || guidanceSafe || contextSafe || brief1Safe || realCtxSafe || resolvedChars.length > 0);
       const autoTheme = hasContext
         ? null  // let AI pick
         : THEMES[Math.floor(Math.random() * THEMES.length)];
@@ -2231,43 +2258,129 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
             <div className="card" style={{marginBottom:10}}>
               <div style={{display:"flex",flexDirection:"column",gap:14}}>
 
-                {/* ── Main prompt ── */}
+                {/* ── Story Brief Builder ── */}
                 <div>
-                  <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:700,color:"var(--cream)",marginBottom:8}}>
-                    What should be in tonight's story?
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:700,color:"var(--cream)",marginBottom:4}}>
+                    What's tonight's story about?
                   </div>
-                  <textarea className="ftarea" rows={3}
-                    placeholder="e.g. 'Lily had a rough day at school' or 'add a talking dog' or 'something funny happens at bedtime'…"
-                    value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)} maxLength={500} />
+                  <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:10}}>Two steps build your brief — or just type anything</div>
 
-                  <div style={{fontSize:10,color:"rgba(190,200,240,.75)",margin:"8px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Today's moments</div>
-                  <div className="guidance-chips" style={{marginBottom:8}}>
-                    {["😟 Hard day","🆕 Tried something new","👋 Made a new friend","😬 Feeling nervous","🎉 Something exciting","😤 Had a disagreement"].map(chip => (
-                      <button key={chip} className="guidance-chip"
-                        onClick={()=>setStoryGuidance(g=>(g?g+", ":"")+chip.replace(/^\S+ /,""))}>
-                        {chip}
-                      </button>
-                    ))}
+                  {/* Live preview */}
+                  {(storyBrief1||storyBrief2) && (
+                    <div style={{background:"rgba(212,160,48,.07)",border:"1px solid rgba(212,160,48,.2)",borderRadius:10,padding:"10px 13px",fontSize:12,lineHeight:1.7,marginBottom:10,color:"var(--cream)"}}>
+                      {storyBrief1 && <span style={{color:"var(--gold2)",fontWeight:700}}>{heroName} is {storyBrief1}.</span>}
+                      {storyBrief1 && storyBrief2 && " "}
+                      {storyBrief2 && <span>The story should feel <span style={{color:"var(--gold2)",fontWeight:700}}>{storyBrief2}</span>.</span>}
+                    </div>
+                  )}
+
+                  {/* Step 1 */}
+                  <div style={{border:"1px solid rgba(255,255,255,.1)",borderRadius:10,overflow:"hidden",marginBottom:6}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 12px",cursor:"pointer",background:"rgba(255,255,255,.03)"}}
+                      onClick={()=>setBriefStep1Open(o=>!o)}>
+                      <div style={{width:18,height:18,borderRadius:"50%",background:storyBrief1?"rgba(76,200,144,.2)":"rgba(100,160,255,.2)",color:storyBrief1?"#80d8a8":"#a8c8ff",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>1</div>
+                      <div style={{fontSize:11,fontWeight:700,color:"var(--dim)",flex:1}}>Tonight, {heroName} is…</div>
+                      {storyBrief1 && <div style={{fontSize:10,color:"#a8c8ff",maxWidth:150,textAlign:"right",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{storyBrief1}</div>}
+                    </div>
+                    {briefStep1Open && (
+                      <div style={{padding:"10px 12px",borderTop:"1px solid rgba(255,255,255,.07)"}}>
+                        <div style={{fontSize:9,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:5}}>Real life</div>
+                        <div className="guidance-chips" style={{marginBottom:realLifeChip?6:8}}>
+                          {[
+                            {l:"something real today",    v:"going through something real from today",   p:`What happened? e.g. '${heroName} had a falling out with her best friend' or 'he tried really hard at something and didn't quite get there'…`},
+                            {l:"feeling something big",   v:"feeling a big emotion tonight",             p:`What's ${heroName} feeling? e.g. 'she's been really anxious about something' or 'he's upset but not sure why'…`},
+                            {l:"a tricky situation",      v:"dealing with a tricky situation",           p:`What's the situation? e.g. 'there's been tension with a sibling all day' or 'she said something she wishes she hadn't'…`},
+                            {l:"celebrating something",   v:"celebrating something that happened",       p:`What happened? e.g. 'she got the main part in the school play' or 'he finally learned to ride his bike today'…`},
+                          ].map(o => (
+                            <button key={o.v} className={`guidance-chip${storyBrief1===o.v?" on":""}`}
+                              onClick={()=>{ setStoryBrief1(o.v); setRealLifeChip(o.p); setRealLifeCtx(""); }}>
+                              {o.l}
+                            </button>
+                          ))}
+                        </div>
+                        {realLifeChip && (
+                          <div style={{marginBottom:8,animation:"fadeUp .2s ease"}}>
+                            <div style={{fontSize:10,color:"rgba(76,200,144,.8)",marginBottom:4,fontWeight:700}}>
+                              Tell us more <span style={{fontWeight:400,color:"var(--dimmer)"}}>— optional, but makes the story much more personal</span>
+                            </div>
+                            <textarea className="ftarea" rows={2} style={{minHeight:52,fontSize:12}}
+                              placeholder={realLifeChip}
+                              value={realLifeCtx}
+                              onChange={e=>setRealLifeCtx(e.target.value)}
+                              maxLength={200} />
+                            <button style={{fontSize:10,color:"var(--dimmer)",background:"none",border:"none",cursor:"pointer",padding:"2px 0",textDecoration:"underline"}}
+                              onClick={()=>{ setBriefStep1Open(false); setBriefStep2Open(true); }}>
+                              {realLifeCtx.trim() ? "Done — continue to step 2 →" : "Skip — continue to step 2 →"}
+                            </button>
+                          </div>
+                        )}
+                        <div style={{fontSize:9,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:5}}>Fun &amp; fantasy</div>
+                        <div className="guidance-chips" style={{marginBottom:8}}>
+                          {[
+                            {l:"a made-up adventure",     v:"about to go on a completely made-up adventure"},
+                            {l:"discovering magic",       v:"about to discover something magical"},
+                            {l:"a silly quest",           v:"on a silly quest with friends"},
+                            {l:"a funny world",           v:"in a world where everything goes hilariously wrong"},
+                          ].map(o => (
+                            <button key={o.v}
+                              style={{padding:"4px 10px",borderRadius:99,fontSize:11,fontWeight:700,cursor:"pointer",
+                                border:`1px solid ${storyBrief1===o.v?"rgba(240,180,50,.6)":"rgba(240,180,50,.25)"}`,
+                                background:storyBrief1===o.v?"rgba(240,180,50,.12)":"transparent",
+                                color:storyBrief1===o.v?"#f0cc60":"rgba(240,200,80,.85)",fontFamily:"'Nunito',sans-serif",
+                                transition:"all .15s"}}
+                              onClick={()=>{ setStoryBrief1(o.v); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(false); setBriefStep2Open(true); }}>
+                              {o.l}
+                            </button>
+                          ))}
+                        </div>
+                        <div style={{borderTop:"1px dashed rgba(255,255,255,.12)",margin:"10px 0 10px",paddingTop:10}}>
+                          <div style={{fontSize:11,fontWeight:700,color:"var(--cream)",marginBottom:5}}>
+                            ✏️ Or just write anything you want
+                          </div>
+                          <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginBottom:7,lineHeight:1.5}}>
+                            Skip the chips entirely — describe the story in your own words
+                          </div>
+                          <textarea className="ftarea" rows={3} style={{minHeight:68,fontSize:12,border:"1.5px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.07)"}}
+                            placeholder="e.g. 'Lily is nervous about starting at her new school next week' or 'a dragon who is scared of fire goes on a quest to find someone who can help' or 'something silly and funny involving bedtime and a talking sock'…"
+                            value={storyBrief1.startsWith("about")||storyBrief1.startsWith("on ")||storyBrief1.startsWith("in ")||storyBrief1.startsWith("going")||storyBrief1.startsWith("feeling")||storyBrief1.startsWith("dealing")||storyBrief1.startsWith("celebrating")? "":(storyBrief1||"")}
+                            onChange={e=>{ setStoryBrief1(e.target.value); }} />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  <div style={{fontSize:10,color:"rgba(190,200,240,.75)",margin:"4px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Story ingredients</div>
-                  <div className="guidance-chips" style={{marginBottom:8}}>
-                    {["😂 Make it funny","🐾 Talking animal","🌙 Sleepy ending","🔮 Surprise twist","🐉 Add a dragon","🎲 Surprise me"].map(chip => (
-                      <button key={chip} className="guidance-chip"
-                        onClick={()=>setStoryGuidance(g=>(g?g+", ":"")+chip.replace(/^\S+ /,""))}>
-                        {chip}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div style={{fontSize:10,color:"rgba(190,200,240,.75)",margin:"4px 0 4px",fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Sneak in a lesson</div>
-                  <div className="guidance-chips">
-                    {[...LESSONS_CHARACTER,...LESSONS_EMOTIONAL].map(l => (
-                      <button key={l.value} className={`guidance-chip${lessons.includes(l.value)?" on":""}`}
-                        onClick={()=>setLessons(ls=>ls.includes(l.value)?ls.filter(x=>x!==l.value):[...ls,l.value])}>
-                        {l.label}
-                      </button>
-                    ))}
+                  {/* Step 2 */}
+                  <div style={{border:"1px solid rgba(255,255,255,.1)",borderRadius:10,overflow:"hidden"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 12px",cursor:"pointer",background:"rgba(255,255,255,.03)"}}
+                      onClick={()=>setBriefStep2Open(o=>!o)}>
+                      <div style={{width:18,height:18,borderRadius:"50%",background:storyBrief2?"rgba(76,200,144,.2)":"rgba(100,160,255,.2)",color:storyBrief2?"#80d8a8":"#a8c8ff",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>2</div>
+                      <div style={{fontSize:11,fontWeight:700,color:"var(--dim)",flex:1}}>The story should feel…</div>
+                      {storyBrief2 && <div style={{fontSize:10,color:"#a8c8ff",maxWidth:150,textAlign:"right",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{storyBrief2}</div>}
+                    </div>
+                    {briefStep2Open && (
+                      <div style={{padding:"10px 12px",borderTop:"1px solid rgba(255,255,255,.07)"}}>
+                        <div className="guidance-chips" style={{marginBottom:8}}>
+                          {[
+                            {l:"😂 Warm & funny",     v:"warm and funny, with lots of laughs"},
+                            {l:"🌙 Calm & cosy",      v:"calm and cosy, drifting toward sleep"},
+                            {l:"⚡ Exciting",          v:"exciting and full of surprises"},
+                            {l:"💛 Heartfelt",        v:"heartfelt and emotionally true"},
+                            {l:"🤪 Completely silly", v:"completely silly from start to finish"},
+                            {l:"🔍 Mysterious",       v:"mysterious with a satisfying ending"},
+                          ].map(o => (
+                            <button key={o.v} className={`guidance-chip${storyBrief2===o.v?" on":""}`}
+                              onClick={()=>{ setStoryBrief2(o.v); setBriefStep2Open(false); }}>
+                              {o.l}
+                            </button>
+                          ))}
+                        </div>
+                        <div style={{fontSize:9,color:"var(--dimmer)",marginBottom:4}}>or describe it yourself:</div>
+                        <textarea className="ftarea" rows={1} style={{minHeight:38,fontSize:12}}
+                          placeholder="e.g. gentle and slow, action-packed, the funniest story ever told…"
+                          value={["warm and funny, with lots of laughs","calm and cosy, drifting toward sleep","exciting and full of surprises","heartfelt and emotionally true","completely silly from start to finish","mysterious with a satisfying ending"].includes(storyBrief2)?"":storyBrief2}
+                          onChange={e=>setStoryBrief2(e.target.value)} />
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -2296,10 +2409,18 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                           <div className="char-photo" style={{width:34,height:34,fontSize:16,borderRadius:8,flexShrink:0}} onClick={()=>pickPhoto(c.id)}>
                             {c.photo ? <img src={c.photo.preview} alt={c.name} /> : <span>{CHAR_ICONS[c.type]||"👫"}</span>}
                           </div>
-                          <input className="char-name-in" placeholder={`${CHAR_TYPES.find(t=>t.value===c.type)?.label||"Friend"}'s name…`}
-                            value={c.name} maxLength={16} style={{flex:1}}
-                            onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
-                          <button className="btn-danger" style={{flexShrink:0}} onClick={()=>removeExtraChar(c.id)}>✕</button>
+                          <div style={{display:"flex",flexDirection:"column",gap:4,flex:1}}>
+                            <input className="char-name-in"
+                              placeholder={`${CHAR_TYPES.find(t=>t.value===c.type)?.label||"Friend"}'s name…`}
+                              value={c.name} maxLength={16}
+                              onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
+                            <input className="char-name-in"
+                              placeholder={`Tell me about ${c.name||"them"}… e.g. 'best friend she argued with' or 'funny little brother'`}
+                              value={c.note||""} maxLength={80}
+                              style={{fontSize:10,opacity:.85}}
+                              onChange={e=>updateExtraChar(c.id,{note:e.target.value})} />
+                          </div>
+                          <button className="btn-danger" style={{flexShrink:0,alignSelf:"flex-start"}} onClick={()=>removeExtraChar(c.id)}>✕</button>
                         </div>
                       ))}
                     </div>
@@ -2308,44 +2429,86 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
                 <div className="divider" />
 
-                {/* ── Settings strip ── */}
+                {/* ── Lessons ── */}
                 <div>
-                  <div className="section-label" style={{marginBottom:8}}>📖 Story settings</div>
-                  <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                    {AGES.map(a => (
-                      <button key={a.value} className={`pill${ageGroup===a.value?" on":""}`} onClick={()=>setAgeGroup(a.value)}>
-                        {a.label}
+                  <div className="section-label" style={{marginBottom:8}}>💛 Sneak in a lesson? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
+                  <div className="les-pills">
+                    {[...LESSONS_CHARACTER,...LESSONS_EMOTIONAL].map(l => (
+                      <button key={l.value} className={`les-pill${lessons.includes(l.value)?" on":""}`}
+                        onClick={()=>setLessons(ls=>ls.includes(l.value)?ls.filter(x=>x!==l.value):[...ls,l.value])}>
+                        {l.label}
                       </button>
                     ))}
                   </div>
-                  <div className="pill-row" style={{marginTop:8}}>
-                    {LENGTHS.map(l => (
-                      <button key={l.value} className={`pill${storyLen===l.value?" on":""}`} onClick={()=>setStoryLen(l.value)}>
-                        {l.label} <span style={{opacity:.6,fontWeight:400}}>({l.desc})</span>
-                      </button>
-                    ))}
+                  {lessons.length>0 && (
+                    <div style={{marginTop:8}}>
+                      <div style={{fontSize:10,color:"rgba(190,200,240,.65)",marginBottom:4}}>
+                        What's {heroName} experiencing? <span style={{opacity:.7}}>(makes it feel real, not preachy)</span>
+                      </div>
+                      <textarea className="ftarea" rows={1} style={{minHeight:40,fontSize:12}}
+                        placeholder={`e.g. '${heroName} has been scared about swimming lessons tomorrow' or 'gets very frustrated when things don't go her way'…`}
+                        value={lessonContext} onChange={e=>setLessonContext(e.target.value)} maxLength={200} />
+                    </div>
+                  )}
+                </div>
+
+                <div className="divider" />
+
+                {/* ── Settings ── */}
+                <div>
+                  <div className="section-label" style={{marginBottom:8}}>📖 Story settings</div>
+                  <div style={{marginBottom:8}}>
+                    <div style={{fontSize:10,color:"rgba(190,200,240,.65)",marginBottom:5}}>Age group</div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                      {AGES.map(a => (
+                        <button key={a.value}
+                          style={{padding:"9px 10px",borderRadius:11,cursor:"pointer",textAlign:"center",
+                            border:`1.5px solid ${ageGroup===a.value?"rgba(100,160,255,.7)":"rgba(255,255,255,.1)"}`,
+                            background:ageGroup===a.value?"rgba(100,160,255,.13)":"rgba(255,255,255,.04)",
+                            transition:"all .2s"}}
+                          onClick={()=>setAgeGroup(a.value)}>
+                          <div style={{fontSize:12,fontWeight:700,color:ageGroup===a.value?"#a8c8ff":"var(--cream)"}}>{a.label}</div>
+                          <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1,textTransform:"uppercase",letterSpacing:".05em"}}>{a.grade}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{fontSize:10,color:"rgba(190,200,240,.65)",marginBottom:5}}>Story length</div>
+                    <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                      {LENGTHS.map(l => (
+                        <button key={l.value}
+                          style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 13px",borderRadius:11,cursor:"pointer",textAlign:"left",
+                            border:`1.5px solid ${storyLen===l.value?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
+                            background:storyLen===l.value?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
+                            transition:"all .2s"}}
+                          onClick={()=>setStoryLen(l.value)}>
+                          <span style={{fontSize:12,fontWeight:700,color:storyLen===l.value?"var(--gold2)":"var(--cream)"}}>{l.label}</span>
+                          <span style={{fontSize:10,color:"var(--dimmer)"}}>{l.desc}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
                 <div className="divider" />
 
-                {/* ── More options toggle ── */}
+                {/* ── More options ── */}
                 <div>
                   <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
                     background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:12,
-                    padding:"10px 14px",cursor:"pointer",color:"var(--dim)",fontSize:13,fontWeight:700}}
+                    padding:"10px 14px",cursor:"pointer"}}
                     onClick={()=>setMoreOpen(o=>!o)}>
                     <div style={{textAlign:"left"}}>
-                      <div style={{color:"var(--cream)"}}>✨ More options</div>
-                      <div style={{fontSize:10,fontWeight:400,color:"var(--dimmer)",marginTop:2}}>Special night · mood · style · {heroName}'s personality</div>
+                      <div style={{fontSize:12,fontWeight:700,color:"var(--cream)"}}>✨ More options</div>
+                      <div style={{fontSize:10,fontWeight:400,color:"var(--dimmer)",marginTop:2}}>Special night · pace · style · {heroName}'s personality</div>
                     </div>
-                    <span style={{fontSize:12,transition:"transform .25s",transform:moreOpen?"rotate(180deg)":"none"}}>▼</span>
+                    <span style={{fontSize:12,color:"var(--dim)",transition:"transform .25s",transform:moreOpen?"rotate(180deg)":"none"}}>▼</span>
                   </button>
 
                   {moreOpen && (
                     <div style={{display:"flex",flexDirection:"column",gap:14,marginTop:14}}>
 
-                      {/* Special night */}
                       <div>
                         <div className="section-label" style={{marginBottom:6}}>🎉 Is tonight a special night? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"rgba(190,200,240,.65)",fontSize:10}}>(optional)</span></div>
                         <input className="finput" style={{fontSize:13}}
@@ -2355,21 +2518,6 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
                       <div className="divider" />
 
-                      {/* Mood */}
-                      <div>
-                        <div className="section-label" style={{marginBottom:8}}>🌡️ Tonight's mood</div>
-                        <div className="les-pills">
-                          {[{v:"calm",l:"🌙 Calm & cosy"},{v:"silly",l:"😂 Silly & funny"},{v:"exciting",l:"⚡ Exciting"},{v:"heartfelt",l:"💛 Warm & heartfelt"}].map(o => (
-                            <button key={o.v} className={`les-pill${storyMood===o.v?" on":""}`}
-                              onClick={()=>setStoryMood(storyMood===o.v?"":o.v)}>{o.l}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="divider" />
-
-                      {/* Pace */}
                       <div>
                         <div className="section-label" style={{marginBottom:8}}>💤 Narration pace</div>
                         <div className="les-pills">
@@ -2383,7 +2531,6 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
                       <div className="divider" />
 
-                      {/* Story style */}
                       <div>
                         <div className="section-label" style={{marginBottom:8}}>📚 Story style</div>
                         <div className="les-pills">
@@ -2397,7 +2544,6 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
                       <div className="divider" />
 
-                      {/* Hero personality */}
                       <div>
                         <div className="section-label" style={{marginBottom:8}}>✨ {heroName} is… <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
                         <div className="les-pills">
@@ -2418,7 +2564,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
             </div>
 
             {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
-            <button className="btn" style={{marginBottom:16}} onClick={()=>generate()}>
+            <button className="btn" style={{marginBottom:16}} onClick={()=>generate({storyBrief1,storyBrief2,realLifeCtx})}>
               ✨ Make {heroName}'s story!
             </button>
           </div>
@@ -2524,6 +2670,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                 window.speechSynthesis?.cancel();
                 if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
                 autoReadRef.current = false;
+                setStoryContext(""); setLessonContext(""); setTodayPrompt(""); setStoryBrief1(""); setStoryBrief2(""); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(true); setBriefStep2Open(false);
                 setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
               }}>🔄 New</button>
               <button className="ctrl-btn dl" onClick={downloadStory}>📄 Download</button>
