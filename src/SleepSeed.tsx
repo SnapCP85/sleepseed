@@ -2679,10 +2679,10 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                       {isListening ? "⏹" : "🎤"}
                     </button>
                   </div>
-                  <div style={{fontSize:9,color:"var(--dimmer)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
+                  <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
                     {isListening
-                      ? <span style={{color:"rgba(240,80,80,.8)",fontWeight:700}}>Listening… speak now</span>
-                      : <span>Tap 🎤 to speak · For more control, use Build My Story →</span>
+                      ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
+                      : <span>Tap 🎤 to speak · For more control, use <span style={{color:"rgba(160,120,255,.85)",fontWeight:700}}>Build My Story →</span></span>
                     }
                   </div>
                 </div>
@@ -2763,11 +2763,32 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                             <div style={{fontSize:10,color:"rgba(76,200,144,.8)",marginBottom:4,fontWeight:700}}>
                               Tell us more <span style={{fontWeight:400,color:"var(--dimmer)"}}>— optional, but makes the story much more personal</span>
                             </div>
-                            <textarea className="ftarea" rows={2} style={{minHeight:52,fontSize:12}}
-                              placeholder={realLifeChip}
-                              value={realLifeCtx}
-                              onChange={e=>setRealLifeCtx(e.target.value)}
-                              maxLength={200} />
+                            <div style={{position:"relative"}}>
+                              <textarea className="ftarea" rows={2} style={{minHeight:52,fontSize:12,paddingRight:38}}
+                                placeholder={realLifeChip}
+                                value={realLifeCtx}
+                                onChange={e=>setRealLifeCtx(e.target.value)}
+                                maxLength={200} />
+                              <button onClick={()=>{
+                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
+                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
+                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
+                                rec.onstart=()=>setIsListening(true);
+                                rec.onend=()=>setIsListening(false);
+                                rec.onerror=()=>setIsListening(false);
+                                rec.onresult=(e)=>{ const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" "); setRealLifeCtx(g=>g?g+' '+t:t); setIsListening(false); };
+                                rec.start();
+                              }}
+                              title="Tap to speak"
+                              style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
+                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
+                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
+                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
+                                fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+                                transition:"all .2s",flexShrink:0}}>
+                              {isListening ? "⏹" : "🎤"}
+                            </button>
+                            </div>
                             <button style={{fontSize:10,color:"var(--dimmer)",background:"none",border:"none",cursor:"pointer",padding:"2px 0",textDecoration:"underline"}}
                               onClick={()=>{ setBriefStep1Open(false); setBriefStep2Open(true); }}>
                               {realLifeCtx.trim() ? "Done — continue to step 2 →" : "Skip — continue to step 2 →"}
@@ -2800,10 +2821,40 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                           <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginBottom:7,lineHeight:1.5}}>
                             Skip the chips entirely — describe the story in your own words
                           </div>
-                          <textarea className="ftarea" rows={3} style={{minHeight:68,fontSize:12,border:"1.5px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.07)"}}
-                            placeholder="e.g. 'Lily is nervous about starting at her new school next week' or 'a dragon who is scared of fire goes on a quest to find someone who can help' or 'something silly and funny involving bedtime and a talking sock'…"
-                            value={storyBrief1.startsWith("about")||storyBrief1.startsWith("on ")||storyBrief1.startsWith("in ")||storyBrief1.startsWith("going")||storyBrief1.startsWith("feeling")||storyBrief1.startsWith("dealing")||storyBrief1.startsWith("celebrating")? "":(storyBrief1||"")}
-                            onChange={e=>{ setStoryBrief1(e.target.value); }} />
+                          <div style={{position:"relative"}}>
+                            <textarea className="ftarea" rows={3} style={{minHeight:68,fontSize:12,border:"1.5px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.07)",paddingRight:40}}
+                              placeholder="e.g. 'Lily is nervous about starting at her new school next week' or 'a dragon who is scared of fire goes on a quest to find someone who can help' or 'something silly and funny involving bedtime and a talking sock'…"
+                              value={storyBrief1.startsWith("about")||storyBrief1.startsWith("on ")||storyBrief1.startsWith("in ")||storyBrief1.startsWith("going")||storyBrief1.startsWith("feeling")||storyBrief1.startsWith("dealing")||storyBrief1.startsWith("celebrating")? "":(storyBrief1||"")}
+                              onChange={e=>{ setStoryBrief1(e.target.value); }} />
+                            <button onClick={()=>{
+                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
+                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
+                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
+                                rec.onstart=()=>setIsListening(true);
+                                rec.onend=()=>setIsListening(false);
+                                rec.onerror=()=>setIsListening(false);
+                                rec.onresult=(e)=>{
+                                  const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" ");
+                                  setStoryBrief1(g=>(g&&!["about","on ","in ","going","feeling","dealing","celebrating"].some(p=>g.startsWith(p))?g+" ":"")+t);
+                                  setIsListening(false);
+                                };
+                                rec.start();
+                              }}
+                              title="Tap to speak"
+                              style={{position:"absolute",right:8,bottom:8,width:28,height:28,borderRadius:"50%",
+                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.4)"}`,
+                                background:isListening?"rgba(240,80,80,.15)":"rgba(212,160,48,.08)",
+                                color:isListening?"#f08080":"rgba(212,160,48,.8)",
+                                fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+                                transition:"all .2s"}}>
+                              {isListening ? "⏹" : "🎤"}
+                            </button>
+                          </div>
+                          {isListening && (
+                            <div style={{fontSize:9,color:"rgba(240,80,80,.8)",fontWeight:700,marginTop:4,textAlign:"center"}}>
+                              Listening… speak now
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -2835,10 +2886,31 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                           ))}
                         </div>
                         <div style={{fontSize:9,color:"var(--dimmer)",marginBottom:4}}>or describe it yourself:</div>
-                        <textarea className="ftarea" rows={1} style={{minHeight:38,fontSize:12}}
-                          placeholder="e.g. gentle and slow, action-packed, the funniest story ever told…"
-                          value={["warm and funny, with lots of laughs","calm and cosy, drifting toward sleep","exciting and full of surprises","heartfelt and emotionally true","completely silly from start to finish","mysterious with a satisfying ending"].includes(storyBrief2)?"":storyBrief2}
-                          onChange={e=>setStoryBrief2(e.target.value)} />
+                        <div style={{position:"relative"}}>
+                          <textarea className="ftarea" rows={1} style={{minHeight:38,fontSize:12,paddingRight:38}}
+                            placeholder="e.g. gentle and slow, action-packed, the funniest story ever told…"
+                            value={["warm and funny, with lots of laughs","calm and cosy, drifting toward sleep","exciting and full of surprises","heartfelt and emotionally true","completely silly from start to finish","mysterious with a satisfying ending"].includes(storyBrief2)?"":storyBrief2}
+                            onChange={e=>setStoryBrief2(e.target.value)} />
+                          <button onClick={()=>{
+                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
+                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
+                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
+                                rec.onstart=()=>setIsListening(true);
+                                rec.onend=()=>setIsListening(false);
+                                rec.onerror=()=>setIsListening(false);
+                                rec.onresult=(e)=>{ const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" "); setStoryBrief2(g=>g?g+' '+t:t); setIsListening(false); };
+                                rec.start();
+                              }}
+                              title="Tap to speak"
+                              style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
+                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
+                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
+                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
+                                fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+                                transition:"all .2s",flexShrink:0}}>
+                              {isListening ? "⏹" : "🎤"}
+                            </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -2905,9 +2977,30 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                       <div style={{fontSize:10,color:"rgba(190,200,240,.65)",marginBottom:4}}>
                         What's {heroName} experiencing? <span style={{opacity:.7}}>(makes it feel real, not preachy)</span>
                       </div>
-                      <textarea className="ftarea" rows={1} style={{minHeight:40,fontSize:12}}
-                        placeholder={`e.g. '${heroName} has been scared about swimming lessons tomorrow' or 'gets very frustrated when things don't go her way'…`}
-                        value={lessonContext} onChange={e=>setLessonContext(e.target.value)} maxLength={200} />
+                      <div style={{position:"relative"}}>
+                        <textarea className="ftarea" rows={1} style={{minHeight:40,fontSize:12,paddingRight:38}}
+                          placeholder={`e.g. '${heroName} has been scared about swimming lessons tomorrow' or 'gets very frustrated when things don't go her way'…`}
+                          value={lessonContext} onChange={e=>setLessonContext(e.target.value)} maxLength={200} />
+                        <button onClick={()=>{
+                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
+                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
+                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
+                                rec.onstart=()=>setIsListening(true);
+                                rec.onend=()=>setIsListening(false);
+                                rec.onerror=()=>setIsListening(false);
+                                rec.onresult=(e)=>{ const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" "); setLessonContext(g=>g?g+' '+t:t); setIsListening(false); };
+                                rec.start();
+                              }}
+                              title="Tap to speak"
+                              style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
+                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
+                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
+                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
+                                fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+                                transition:"all .2s",flexShrink:0}}>
+                              {isListening ? "⏹" : "🎤"}
+                            </button>
+                      </div>
                     </div>
                   )}
                 </div>
