@@ -363,6 +363,8 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 const THEMES = [
   {label:"The Bedroom",emoji:"🌙",value:`SETTING: The child's very own bedroom — but tonight something magical is different. The toys on the shelf are whispering. The shadows on the wall are friendly shapes. The wardrobe door opens just a crack and something small and curious peeks out. The glow-in-the-dark stars have rearranged into a secret message.
 
+This setting's magic is SECRETS — things that have always been true but only become visible at night, in the dark, when the house is quiet and the adults are asleep.
+
 STORY HOOKS — use one or blend several:
 • The toys have been waiting all day for bedtime so they can hold their nightly meeting. Tonight the child secretly watches.
 • Something under the bed is NOT a monster — it's something much funnier and more unexpected.
@@ -371,6 +373,8 @@ STORY HOOKS — use one or blend several:
 • The bedroom ceiling turns into a real sky, with stars that can actually be visited.`},
 
   {label:"The Backyard",emoji:"🌳",value:`SETTING: The back garden — ordinary by day, completely extraordinary tonight. The grass hums. The shed has a light on that nobody left on. The neighbourhood cats are holding a very important meeting by the fence. Every flower has an opinion and is not shy about sharing it.
+
+This setting's magic is PARALLEL CIVILIZATION — the garden runs its own society entirely separate from the human world, with jobs, disputes, laws, and urgent ongoing business that has nothing to do with people.
 
 STORY HOOKS — use one or blend several:
 • The garden creatures have a whole society — with rules, disagreements, and one very dramatic dispute the hero must resolve.
@@ -381,6 +385,8 @@ STORY HOOKS — use one or blend several:
 
   {label:"A Road Trip",emoji:"🚗",value:`SETTING: A car journey — windows fogged, the world going past in the dark. Service stations glow like little planets. The sat-nav keeps giving slightly wrong and increasingly ridiculous directions. Every bend in the road might lead somewhere extraordinary.
 
+This setting's magic is TRANSITION — things only exist here because the car is moving. The magic lives in the in-between. Every stop reveals something; every departure leaves something behind.
+
 STORY HOOKS — use one or blend several:
 • The sat-nav has become sentient and is directing them somewhere much more interesting than planned.
 • Every time the car stops, the hero notices something strange and wonderful that nobody else sees.
@@ -389,6 +395,8 @@ STORY HOOKS — use one or blend several:
 • A motorway service station is secretly the most interesting place in the country, if you know where to look.`},
 
   {label:"School",emoji:"🏫",value:`SETTING: School — familiar by day, completely different after the bell. The classroom chairs push themselves into rows. The whiteboard writes messages nobody put there. The corridor that always feels too long goes somewhere tonight that it definitely doesn't go during school hours.
+
+This setting's magic is HIDDEN KNOWLEDGE — the school knows far more than it teaches, and the objects and spaces hold the accumulated learning of every child who has ever passed through.
 
 STORY HOOKS — use one or blend several:
 • After everyone leaves, the classroom objects hold their own lessons — far more interesting than normal school.
@@ -399,6 +407,8 @@ STORY HOOKS — use one or blend several:
 
   {label:"The Supermarket",emoji:"🛒",value:`SETTING: A supermarket — bright and familiar, but tonight the hero is still inside after closing. The food items have personalities and long-running disagreements. The cereals consider themselves the aristocracy. The vegetables are unionised. The biscuit aisle is chaotic and proud of it.
 
+This setting's magic is CATEGORISATION — everything has a shelf, a section, a place it belongs. The drama comes from things that don't fit, things that have been put in the wrong aisle, things that refuse to stay where they have been put.
+
 STORY HOOKS — use one or blend several:
 • The food holds a late-night gathering and the hero has accidentally been invited.
 • There is a disagreement between two food sections that has been running for years. The hero must help.
@@ -407,6 +417,8 @@ STORY HOOKS — use one or blend several:
 • One very old item — at the back of the shelf — has been waiting a very long time for someone to notice it.`},
 
   {label:"Grandma's House",emoji:"👵",value:`SETTING: A grandparent's house — warm, slightly cluttered, smelling of biscuits and something floral. Every drawer holds something interesting. The garden has been growing for decades. The old photographs on the wall show people who lean forward slightly when nobody's watching.
+
+This setting's magic is DEEP TIME — everything here has been here a long time and remembers it. The magic is slow, patient, and comes from things that stayed while everything else changed.
 
 STORY HOOKS — use one or blend several:
 • The objects in the house have long memories and will share them if asked nicely.
@@ -417,6 +429,8 @@ STORY HOOKS — use one or blend several:
 
   {label:"The Park",emoji:"🏖️",value:`SETTING: A local park or playground — somewhere the hero knows well, but today feels different. The old oak tree has seen everything. The ducks on the pond have strong opinions. The ice cream van is in a slightly different spot than last time, as always, and nobody has ever mentioned this.
 
+This setting's magic is THRESHOLDS — the park has edges, hidden corners, and overlooked spots that everyone knows about and no one has ever entered. The magic lives in the places people walk past every single day.
+
 STORY HOOKS — use one or blend several:
 • The park has a secret that only appears at a particular time of day — the hero arrives at exactly that moment.
 • The ducks are running a very important operation and the hero keeps accidentally interfering.
@@ -425,6 +439,8 @@ STORY HOOKS — use one or blend several:
 • Something has been left on a bench. Finding who it belongs to becomes the whole adventure.`},
 
   {label:"The Kitchen",emoji:"🍳",value:`SETTING: The kitchen — the warmest room in the house, and after bedtime the most surprising one. The fridge hums a tune. The mugs have a strict hierarchy. The wooden spoon has been in this family longer than anyone and knows things it absolutely should not know.
+
+This setting's magic is MEMORY — the kitchen holds the history of every meal, every celebration, every ordinary act of care that has ever happened in this house. The oldest objects are the wisest.
 
 STORY HOOKS — use one or blend several:
 • The kitchen holds a late-night gathering once everyone is asleep. Tonight the hero sneaks down and is welcomed.
@@ -1691,8 +1707,8 @@ FINAL PAGE — THE MOST IMPORTANT PAGE IN THE STORY:
         '{"text":"Write the RIGHT amount for this page — not a fixed word count. Big moment pages can be 1-2 SHORT punchy sentences. Journey pages can be 3-5 sentences. Dialogue pages can be almost entirely speech. Quiet sleep pages should be slow and drifting. Every page must feel distinct in rhythm and energy from the pages before and after it. Prioritise storytelling over length targets.","illustration_prompt":"one warm playful moment under 30 words, name every visible character, bright cosy mood"}'
       )).join(",");
 
-      const simpleSchema = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","refrain":"a short bouncy phrase (4-8 words) — it appears on page 2, varies in the middle, and closes the final page. A child must want to say it before you do by the third reading. Make it musical, make it specific, make it slightly silly.","pages":[${pgSchema(totalN)}]}`;
-      const advSchema    = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","refrain":"a short bouncy phrase (4-8 words) — it appears on page 2, varies in the middle, and closes the final page. A child must want to say it before you do by the third reading. Make it musical, make it specific, make it slightly silly.","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"Write a short, exciting, specific choice question for ${name} — not generic. It must follow directly from what just happened on the last setup page. Make it feel urgent. Two paths must feel genuinely different.","option_a_label":"4-7 fun exciting words","option_b_label":"4-7 fun exciting words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}]}`;
+      const simpleSchema = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","refrain":"A 4-8 word phrase rooted in this story's central image or action — NOT generic (never: Off we go! / Here we come! / Let's do this!). SPECIFIC to this story only (e.g. for a mug-with-opinions story: That is NOT how you make tea. — for a sock-in-wrong-drawer story: One sock. Wrong drawer. Not good.). Appears on page 2, varies in the middle, closes the final page. A child must say it before you do by the third reading.","pages":[${pgSchema(totalN)}]}`;
+      const advSchema    = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","refrain":"A 4-8 word phrase rooted in this story's central image or action — NOT generic (never: Off we go! / Here we come! / Let's do this!). SPECIFIC to this story only (e.g. for a mug-with-opinions story: That is NOT how you make tea. — for a sock-in-wrong-drawer story: One sock. Wrong drawer. Not good.). Appears on page 2, varies in the middle, closes the final page. A child must say it before you do by the third reading.","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"Write a short, exciting, specific choice question for ${name} — not generic. It must follow directly from what just happened on the last setup page. Make it feel urgent. Two paths must feel genuinely different.","option_a_label":"4-7 fun exciting words","option_b_label":"4-7 fun exciting words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}]}`;
 
       // ── Master story prompt ───────────────────────────────────────────────
       const storyPrompt = `You are writing a children's picture book that will be read aloud at bedtime. Your models are Roald Dahl, Julia Donaldson, Mo Willems, Eric Carle, and A.A. Milne. Every page must feel like it belongs in a book a child could buy at a bookstore and memorise by the third reading.
@@ -1707,22 +1723,46 @@ FOUR THINGS EVERY STORY MUST HAVE — these cannot be skipped:
 
 The only other unbreakable rule: write at the correct age level.
 
+━━━ BEFORE YOU WRITE A SINGLE WORD ━━━
+
+Commit to ONE specific, irreplaceable story concept. Not a setting. Not a theme. A concept.
+
+A concept is the single weird, specific, delightful idea that makes THIS story different from every other bedtime story ever written. It must be concrete enough to write on a Post-it note.
+
+STRONG concept (specific, surprising, rooted in the child's world):
+"The oldest mug in the kitchen has watched seventeen families and has very strong opinions about who makes tea correctly."
+"Something has been living under ${name}'s bed — not a monster, but something far more embarrassing."
+"The school whiteboard has been writing the same message for three days and nobody notices because they keep erasing it."
+
+WEAK concept (vague, generic, could be any story):
+"The hero goes on an adventure and learns about bravery." — this is a theme, not a concept.
+"The toys come alive and have fun." — this is a category, not a story.
+
+Once you have your concept, COMMIT to it. Every page, every line of dialogue, every joke must serve this one specific idea. A story with a strange clear premise will always beat a technically accomplished story with a vague one.
+
 ━━━ READER AGE ━━━
 ${ageLine}
 
 ━━━ WHAT GREAT PICTURE BOOK WRITING LOOKS AND SOUNDS LIKE ━━━
 
-GOOD (this is the target — notice the short punchy lines, the sound word, the silly dialogue, the page-turn hook):
-${name} knocked on the biggest tree in the forest.
-KNOCK. KNOCK. KNOCK.
-Nothing happened.
-"Hmm," said ${name}.
-Then the tree sneezed so hard that seventeen birds flew out of its branches.
+GOOD (target — real-world setting, short punchy lines, sound word, silly dialogue, turn-the-page hook):
+${name} opened the fridge.
+The egg at the back had been there for a very long time.
+It cleared its throat.
+"AHEM," said the egg. "I have been waiting to speak to someone."
+${name} looked at the egg.
+The egg looked at ${name}.
+"There is," said the egg, "a PROBLEM."
 
-BAD (do NOT write like this — adult prose with a child's name in it):
-"${name} pressed both palms against the ancient bark, rough as weathered stone. Deep within the roots, something stirred with the slow patience of centuries."
+GOOD (the refrain in action — same four words, three times, each one different):
+"This," said the spoon, "is NOT how we do things."
+Later: "This," said the spoon again, somewhat louder, "is STILL not how we do things."
+At the end: "This," whispered the spoon, very quietly, "is exactly how we do things."
 
-The difference: SHORT lines. SOUND WORDS. SILLY unexpected things. A reason to turn the page. Characters who say funny things.
+BAD (adult prose with a child's name dropped in — never write this):
+"${name} surveyed the kitchen, its familiar geometry rendered strange by the lateness of the hour. The refrigerator emitted a low, sonorous hum."
+
+The difference: SHORT lines. CONCRETE objects with OPINIONS. DIALOGUE that reveals character instantly. A reason — every single page — to turn to the next one.
 
 ━━━ THE TECHNIQUES THAT MAKE CHILDREN MEMORISE BOOKS ━━━
 
@@ -1745,10 +1785,14 @@ The difference: SHORT lines. SOUND WORDS. SILLY unexpected things. A reason to t
 ━━━ CHARACTERS ━━━
 ${charCtx}
 
+CHARACTER DEPLOYMENT RULE: Every named supporting character must either CAUSE the central problem or be ESSENTIAL to solving it. A character who is present, follows the hero around, and says supportive things is a wasted character. For each character ask: if removed, does the plot collapse? If yes, they earn their place. If no, give them a role that makes them necessary, or keep them as a brief warm presence rather than a named player.
+
 ━━━ SETTING, OCCASION, AND CONTEXT ━━━
 ${worldLine}${guidLine}${occLine}${lesLine}${moodLine}${paceLine}${styleLine}${traitLine}
 
 ━━━ STORY CRAFT ━━━
+
+HOLD THIS IN MIND BEFORE YOU WRITE PAGE 1: The final page is the whole reason this story exists. It is what the parent reads slowly and warmly to a drowsy child. Write the entire story so that every joke, every image, every page-turn hook is quietly moving toward that one sentence. Know what your last line is before you write your first.
 
 PAGE RHYTHM — vary on EVERY page without exception:
 • Explosive pages: 1–2 very short punchy lines. Something just happened.
@@ -1776,12 +1820,14 @@ PENULTIMATE PAGE: The world begins to slow. A yawn appears somewhere. Light gets
 FINAL PAGE: Echo one specific thing from page 1 — a word, a sound, an image — so the story feels perfectly circular. The refrain returns, whispered. No new information. No new events. Only resolution and warmth. The final sentence must be the longest, slowest, most comforting sentence in the entire story. It should carry ${name} all the way to sleep.
 
 WHAT TO NEVER DO:
-• Never use adult literary language or metaphors a child wouldn't know
-• Never state a lesson — let it live only in what happens
-• Never write two consecutive sentences the same length
-• Never make the story feel dark, unsafe, or unresolved
-• Never make ${name} a passive observer — they drive everything
-• Never end a page without a reason to turn to the next one
+• Never open with description — the first word should be action, dialogue, or a sound word
+• Never state a lesson — if a reader can name what the child learned, it has been done wrong
+• Never use a word the target age would not know; when in doubt, cut it
+• Never make ${name} a passive observer — they decide, they act, they change the outcome
+• Never write a supporting character who is simply present — they must cause something or resolve something
+• Never write a generic refrain — if it could appear in any other story, it is wrong
+• Never end the final page with new information — it closes, it does not add
+• Never make the story feel dark, unresolved, or unsafe before sleep
 
 ━━━ STORY ARC ━━━
 ${resolvedAdv
@@ -1794,7 +1840,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
       const raw = await callClaude(
         [{role:"user",content:storyPrompt}],
-        "You are a master children's picture book author. Write at the exact age level specified. Honour every instruction in the prompt — especially: (1) the hero makes one real decision, (2) the refrain appears three times with variation, (3) one moment of genuine emotional truth, (4) the final page echoes page 1. If a rhyming style is requested, every line must rhyme naturally. If a mystery is requested, the solution lands on the penultimate page. The story always ends with the child safely, warmly asleep. Return ONLY a valid JSON object — no markdown, no explanation, no text outside the JSON.",
+        "You are a master children's picture book author. Before writing, commit to one specific irreplaceable story concept — the single weird idea that makes this story unlike any other. Write at the exact age level specified. Every story must have: a premise-driven title that names the odd specific thing at the heart of the story, a refrain rooted in this story's central image appearing three times with variation, a hero who makes one real decision that changes the outcome, one moment of genuine emotional truth a child would recognise from their own life, and a final page that echoes page 1 with the longest warmest sentence in the story. If rhyming is requested every line scans naturally. The story always ends with the child safely asleep. Return ONLY a valid JSON object — no markdown, no text outside the JSON.",
         4000
       );
 
