@@ -508,7 +508,7 @@ const LESSONS = [
   ...LESSONS_EMOTIONAL,
 ];
 const LENGTHS = [
-  {value:"short",   label:"Quick Story",   target:8,  advSetup:4, advRes:3, desc:"~3 min"},
+  {value:"short",   label:"Short Story",   target:8,  advSetup:4, advRes:3, desc:"~3 min"},
   {value:"standard",label:"Bedtime Book",  target:12, advSetup:6, advRes:5, desc:"~5 min"},
   {value:"long",    label:"Full Adventure",target:16, advSetup:8, advRes:7, desc:"~8 min"},
 ];
@@ -2195,13 +2195,19 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
                 <div className="divider" />
 
-                {/* Length */}
+                {/* Story Length */}
                 <div>
-                  <div className="section-label" style={{marginBottom:8}}>⏱ How long tonight?</div>
-                  <div className="pill-row">
+                  <div className="section-label" style={{marginBottom:8}}>📖 Story Length</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
                     {LENGTHS.map(l => (
-                      <button key={l.value} className={`pill${storyLen===l.value?" on":""}`} onClick={()=>setStoryLen(l.value)}>
-                        {l.label} <span style={{opacity:.6,fontWeight:400}}>({l.desc})</span>
+                      <button key={l.value}
+                        style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",borderRadius:11,cursor:"pointer",
+                          border:`1.5px solid ${storyLen===l.value?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
+                          background:storyLen===l.value?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
+                          transition:"all .2s"}}
+                        onClick={()=>setStoryLen(l.value)}>
+                        <span style={{fontSize:13,fontWeight:700,color:storyLen===l.value?"var(--gold2)":"var(--cream)"}}>{l.label}</span>
+                        <span style={{fontSize:11,color:"var(--dimmer)"}}>{l.desc}</span>
                       </button>
                     ))}
                   </div>
@@ -2209,21 +2215,18 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
                 <div className="divider" />
 
-                {/* Characters */}
+                {/* Open prompt */}
                 <div>
-                  <div className="section-label" style={{marginBottom:8}}>👥 Anyone else in it? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
-                  <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-                    {CHAR_TYPES.map(t => (
-                      <button key={t.value}
-                        style={{display:"flex",alignItems:"center",gap:6,padding:"8px 13px",borderRadius:11,cursor:"pointer",fontSize:12,fontWeight:700,
-                          border:`1.5px solid ${quickChars.includes(t.value)?"rgba(76,200,144,.5)":"rgba(255,255,255,.12)"}`,
-                          background:quickChars.includes(t.value)?"rgba(76,200,144,.12)":"rgba(255,255,255,.04)",
-                          color:quickChars.includes(t.value)?"#80d8a8":"var(--dim)",transition:"all .18s"}}
-                        onClick={()=>setQuickChars(qs=>qs.includes(t.value)?qs.filter(q=>q!==t.value):[...qs,t.value])}>
-                        <span style={{fontSize:18}}>{t.icon}</span> {t.label}
-                      </button>
-                    ))}
+                  <div style={{fontSize:13,fontWeight:700,color:"var(--cream)",marginBottom:3}}>
+                    Anything you want in the story?
                   </div>
+                  <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:8,lineHeight:1.5}}>
+                    Optional — but gives your quick story a personal touch
+                  </div>
+                  <textarea className="ftarea" rows={3}
+                    style={{fontSize:12,border:"1.5px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.07)"}}
+                    placeholder={`e.g. '${heroName} and her best friend Jack go looking for a missing dragon' or '${heroName} is nervous about her first swimming lesson tomorrow' or 'a funny story about a talking sock who hates baths'…`}
+                    value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)} maxLength={300} />
                 </div>
 
               </div>
@@ -2231,8 +2234,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
             {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
             <button className="btn" style={{marginBottom:10}} onClick={()=>{
-              const chars = quickChars.map(v => ({...newChar(), type:v}));
-              generate({extraChars:chars, occasion:"", occasionCustom:"", lessons:[], adventure:false, storyGuidance:"", storyMood:"", storyPace:"normal", storyStyle:"standard", heroTraits:[]});
+              generate({extraChars:[], occasion:"", occasionCustom:"", lessons:[], adventure:false, storyMood:"", storyPace:"normal", storyStyle:"standard", heroTraits:[]});
             }}>
               ✨ Make {heroName}'s story!
             </button>
