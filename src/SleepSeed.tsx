@@ -466,13 +466,26 @@ const OCCASIONS = [
   {value:"recovering from being sick — the child has been through something hard; the story should feel like warm soup and a soft blanket — gentle, restorative, full of quiet gratitude for feeling better",label:"🌡️ Getting Better"},
   {value:"other",label:"✏️ Other (type your own)"},
 ];
-const LESSONS = [
-  {value:"",label:"— None —"},
+// Lesson categories
+const LESSONS_CHARACTER = [
   {value:"sharing and generosity — shown through a moment where giving something away turns out to fill the giver's heart more than keeping it ever could",label:"🤝 Sharing"},
   {value:"bravery and facing fears — shown through a moment where the hero walks toward the scary thing and discovers it only looked frightening from far away",label:"⚔️ Bravery"},
   {value:"kindness to others — shown through one small, specific act of noticing someone who needed to be seen, and choosing to see them",label:"💛 Kindness"},
   {value:"being a good friend — shown through listening carefully and showing up exactly when it matters, without being asked",label:"👫 Friendship"},
   {value:"never giving up — shown through a moment of almost-quitting where something small and true gives the hero just enough to try once more",label:"🔥 Perseverance"},
+  {value:"honesty and trust — shown through a moment where telling the truth felt scary but turned out to be the bravest and kindest thing to do",label:"🌟 Honesty"},
+];
+const LESSONS_EMOTIONAL = [
+  {value:"managing worries and anxiety — shown through a moment where the hero's big worried feeling becomes smaller when they name it, breathe through it, or share it with someone they trust",label:"🌀 Managing Worries"},
+  {value:"handling frustration and big feelings — shown through a moment where everything goes wrong and the hero finds a way to pause, feel it, and keep going anyway",label:"😤 Handling Frustration"},
+  {value:"building confidence and self-belief — shown through a moment where the hero doubts themselves completely and then discovers something wonderful they could do all along",label:"💪 Building Confidence"},
+  {value:"navigating friendship challenges — shown through a moment of falling out, misunderstanding, or feeling left out, and finding a gentle way back to connection",label:"🌈 Friendship Challenges"},
+  {value:"school challenges and new beginnings — shown through the feeling of something new and scary becoming something manageable and even exciting",label:"🎒 School Challenges"},
+];
+const LESSONS = [
+  {value:"",label:"— None —"},
+  ...LESSONS_CHARACTER,
+  ...LESSONS_EMOTIONAL,
 ];
 const LENGTHS = [
   {value:"short",   label:"Quick Story",   target:8,  advSetup:4, advRes:3, desc:"~3 min"},
@@ -554,7 +567,7 @@ const photoFP = (b64) => b64 ? strHash(b64.slice(0,120)) : null;
 
 const makeStorySeed = (heroName,theme,chars,occasion,occasionCustom,lesson,adventure,len,gender,classify,guidance) => {
   const occ = occasion==="other" ? occasionCustom : occasion;
-  const sig = `${heroName.toLowerCase()}|${theme.value}|${chars.map(c=>`${c.type}:${c.name}:${c.classify||""}:${c.gender||""}`).join(",")}|${occ}|${lesson}|${adventure}|${len}|${gender}|${classify}|${guidance.slice(0,60)}`;
+  const sig = `${heroName.toLowerCase()}|${chars.map(c=>`${c.type}:${c.name}:${c.classify||""}:${c.gender||""}`).join(",")}|${occ}|${lesson}|${adventure}|${len}|${gender}|${classify}|${guidance.slice(0,60)}`;
   return (parseInt(strHash(sig),36)%88888)+11111;
 };
 
@@ -1250,35 +1263,74 @@ export default function SleepSeed() {
     }
   },[isReading, speakText, speakTextEL, voiceId]);
 
-  // ── Voice clone: file upload ───────────────────────────────────────────
-  const pickVoiceFile = () => {
-    const inp = document.createElement("input");
-    inp.type = "file";
-    inp.accept = "audio/*,.m4a,.mp3,.wav,.webm,.ogg,.aac";
-    inp.onchange = async (e) => {
-      const file = e.target.files?.[0];
-      if(!file) return;
-      setVcStage("uploading");
-      setVcError("");
+  // ── Voice clone: microphone recording ────────────────────────────────
+  const [vcSeconds, setVcSeconds] = useState(0);
+  const mediaRecRef   = useRef(null);
+  const audioChunksRef = useRef([]);
+  const vcTimerRef    = useRef(null);
+
+  const startRecording = async () => {
+    setVcError("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/ogg";
+      const mr = new MediaRecorder(stream, { mimeType });
+      mr.ondataavailable = (e) => { if(e.data.size > 0) audioChunksRef.current.push(e.data); };
+      mr.start(200);
+      mediaRecRef.current = mr;
+      setVcSeconds(0);
+      setVcStage("recording");
+      vcTimerRef.current = setInterval(() => setVcSeconds(s => s + 1), 1000);
+    } catch(err) {
+      setVcError("Microphone access denied. Please allow microphone access in your browser settings.");
+      setVcStage("error");
+    }
+  };
+
+  const stopRecording = () => {
+    clearInterval(vcTimerRef.current);
+    const mr = mediaRecRef.current;
+    if(!mr) return;
+    mr.stop();
+    mr.stream.getTracks().forEach(t => t.stop());
+    setVcStage("uploading");
+    mr.onstop = async () => {
       try {
+        const mimeType = audioChunksRef.current[0]?.type || "audio/webm";
+        const blob = new Blob(audioChunksRef.current, { type: mimeType });
+        const file = new File([blob], "voice_recording.webm", { type: mimeType });
         if(voiceId) await elDeleteVoice(voiceId);
         const newId = await elCloneVoice(file);
         setVoiceId(newId);
         await sSet("voice_id", { id: newId });
         setVcStage("ready");
       } catch(err) {
-        setVcError(err.message || "Upload failed. Please try again.");
+        setVcError((err as any).message || "Upload failed. Please try again.");
         setVcStage("error");
       }
     };
-    inp.click();
+  };
+
+  const cancelRecording = () => {
+    clearInterval(vcTimerRef.current);
+    if(mediaRecRef.current) {
+      try { mediaRecRef.current.stop(); mediaRecRef.current.stream.getTracks().forEach(t => t.stop()); } catch(_) {}
+    }
+    setVcStage("idle");
+    setVcSeconds(0);
   };
 
   const resetVoice = async () => {
+    clearInterval(vcTimerRef.current);
+    if(mediaRecRef.current) {
+      try { mediaRecRef.current.stop(); mediaRecRef.current.stream.getTracks().forEach(t => t.stop()); } catch(_) {}
+    }
     if(voiceId) await elDeleteVoice(voiceId);
     await sDel("voice_id");
     setVoiceId(null);
     setVcStage("idle");
+    setVcSeconds(0);
     setVcError("");
   };
 
@@ -1553,6 +1605,15 @@ export default function SleepSeed() {
       const lesLine  = resolvedLesson ? `\nLESSON (show through action only, never state as moral): ${resolvedLesson}` : "";
       const guidanceSafe = resolvedGuidance.trim().slice(0, 300).replace(/[\u201C\u201D""]/g, '"');
       const guidLine = guidanceSafe ? `\nSTORY GUIDANCE — highest priority, incorporate naturally:\n${guidanceSafe}` : "";
+
+      // World: AI picks based on context, or random if no inputs
+      const hasContext = !!(resolvedOcc || resolvedLesson || guidanceSafe || resolvedChars.length > 0);
+      const autoTheme = hasContext
+        ? null  // let AI pick
+        : THEMES[Math.floor(Math.random() * THEMES.length)];
+      const worldLine = autoTheme
+        ? `WORLD:\n${autoTheme.value}\n\nBuild the story inside this world — use its specific details, characters, and story hooks.`
+        : `WORLD SELECTION: Based on the characters, occasion, lesson, and story guidance provided, choose the single most fitting world from the options below. Pick whichever world will make the story feel most magical, resonant, and delightful for this specific child tonight. Then build the entire story inside that world.\n\nAVAILABLE WORLDS:\n${THEMES.map((t,i)=>`${i+1}. ${t.label}: ${t.value.split("\n")[0]}`).join("\n")}`;
       const ageCfg = AGES.find(a=>a.value===ageGroup)||AGES[1];
       const ageLine = ageCfg.prompt;
 
@@ -1632,8 +1693,7 @@ The difference: SHORT lines. SOUND WORDS. SILLY unexpected things. A reason to t
 ${charCtx}
 
 ━━━ WORLD, OCCASION, AND CONTEXT ━━━
-Build the story FROM this world — use its specific details, characters, and story hooks. The world is not a backdrop; it is where the story lives.
-${resolvedTheme.value}${occLine}${lesLine}${guidLine}
+${worldLine}${occLine}${lesLine}${guidLine}
 
 ━━━ STORY CRAFT ━━━
 
@@ -1947,8 +2007,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
             <button className="path-btn quick" disabled={heroName.trim().length<2}
               onClick={()=>{
                 if(heroName.trim().length<2) return;
-                const t = THEMES[Math.floor(Math.random()*THEMES.length)];
-                generate({theme:t,extraChars:[],occasion:"",occasionCustom:"",lesson:"",adventure:false,storyLen:"standard",storyGuidance:""});
+                generate({extraChars:[],occasion:"",occasionCustom:"",lesson:"",adventure:false,storyLen:"standard",storyGuidance:""});
               }}>
               <div className="path-icon">⚡</div>
               <div className="path-text">
@@ -1982,19 +2041,6 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
               </div>
             </div>
             <div style={{height:10}} />
-
-            {/* World picker */}
-            <div className="card" style={{marginBottom:10}}>
-              <div className="section-label" style={{marginBottom:10}}>🌍 Pick a world</div>
-              <div className="theme-grid">
-                {THEMES.map(t => (
-                  <button key={t.label} className={`theme-btn${theme.label===t.label?" sel":""}`} onClick={()=>setTheme(t)}>
-                    <div className="theme-emoji">{t.emoji}</div>
-                    <div className="theme-label">{t.label}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
 
             {/* All options */}
             <div className="card" style={{marginBottom:10}}>
@@ -2092,8 +2138,18 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                 {/* Lesson */}
                 <div>
                   <div className="section-label" style={{marginBottom:8}}>💛 Sneak in a lesson? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
+                  <div style={{fontSize:10,color:"var(--dimmer)",marginBottom:5,fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Character lessons</div>
+                  <div className="les-pills" style={{marginBottom:10}}>
+                    {LESSONS_CHARACTER.map(l => (
+                      <button key={l.value} className={`les-pill${lesson===l.value?" on":""}`}
+                        onClick={()=>setLesson(lesson===l.value?"":l.value)}>
+                        {l.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{fontSize:10,color:"var(--dimmer)",marginBottom:5,fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>Emotional &amp; social skills</div>
                   <div className="les-pills">
-                    {LESSONS.filter(l=>l.value).map(l => (
+                    {LESSONS_EMOTIONAL.map(l => (
                       <button key={l.value} className={`les-pill${lesson===l.value?" on":""}`}
                         onClick={()=>setLesson(lesson===l.value?"":l.value)}>
                         {l.label}
@@ -2269,28 +2325,25 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
             {/* ── Voice Clone Modal ── */}
             {showVcModal && (
-              <div className="vc-modal" onClick={e=>{ if(e.target===e.currentTarget) setShowVcModal(false); }}>
+              <div className="vc-modal" onClick={e=>{ if(e.target===e.currentTarget){ cancelRecording(); setShowVcModal(false); } }}>
                 <div className="vc-card">
                   <div className="vc-title">🎤 Use Your Voice</div>
                   <div className="vc-sub">
-                    Record yourself reading the script below, upload it, and SleepSeed will narrate every story in your voice. ✨
+                    Read the script below into your microphone — SleepSeed will learn your voice and narrate every story. ✨
                   </div>
 
                   {(vcStage==="idle"||vcStage==="error") && (
                     <>
-                      <div className="vc-script-label">Step 1 — Record yourself reading this aloud (30–60 sec):</div>
+                      <div className="vc-script-label">Read this aloud — warmly and clearly:</div>
                       <div className="vc-script">
                         Once upon a time, in a land where the stars came out to play, a little child looked up at the sky and smiled. "Good evening," said the moon. "Are you ready for tonight's adventure?" And the child, heart full of wonder, whispered: "I'm always ready." So together they set off into the most magical night imaginable, where every shadow hid a friendly surprise, and every sound was the beginning of a brand new story.
                       </div>
-                      <div style={{fontSize:11,color:"var(--dim)",marginBottom:14,lineHeight:1.7}}>
-                        📱 <strong style={{color:"var(--cream)"}}>iPhone:</strong> Voice Memos app → record → share file here<br/>
-                        🤖 <strong style={{color:"var(--cream)"}}>Android:</strong> Recorder app → record → upload below<br/>
-                        🎧 <strong style={{color:"var(--cream)"}}>Tips:</strong> Quiet room · speak warmly and clearly
+                      <div style={{fontSize:11,color:"var(--dim)",marginBottom:14,lineHeight:1.6}}>
+                        🎧 <strong style={{color:"var(--cream)"}}>Tips:</strong> Quiet room · speak at a calm bedtime pace · aim for 30–60 seconds
                       </div>
-                      <div className="vc-script-label">Step 2 — Upload your recording:</div>
                       {vcError && <div style={{fontSize:11,color:"#f09080",marginBottom:10,lineHeight:1.5}}>{vcError}</div>}
-                      <button className="btn" style={{marginBottom:8}} onClick={pickVoiceFile}>
-                        📂 Upload Voice Recording
+                      <button className="btn" style={{marginBottom:8}} onClick={startRecording}>
+                        🔴 Start Recording
                       </button>
                       {voiceId && (
                         <button className="btn-ghost" style={{width:"100%",fontSize:12,marginBottom:8}} onClick={resetVoice}>
@@ -2301,6 +2354,29 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                         Close
                       </button>
                     </>
+                  )}
+
+                  {vcStage==="recording" && (
+                    <div style={{textAlign:"center",padding:"8px 0 16px"}}>
+                      <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:12}}>
+                        🔴 Recording… read the script above at a calm, warm pace
+                      </div>
+                      <div style={{fontSize:40,fontFamily:"monospace",fontWeight:700,color:"var(--gold2)",marginBottom:6,letterSpacing:2}}>
+                        {String(Math.floor(vcSeconds/60)).padStart(2,"0")}:{String(vcSeconds%60).padStart(2,"0")}
+                      </div>
+                      <div style={{height:4,background:"rgba(255,255,255,.08)",borderRadius:99,margin:"0 0 16px",overflow:"hidden"}}>
+                        <div style={{height:"100%",borderRadius:99,background:"var(--gold2)",width:`${Math.min(100,(vcSeconds/60)*100)}%`,transition:"width 1s linear"}} />
+                      </div>
+                      <div style={{fontSize:11,color:"var(--dim)",marginBottom:18}}>
+                        {vcSeconds < 15 ? "Keep going — aim for 30 seconds or more" : vcSeconds < 30 ? "Great! A little more…" : "Ready to stop whenever you like ✓"}
+                      </div>
+                      <button className="btn" onClick={stopRecording}>
+                        ⏹ Stop &amp; Use This Recording
+                      </button>
+                      <button className="btn-ghost" style={{width:"100%",marginTop:8,fontSize:12}} onClick={cancelRecording}>
+                        Cancel
+                      </button>
+                    </div>
                   )}
 
                   {vcStage==="uploading" && (
@@ -2322,7 +2398,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                         <button className="btn" style={{flex:1,padding:11,fontSize:14}} onClick={()=>setShowVcModal(false)}>
                           Done ✓
                         </button>
-                        <button className="btn-ghost" style={{flex:1,padding:11,fontSize:13}} onClick={()=>{ setVcStage("idle"); }}>
+                        <button className="btn-ghost" style={{flex:1,padding:11,fontSize:13}} onClick={()=>{ setVcStage("idle"); setVcSeconds(0); }}>
                           Re-record
                         </button>
                       </div>
