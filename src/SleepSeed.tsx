@@ -2789,6 +2789,12 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                               {isListening ? "⏹" : "🎤"}
                             </button>
                             </div>
+                            <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
+                              {isListening
+                                ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
+                                : <span>Tap 🎤 to speak</span>
+                              }
+                            </div>
                             <button style={{fontSize:10,color:"var(--dimmer)",background:"none",border:"none",cursor:"pointer",padding:"2px 0",textDecoration:"underline"}}
                               onClick={()=>{ setBriefStep1Open(false); setBriefStep2Open(true); }}>
                               {realLifeCtx.trim() ? "Done — continue to step 2 →" : "Skip — continue to step 2 →"}
@@ -2850,11 +2856,12 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                               {isListening ? "⏹" : "🎤"}
                             </button>
                           </div>
-                          {isListening && (
-                            <div style={{fontSize:9,color:"rgba(240,80,80,.8)",fontWeight:700,marginTop:4,textAlign:"center"}}>
-                              Listening… speak now
-                            </div>
-                          )}
+                          <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
+                            {isListening
+                              ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
+                              : <span>Tap 🎤 to speak</span>
+                            }
+                          </div>
                         </div>
                       </div>
                     )}
@@ -2910,6 +2917,12 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                                 transition:"all .2s",flexShrink:0}}>
                               {isListening ? "⏹" : "🎤"}
                             </button>
+                        </div>
+                        <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
+                          {isListening
+                            ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
+                            : <span>Tap 🎤 to speak</span>
+                          }
                         </div>
                       </div>
                     )}
@@ -3000,6 +3013,12 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                                 transition:"all .2s",flexShrink:0}}>
                               {isListening ? "⏹" : "🎤"}
                             </button>
+                      </div>
+                      <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
+                        {isListening
+                          ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
+                          : <span>Tap 🎤 to speak</span>
+                        }
                       </div>
                     </div>
                   )}
