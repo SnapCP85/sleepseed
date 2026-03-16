@@ -44,8 +44,9 @@
     <!-- Register service worker -->
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        // Unregister any old broken service workers
+        navigator.serviceWorker.getRegistrations().then((regs) => {
+          regs.forEach((r) => r.unregister());
         });
       }
     </script>
