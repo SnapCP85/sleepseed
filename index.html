@@ -2,14 +2,52 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#060B18" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- PWA core -->
+    <meta name="theme-color" content="#060b18" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- App identity -->
     <title>SleepSeed 🌙</title>
-    <meta name="description" content="Personalised AI bedtime stories starring your child" />
+    <meta name="description" content="Personalised AI bedtime stories for your child — written in seconds" />
+    <meta name="application-name" content="SleepSeed" />
+
+    <!-- iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="SleepSeed" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="icon" type="image/svg+xml" href="/moon.svg" />
+
+    <!-- Open Graph (sharing previews) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="SleepSeed 🌙" />
+    <meta property="og:description" content="Personalised AI bedtime stories for your child — written in seconds" />
+    <meta property="og:url" content="https://sleepseed.app" />
+
+    <!-- Twitter card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="SleepSeed 🌙" />
+    <meta name="twitter:description" content="Personalised AI bedtime stories for your child — written in seconds" />
+
+    <!-- Prevent phone number detection -->
+    <meta name="format-detection" content="telephone=no" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Register service worker -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>
