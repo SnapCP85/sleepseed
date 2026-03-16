@@ -450,6 +450,30 @@ STORY HOOKS — use one or blend several:
 • The oldest thing in the kitchen — the battered pot, the chipped mug, the wooden board — has the best story.
 • An ingredient has gone missing and every kitchen object has a completely different theory.`},
 ];
+const DEMO_BOOK = {
+  title:"The Thing That Mia Said",
+  heroName:"Adina",
+  coverUrl:"https://image.pollinations.ai/prompt/a%20warm%20cosy%20bedroom%20at%20night%2C%20a%20small%20girl%20sits%20on%20her%20bed%20hugging%20a%20stuffed%20rabbit%2C%20soft%20golden%20light%2C%20children%27s%20picture%20book%20illustration%2C%20watercolor%2C%20warm%20pastel?width=520&height=220&nologo=true&model=turbo&seed=42&nofeed=true",
+  refrain:"That wasn\u2019t you, Adina.",
+  parentNote:"Tonight\u2019s story sat gently with the feeling of words that hurt \u2014 and the quiet discovery that someone else\u2019s unkindness says nothing about who Adina is. If she wants to talk, try asking: \u2018What\u2019s one true thing you know about yourself?\u2019 and let her answer in her own time.",
+  allChars:[
+    {id:"h1",name:"Adina",type:"hero",gender:"girl",classify:""},
+    {id:"c1",name:"Rabbit",type:"toy",gender:"",classify:"rabbit"},
+  ],
+  pages:[
+    {text:"At lunch today, Mia said something.\n\nIt wasn\u2019t a nice something.\n\nAdina carried it all the way home, like a stone in her pocket.", imgUrl:"https://image.pollinations.ai/prompt/a%20little%20girl%20walking%20home%20from%20school%20looking%20sad%2C%20autumn%20leaves%2C%20soft%20warm%20light%2C%20children%27s%20watercolor%20illustration?width=400&height=190&nologo=true&model=turbo&seed=43&nofeed=true"},
+    {text:"\u201CIt wasn\u2019t true,\u201D said Rabbit.\n\nAdina had not said anything out loud. Rabbit just knew.\n\n\u201CI know,\u201D said Adina. \u201CBut it felt true.\u201D\n\n\u201CFeelings and facts,\u201D said Rabbit, \u201Care two very different things.\u201D", imgUrl:"https://image.pollinations.ai/prompt/a%20small%20girl%20talking%20to%20a%20stuffed%20rabbit%20on%20her%20bed%2C%20cosy%20warm%20room%2C%20golden%20lamplight%2C%20children%27s%20book%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=44&nofeed=true"},
+    {text:"That wasn\u2019t you, Adina.\n\nThe stone in her pocket got a little lighter.\n\n\u201CWhat WAS me today?\u201D she asked.\n\nRabbit thought carefully. This was important.", imgUrl:"https://image.pollinations.ai/prompt/a%20thoughtful%20stuffed%20rabbit%20sitting%20next%20to%20a%20child%2C%20warm%20bedroom%20glow%2C%20gentle%20children%27s%20illustration%2C%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=45&nofeed=true"},
+    {text:"\u201CYou shared your crisps with the new boy.\u201D\n\n\u201CHe looked lonely,\u201D said Adina.\n\n\u201CThat,\u201D said Rabbit, \u201Cwas very much you.\u201D\n\nThe stone got lighter still.", imgUrl:"https://image.pollinations.ai/prompt/two%20children%20sharing%20snacks%20at%20a%20school%20lunch%20table%2C%20warm%20sunny%20day%2C%20cheerful%20children%27s%20book%20watercolor%20illustration?width=400&height=190&nologo=true&model=turbo&seed=46&nofeed=true"},
+    {text:"\u201CYou remembered it was Mrs Patel\u2019s birthday and drew her a star.\u201D\n\n\u201CShe cried a little bit,\u201D said Adina. \u201CThe happy kind.\u201D\n\n\u201CAlso very much you,\u201D said Rabbit.\n\nThat wasn\u2019t you, Adina.", imgUrl:"https://image.pollinations.ai/prompt/a%20child%20drawing%20a%20star%20picture%20for%20a%20teacher%2C%20classroom%20setting%2C%20warm%20colours%2C%20children%27s%20book%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=47&nofeed=true"},
+    {text:"\u201CWhat about the thing Mia said?\u201D asked Adina.\n\n\u201CThat,\u201D said Rabbit firmly, \u201Cwas Mia\u2019s stone. Not yours.\u201D\n\nAdina thought about this for a long time.\n\nThen she reached into her pocket.", imgUrl:"https://image.pollinations.ai/prompt/a%20small%20girl%20reaching%20into%20her%20pocket%2C%20expression%20of%20quiet%20realisation%2C%20soft%20evening%20light%2C%20children%27s%20watercolor%20illustration?width=400&height=190&nologo=true&model=turbo&seed=48&nofeed=true"},
+    {text:"She put the stone on the windowsill.\n\nShe didn\u2019t need to carry it anymore.\n\n\u201CGood,\u201D said Rabbit.\n\nAdina smiled. It was a small smile. But it was a real one.", imgUrl:"https://image.pollinations.ai/prompt/a%20child%20placing%20a%20small%20stone%20on%20a%20windowsill%20at%20night%2C%20moonlight%2C%20peaceful%2C%20children%27s%20book%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=49&nofeed=true"},
+    {text:"The room got quiet. The moon looked in.\n\nAdina yawned the kind of yawn that means everything is okay.\n\n\u201CRabbit?\u201D\n\n\u201CYes?\u201D\n\n\u201CThat wasn\u2019t me.\u201D\n\n\u201CNo,\u201D said Rabbit softly. \u201CIt really wasn\u2019t.\u201D", imgUrl:"https://image.pollinations.ai/prompt/a%20cosy%20bedroom%20at%20night%2C%20moonlight%20through%20window%2C%20small%20girl%20yawning%20with%20stuffed%20rabbit%2C%20warm%20peaceful%20glow%2C%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=50&nofeed=true"},
+    {text:"That wasn\u2019t you, Adina.\n\nShe pulled the covers all the way up.\n\nThe stone stayed on the windowsill where it belonged.\n\nAnd Adina \u2014 all the real, true, wonderful parts of Adina \u2014 drifted slowly, gently, completely into the warmest, safest sleep she had had all week.", imgUrl:"https://image.pollinations.ai/prompt/a%20child%20asleep%20in%20bed%20with%20a%20stuffed%20rabbit%2C%20moonlight%2C%20cosy%20and%20peaceful%2C%20children%27s%20book%20watercolor%20final%20page?width=400&height=190&nologo=true&model=turbo&seed=51&nofeed=true"},
+  ],
+};
+
+
 const CHAR_TYPES = [
   {value:"friend",label:"Friend",icon:"👫"},
   {value:"sibling",label:"Sibling",icon:"👶"},
@@ -581,6 +605,18 @@ ONE TRUE THING: One moment should feel so emotionally true that it could only ha
 TONE: Intelligent, funny, and emotionally honest. Not condescending. The best moment should make both the child AND the parent feel something real.`},
 ];
 const CHAR_ICONS = {hero:"⭐",friend:"👫",sibling:"👶",parent:"🧑‍🍼",pet:"🐾",toy:"🧸"};
+const PRESET_VOICES = [
+  {id:"pNInz6obpgDQGcFmaJgB", name:"Adam",          emoji:"🎙️", desc:"Deep & warm"},
+  {id:"EXAVITQu4vr4xnSDxMaL", name:"Bella",         emoji:"🌸", desc:"Soft & gentle"},
+  {id:"ErXwobaYiN019PkySvjV", name:"Antoni",        emoji:"🌟", desc:"Calm narrator"},
+  {id:"VR6AewLTigWG4xSOukaG", name:"Arnold",        emoji:"💪", desc:"Strong & clear"},
+  {id:"yoZ06aMxZJJ28mfd3POQ", name:"Sam",           emoji:"☀️", desc:"Friendly & warm"},
+  {id:"AZnzlk1XvdvUeBnXmlld", name:"Domi",          emoji:"🎶", desc:"Lively & bright"},
+  {id:"MF3mGyEYCl7XYWbV9V6O", name:"Elli",          emoji:"🧚", desc:"Soft & whimsical"},
+  {id:"TxGEqnHWrfWFTfGW9XjX", name:"Josh",          emoji:"🏕️", desc:"Deep & soothing"},
+  {id:"g5CIjZEefAph4nQFvHAz", name:"Ethan",         emoji:"🌙", desc:"Gentle bedtime"},
+  {id:"onwK4e9ZLuTAKqWW03F9", name:"Daniel",        emoji:"📖", desc:"Clear & warm"},
+];
 const SPARK_COLORS = ["#fde68a","#fbbf24","#f0cc60","#fdf5e0","#fff"];
 const STARS_DATA = Array.from({length:70},(_,i) => ({
   id:i,top:Math.random()*100,left:Math.random()*100,size:Math.random()*2.2+0.5,
@@ -1187,6 +1223,8 @@ export default function SleepSeed() {
   const [imgLoaded,      setImgLoaded]      = useState({});
   const [memories,       setMemories]       = useState([]);
   const [voiceId,        setVoiceId]        = useState(null); // EL cloned voice
+  const [selectedVoiceId,setSelectedVoiceId]= useState(null); // chosen preset or cloned voice
+  const [showVoicePicker,setShowVoicePicker]= useState(false); // voice picker modal
   const [vcStage,        setVcStage]        = useState("idle"); // idle|recording|uploading|ready|error
   const [vcError,        setVcError]        = useState("");
   const [showVcModal,    setShowVcModal]    = useState(false);
@@ -1220,7 +1258,7 @@ export default function SleepSeed() {
     if(autoReadRef.current) {
       const total = totalPagesRef.current || 1;
       const progress = total > 1 ? pageIdx / (total-1) : 0.5;
-      if(voiceId) speakTextEL(getCurrentPageText(), progress);
+      if(selectedVoiceId||voiceId) speakTextEL(getCurrentPageText(), progress);
       else speakText(getCurrentPageText(), progress);
     } else {
       setIsReading(false);
@@ -1287,7 +1325,7 @@ export default function SleepSeed() {
     setIsReading(true);
     try {
       const rate = SleepUtils.getSpeechRate(pageProgress);
-      const url  = await elTTS(text, voiceId, rate);
+      const url  = await elTTS(text, selectedVoiceId||voiceId, rate);
       const audio = new Audio(url);
       elAudioRef.current = audio;
       audio.onended = () => { URL.revokeObjectURL(url); elAudioRef.current=null; onEnd(); };
@@ -1309,7 +1347,7 @@ export default function SleepSeed() {
       setIsReading(false);
     } else {
       autoReadRef.current = true;
-      if(voiceId) speakTextEL(text, pageProgress);
+      if(selectedVoiceId||voiceId) speakTextEL(text, pageProgress);
       else speakText(text, pageProgress);
     }
   },[isReading, speakText, speakTextEL, voiceId]);
@@ -2022,6 +2060,18 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
         );
       });
 
+      // ── Generate parent note ──────────────────────────────────────────
+      let parentNote = "";
+      try {
+        const lessonSummary = lesArr.length ? lesArr.map(l=>l.split("—")[0].trim()).join(", ") : "";
+        const notePrompt = `A child named ${name} just heard a personalised bedtime story called "${story.title}". ${lessonSummary ? `The story gently explored: ${lessonSummary}.` : ""} ${brief1Safe ? `Tonight's story was about: ${name} ${brief1Safe}.` : ""}
+
+Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1: name the emotional theme the story carried tonight in plain, warm language — what ${name} experienced emotionally through the story. Sentence 2: one gentle, practical suggestion for a brief real-world conversation or bedtime ritual that builds on what the story explored. Keep it under 40 words total. Warm but not clinical. Never use the word "lesson". Return only the note text, no labels, no quotes.`;
+        const noteRaw = await callClaude([{role:"user",content:notePrompt}], "You write brief, warm, practical notes to parents after their child's personalised bedtime story. You are a trusted friend who understands child development, not a therapist. Keep it human and brief.", 200);
+        parentNote = noteRaw.trim().replace(/^["“”]|["“”]$/g,"");
+      } catch(_) {}
+      bookData.parentNote = parentNote;
+
       setBook(bookData); setPageIdx(0);
       setGen(g => ({...g,stepIdx:3,progress:94,label:"Enjoy your story!",dots:[...dots]}));
       await new Promise(r => setTimeout(r,200));
@@ -2190,15 +2240,33 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
     }
 
     return (
-      <div className="bpage end-bg">
+      <div className="bpage end-bg" style={{overflowY:"auto"}}>
         <div className="pinset" />
-        <div className="end-lay">
+        <div className="end-lay" style={{gap:14,paddingTop:20,paddingBottom:20}}>
           <div className="end-moon">🌙</div>
           <div className="end-title">The End</div>
           <div className="end-msg">
             Sweet dreams, {book.heroName}.<br />
             Tomorrow night, another adventure awaits…
           </div>
+
+          {book.parentNote && (
+            <div style={{width:"100%",background:"rgba(212,160,48,.08)",border:"1px solid rgba(212,160,48,.2)",
+              borderRadius:14,padding:"12px 16px",marginTop:4}}>
+              <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
+                color:"rgba(212,160,48,.7)",marginBottom:6}}>A note for you 👋</div>
+              <div style={{fontSize:12,color:"var(--cream)",lineHeight:1.7,fontFamily:"'Nunito',sans-serif"}}>
+                {book.parentNote}
+              </div>
+            </div>
+          )}
+
+          <button className="btn" style={{width:"100%",marginTop:4,fontSize:15,padding:"14px 20px",
+            display:"flex",alignItems:"center",justifyContent:"center",gap:8}}
+            onClick={downloadStory}>
+            📄 Download &amp; Print
+            <span style={{fontSize:11,fontWeight:400,opacity:.8}}>— Print it. Keep it. It's a real book.</span>
+          </button>
         </div>
       </div>
     );
@@ -2263,6 +2331,14 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
             {heroName.trim().length<2 && (
               <div style={{textAlign:"center",fontSize:12,color:"var(--dimmer)",marginTop:4}}>Enter a name to begin ↑</div>
             )}
+            <div style={{textAlign:"center",marginTop:16}}>
+              <button style={{background:"none",border:"none",cursor:"pointer",
+                fontSize:12,color:"var(--dimmer)",textDecoration:"underline",fontFamily:"'Nunito',sans-serif",
+                padding:"4px 8px"}}
+                onClick={()=>{ setBook({...DEMO_BOOK}); setPageIdx(0); setStage("book"); setFromCache(false); }}>
+                ✨ See an example story →
+              </button>
+            </div>
           </div>
         )}
 
@@ -2775,7 +2851,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
               {pageIdx >= 1 && (
                 <button className={`ctrl-btn read${isReading?" active":""}`}
                   onClick={()=>{ const prog=totalPages>1?pageIdx/(totalPages-1):0.5; toggleRead(getCurrentPageText(),prog); }}>
-                  {isReading ? "⏸ Pause" : voiceId ? "🎤 Read aloud" : "🔊 Read aloud"}
+                  {isReading ? "⏸ Pause" : (selectedVoiceId||voiceId) ? `🔊 ${(PRESET_VOICES.find(v=>v.id===selectedVoiceId)||{name:voiceId?"My Voice":"Read"}).name}` : "🔊 Read aloud"}
                 </button>
               )}
               <button className="ctrl-btn save" onClick={async()=>{ await saveMemory(book); setStage("memories"); }}>
@@ -2791,11 +2867,70 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                 setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
               }}>🔄 New</button>
               <button className="ctrl-btn dl" onClick={downloadStory}>📄 Download</button>
-              <button className={`ctrl-btn vc-btn${voiceId?" active":""}`}
-                onClick={()=>{ setVcStage(voiceId?"ready":"idle"); setShowVcModal(true); }}>
-                🎤 {voiceId ? "Voice ✓" : "My Voice"}
+              <button className={`ctrl-btn vc-btn${(selectedVoiceId||voiceId)?" active":""}`}
+                onClick={()=>setShowVoicePicker(true)}>
+                🎤 {selectedVoiceId ? (PRESET_VOICES.find(v=>v.id===selectedVoiceId)?.name||"Voice") : voiceId ? "My Voice ✓" : "Choose Voice"}
               </button>
             </div>
+
+            {/* ── Voice Picker Modal ── */}
+            {showVoicePicker && (
+              <div className="vc-modal" onClick={e=>{ if(e.target===e.currentTarget) setShowVoicePicker(false); }}>
+                <div className="vc-card" style={{maxHeight:"80vh",overflowY:"auto"}}>
+                  <div className="vc-title">🎤 Choose a Voice</div>
+                  <div className="vc-sub">Who reads tonight's story?</div>
+
+                  {/* Preset voices */}
+                  <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:8}}>Narrators</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:14}}>
+                    {PRESET_VOICES.map(v => (
+                      <button key={v.id}
+                        style={{padding:"10px 10px",borderRadius:11,cursor:"pointer",textAlign:"left",
+                          border:`1.5px solid ${selectedVoiceId===v.id?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
+                          background:selectedVoiceId===v.id?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
+                          transition:"all .15s"}}
+                        onClick={()=>{ setSelectedVoiceId(selectedVoiceId===v.id?null:v.id); }}>
+                        <div style={{fontSize:16,marginBottom:3}}>{v.emoji}</div>
+                        <div style={{fontSize:12,fontWeight:700,color:selectedVoiceId===v.id?"var(--gold2)":"var(--cream)"}}>{v.name}</div>
+                        <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>{v.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{height:1,background:"rgba(255,255,255,.08)",marginBottom:14}} />
+
+                  {/* Clone voice option */}
+                  <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:8}}>Your Own Voice</div>
+                  <button style={{width:"100%",padding:"12px 14px",borderRadius:11,cursor:"pointer",textAlign:"left",
+                    border:`1.5px solid ${voiceId?"rgba(76,200,144,.5)":"rgba(255,255,255,.1)"}`,
+                    background:voiceId?"rgba(76,200,144,.08)":"rgba(255,255,255,.04)",marginBottom:14}}
+                    onClick={()=>{ setShowVoicePicker(false); setVcStage(voiceId?"ready":"idle"); setShowVcModal(true); }}>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <span style={{fontSize:22}}>🎙️</span>
+                      <div>
+                        <div style={{fontSize:12,fontWeight:700,color:voiceId?"#80d8a8":"var(--cream)"}}>{voiceId?"My Voice ✓":"Record My Voice"}</div>
+                        <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>
+                          {voiceId?"Your cloned voice is active — tap to manage":"Clone your voice in 45 seconds"}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+
+                  <div style={{display:"flex",gap:8}}>
+                    {(selectedVoiceId||voiceId) && (
+                      <button className="btn-ghost" style={{flex:1,fontSize:12,padding:10}}
+                        onClick={()=>{ setSelectedVoiceId(null); }}>
+                        🔇 No Voice
+                      </button>
+                    )}
+                    <button className="btn" style={{flex:2,padding:11,fontSize:14}}
+                      onClick={()=>setShowVoicePicker(false)}>
+                      Done ✓
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* ── Voice Clone Modal ── */}
             {showVcModal && (
