@@ -233,7 +233,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .story-txt-col::-webkit-scrollbar{width:3px}
 .story-txt-col::-webkit-scrollbar-thumb{background:rgba(90,56,10,.15);border-radius:99px}
 .s-pgnum{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:7px;flex-shrink:0}
-.s-text{font-family:'Patrick Hand',cursive;font-size:clamp(18px,3.8vw,20px);color:var(--ink);line-height:1.8;flex:1}
+.s-text{font-family:'Patrick Hand',cursive;font-size:clamp(20px,4.2vw,22px);color:var(--ink);line-height:1.75;flex:1}
 .s-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;flex-shrink:0}
 .orn{font-size:9px;color:rgba(90,56,10,.28);letter-spacing:4px}
 .orn-num{font-family:'Kalam',cursive;font-size:15px;color:rgba(90,56,10,.22)}
@@ -619,7 +619,7 @@ const BONDING_QUESTIONS = [
   "What's the nicest thing someone did for you recently?",
 ];
 const PRESET_VOICES = [
-  {id:"0mLOQqwA3kovxF1ID7z6", name:"Linda",         emoji:"🎙️", desc:"Deep & warm"},
+  {id:"iCrDUkL56s3C8sCRl7wb", name:"Hope",          emoji:"🎙️", desc:"Warm & clear"},
   {id:"EXAVITQu4vr4xnSDxMaL", name:"Bella",         emoji:"🌸", desc:"Soft & gentle"},
   {id:"ErXwobaYiN019PkySvjV", name:"Antoni",        emoji:"🌟", desc:"Calm narrator"},
   {id:"VR6AewLTigWG4xSOukaG", name:"Arnold",        emoji:"💪", desc:"Strong & clear"},
@@ -1236,7 +1236,7 @@ export default function SleepSeed() {
   const [imgLoaded,      setImgLoaded]      = useState({});
   const [memories,       setMemories]       = useState([]);
   const [voiceId,        setVoiceId]        = useState(null); // EL cloned voice
-  const [selectedVoiceId,setSelectedVoiceId]= useState("0mLOQqwA3kovxF1ID7z6"); // chosen preset or cloned voice — defaults to Linda
+  const [selectedVoiceId,setSelectedVoiceId]= useState("iCrDUkL56s3C8sCRl7wb"); // chosen preset or cloned voice — defaults to Hope
   const [showVoicePicker,setShowVoicePicker]= useState(false); // voice picker modal
   const [vcStage,        setVcStage]        = useState("idle"); // idle|recording|uploading|ready|error
   const [vcError,        setVcError]        = useState("");
