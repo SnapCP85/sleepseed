@@ -2474,6 +2474,12 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               <div style={{fontFamily:"'Fraunces',serif",fontSize:17,fontWeight:700,color:"var(--cream)",marginBottom:12,textAlign:"center",fontStyle:"italic"}}>
                 ✨ Tonight's story is for…
               </div>
+              {!hasSeenOnboard && heroName.trim().length<1 && (
+                <div style={{textAlign:"center",fontSize:10,color:"rgba(212,160,48,.7)",
+                  marginBottom:8,fontStyle:"italic",fontFamily:"'Fraunces',serif",animation:"fadeUp .5s ease"}}>
+                  ← Start here. Type your child's name.
+                </div>
+              )}
               <input className="finput hero-input" placeholder="Your child's name…"
                 value={heroName} onChange={e=>{
                   setHeroName(e.target.value);
@@ -2489,17 +2495,6 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 <div style={{textAlign:"center",fontSize:11,color:"rgba(212,160,48,.85)",
                   marginBottom:10,fontWeight:700,letterSpacing:".02em",animation:"fadeUp .4s ease"}}>
                   ✦ Type a name to unlock your story ✦
-                </div>
-              )}
-              {!hasSeenOnboard && heroName.trim().length<1 && (
-                <div style={{animation:"fadeUp .5s ease"}}>
-                  <div style={{textAlign:"center",fontSize:10,color:"rgba(212,160,48,.7)",
-                    marginBottom:4,fontStyle:"italic",fontFamily:"'Fraunces',serif"}}>
-                    ← Start here. Type your child's name.
-                  </div>
-                  <div style={{textAlign:"center",fontSize:9,color:"rgba(160,120,255,.6)",lineHeight:1.5}}>
-                    Personalised stories in about 45 seconds ✦
-                  </div>
                 </div>
               )}
               <div className="gender-row" style={{marginBottom:0}}>
