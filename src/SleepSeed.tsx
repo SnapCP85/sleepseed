@@ -201,7 +201,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .err-box{background:rgba(192,64,48,.14);border:1px solid rgba(192,64,48,.28);border-radius:10px;padding:10px 14px;font-size:13px;color:#f09080;margin-bottom:14px}
 .book-shell{width:100%;max-width:500px;animation:fup .4s cubic-bezier(.16,1,.3,1) both}
 .book-3d{border-radius:18px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.7);
-  height:480px;position:relative;background:#0e1428;cursor:pointer}
+  height:520px;position:relative;background:#0e1428;cursor:pointer}
 .bpage{position:absolute;inset:0;width:100%;height:100%;animation:pageFade .3s ease both}
 @keyframes pageFade{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
 .pinset{position:absolute;inset:10px;border:1px solid rgba(212,160,48,.1);border-radius:8px;pointer-events:none;z-index:2}
@@ -227,13 +227,13 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .cast-role{font-size:9px;color:var(--ink3);font-weight:700;text-transform:uppercase;text-align:center;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .story-bg{background:linear-gradient(160deg,#fef8e8,#f5e4b8)}
 .story-lay{height:100%;display:flex;flex-direction:column}
-.story-illo{flex:0 0 42%;position:relative;overflow:hidden;background:linear-gradient(160deg,#e8ddb0,#d4c890)}
+.story-illo{flex:0 0 36%;position:relative;overflow:hidden;background:linear-gradient(160deg,#e8ddb0,#d4c890)}
 .story-txt-col{flex:1;min-height:0;padding:14px 18px 10px;display:flex;flex-direction:column;
   background:linear-gradient(160deg,#fef8e8,#f5e8c0);overflow-y:auto}
 .story-txt-col::-webkit-scrollbar{width:3px}
 .story-txt-col::-webkit-scrollbar-thumb{background:rgba(90,56,10,.15);border-radius:99px}
 .s-pgnum{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:7px;flex-shrink:0}
-.s-text{font-family:'Patrick Hand',cursive;font-size:clamp(20px,4.2vw,22px);color:var(--ink);line-height:1.75;flex:1}
+.s-text{font-family:'Patrick Hand',cursive;font-size:clamp(18px,3.8vw,20px);color:var(--ink);line-height:1.75;flex:1;min-height:0;overflow-y:auto}
 .s-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;flex-shrink:0}
 .orn{font-size:9px;color:rgba(90,56,10,.28);letter-spacing:4px}
 .orn-num{font-family:'Kalam',cursive;font-size:15px;color:rgba(90,56,10,.22)}
@@ -544,7 +544,7 @@ STRUCTURE \u2014 model: Eric Carle, Mem Fox, Dr Seuss:
 \u2022 The ENTIRE story is built on ONE repeated pattern. Same rhythm, every 2 pages. Gets funnier or warmer each time.
 \u2022 One sentence per page. Two maximum. Three is too many.
 \u2022 Every page has a natural clapping beat when read aloud.
-\u2022 The refrain MUST appear three times: page 2 (introduction), the middle page (a variation \u2014 different character says it, or it goes slightly wrong), and the LAST page (warm, closing).
+\u2022 The refrain MUST appear three times: page 2 (introduction), the middle page (a variation \u2014 different character says it, or it goes slightly wrong), and the LAST page (warm, closing). The refrain at this age must be 3\u20135 words. No more. Simple enough that a 3-year-old can say it out loud.
 \u2022 Page count: follow the chosen story length (short=8, standard=8, long=10). At this age shorter is ALWAYS better \u2014 never exceed 10 pages regardless of length setting.
 
 HERO AGENCY: Even at 3\u20134, ${name} must DO something \u2014 not watch. They press the button. They say the magic word. They share the thing. One tiny action by ${name} changes everything.
@@ -601,7 +601,9 @@ HERO AGENCY (critical): ${name} must face a moment where the easy path is genuin
 
 ONE TRUE THING: One moment should feel so emotionally true that it could only have been written for THIS child on THIS night. The feeling of being small in a big world and discovering you are braver than you thought.
 
-TONE: Intelligent, funny, and emotionally honest. Not condescending. The best moment should make both the child AND the parent feel something real.`},
+TONE: Intelligent, funny, and emotionally honest. Not condescending. The best moment should make both the child AND the parent feel something real.
+
+BEDTIME GUARD: No matter how sophisticated the structure, this is still a bedtime story. The emotional complexity earns its place only if it resolves completely and lands in warmth and sleep. A 9-year-old reading this at 9pm should feel satisfied, seen, and sleepy — not stimulated or unsettled.`},
 ];
 const CHAR_ICONS = {hero:"⭐",friend:"👫",sibling:"👶",parent:"🧑‍🍼",pet:"🐾",toy:"🧸"};
 const BONDING_QUESTIONS = [
@@ -625,7 +627,6 @@ const PRESET_VOICES = [
   {id:"Atp5cNFg1Wj5gyKD7HWV", name:"Natasha",       emoji:"✨", desc:"Clear & bright"},
   {id:"eadgjmk4R4uojdsheG9t", name:"Chadwich",      emoji:"🎙️", desc:"Bold & rich"},
   {id:"bIQlQ61Q7WgbyZAL7IWj", name:"Faith",         emoji:"🌸", desc:"Warm & gentle"},
-  {id:"g5CIjZEefAph4nQFvHAz", name:"Ethan",         emoji:"🌙", desc:"Gentle bedtime"},
 ];
 const SPARK_COLORS = ["#fde68a","#fbbf24","#f0cc60","#fdf5e0","#fff"];
 const STARS_DATA = Array.from({length:70},(_,i) => ({
@@ -1248,6 +1249,10 @@ export default function SleepSeed() {
   const autoReadRef   = useRef(false);
   const goPageRef     = useRef(null);
   const elAudioRef      = useRef(null);   // current ElevenLabs Audio element
+  const selectedVoiceRef = useRef<string|null>(null); // always-current voice ID
+  const voiceIdRef       = useRef<string|null>(null); // always-current cloned voice ID
+  const speakELRef       = useRef<any>(null);          // always-current speakTextEL fn
+  const speakTextRef     = useRef<any>(null);          // always-current speakText fn
 
   const imgReady = (url) => !!imgLoaded[strHash(url)];
 
@@ -1274,8 +1279,12 @@ export default function SleepSeed() {
     if(autoReadRef.current) {
       const total = totalPagesRef.current || 1;
       const progress = total > 1 ? pageIdx / (total-1) : 0.5;
-      if(selectedVoiceId||voiceId) speakTextEL(getCurrentPageText(), progress);
-      else speakText(getCurrentPageText(), progress);
+      // Use refs so we always get the current voice and functions, never stale closures
+      if(selectedVoiceRef.current || voiceIdRef.current) {
+        speakELRef.current?.(getCurrentPageText(), progress);
+      } else {
+        speakTextRef.current?.(getCurrentPageText(), progress);
+      }
     } else {
       setIsReading(false);
     }
@@ -1328,6 +1337,9 @@ export default function SleepSeed() {
   const speakTextEL = useCallback(async (text, pageProgress=0.5) => {
     if(!text) return;
     if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current = null; }
+    // Brief pause so rapid page turns don't fire overlapping EL requests
+    await new Promise(r => setTimeout(r, 80));
+    if(!autoReadRef.current && !text) return; // cancelled during pause
 
     const onEnd = () => {
       const isLast = pageIdx >= totalPagesRef.current - 1;
@@ -1349,12 +1361,21 @@ export default function SleepSeed() {
       await audio.play();
     } catch(err) {
       console.error("EL TTS error:", err);
-      // Fall back to Web Speech
-      speakText(text, pageProgress);
+      // Do not fall back to browser voice — just stop cleanly
+      setIsReading(false);
+      autoReadRef.current = false;
     }
   }, [voiceId, selectedVoiceId, pageIdx, speakText]);
 
+  // Keep refs current so pageIdx effect never goes stale
+  useEffect(() => { selectedVoiceRef.current = selectedVoiceId; }, [selectedVoiceId]);
+  useEffect(() => { voiceIdRef.current = voiceId; }, [voiceId]);
+
   // ── Toggle read aloud ──────────────────────────────────────────────────
+  // Keep function refs current
+  speakELRef.current   = speakTextEL;
+  speakTextRef.current = speakText;
+
   const toggleRead = useCallback((text, pageProgress=0.5) => {
     if(isReading) {
       window.speechSynthesis.cancel();
@@ -1937,7 +1958,7 @@ export default function SleepSeed() {
       const occasionFinal = resolvedOccCust.trim() || resolvedOcc;
       const occLine  = occasionFinal ? `\nSPECIAL OCCASION: ${occasionFinal}` : "";
       const lesArr = Array.isArray(resolvedLesson) ? resolvedLesson : (resolvedLesson ? [resolvedLesson] : []);
-      const lesLine  = lesArr.length ? `\nLESSONS (weave these in through action only — never state as a moral): ${lesArr.length > 2 ? "You have been given multiple lessons. Prioritise the one or two that fit most naturally into the story. A story that gently embodies one lesson is far more powerful than a story that forces three. Choose wisely. " : ""}${lesArr.map(l=>"• "+l).join("\n")}` : "";
+      const lesLine  = lesArr.length ? `\nLESSONS (weave these in through action only — never state as a moral): ${lesArr.length > 1 ? "You have been given multiple lessons. Choose ONE — the single one that fits most naturally into this specific story. A story that genuinely embodies one lesson is ten times more powerful than a story that forces two. The others are not wrong; they just don't belong in this story tonight. Pick the one and commit. " : ""}${lesArr.map(l=>"• "+l).join("\n")}` : "";
       const guidanceSafe = resolvedGuidance.trim().slice(0, 300).replace(/[\u201C\u201D""]/g, '"');
       const contextSafe  = resolvedContext.trim().slice(0, 300).replace(/[\u201C\u201D""]/g, '"');
       const lesCtxSafe   = resolvedLesCtx.trim().slice(0, 200).replace(/[\u201C\u201D""]/g, '"');
@@ -1962,7 +1983,7 @@ export default function SleepSeed() {
       const worldLine = autoTheme
         ? `SETTING:\n${autoTheme.value}\n\nSet the entire story in this real-world place. Ground it in what a child knows — then make it delightfully surprising. The setting is active: things in it talk, move, have opinions, and cause problems. It is not a backdrop.`
         : `SETTING SELECTION: Based on the characters, occasion, lessons, and story guidance provided, choose the single most fitting setting from the real-world options below. Pick the one where this specific story will feel most vivid, surprising, and natural. The chosen setting must be active — not a backdrop but a participant with its own personality.\n\nAVAILABLE SETTINGS:\n${THEMES.map((t,i)=>{ const lines=t.value.split("\n"); const mechanism=lines.find(l=>l.includes("magic is ")||l.includes("This setting")); return `${i+1}. ${t.label}: ${lines[0]}${mechanism?" | "+mechanism.trim():""}`;}).join("\n")}`;
-      const moodLine  = resolvedMood ? `\nSTORY MOOD: ${resolvedMood==="calm"?"Calm and cosy — warm, gentle, soothing throughout. Every page should feel like a soft blanket.":resolvedMood==="silly"?"Silly and funny — lean into humour and absurdity on every page. At least one thing per page should make a child laugh.":resolvedMood==="exciting"?"Exciting and adventurous — high energy and wonder throughout the adventure pages. The final 2-3 pages still wind down gently and land safely in sleep.":resolvedMood==="heartfelt"?"Warm and heartfelt — emotionally resonant and tender. Prioritise genuine feeling over plot twists.":""} This mood shapes the story flavour but never overrides age-appropriate vocabulary, the sleep landing, or the story's fundamental safety.` : "";
+      const moodLine  = resolvedMood ? `\nSTORY MOOD: ${resolvedMood==="calm"?"Calm and cosy — warm, gentle, soothing throughout. Every page should feel like a soft blanket. This is a flavour instruction only: age vocabulary and sentence structure rules still apply fully.":resolvedMood==="silly"?"Silly and funny — lean into humour and absurdity. At least one thing per page should make a child laugh. This is a flavour instruction only: age vocabulary rules still apply fully.":resolvedMood==="exciting"?"Exciting and adventurous — high energy and wonder through the story. Final 2-3 pages MUST still wind down gently and land in sleep. This is a flavour instruction only: age vocabulary rules still apply fully.":resolvedMood==="heartfelt"?"Warm and heartfelt — emotionally resonant and tender. Prioritise genuine feeling over plot twists. This is a flavour instruction only: age vocabulary rules still apply fully.":""}` : "";
       const paceLine  = resolvedPace && resolvedPace!=="normal" ? `\nNARRATION PACE: ${resolvedPace==="sleepy"?"Extra sleepy — from the first page the world is soft and quiet. Short gentle sentences. Long pauses. Characters move slowly. The whole story drifts toward sleep.":"Quick and snappy — punchy sentences and fast energy through the adventure pages. The final 2-3 pages MUST still slow down, grow quiet, and land the child in sleep. Snappy applies to the adventure, never the ending."}` : "";
       const styleLine = resolvedStyle && resolvedStyle!=="standard" && resolvedStyle!=="adventure" ? `\nSTORY STYLE: ${resolvedStyle==="rhyming"?"Rhyming — the ENTIRE story must rhyme with a consistent scheme that scans naturally when read aloud (AABB, ABCB, or AABBA all work — choose whichever fits the story best). Every line must feel musical and effortless, never forced. Rhymes must serve the story, not the other way around. The sleep landing must still rhyme warmly. Adventure/choice-path format is automatically disabled for rhyming stories.":resolvedStyle==="mystery"?"Mystery — structure as a gentle child-friendly mystery. Something is missing or unexplained on page 1. Clues discovered naturally across the middle pages. The solution is revealed on the penultimate page — surprising but obvious in hindsight. The final page is always the warm sleep landing, NOT more mystery.":""}` : "";
       const traitLine = resolvedTraits.length ? `\nHERO PERSONALITY: ${heroName||name} is ${resolvedTraits.join(", ")}. Let these traits shape every decision they make and every line of dialogue they speak.` : "";
@@ -1992,7 +2013,7 @@ NEAR THE END: ${name} makes the one decision only they could make. Resolution co
 PENULTIMATE + FINAL PAGE: Follow the STORY CRAFT rules exactly — they are your most important instructions for this story.`;
       };
       const pgSchema = (n) => Array.from({length:n},()=>(
-        '{"text":"[page text — vary length per PAGE RHYTHM rules]","illustration_prompt":"[scene under 20 words]"}'
+        '{"text":"[page text — length must match PAGE RHYTHM rules AND the age section sentence limits; age 3-4: 1-2 sentences MAX; age 5-6: 3-6 sentences; age 7+: varies by rhythm type]","illustration_prompt":"[warm playful scene under 20 words]"}'
       )).join(",");
 
       const simpleSchema = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","pages":[${pgSchema(totalN)}],"refrain":"Now that you have written all the pages: look back at what you wrote. The refrain must be a phrase that already appears in your story — a line of dialogue, a sound, a repeated image. It could only belong to THIS story. 4-8 words. Never generic. A child must say it before you on the third reading."}`;
@@ -2002,6 +2023,8 @@ PENULTIMATE + FINAL PAGE: Follow the STORY CRAFT rules exactly — they are your
       const storyPrompt = `You are writing a children's picture book that will be read aloud at bedtime. Your models are Roald Dahl, Julia Donaldson, Mo Willems, Eric Carle, and A.A. Milne. Every page must feel like it belongs in a book a child could buy at a bookstore and memorise by the third reading.
 
 THE PRIME DIRECTIVE: The story is ALWAYS the priority. Page count is a target, not a ceiling. All rules exist to serve the story.
+
+STANDALONE STORY: This story exists entirely on its own. Do not reference, continue, or borrow from any previous story. Every character, setting, and situation is fresh and new. Only what is provided in this prompt exists.
 
 FOUR THINGS EVERY STORY MUST HAVE — these cannot be skipped:
 1. A hero who makes one real decision that changes everything (not watches, not helps — decides)
@@ -2098,6 +2121,8 @@ ${charCtx}
 
 CHARACTER DEPLOYMENT RULE: Every named supporting character must either CAUSE the central problem or be ESSENTIAL to solving it. A character who is present, follows the hero around, and says supportive things is a wasted character. For each character ask: if removed, does the plot collapse? If yes, they earn their place. If no, give them a role that makes them necessary, or keep them as a brief warm presence rather than a named player.
 
+AGE AND CHARACTER COUNT: For age 3–4, a maximum of 2 characters total (hero + 1 other) keeps the story followable. For age 5–6, a maximum of 3. For age 7–10, up to 4 named characters is fine if each has a clear role. More characters than this fragments focus and loses young readers.
+
 ━━━ SETTING, OCCASION, AND CONTEXT ━━━
 ${worldLine}${guidLine}${occLine}${lesLine}${moodLine}${paceLine}${styleLine}${traitLine}
 
@@ -2107,10 +2132,11 @@ HOLD THIS IN MIND BEFORE YOU WRITE PAGE 1: The final page is the whole reason th
 
 PAGE RHYTHM — vary on EVERY page without exception:
 • Explosive pages: 1–2 very short punchy lines. Something just happened.
-• Journey pages: 3–5 sentences. The adventure moves forward.
+• Journey pages: 3–5 sentences (age 5+). The adventure moves forward.
 • Dialogue pages: Almost entirely speech. Characters reveal themselves.
 • Quiet pages: Near the end only. One slow, warm, drifting sentence.
 • Never write two pages in a row with the same rhythm or energy. Ever.
+CRITICAL AGE OVERRIDE: For age 3–4, the PAGE RHYTHM rules above apply only loosely. The age section's rule of 1–2 sentences per page is absolute and overrides journey page guidance. Never exceed 2 sentences on any age 3–4 page regardless of rhythm type.
 
 THE REFRAIN — three appearances, each distinct:
 • Page 2 (introduction): the refrain arrives naturally, as if it was always there.
@@ -2133,17 +2159,30 @@ FINAL PAGE: Echo one specific thing from page 1 — a word, a sound, an image �
 WHAT TO NEVER DO:
 • Never open with description — the first word should be action, dialogue, or a sound word
 • Never state a lesson — if a reader can name what the child learned, it has been done wrong
-• Never use a word the target age would not know; when in doubt, cut it
+• Never use a word the target age would not know; when in doubt, cut it. Vocabulary rules from the age section are absolute — no style instruction overrides them
 • Never make ${name} a passive observer — they decide, they act, they change the outcome
 • Never write a supporting character who is simply present — they must cause something or resolve something
 • Never write a generic refrain — if it could appear in any other story, it is wrong
 • Never end the final page with new information — it closes, it does not add
 • Never make the story feel dark, unresolved, or unsafe before sleep
+• Never reference events, characters, or objects from previous stories — this story is entirely self-contained
+• Never let mood, pace, style or trait instructions push vocabulary beyond the age level — those are flavour, not licence to use adult language
+• Never write a story where the sleep landing feels bolted on — the drift toward sleep must begin at the penultimate page, never earlier and never later
 
 ━━━ STORY ARC ━━━
 ${resolvedAdv
   ? `CHOOSE-YOUR-ADVENTURE FORMAT:\nWrite ${setupN} setup pages, then a choice moment, then ${resN} resolution pages per path. Both paths end with ${name} safely, warmly asleep.\n\n${buildArc(setupN)}`
   : buildArc(totalN)}
+
+━━━ BEFORE YOU OUTPUT ━━━
+Run this self-check against your draft:
+1. Is every word of every page appropriate for the specified age? If any word would confuse a child of that age — cut it.
+2. Does ${name} make one real decision that only they could make? If they watch instead of act — rewrite that page.
+3. Does the refrain appear exactly three times with genuine variation? If it appears more or fewer, or feels generic — revise.
+4. Does the final page echo something specific from page 1? If it introduces new information — remove it.
+5. Does the story drift toward sleep from the penultimate page onward? If sleep arrives suddenly — rewrite those final pages.
+6. Does the story reference anything from a previous story? If yes — remove all such references. This story is standalone.
+Only output JSON once all six checks pass.
 
 ━━━ OUTPUT ━━━
 Return ONLY this exact JSON object. No extra text, no markdown, no explanation:
@@ -2151,7 +2190,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
       const raw = await callClaude(
         [{role:"user",content:storyPrompt}],
-        "You are a master children's picture book author. Your most important obligation is age calibration — vocabulary, sentence length, structure, and emotional register must all match the specified age group exactly. Before writing: (1) commit to one specific irreplaceable concept, (2) confirm that concept works at the specified age. Every story must have: a premise-driven title, a refrain that appears three times with variation and is derived from something that happens in the story, a hero who makes one real decision, one moment of genuine emotional truth, and a final page echoing page 1 with the longest warmest sentence in the story. The story always ends with the child safely asleep. Return ONLY a valid JSON object — no markdown, no text outside the JSON.",
+        "You are a master children's picture book author with one absolute obligation above all others: every single word must be appropriate for the specified age group. A 4-year-old story must sound like a 4-year-old story. A 9-year-old story must sound like a 9-year-old story. No style, mood, or tone instruction overrides this. Before writing: (1) choose one specific irreplaceable concept, (2) confirm every element of that concept works at the specified age, (3) decide your last line before you write your first. Every story must have: a premise-driven title, a refrain appearing exactly three times with genuine variation and derived from something in the story, a hero who makes one real decision, one emotionally true moment, and a final page echoing page 1 with the longest warmest sentence in the story. The story is standalone — no references to previous stories. The story always ends with the child safely asleep. Return ONLY a valid JSON object.",
         6000
       );
 
