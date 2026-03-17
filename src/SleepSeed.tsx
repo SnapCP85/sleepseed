@@ -3221,7 +3221,13 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
         {stage==="book" && book && (
           <div className="book-shell">
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-              <div style={{display:"flex",alignItems:"center",gap:7}}>
+              <div style={{display:"flex",alignItems:"center",gap:7,cursor:"pointer"}}
+                onClick={()=>{
+                  window.speechSynthesis?.cancel();
+                  if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
+                  autoReadRef.current = false; setIsReading(false);
+                  setStage("home");
+                }}>
                 <div className="brand-gem" style={{width:30,height:30,fontSize:15,borderRadius:9}}>🌙</div>
                 <span className="brand-name" style={{fontSize:16}}>SleepSeed</span>
               </div>
