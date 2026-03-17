@@ -620,6 +620,7 @@ const BONDING_QUESTIONS = [
 ];
 const PRESET_VOICES = [
   {id:"iCrDUkL56s3C8sCRl7wb", name:"Hope",          emoji:"🎙️", desc:"Warm & clear"},
+  {id:"NOpBlnGInO9m6vDvFkFC", name:"Spuds Oxley",   emoji:"🎭", desc:"Rich & deep"},
   {id:"EXAVITQu4vr4xnSDxMaL", name:"Bella",         emoji:"🌸", desc:"Soft & gentle"},
   {id:"ErXwobaYiN019PkySvjV", name:"Antoni",        emoji:"🌟", desc:"Calm narrator"},
   {id:"VR6AewLTigWG4xSOukaG", name:"Arnold",        emoji:"💪", desc:"Strong & clear"},
