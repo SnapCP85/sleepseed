@@ -621,15 +621,11 @@ const BONDING_QUESTIONS = [
 const PRESET_VOICES = [
   {id:"iCrDUkL56s3C8sCRl7wb", name:"Hope",          emoji:"🎙️", desc:"Warm & clear"},
   {id:"NOpBlnGInO9m6vDvFkFC", name:"Spuds Oxley",   emoji:"🎭", desc:"Rich & deep"},
-  {id:"EXAVITQu4vr4xnSDxMaL", name:"Bella",         emoji:"🌸", desc:"Soft & gentle"},
-  {id:"ErXwobaYiN019PkySvjV", name:"Antoni",        emoji:"🌟", desc:"Calm narrator"},
-  {id:"VR6AewLTigWG4xSOukaG", name:"Arnold",        emoji:"💪", desc:"Strong & clear"},
-  {id:"yoZ06aMxZJJ28mfd3POQ", name:"Sam",           emoji:"☀️", desc:"Friendly & warm"},
-  {id:"AZnzlk1XvdvUeBnXmlld", name:"Domi",          emoji:"🎶", desc:"Lively & bright"},
-  {id:"MF3mGyEYCl7XYWbV9V6O", name:"Elli",          emoji:"🧚", desc:"Soft & whimsical"},
-  {id:"TxGEqnHWrfWFTfGW9XjX", name:"Josh",          emoji:"🏕️", desc:"Deep & soothing"},
+  {id:"4YYIPFl9wE5c4L2eu2Gb", name:"Burt Reynolds", emoji:"🤠", desc:"Smooth & warm"},
+  {id:"Atp5cNFg1Wj5gyKD7HWV", name:"Natasha",       emoji:"✨", desc:"Clear & bright"},
+  {id:"eadgjmk4R4uojdsheG9t", name:"Chadwich",      emoji:"🎙️", desc:"Bold & rich"},
+  {id:"bIQlQ61Q7WgbyZAL7IWj", name:"Faith",         emoji:"🌸", desc:"Warm & gentle"},
   {id:"g5CIjZEefAph4nQFvHAz", name:"Ethan",         emoji:"🌙", desc:"Gentle bedtime"},
-  {id:"onwK4e9ZLuTAKqWW03F9", name:"Daniel",        emoji:"📖", desc:"Clear & warm"},
 ];
 const SPARK_COLORS = ["#fde68a","#fbbf24","#f0cc60","#fdf5e0","#fff"];
 const STARS_DATA = Array.from({length:70},(_,i) => ({
