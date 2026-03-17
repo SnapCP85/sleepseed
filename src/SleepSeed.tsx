@@ -233,7 +233,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .story-txt-col::-webkit-scrollbar{width:3px}
 .story-txt-col::-webkit-scrollbar-thumb{background:rgba(90,56,10,.15);border-radius:99px}
 .s-pgnum{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:7px;flex-shrink:0}
-.s-text{font-family:'Patrick Hand',cursive;font-size:clamp(14px,2.9vw,16.5px);color:var(--ink);line-height:1.85;flex:1}
+.s-text{font-family:'Patrick Hand',cursive;font-size:clamp(18px,3.8vw,20px);color:var(--ink);line-height:1.8;flex:1}
 .s-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;flex-shrink:0}
 .orn{font-size:9px;color:rgba(90,56,10,.28);letter-spacing:4px}
 .orn-num{font-family:'Kalam',cursive;font-size:15px;color:rgba(90,56,10,.22)}
