@@ -2474,9 +2474,9 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               <div style={{fontFamily:"'Fraunces',serif",fontSize:17,fontWeight:700,color:"var(--cream)",marginBottom:12,textAlign:"center",fontStyle:"italic"}}>
                 ✨ Tonight's story is for…
               </div>
-              {!hasSeenOnboard && heroName.trim().length<1 && (
+              {heroName.trim().length<1 && (
                 <div style={{textAlign:"center",fontSize:10,color:"rgba(212,160,48,.7)",
-                  marginBottom:8,fontStyle:"italic",fontFamily:"'Fraunces',serif",animation:"fadeUp .5s ease"}}>
+                  marginBottom:8,fontStyle:"italic",fontFamily:"'Fraunces',serif"}}>
                   ← Start here. Type your child's name.
                 </div>
               )}
@@ -3286,8 +3286,10 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 {saveToast ? "✓ Saved" : "💾 Save"}
               </button>
               <button className="ctrl-btn fresh" onClick={async()=>{
-                const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance);
-                await sDel(`book_${s}`);
+                try {
+                  const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance);
+                  await sDel(`book_${s}`);
+                } catch(_) {}
                 window.speechSynthesis?.cancel();
                 if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
                 autoReadRef.current = false;
