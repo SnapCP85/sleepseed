@@ -2475,9 +2475,12 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 ✨ Tonight's story is for…
               </div>
               {heroName.trim().length<1 && (
-                <div style={{textAlign:"center",fontSize:10,color:"rgba(212,160,48,.7)",
-                  marginBottom:8,fontStyle:"italic",fontFamily:"'Fraunces',serif"}}>
-                  ← Start here. Type your child's name.
+                <div style={{textAlign:"center",marginBottom:8}}>
+                  <div style={{fontSize:10,color:"rgba(212,160,48,.7)",
+                    fontStyle:"italic",fontFamily:"'Fraunces',serif",marginBottom:3}}>
+                    Start here. Type your child's name.
+                  </div>
+                  <div style={{fontSize:14,color:"rgba(212,160,48,.6)"}}>↓</div>
                 </div>
               )}
               <input className="finput hero-input" placeholder="Your child's name…"
