@@ -1267,10 +1267,7 @@ export default function SleepSeed() {
     sGet("memories").then(s => { if(s?.items) setMemories(s.items); });
     sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); });
     sGet("onboarded").then(s => { if(s?.v) setHasSeenOnboard(true); });
-    // Capture PWA install prompt (Android/Chrome)
-    const handler = (e:any) => { e.preventDefault(); setInstallPrompt(e); };
-    window.addEventListener("beforeinstallprompt", handler as any);
-    return () => window.removeEventListener("beforeinstallprompt", handler as any);
+
   },[]);
 
 
@@ -2438,28 +2435,11 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 <div className="brand-name">SleepSeed</div>
                 <div className="brand-tag">personalized bedtime books</div>
               </div>
-              <div style={{marginLeft:"auto",display:"flex",gap:6,alignItems:"center"}}>
-                {memories.length>0 && (
-                  <button className="btn-ghost" style={{fontSize:12,padding:"6px 12px"}} onClick={()=>setStage("memories")}>
-                    📚 {memories.length}
-                  </button>
-                )}
-                {/* PWA install button */}
-                {!(typeof window !== "undefined" && window.matchMedia?.("(display-mode: standalone)")?.matches) && (
-                  <button className="btn-ghost" style={{fontSize:11,padding:"6px 10px",borderColor:"rgba(212,160,48,.3)",color:"rgba(212,160,48,.8)"}}
-                    onClick={async()=>{
-                      if(installPrompt) {
-                        await installPrompt.prompt();
-                        const {outcome} = await installPrompt.userChoice;
-                        if(outcome==="accepted") setInstallPrompt(null);
-                      } else {
-                        setShowInstallTip(true);
-                      }
-                    }}>
-                    📲 Install
-                  </button>
-                )}
-              </div>
+              {memories.length>0 && (
+                <button className="btn-ghost" style={{marginLeft:"auto",fontSize:12,padding:"6px 12px"}} onClick={()=>setStage("memories")}>
+                  📚 {memories.length}
+                </button>
+              )}
             </div>
             <div style={{height:10}} />
 
@@ -2544,47 +2524,8 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </button>
             </div>
 
-            {/* ── iOS install tip modal ── */}
-            {showInstallTip && (
-              <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center",padding:16}}
-                onClick={()=>setShowInstallTip(false)}>
-                <div style={{background:"rgba(13,18,48,.98)",border:"1px solid rgba(212,160,48,.25)",borderRadius:20,padding:"24px 20px",width:"100%",maxWidth:480,marginBottom:8}}
-                  onClick={e=>e.stopPropagation()}>
-                  <div style={{textAlign:"center",marginBottom:16}}>
-                    <div style={{fontSize:32,marginBottom:8}}>📲</div>
-                    <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:"var(--cream)",marginBottom:6}}>
-                      Add SleepSeed to your home screen
-                    </div>
-                    <div style={{fontSize:12,color:"var(--dim)",lineHeight:1.7}}>
-                      Get the full app experience — no browser, no address bar.
-                    </div>
-                  </div>
-                  <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:18}}>
-                    <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:"11px 14px",display:"flex",alignItems:"center",gap:12}}>
-                      <span style={{fontSize:22,flexShrink:0}}>1.</span>
-                      <span style={{fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
-                        Tap the <strong style={{color:"#4a9eff"}}>Share button</strong> at the bottom of Safari (the box with an arrow ↑)
-                      </span>
-                    </div>
-                    <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:"11px 14px",display:"flex",alignItems:"center",gap:12}}>
-                      <span style={{fontSize:22,flexShrink:0}}>2.</span>
-                      <span style={{fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
-                        Scroll down and tap <strong style={{color:"var(--gold2)"}}>Add to Home Screen</strong>
-                      </span>
-                    </div>
-                    <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:"11px 14px",display:"flex",alignItems:"center",gap:12}}>
-                      <span style={{fontSize:22,flexShrink:0}}>3.</span>
-                      <span style={{fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
-                        Tap <strong style={{color:"#4cc890"}}>Add</strong> — and you're done!
-                      </span>
-                    </div>
-                  </div>
-                  <button className="btn" onClick={()=>setShowInstallTip(false)}>Got it ✓</button>
-                </div>
-              </div>
-            )}
 
-            {/* ── About section ── */}
+                        {/* ── About section ── */}
             <div style={{marginTop:32,paddingTop:22}}>
 
               {/* Divider 5 — centred stack */}
