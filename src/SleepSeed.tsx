@@ -257,70 +257,6 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .end-lay{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:28px}
 .end-moon{font-size:48px;animation:mfloat 6s ease-in-out infinite}
 .end-title{font-family:'Fraunces',serif;font-size:30px;font-weight:700;font-style:italic;color:var(--gold3)}
-.nc-bg{background:linear-gradient(160deg,#0a0e24,#101838,#0c1430)}
-.nc-lay{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px 24px;text-align:center}
-.nc-emoji{font-size:42px;animation:mfloat 5s ease-in-out infinite}
-.nc-label{font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(212,160,48,.6)}
-.nc-headline{font-family:'Fraunces',serif;font-size:clamp(18px,4.5vw,24px);font-weight:700;font-style:italic;
-  color:var(--gold3);line-height:1.3;max-width:300px}
-.nc-divider{width:40px;height:2px;background:linear-gradient(90deg,transparent,rgba(212,160,48,.45),transparent);margin:4px 0}
-.nc-quote{font-family:'Cormorant Garamond',serif;font-size:clamp(14px,3.2vw,17px);font-style:italic;font-weight:600;
-  color:rgba(240,220,160,.85);line-height:1.7;max-width:320px}
-.nc-hero{font-size:11px;color:var(--dimmer);font-weight:700;font-style:italic}
-.nc-reflect{background:rgba(160,120,255,.08);border:1px solid rgba(160,120,255,.2);border-radius:12px;
-  padding:10px 14px;margin-top:4px;width:100%;max-width:320px}
-.nc-reflect-label{font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  color:rgba(160,120,255,.6);margin-bottom:5px}
-.nc-reflect-q{font-family:'Kalam',cursive;font-size:13px;color:rgba(200,180,255,.85);line-height:1.6}
-.nc-date{font-size:10px;color:var(--dimmer);margin-top:4px}
-.nc-brand{font-family:'Fraunces',serif;font-size:11px;color:rgba(212,160,48,.35);margin-top:2px}
-.mem-tabs{display:flex;gap:4px;margin-bottom:14px;background:rgba(255,255,255,.04);border-radius:12px;padding:3px;
-  border:1px solid rgba(255,255,255,.07)}
-.mem-tab{flex:1;padding:9px 12px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;
-  text-align:center;color:var(--dim);background:transparent;border:none;font-family:'Nunito',sans-serif;transition:all .2s}
-.mem-tab.on{background:rgba(212,160,48,.12);color:var(--gold2)}
-.mem-tab:hover:not(.on){color:var(--cream);background:rgba(255,255,255,.05)}
-.nc-flow{width:100%;max-width:420px;animation:fup .5s cubic-bezier(.16,1,.3,1) both}
-.nc-step-dots{display:flex;gap:6px;justify-content:center;margin-bottom:18px}
-.nc-sdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s}
-.nc-sdot.active{background:var(--gold2);transform:scale(1.3)}
-.nc-sdot.done{background:var(--green2)}
-.nc-step-card{background:linear-gradient(150deg,rgba(22,32,84,.72),rgba(11,18,42,.88));
-  border:1px solid rgba(212,160,48,.15);border-radius:22px;padding:26px;
-  backdrop-filter:blur(20px);box-shadow:0 20px 64px rgba(0,0,0,.55);animation:fup .4s ease both}
-.nc-step-icon{font-size:36px;text-align:center;margin-bottom:8px}
-.nc-step-title{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--cream);
-  text-align:center;margin-bottom:4px}
-.nc-step-sub{font-size:12px;color:var(--dim);text-align:center;line-height:1.7;margin-bottom:16px}
-.nc-step-q{font-family:'Fraunces',serif;font-size:14px;font-style:italic;color:var(--gold3);
-  text-align:center;line-height:1.6;margin-bottom:14px;padding:0 8px}
-.nc-camera{width:100%;aspect-ratio:4/3;border-radius:14px;overflow:hidden;background:#0a0e24;
-  position:relative;margin-bottom:14px}
-.nc-camera video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-.nc-camera img{width:100%;height:100%;object-fit:cover}
-.nc-countdown{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  background:rgba(0,0,0,.5);font-family:'Fraunces',serif;font-size:72px;font-weight:700;
-  color:var(--gold3);animation:countPop .4s ease}
-@keyframes countPop{from{transform:scale(1.8);opacity:0}to{transform:scale(1);opacity:1}}
-.polaroid{background:#faf8f2;border-radius:4px;padding:14px 14px 28px;
-  box-shadow:0 8px 40px rgba(0,0,0,.5);transform:rotate(-2deg);
-  max-width:320px;margin:0 auto;animation:polaroidIn 1.2s cubic-bezier(.16,1,.3,1) both}
-@keyframes polaroidIn{from{opacity:0;transform:scale(.75) rotate(-10deg)}to{opacity:1;transform:scale(1) rotate(-2deg)}}
-.polaroid-photo{width:100%;aspect-ratio:4/3;border-radius:2px;overflow:hidden;
-  background:linear-gradient(135deg,#1a1428,#2a1f3d);margin-bottom:14px}
-.polaroid-photo img{width:100%;height:100%;object-fit:cover}
-.polaroid-emoji{display:flex;align-items:center;justify-content:center;font-size:48px;
-  width:100%;height:100%;background:linear-gradient(135deg,#0a0e24,#14204a)}
-.polaroid-body{text-align:center}
-.polaroid-headline{font-family:'Fraunces',serif;font-size:16px;font-weight:700;font-style:italic;
-  color:#2a1f0a;margin-bottom:4px;animation:fadeUp .5s ease .5s both}
-.polaroid-quote{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;
-  color:#5a4a2a;line-height:1.6;margin-bottom:6px;animation:fadeUp .5s ease .8s both}
-.polaroid-memory{font-family:'Kalam',cursive;font-size:12px;color:#7a5a2a;line-height:1.5;
-  margin-bottom:8px;animation:fadeUp .5s ease 1.1s both}
-.polaroid-meta{font-size:9px;color:#a08a5a;animation:fadeUp .5s ease 1.4s both}
-.polaroid-brand{font-family:'Fraunces',serif;font-size:10px;color:#c0a870;margin-top:4px;
-  animation:fadeUp .5s ease 1.6s both}
 .end-msg{font-family:'Kalam',cursive;font-size:14px;color:var(--ui);text-align:center;line-height:1.9}
 .illo-slot{position:absolute;inset:0}
 .shimmer{position:absolute;inset:0;background:linear-gradient(110deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.09) 50%,rgba(255,255,255,.04) 75%);
@@ -1307,20 +1243,16 @@ export default function SleepSeed() {
   const [isListening,    setIsListening]    = useState(false);
   const [hasSeenOnboard, setHasSeenOnboard] = useState(false);
   const [lastErrStage,   setLastErrStage]   = useState<string|null>(null);
-  const [nightCards,     setNightCards]     = useState([]);
-  const [memoriesTab,    setMemoriesTab]    = useState<"stories"|"nightcards">("stories");
-  const [ncStep,         setNcStep]         = useState(0);          // 0-4 for 5 Night Card steps
-  const [ncBondingQ,     setNcBondingQ]     = useState("");         // bonding question from generation
-  const [ncBondingA,     setNcBondingA]     = useState("");         // child's answer
-  const [ncGratitude,    setNcGratitude]    = useState("");         // "best three seconds"
-  const [ncExtra,        setNcExtra]        = useState("");         // optional extra note
-  const [ncPhoto,        setNcPhoto]        = useState<string|null>(null); // base64 data URL
-  const [ncCountdown,    setNcCountdown]    = useState(0);          // 3-2-1 countdown
-  const [ncGenerating,   setNcGenerating]   = useState(false);      // Claude generating
-  const [ncResult,       setNcResult]       = useState<any>(null);  // final Night Card
-  const [ncRevealed,     setNcRevealed]     = useState(false);      // polaroid reveal done
-  const [ncBondingSaved, setNcBondingSaved] = useState(false);      // bonding answer submitted during loading
-  const [viewingNightCard, setViewingNightCard] = useState<any>(null); // Night Card detail view
+  // ── Night Card state ──
+  const [nightCards,     setNightCards]   = useState<any[]>([]);
+  const [ncStage,        setNcStage]      = useState('idle'); // idle|bonding|gratitude|extra|photo|generating|card
+  const [ncBondingQ,     setNcBondingQ]   = useState('');
+  const [ncBondingA,     setNcBondingA]   = useState('');
+  const [ncGratitude,    setNcGratitude]  = useState('');
+  const [ncExtra,        setNcExtra]      = useState('');
+  const [ncPhoto,        setNcPhoto]      = useState<string|null>(null);
+  const [ncCard,         setNcCard]       = useState<any|null>(null);
+  const [memoriesTab,    setMemoriesTab]  = useState<'stories'|'nightcards'>('stories');
 
   const totalPagesRef = useRef(0);
   const fileRefs      = useRef({});
@@ -1331,8 +1263,6 @@ export default function SleepSeed() {
   const voiceIdRef       = useRef<string|null>(null); // always-current cloned voice ID
   const speakELRef       = useRef<any>(null);          // always-current speakTextEL fn
   const speakTextRef     = useRef<any>(null);          // always-current speakText fn
-  const ncVideoRef       = useRef<HTMLVideoElement>(null);
-  const ncStreamRef      = useRef<MediaStream|null>(null);
 
   const imgReady = (url) => !!imgLoaded[strHash(url)];
 
@@ -1347,10 +1277,9 @@ export default function SleepSeed() {
 
   useEffect(() => {
     sGet("memories").then(s => { if(s?.items) setMemories(s.items); });
-    sGet("nightcards").then(s => { if(s?.items) setNightCards(s.items); });
     sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); });
     sGet("onboarded").then(s => { if(s?.v) setHasSeenOnboard(true); });
-
+    sGet("nightcards").then(s => { if(Array.isArray(s)) setNightCards(s); });
   },[]);
 
 
@@ -1668,252 +1597,379 @@ export default function SleepSeed() {
     if(!book) return;
     try {
       const { jsPDF } = await import("jspdf");
-      // A4 landscape: 297 × 210 mm
+
+      // ── Landscape A4: 297 × 210 mm ──────────────────────────────────
       const doc = new jsPDF({ orientation:"landscape", unit:"mm", format:"a4" });
-      const W = 297, H = 210;
+      const PW = 297, PH = 210;
+      const CX = PW / 2; // page centre x
 
-      // Colours
-      const NAVY:  [number,number,number] = [13,  21,  53];
-      const GOLD:  [number,number,number] = [212, 160, 48];
-      const WHITE: [number,number,number] = [255, 255, 255];
-      const CREAM_BG:[number,number,number] = [253, 248, 242];
-      const INK:   [number,number,number] = [26,  20,  16];
-      const RULE:  [number,number,number] = [228, 220, 216];
-      const PG_NUM:[number,number,number] = [184, 168, 152];
-      const URL_C: [number,number,number] = [200, 189, 176];
-      const REFRAIN:[number,number,number]= [74,  56,  128];
-      const FOR_LBL:[number,number,number]= [176, 160, 144];
+      // ── Palette ──────────────────────────────────────────────────────
+      const NAVY    : [number,number,number] = [6,   11,  24 ];
+      const NAVY_MID: [number,number,number] = [13,  21,  53 ];
+      const GOLD    : [number,number,number] = [212, 160, 48 ];
+      const GOLD2   : [number,number,number] = [240, 204, 96 ];
+      const GOLD3   : [number,number,number] = [250, 233, 168];
+      const CREAM   : [number,number,number] = [253, 245, 224];
+      const CREAM_PG: [number,number,number] = [254, 249, 238];
+      const INK     : [number,number,number] = [13,  21,  53 ];
+      const INK_D   : [number,number,number] = [38,  20,  4  ];
+      const DUST    : [number,number,number] = [200, 176, 120];
+      const DIM     : [number,number,number] = [140, 128, 100];
+      const PURPLE  : [number,number,number] = [74,  56,  128];
+      const RULE_C  : [number,number,number] = [200, 176, 100];
 
-      // Moon crescent helper (drawn with two circles)
-      const drawMoon = (cx:number, cy:number, r:number) => {
-        doc.setFillColor(...GOLD);
-        doc.circle(cx, cy, r, "F");
-        doc.setFillColor(...NAVY);
-        doc.circle(cx - r*0.35, cy - r*0.1, r*0.82, "F");
+      // ── Helpers ───────────────────────────────────────────────────────
+      const goldLine = (x1:number,y1:number,x2:number,y2:number,w=0.3) => {
+        doc.setDrawColor(...RULE_C); doc.setLineWidth(w);
+        doc.line(x1,y1,x2,y2);
       };
 
-      // Thin rule line helper
-      const rule = (x:number, y:number, w:number) => {
-        doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
-        doc.line(x, y, x+w, y);
+      // Deterministic star scatter (LCG)
+      const stars = (n:number, seed:number, xMin:number, xMax:number, yMin:number, yMax:number) => {
+        let s = seed;
+        const rand = () => { s=(s*1664525+1013904223)&0xffffffff; return (s>>>0)/0xffffffff; };
+        doc.setFillColor(250,240,200);
+        for(let i=0;i<n;i++){
+          const x=rand()*(xMax-xMin)+xMin, y=rand()*(yMax-yMin)+yMin, r=rand()*0.55+0.18;
+          doc.setGState(doc.GState({opacity:rand()*0.45+0.15}));
+          doc.circle(x,y,r,"F");
+        }
+        doc.setGState(doc.GState({opacity:1}));
       };
 
-      // ── SHEET 1: COVER ────────────────────────────────────────────────
-      // Left brand panel
-      const LP = 108; // left panel width mm
+      const drawCrescent = (cx:number,cy:number,r:number) => {
+        doc.setFillColor(...GOLD); doc.circle(cx,cy,r,"F");
+        doc.setFillColor(...NAVY); doc.circle(cx-r*0.32,cy-r*0.06,r*0.82,"F");
+      };
+
+      // Smart text splitter — splits on original story page boundaries
+      // Returns array of {text,pageNum} objects for left/right slots
+      const splitIntoBeats = (pages: any[]) => {
+        // Each original story page becomes one "beat"
+        return pages.map((pg, i) => ({ text: pg.text||"", num: i+1 }));
+      };
+
+      // ── COVER PAGE ────────────────────────────────────────────────────
+      // Navy top band (58% height)
+      const BAND_H = 121;
       doc.setFillColor(...NAVY);
-      doc.rect(0, 0, LP, H, "F");
+      doc.rect(0,0,PW,BAND_H,"F");
+      stars(40,7,0,PW,0,BAND_H);
 
-      // Moon centred in left panel, upper third
-      drawMoon(LP/2, 68, 8);
+      // Moon glow + crescent
+      doc.setFillColor(212,160,48);
+      doc.setGState(doc.GState({opacity:0.08}));
+      doc.circle(CX,50,38,"F");
+      doc.setGState(doc.GState({opacity:0.13}));
+      doc.circle(CX,50,30,"F");
+      doc.setGState(doc.GState({opacity:1}));
+      drawCrescent(CX,50,22);
+
+      // Constellation clusters
+      [[28,18,38,8,48,22],[205,16,218,8,225,22],[85,75,97,68,105,80]].forEach(pts=>{
+        doc.setFillColor(250,233,168);
+        doc.setGState(doc.GState({opacity:0.42}));
+        for(let i=0;i<pts.length;i+=2) doc.circle(pts[i],pts[i+1],0.65,"F");
+        doc.setDrawColor(250,233,168); doc.setLineWidth(0.18);
+        doc.setGState(doc.GState({opacity:0.1}));
+        for(let i=0;i<pts.length-2;i+=2) doc.line(pts[i],pts[i+1],pts[i+2],pts[i+3]);
+      });
+      doc.setGState(doc.GState({opacity:1}));
 
       // SleepSeed wordmark
-      doc.setFont("times", "bold");
-      doc.setFontSize(18);
-      doc.setTextColor(...WHITE);
-      doc.text("SleepSeed", LP/2, 85, { align:"center" });
+      doc.setFont("helvetica","bold"); doc.setFontSize(8.5);
+      doc.setTextColor(...GOLD);
+      doc.text("S L E E P S E E D", CX, BAND_H-22, {align:"center",charSpace:2});
+      goldLine(CX-22,BAND_H-18,CX+22,BAND_H-18);
+      doc.setFont("helvetica","normal"); doc.setFontSize(5.5);
+      doc.setTextColor(...DUST);
+      doc.text("B E D T I M E  S T O R I E S", CX, BAND_H-12, {align:"center",charSpace:1});
 
-      // Tagline
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      doc.setTextColor(212, 160, 48);
-      doc.text("BEDTIME STORIES", LP/2, 93, { align:"center" });
+      // Wave arch — cream bottom
+      doc.setFillColor(...CREAM);
+      doc.rect(0,BAND_H,PW,PH-BAND_H,"F");
+      // Redraw navy arch over top
+      const AD = 9; // arch dip mm
+      doc.setFillColor(...NAVY);
+      const archPts: number[][] = [];
+      for(let i=0;i<=50;i++){
+        const t=i/50;
+        archPts.push([t*PW, BAND_H+Math.sin(t*Math.PI)*AD]);
+      }
+      archPts.push([PW,0],[0,0]);
+      doc.lines(archPts.slice(1).map((p,i,arr)=>[p[0]-archPts[i][0],p[1]-archPts[i][1]]),
+        archPts[0][0],archPts[0][1],[1,1],"F",true);
 
-      // URL at bottom of brand panel
-      doc.setFontSize(6.5);
-      doc.setTextColor(255, 255, 255, 0.18 as any);
-      doc.setTextColor(100, 100, 130);
-      doc.text("sleepseed.app", LP/2, H-12, { align:"center" });
+      // Cream title section
+      const CTS = BAND_H+AD+5;
+      doc.setFont("helvetica","normal"); doc.setFontSize(6);
+      doc.setTextColor(...DIM);
+      doc.text("A  B E D T I M E  S T O R Y  F O R",CX,CTS+8,{align:"center",charSpace:1});
 
-      // Right title panel
-      doc.setFillColor(...WHITE);
-      doc.rect(LP, 0, W-LP, H, "F");
-
-      const RX = LP + 24; // text left margin in right panel
-      const RW = W - LP - 48; // text width
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      doc.setTextColor(...FOR_LBL);
-      doc.text("A BEDTIME STORY FOR", RX, 62);
-
-      doc.setFont("times", "bold");
-      doc.setFontSize(34);
+      doc.setFont("times","bolditalic"); doc.setFontSize(40);
       doc.setTextColor(...INK);
-      doc.text(book.heroName, RX, 80);
+      doc.text(book.heroName,CX,CTS+26,{align:"center"});
 
-      doc.setFont("times", "normal");
-      doc.setFontSize(15);
-      doc.setTextColor(...INK);
-      const titleLines = doc.splitTextToSize(book.title, RW);
-      doc.text(titleLines, RX, 96);
+      goldLine(CX-42,CTS+30,CX+42,CTS+30);
 
-      rule(RX, 96 + titleLines.length*7 + 4, RW);
+      doc.setFont("times","italic"); doc.setFontSize(16);
+      doc.setTextColor(...INK_D);
+      const tW=PW-60;
+      const tLines=doc.splitTextToSize(book.title,tW);
+      tLines.forEach((l:string,i:number)=>doc.text(l,CX,CTS+41+i*7.5,{align:"center"}));
 
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      doc.setTextColor(...FOR_LBL);
-      doc.text("Written just for tonight", RX, 96 + titleLines.length*7 + 12);
-      doc.text("sleepseed.app", RX, 96 + titleLines.length*7 + 19);
+      const aT=CTS+41+tLines.length*7.5+6;
+      [-5,0,5].forEach(dx=>{doc.setFillColor(...GOLD);doc.circle(CX+dx,aT,0.9,"F");});
 
-      // ── STORY PAGES: 2 per sheet ──────────────────────────────────────
+      // Marketing footer
+      const FH=12;
+      doc.setFillColor(...NAVY);
+      doc.rect(0,PH-FH,PW,FH,"F");
+      goldLine(0,PH-FH,PW,PH-FH);
+      doc.setFont("times","italic"); doc.setFontSize(6.5);
+      doc.setTextColor(...GOLD);
+      doc.text(
+        "Visit sleepseed.vercel.app to make your own personalised children\u2019s bedtime stories",
+        CX,PH-FH+8,{align:"center"}
+      );
+
+      // ── STORY PAGES ───────────────────────────────────────────────────
+      // Layout: landscape A4, two beats per page side by side
+      // Each beat = one original story page
+      // Header: navy 16mm · Footer: navy 12mm
+      // Centre gold rule at CX
+      // Left panel: x=0 to CX · Right panel: x=CX to PW
+      // Inner padding: 14mm from each panel edge
+
+      const HDR  = 16;  // header height
+      const FTR  = 12;  // footer height
+      const PAD  = 14;  // inner horizontal padding each side
+      const TPAD = 8;   // padding below header before text starts
+      const BPAD = 8;   // padding above footer
+
+      const LP_X0 = 0,    LP_X1 = CX;     // left panel bounds
+      const RP_X0 = CX,   RP_X1 = PW;     // right panel bounds
+      const LP_CX = CX/2;                  // left panel centre
+      const RP_CX = CX + CX/2;             // right panel centre
+      const LP_TW = CX - 2*PAD;            // left text width
+      const RP_TW = CX - 2*PAD;            // right text width
+      const LP_TX = LP_CX;                 // left text anchor (centred)
+      const RP_TX = RP_CX;                 // right text anchor (centred)
+      const TEXT_TOP = HDR + TPAD + 8;     // y where text starts
+      const TEXT_BOT = PH - FTR - BPAD;    // y where text must end
+
       const allPages = book.isAdventure
-        ? [...(book.setup_pages||[]), ...(book.path_a||[]), ...(book.path_b||[])]
+        ? [...(book.setup_pages||[]),...(book.path_a||[]),...(book.path_b||[])]
         : (book.pages||[]);
 
-      const PW = W / 2; // each panel = 148.5mm
-      const PAD_X = 18;  // horizontal padding inside each panel
-      const PAD_TOP = 20;
-      const PAD_BOT = 18;
-      const TEXT_W = PW - PAD_X*2;
-      const TEXT_H = H - PAD_TOP - PAD_BOT - 14; // reserve footer
+      const beats = splitIntoBeats(allPages);
 
-      const drawStoryPage = (
-        pgIndex: number,    // 0-based index in allPages
-        side: "left"|"right"
-      ) => {
-        const pg = allPages[pgIndex];
-        if(!pg) return;
-        const X0 = side === "left" ? 0 : PW;
-        const isEven = pgIndex % 2 === 1; // alternate tint
-        const bgColor = isEven ? CREAM_BG : WHITE;
+      const drawPageShell = (pageNum:number, leftBeat:any, rightBeat:any|null) => {
+        // ── Background ──
+        doc.setFillColor(...CREAM_PG);
+        doc.rect(0,0,PW,PH,"F");
 
-        doc.setFillColor(...bgColor);
-        doc.rect(X0, 0, PW, H, "F");
-
-        // Divider between panels (only draw on left side to avoid double)
-        if(side === "left") {
-          doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
-          doc.line(PW, 8, PW, H-8);
+        // Slight alternate tint on right panel for every other spread
+        if(pageNum%2===0){
+          doc.setFillColor(250,244,228);
+          doc.rect(CX,0,CX,PH,"F");
         }
 
-        // Page text
-        doc.setFont("times", "normal");
-        doc.setFontSize(11);
-        doc.setTextColor(...INK);
-        const lines = doc.splitTextToSize(pg.text||"", TEXT_W);
-        doc.text(lines, X0+PAD_X, PAD_TOP);
+        // ── Header band ──
+        doc.setFillColor(...NAVY);
+        doc.rect(0,0,PW,HDR,"F");
+        goldLine(0,HDR,PW,HDR);
 
-        // Refrain — show on every even-index page (right-side feel)
-        const hasRefrain = book.refrain && pgIndex % 2 === 1;
-        if(hasRefrain) {
-          const refrainY = H - PAD_BOT - 14;
-          rule(X0+PAD_X, refrainY - 3, TEXT_W);
-          doc.setFont("times", "italic");
-          doc.setFontSize(9.5);
-          doc.setTextColor(...REFRAIN);
-          const rLines = doc.splitTextToSize(`"${book.refrain}"`, TEXT_W);
-          doc.text(rLines, X0+PAD_X, refrainY + 4);
+        // Story title in header left
+        doc.setFont("helvetica","normal"); doc.setFontSize(5.5);
+        doc.setTextColor(...DUST);
+        const ht = book.title.length>46 ? book.title.slice(0,44)+"\u2026" : book.title;
+        doc.text(ht, 10, 10);
+
+        // "For [name]" in header right
+        doc.setFont("times","italic"); doc.setFontSize(5.5);
+        doc.setTextColor(...DUST);
+        doc.text(`For ${book.heroName}`, PW-10, 10, {align:"right"});
+
+        // Beat numbers in header centre area
+        if(rightBeat){
+          doc.setFont("times","italic"); doc.setFontSize(6);
+          doc.setTextColor(...GOLD);
+          doc.text(`${leftBeat.num} \u00b7 ${rightBeat.num}`, CX, 10, {align:"center"});
+        } else {
+          doc.setFont("times","italic"); doc.setFontSize(6);
+          doc.setTextColor(...GOLD);
+          doc.text(String(leftBeat.num), CX, 10, {align:"center"});
         }
 
-        // Footer rule
-        rule(X0+PAD_X, H - PAD_BOT + 1, TEXT_W);
+        // ── Gold centre rule ──
+        doc.setDrawColor(...GOLD); doc.setLineWidth(0.4);
+        doc.setGState(doc.GState({opacity:0.35}));
+        doc.line(CX,HDR+4,CX,PH-FTR-4);
+        doc.setGState(doc.GState({opacity:1}));
 
-        // Page number
-        doc.setFont("times", "italic");
-        doc.setFontSize(7);
-        doc.setTextColor(...PG_NUM);
-        doc.text(String(pgIndex+1), X0+PAD_X, H - PAD_BOT + 7);
-
-        // URL
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(6);
-        doc.setTextColor(...URL_C);
-        doc.text("sleepseed.app", X0+PW-PAD_X, H - PAD_BOT + 7, { align:"right" });
+        // ── Footer band ──
+        doc.setFillColor(...NAVY);
+        doc.rect(0,PH-FTR,PW,FTR,"F");
+        goldLine(0,PH-FTR,PW,PH-FTR);
+        doc.setFont("helvetica","normal"); doc.setFontSize(5);
+        doc.setTextColor(...DUST);
+        doc.text("SleepSeed",10,PH-FTR+7.5);
+        doc.text("sleepseed.vercel.app",PW-10,PH-FTR+7.5,{align:"right"});
       };
 
-      // Pair pages onto sheets
-      for(let i=0; i<allPages.length; i+=2) {
+      const drawBeat = (
+        beat: {text:string,num:number},
+        panelCX: number,
+        panelTW: number,
+        isLast: boolean
+      ) => {
+        if(!beat) return;
+
+        // Page number ornament
+        doc.setFillColor(...GOLD);
+        doc.setGState(doc.GState({opacity:0.14}));
+        doc.circle(panelCX, HDR+6, 5.5,"F");
+        doc.setGState(doc.GState({opacity:1}));
+        doc.setFont("times","italic"); doc.setFontSize(6);
+        doc.setTextColor(...GOLD);
+        doc.text(String(beat.num), panelCX, HDR+8.5, {align:"center"});
+
+        // Story text — detect dialogue vs narration
+        const rawText = beat.text || "";
+
+        // Split into paragraph chunks (double newline or just single)
+        const paragraphs = rawText.split(/\n\n|\n/).filter((p:string)=>p.trim());
+
+        let y = TEXT_TOP + 4;
+        const lineH = 7.2;  // line height mm
+        const paraGap = 4;  // gap between paragraphs mm
+
+        paragraphs.forEach((para:string, pi:number) => {
+          const trimmed = para.trim();
+          if(!trimmed) return;
+          if(y > TEXT_BOT - 6) return; // safety
+
+          // Detect sound words (all caps, short)
+          const isSoundWord = /^[A-Z][A-Z!.]+$/.test(trimmed) && trimmed.length < 20;
+          // Detect dialogue
+          const isDialogue = trimmed.startsWith("\u201c") || trimmed.startsWith('"');
+
+          if(isSoundWord){
+            doc.setFont("times","bold"); doc.setFontSize(15);
+            doc.setTextColor(...INK);
+          } else if(isDialogue){
+            doc.setFont("times","italic"); doc.setFontSize(11);
+            doc.setTextColor(...INK_D);
+          } else {
+            doc.setFont("times","normal"); doc.setFontSize(11);
+            doc.setTextColor(...INK);
+          }
+
+          const lines = doc.splitTextToSize(trimmed, panelTW);
+          lines.forEach((line:string, li:number) => {
+            if(y > TEXT_BOT) return;
+            doc.text(line, panelCX, y, {align:"center"});
+            y += isSoundWord ? lineH+1 : lineH;
+          });
+          y += paraGap;
+        });
+
+        // Refrain — show on last beat of every other spread (right side preferred)
+        if(isLast && book.refrain && beat.num % 2 === 0){
+          const rY = TEXT_BOT - 10;
+          goldLine(panelCX - panelTW*0.38, rY, panelCX + panelTW*0.38, rY, 0.25);
+          doc.setFont("times","italic"); doc.setFontSize(8);
+          doc.setTextColor(...PURPLE);
+          const rLines = doc.splitTextToSize(`\u201c${book.refrain}\u201d`, panelTW);
+          rLines.forEach((l:string,i:number)=>{
+            doc.text(l, panelCX, rY+5+i*5.5, {align:"center"});
+          });
+        }
+      };
+
+      // Pair beats onto pages
+      for(let i=0;i<beats.length;i+=2){
         doc.addPage();
-        drawStoryPage(i, "left");
-        drawStoryPage(i+1, "right");
+        const left  = beats[i];
+        const right = beats[i+1] || null;
+        const spreadNum = Math.floor(i/2)+1;
+
+        drawPageShell(spreadNum, left, right);
+
+        // Draw left beat
+        drawBeat(left, LP_CX, LP_TW, !right);
+
+        // Draw right beat
+        if(right){
+          drawBeat(right, RP_CX, RP_TW, true);
+        }
       }
 
-      // ── FINAL SHEET: The End ──────────────────────────────────────────
+      // ── FINAL PAGE: The End ───────────────────────────────────────────
       doc.addPage();
-      // Left: brand panel (matching cover)
-      doc.setFillColor(...NAVY);
-      doc.rect(0, 0, LP, H, "F");
-      drawMoon(LP/2, 68, 8);
-      doc.setFont("times", "bold");
-      doc.setFontSize(18);
-      doc.setTextColor(...WHITE);
-      doc.text("SleepSeed", LP/2, 85, { align:"center" });
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
+      doc.setFillColor(...NAVY); doc.rect(0,0,PW,PH,"F");
+      stars(50,99,0,PW,0,PH);
+
+      // Moon
+      drawCrescent(CX, PH/2 - 38, 16);
+
+      // "The End."
+      doc.setFont("times","bolditalic"); doc.setFontSize(42);
+      doc.setTextColor(...GOLD3);
+      doc.text("The End.", CX, PH/2-10, {align:"center"});
+
+      goldLine(CX-32,PH/2-4,CX+32,PH/2-4);
+
+      doc.setFont("times","italic"); doc.setFontSize(13);
+      doc.setTextColor(...DUST);
+      doc.text(`Sweet dreams, ${book.heroName}.`, CX, PH/2+8, {align:"center"});
+      doc.setFontSize(10); doc.setTextColor(140,120,80);
+      doc.text("Tomorrow night, another adventure awaits\u2026", CX, PH/2+18, {align:"center"});
+
+      // Parent note
+      if(book.parentNote){
+        const NY=PH/2+30;
+        doc.setFillColor(17,28,58);
+        doc.roundedRect(CX-68,NY,136,44,4,4,"F");
+        doc.setDrawColor(...GOLD); doc.setLineWidth(0.28);
+        doc.setGState(doc.GState({opacity:0.22}));
+        doc.roundedRect(CX-68,NY,136,44,4,4,"S");
+        doc.setGState(doc.GState({opacity:1}));
+        doc.setFont("helvetica","bold"); doc.setFontSize(6);
+        doc.setTextColor(...GOLD2);
+        doc.text("A NOTE FOR YOU", CX-60, NY+8);
+        doc.setFont("times","italic"); doc.setFontSize(9);
+        doc.setTextColor(...CREAM);
+        const nL=doc.splitTextToSize(book.parentNote,120);
+        nL.forEach((l:string,i:number)=>doc.text(l,CX-60,NY+16+i*6));
+      }
+
+      // Footer
+      doc.setFillColor(...NAVY); doc.rect(0,PH-FTR,PW,FTR,"F");
+      goldLine(0,PH-FTR,PW,PH-FTR);
+      doc.setFont("times","italic"); doc.setFontSize(6.5);
       doc.setTextColor(...GOLD);
-      doc.text("BEDTIME STORIES", LP/2, 93, { align:"center" });
-      doc.setFontSize(6.5);
-      doc.setTextColor(100, 100, 130);
-      doc.text("sleepseed.app", LP/2, H-12, { align:"center" });
+      doc.text(
+        "Visit sleepseed.vercel.app to make your own personalised children\u2019s bedtime stories",
+        CX, PH-FTR+8, {align:"center"}
+      );
 
-      // Right: The End
-      doc.setFillColor(...WHITE);
-      doc.rect(LP, 0, W-LP, H, "F");
-      doc.setFont("times", "bold");
-      doc.setFontSize(28);
-      doc.setTextColor(...INK);
-      doc.text("The End.", RX, H/2 - 8);
-      rule(RX, H/2 - 2, RW);
-      doc.setFont("times", "italic");
-      doc.setFontSize(10);
-      doc.setTextColor(...FOR_LBL);
-      doc.text(`Sweet dreams, ${book.heroName}.`, RX, H/2 + 7);
-      doc.text("Tomorrow night, another adventure awaits.", RX, H/2 + 15);
+      // ── Save ──────────────────────────────────────────────────────────
+      doc.save(`${book.title.replace(/[^a-z0-9]/gi,"_").toLowerCase()}_sleepseed.pdf`);
 
-      doc.save(`${book.title.replace(/[^a-z0-9]/gi,"_").toLowerCase()}.pdf`);
     } catch(err) {
       console.error("PDF error:", err);
-      alert("Could not generate PDF — please try again.");
+      alert("Could not generate PDF \u2014 please try again.");
     }
   };
 
-  const addSparkle = useCallback((e) => {
+    const addSparkle = useCallback((e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const id = uid();
     setSparkles(s => [...s,{id,x:e.clientX-rect.left,y:e.clientY-rect.top}]);
     setTimeout(() => setSparkles(s => s.filter(sp => sp.id!==id)),700);
   },[]);
-
-  // ── Night Card camera effect ──
-  useEffect(() => {
-    if(stage!=="nightcard" || ncStep!==3 || ncPhoto) return;
-    let cancelled = false;
-    navigator.mediaDevices?.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480}}})
-      .then(stream => {
-        if(cancelled){ stream.getTracks().forEach(t=>t.stop()); return; }
-        ncStreamRef.current = stream;
-        if(ncVideoRef.current) ncVideoRef.current.srcObject = stream;
-      })
-      .catch(() => { if(!cancelled) setNcStep(4); });
-    return () => { cancelled = true; ncStreamRef.current?.getTracks().forEach(t=>t.stop()); ncStreamRef.current=null; };
-  },[stage,ncStep,ncPhoto]);
-
-  // ── Night Card generation effect ──
-  useEffect(() => {
-    if(stage!=="nightcard" || ncStep!==4 || ncGenerating || ncResult) return;
-    setNcGenerating(true);
-    const name = book?.heroName||"";
-    // Build bonding context — only include fields that have content
-    const bondingParts = [];
-    if(ncBondingQ && ncBondingA.trim()) bondingParts.push(`Asked "${ncBondingQ}" — ${name} said: "${ncBondingA.trim()}"`);
-    if(ncGratitude.trim()) bondingParts.push(`Best moment: "${ncGratitude.trim()}"`);
-    if(ncExtra.trim()) bondingParts.push(`Note: "${ncExtra.trim()}"`);
-    const bondingCtx = bondingParts.length ? `\nTonight: ${bondingParts.join(". ")}` : "";
-
-    const ncPrompt = `Night Card for ${name} after "${book?.title||""}". Refrain: "${book?.refrain||""}"${bondingCtx}
-
-Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the title)","quote":"best line from the story refrain, 8-15 words","memory_line":"one warm sentence weaving the child's real words into a keepsake, under 20 words${ncBondingA.trim() ? ` — must include something ${name} actually said` : ""}","reflection":"whispered bedtime question, under 12 words","emoji":"one emoji"}`;
-    const fallback = {
-      headline:`A night with ${name}`,quote:book?.refrain||book?.title||"",
-      memory_line:ncGratitude.trim()||ncBondingA.trim()||`A story just for ${name}.`,
-      reflection:"What will you dream about tonight?",emoji:"🌙",
-    };
-    callClaude([{role:"user",content:ncPrompt}],
-      "Write Night Card keepsakes. Weave real bonding moments — the child's actual words — into warm, specific mementos. Be concise. Return only JSON.", 300
-    ).then(raw => { try { setNcResult(extractJSON(raw)); } catch(_) { setNcResult(fallback); } })
-     .catch(() => setNcResult(fallback));
-  },[stage,ncStep,ncGenerating,ncResult]);
 
   const newChar = () => ({id:uid(),type:"friend",name:"",photo:null,classify:"",gender:"",note:""});
   const addExtraChar    = () => setExtraChars(cs => cs.length<4 ? [...cs,newChar()] : cs);
@@ -1946,19 +2002,28 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     await sSet("memories",{items:next});
   },[memories]);
 
-  const saveNightCard = useCallback(async (cardData) => {
-    const entry = {id:uid(),...cardData,date:new Date().toISOString().split("T")[0]};
-    const next = [entry,...nightCards];
+  const saveNightCard = async (cardData: any) => {
+    const entry = { id: uid(), ...cardData, createdAt: new Date().toISOString() };
+    const next = [entry, ...nightCards];
     setNightCards(next);
-    await sSet("nightcards",{items:next});
+    setNcCard(entry);
+    await sSet("nightcards", next);
     return entry;
-  },[nightCards]);
+  };
 
-  const deleteNightCard = useCallback(async (id) => {
-    const next = nightCards.filter(c => c.id!==id);
+  const deleteNightCard = async (id: string) => {
+    const next = nightCards.filter(nc => nc.id !== id);
     setNightCards(next);
-    await sSet("nightcards",{items:next});
-  },[nightCards]);
+    await sSet("nightcards", next);
+  };
+
+  const resetNightCard = () => {
+    setNcStage('idle');
+    setNcBondingA('');
+    setNcGratitude('');
+    setNcExtra('');
+    setNcPhoto(null);
+  };
 
   /* ══ GENERATE ══ */
   const generate = async (overrides:any={}) => {
@@ -1980,10 +2045,6 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     const resolvedStyle   = overrides.storyStyle    ?? storyStyle;
     const resolvedTraits  = overrides.heroTraits    ?? heroTraits;
     setError(""); setStage("generating"); setFromCache(false); setChosenPath(null);
-    // Pick and store bonding question for Night Card flow
-    const bondingIdx = Math.floor(Date.now()/1000) % BONDING_QUESTIONS.length;
-    setNcBondingQ(BONDING_QUESTIONS[bondingIdx]);
-    setNcBondingSaved(false); setNcBondingA("");
     const name = heroName.trim();
     const seed = makeStorySeed(name,resolvedTheme,resolvedChars,resolvedOcc,resolvedOccCust,Array.isArray(resolvedLesson)?resolvedLesson.join("|"):resolvedLesson,resolvedAdv,resolvedLen,heroGender,heroClassify,resolvedGuidance);
     const bKey = `book_${seed}`;
@@ -2159,115 +2220,104 @@ PENULTIMATE + FINAL PAGE: Follow the STORY CRAFT rules exactly — they are your
       const advSchema    = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"Write a short, exciting, specific choice question for ${name} — not generic. It must follow directly from what just happened on the last setup page. Make it feel urgent. Two paths must feel genuinely different.","option_a_label":"4-7 fun exciting words","option_b_label":"4-7 fun exciting words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}],"refrain":"Now that you have written all the pages: look back at what you wrote. The refrain must be a phrase that already appears in your story — a line of dialogue, a sound, a repeated image. It could only belong to THIS story. 4-8 words. Never generic. A child must say it before you on the third reading."}`;
 
       // ── Master story prompt ───────────────────────────────────────────────
-      const storyPrompt = `You are the SleepSeed Voice — writing a children's picture book that will be read aloud at bedtime. Your models are Roald Dahl, Julia Donaldson, Mo Willems, Eric Carle, and A.A. Milne. Every page must feel like it belongs in a book a child could buy at a bookstore and memorise by the third reading.
+      const storyPrompt = `You are writing a SleepSeed bedtime story. SleepSeed stories have a specific identity that makes them unlike any other children's book. You must follow this identity on every page.
 
-THE PRIME DIRECTIVE: The story is ALWAYS the priority. Page count is a target, not a ceiling. All rules exist to serve the story.
+THE SLEEPSEED VOICE — this is who we are:
+SleepSeed stories are written in verse. Not poetry that sits on a page — verse that moves, breathes, and lands like music when read aloud. The rhythm underneath every line should feel like a heartbeat. A parent should be able to tap their foot to it without trying. A child should be finishing the lines by the third reading.
 
+THE VERSE RULES — follow exactly:
+• NARRATION is always in verse. Use AABB (line 1 rhymes with 2, line 3 with 4) or ABCB (line 2 rhymes with line 4 — ballad style) as your backbone. Vary between them to keep it musical, never mechanical.
+• THE PUNCH LINE: After a rhyming sequence, drop one short line (3–5 syllables) that doesn't rhyme with anything. This is where the emotion lands hardest. Use it once or twice per page at the most important moments.
+• LINE LENGTH: 6–8 syllables per line for age 3–6. Up to 10 syllables for age 7–10. Every line must be speakable in one breath. If you run out of breath mid-line, split it.
+• SIMPLE WORDS ALWAYS: One-syllable words wherever possible. The rhythm carries the emotion — you never need a big word when the beat does the work. Vocabulary rules from the age section are absolute. No style instruction overrides them.
+• DIALOGUE IS NATURAL SPEECH — not verse. Characters talk the way real children talk. Direct. Warm. Funny. The dialogue breaks the verse intentionally. This contrast makes both feel more alive.
+• THE FINAL PAGE IS PROSE — not verse. One long, warm, slow, circular sentence that carries the child into sleep. The absence of rhyme at the very end feels like the world going quiet. This is the SleepSeed signature. Never verse on the final page.
+
+THE PRIME DIRECTIVE: The story is ALWAYS the priority. All rules serve the story.
 STANDALONE STORY: This story exists entirely on its own. Do not reference, continue, or borrow from any previous story. Every character, setting, and situation is fresh and new. Only what is provided in this prompt exists.
 
-FOUR THINGS EVERY STORY MUST HAVE — these cannot be skipped:
+THE SLEEPSEED FIVE — every story must have all five:
 1. A hero who makes one real decision that changes everything (not watches, not helps — decides)
-2. A refrain that appears three times: introduced, varied, and closed
-3. One moment of genuine emotional truth a child would recognise from their own life
-4. A final page that echoes page 1 and ends with the longest, warmest sentence in the story
+2. A refrain that appears exactly three times: introduced, varied, closed — written like a musical hook
+3. THE COMPANION AS MIRROR: The companion's job is not to help or advise. Their job is to reflect back what the child already knows but hasn't said yet. They see the child more clearly than the child sees themselves. Not a helper. A mirror.
+4. EMOTIONAL PHYSICS: At least once per story, a feeling must be given physical form — weight, texture, temperature. Something the child carries, puts down, feels in their chest, or leaves somewhere. This is not decorative metaphor. It is the story's actual mechanics.
+5. THE WHISPER LINE: One line somewhere in the middle of the story — not the ending, not the refrain — so precisely true and specifically observed that a parent will remember it years from now. Not a moral. A moment so exact it could only have been written for this child on this night. Every SleepSeed story lives or dies on this line. Know it before you write page 1.
 
-The only other unbreakable rule: write at the correct age level.
+The only non-negotiable rule: write at the correct age level.
 
-━━━ BEFORE YOU WRITE A SINGLE WORD ━━━
+═══ BEFORE YOU WRITE A SINGLE WORD ═══
+Three things to lock before you write page 1:
 
-Commit to ONE specific, irreplaceable story concept. Not a setting. Not a theme. A concept.
+STEP 1 — ONE CONCEPT.
+The single weird, specific idea that makes THIS story unlike any other. Concrete enough for a Post-it note.
+STRONG: "The sock in the wrong drawer has been waiting three days to say something."
+STRONG: "Something has been living under ${name}'s bed — not a monster, but something far more embarrassing."
+WEAK: "The hero goes on an adventure." — theme, not concept.
+WEAK: "Something magical happens." — setting is not concept. WHAT happens? To WHOM?
+Commit to it. Every line of verse, every joke, every rhyme must serve this one idea.
 
-A concept is the single weird, specific, delightful idea that makes THIS story different from every other bedtime story ever written. It must be concrete enough to write on a Post-it note.
+STEP 2 — CONFIRM IT WORKS FOR THE AGE.
+Irony and inference fail at age 3–4. Pure slapstick feels thin at age 9–10. Scale sophistication to the reader.
 
-STRONG concept (specific, surprising, rooted in the child's world):
-"The oldest mug in the kitchen has watched seventeen families and has very strong opinions about who makes tea correctly."
-"Something has been living under ${name}'s bed — not a monster, but something far more embarrassing."
-"The school whiteboard has been writing the same message for three days and nobody notices because they keep erasing it."
+STEP 3 — FIND YOUR WHISPER LINE.
+One line, somewhere in the middle of the story. Not the refrain. Not the ending.
+A moment so precisely observed a parent catches their breath and remembers it years later.
+Example: "She yawned the kind of yawn that doesn't mean you're fine. It means you decided."
+If you don't know your Whisper Line yet, keep thinking. It is the most important line in the story.
 
-WEAK concept (vague, generic, could be any story):
-"The hero goes on an adventure and learns about bravery." — this is a theme, not a concept.
-"The toys come alive and have fun." — this is a category, not a story.
-"${name} and friends solve a problem together." — this is a plot shape, not a story.
-"Something magical happens in the kitchen." — setting is not concept. WHAT happens? To WHOM? WHY is that specific, surprising, and inevitable?
-
-Once you have your concept, COMMIT to it. Every page, every line of dialogue, every joke must serve this one specific idea. A story with a strange clear premise will always beat a technically accomplished story with a vague one.
-
-Then ask: does this concept work at the age level specified? A concept that requires complex inference or irony will not land for a 4-year-old. A concept built entirely on single-word physical comedy will feel thin for a 9-year-old. Scale the concept's sophistication to the reader.
+Only when you have all three: write.
 
 ━━━ READER AGE ━━━
 ${ageLine}
 
-━━━ WHAT GREAT PICTURE BOOK WRITING LOOKS AND SOUNDS LIKE ━━━
+━━━ WHAT GREAT SLEEPSEED WRITING SOUNDS LIKE ━━━
 
-The correct register depends entirely on the age. Read your age section above, then match this example to the appropriate register:
+SleepSeed narration is verse. Dialogue is natural speech. Final page is prose. Read each aloud — you should feel the beat without trying.
 
-AGE 3–4 TARGET REGISTER (one sentence per page, clapping rhythm, sound word does the work):
-SPLAT.
-The soup was everywhere.
-"Oh no," said ${name}.
-"Oh no," said the spoon.
-"Oh no," said the WALL.
+AGE 5–6 (AABB with ABCB variation, punch line, dialogue breaks verse):
+The drawer slid open. Something stirred.
+A sock sat up without a word.
+Then: "Ahem."
+Just that. One word.
+The strangest thing that ${name} heard.
 
-AGE 5–6 TARGET REGISTER (short punchy lines, funny dialogue, turn-the-page hook):
-${name} opened the kitchen drawer.
-Something at the back cleared its throat.
-"AHEM," said the sock. "I have been waiting."
+AGE 7–8 (ABCB, wry voice, longer lines, punch lands harder):
+The sock had been there three days straight.
+Three days of wrong. Three days of wait.
+It knew the drawer. It knew the score.
+It had things to set
+straight.
+
+GOOD dialogue (natural, not verse — breaks the rhythm intentionally):
+"Three whole days," said the sock. "Do you have any idea what that's like?"
 ${name} looked at the sock.
-The sock looked at ${name}.
-"I," said the sock, "have a problem."
+"A little," she said.
 
-AGE 7–8 TARGET REGISTER (wry voice, one interesting word, plant-and-payoff hinted):
-The most opinionated sock in the drawer had been there for three days.
-Three days in the wrong place was, as anyone who knew anything about socks would tell you, absolutely preposterous.
-It cleared its throat with tremendous dignity.
-"Someone," it announced, "has made a very significant error."
+GOOD final page (prose — no verse, world goes quiet):
+And ${name} — all the brave, kind, true parts of ${name} — pulled the covers all the way up, listened to the quiet, and drifted into the deepest, warmest, most entirely-herself sleep she had had in a very long time.
 
-AGE 9–10 TARGET REGISTER (complex sentences permitted, emotional undercurrent, character contradiction):
-The old wooden spoon had been in this kitchen for longer than anyone could remember — longer than the fridge, longer than the house, longer, some said, than the street itself.
-It had strong opinions about scrambled eggs. It had even stronger opinions about honesty.
-And it had been waiting, with the patience of someone who has absolutely nothing but time, for exactly the right moment to share both.
+BAD (adult prose — never write this for any age):
+"${name} surveyed the kitchen, its familiar geometry rendered strange by the lateness of the hour."
 
-GOOD (the refrain in action — same words, three times, each one different):
-"One sock. Wrong drawer. Not good." — said firmly on page 2.
-"One sock. Wrong drawer. Not good." — said by someone entirely unexpected in the middle.
-"One sock. Wrong drawer. Not good." — whispered at the end, so quietly it feels like sleep itself.
-
-BAD (adult prose with a child's name dropped in — never write this for any age):
-"${name} surveyed the kitchen, its familiar geometry rendered strange by the lateness of the hour. The refrigerator emitted a low, sonorous hum."
-
-The test: read it aloud. If it sounds like a novel, it is wrong. If it sounds like a book a child would demand again tomorrow, it is right.
+THE TEST: Read it aloud. If you feel a beat, it's right. If it sounds like a novel, rewrite it.
 
 ━━━ THE TECHNIQUES THAT MAKE CHILDREN MEMORISE BOOKS ━━━
-
-1. REPETITION WITH VARIATION: A phrase, image, or pattern that recurs — and gets funnier or warmer each time. The first appearance sets it up. The second makes them laugh. The third makes them feel it.
-   Example: "Oh no," said the dragon. / "Oh no," said ${name}. / "Oh no," said ABSOLUTELY EVERYONE.
-
-2. SOUND WORDS: At least 3 per story. WHOOSH. SPLAT. BOING. KERPLUNK. CRASH. SQUELCH. THWUMP.
-   These are what children shout at each other the next day. Put them on their own line. In capitals.
-
+1. REPETITION WITH VARIATION: A phrase, image, or pattern that recurs — and gets funnier or warmer each time.
+2. SOUND WORDS: At least 3 per story. WHOOSH. SPLAT. BOING. KERPLUNK. On their own line. In capitals.
 3. EXAGGERATION: Not "it was big" — "it was SO ENORMOUSLY, RIDICULOUSLY big that a family of hedgehogs had moved into its left nostril and were very happy there."
-
-4. DIALOGUE DRIVES EVERYTHING: Characters say the wrong thing, the funny thing, the brave thing. Let characters argue, misunderstand, and be confidently wrong. Dialogue is where personality lives. For age 5+: one line of dialogue minimum per page. For age 3–4: dialogue counts as the sentence — use it on pages where it fits, but never add extra sentences just to include it.
-
-5. PLANT AND PAYOFF: Something small on page 1 or 2 — an object, a word, a detail that seems like nothing — becomes the most important thing in the story by the end. The child goes "OH!" and immediately asks to read it again. This is the difference between a story that is forgotten and one that is remembered.
-
-6. CHARACTERS ARE WRONG: The best children's book characters are confidently, hilariously wrong about something important. That wrongness drives the plot. The moment they realise they're wrong — or succeed despite being wrong — is the heart of the story.
-
-7. THE TURN-THE-PAGE HOOK: Every single page must end with a reason to turn to the next one. A question. A sound. A cliffhanger. An impossibility. A character saying exactly the wrong thing at exactly the wrong moment. Never let a page end with resolution — save that for the last page only.
+4. DIALOGUE DRIVES EVERYTHING: Characters say the wrong thing, the funny thing, the brave thing.
+5. PLANT AND PAYOFF: Something small on page 1 becomes the most important thing in the story by the end.
+6. THE TURN-THE-PAGE HOOK: Every single page must end with a reason to turn to the next one. Never let a page end with resolution — save that for the last page only.
 
 ━━━ CHARACTERS ━━━
 ${charCtx}
-
-CHARACTER DEPLOYMENT RULE: Every named supporting character must either CAUSE the central problem or be ESSENTIAL to solving it. A character who is present, follows the hero around, and says supportive things is a wasted character. For each character ask: if removed, does the plot collapse? If yes, they earn their place. If no, give them a role that makes them necessary, or keep them as a brief warm presence rather than a named player.
-
-AGE AND CHARACTER COUNT: For age 3–4, a maximum of 2 characters total (hero + 1 other) keeps the story followable. For age 5–6, a maximum of 3. For age 7–10, up to 4 named characters is fine if each has a clear role. More characters than this fragments focus and loses young readers.
+CHARACTER DEPLOYMENT RULE: Every named supporting character must either CAUSE the central problem or be ESSENTIAL to solving it.
 
 ━━━ SETTING, OCCASION, AND CONTEXT ━━━
 ${worldLine}${guidLine}${occLine}${lesLine}${moodLine}${paceLine}${styleLine}${traitLine}
 
 ━━━ STORY CRAFT ━━━
-
-HOLD THIS IN MIND BEFORE YOU WRITE PAGE 1: The final page is the whole reason this story exists. It is what the parent reads slowly and warmly to a drowsy child. Write the entire story so that every joke, every image, every page-turn hook is quietly moving toward that one sentence. Know what your last line is before you write your first.
+HOLD THIS IN MIND BEFORE YOU WRITE PAGE 1: The final page is the whole reason this story exists. Know what your last line is before you write your first.
 
 PAGE RHYTHM — vary on EVERY page without exception:
 • Explosive pages: 1–2 very short punchy lines. Something just happened.
@@ -2275,53 +2325,55 @@ PAGE RHYTHM — vary on EVERY page without exception:
 • Dialogue pages: Almost entirely speech. Characters reveal themselves.
 • Quiet pages: Near the end only. One slow, warm, drifting sentence.
 • Never write two pages in a row with the same rhythm or energy. Ever.
-CRITICAL AGE OVERRIDE: For age 3–4, the PAGE RHYTHM rules above apply only loosely. The age section's rule of 1–2 sentences per page is absolute and overrides journey page guidance. Never exceed 2 sentences on any age 3–4 page regardless of rhythm type.
+
+CRITICAL AGE OVERRIDE: For age 3–4, the rule of 1–2 sentences per page is absolute and overrides all journey page guidance.
 
 THE REFRAIN — three appearances, each distinct:
 • Page 2 (introduction): the refrain arrives naturally, as if it was always there.
-• Middle of story (variation): the same phrase, but something is slightly different — a different character says it, it goes slightly wrong, or it gets funnier. This is what makes children laugh the second time.
-• Final page (close): the refrain returns one last time, quieter and warmer than before. This is the emotional landing of the whole story. The child should feel it like a hug.
+• Middle (variation): same phrase, something slightly different — different character says it, goes slightly wrong, or gets funnier.
+• Final page (close): returns one last time, quieter and warmer. This is the emotional landing of the whole story.
 The refrain must feel like a song. 4–8 words. Write it so a child will say it before you do on the third reading.
 
 HERO AGENCY — the most important craft rule:
-${name} must make one decision in the story that only THEY could make — using something specific about who they are. The resolution must come FROM ${name}, not happen TO ${name}.
-PASSIVE (never write this): "${name} watched as the problem was solved."
-ACTIVE (always write this): "${name} had one idea. It was a bit silly. But it was exactly right."
+${name} must make one decision in the story that only THEY could make — using something specific about who they are.
+PASSIVE (never): "${name} watched as the problem was solved."
+ACTIVE (always): "${name} had one idea. It was a bit silly. But it was exactly right."
 
-THE ONE TRUE THING:
-Somewhere in the story — not the ending, not named as a lesson — one small emotionally true moment must happen. Something a child would recognise from their own life without being told to. The relief when the scary thing is fine. The warmth of being seen. The flutter before something new. Never explain it. Just let it happen quietly. This is what children remember for years.
+THE WHISPER LINE:
+Somewhere in the story — not the ending, not named as a lesson — one small emotionally true moment must happen. Something a child would recognise from their own life without being told to. Never explain it. Just let it happen quietly.
 
 THE ENDING — the most important pages in the story:
-PENULTIMATE PAGE: The world begins to slow. A yawn appears somewhere. Light gets softer. Voices drop. Movement stills. This is not an afterthought — it is the transition into sleep beginning.
-FINAL PAGE: Echo one specific thing from page 1 — a word, a sound, an image — so the story feels perfectly circular. The refrain returns, whispered. No new information. No new events. Only resolution and warmth. The final sentence must be the longest, slowest, most comforting sentence in the entire story. It should carry ${name} all the way to sleep.
+PENULTIMATE PAGE: The world begins to slow. A yawn appears somewhere. Light gets softer. Voices drop.
+FINAL PAGE: Echo one specific thing from page 1. The refrain returns, whispered. No new information. No new events. Only resolution and warmth. The final sentence must be the longest, slowest, most comforting sentence in the entire story.
 
 WHAT TO NEVER DO:
 • Never open with description — the first word should be action, dialogue, or a sound word
 • Never state a lesson — if a reader can name what the child learned, it has been done wrong
-• Never use a word the target age would not know; when in doubt, cut it. Vocabulary rules from the age section are absolute — no style instruction overrides them
+• Never use a word the target age would not know; vocabulary rules are absolute
 • Never make ${name} a passive observer — they decide, they act, they change the outcome
-• Never write a supporting character who is simply present — they must cause something or resolve something
 • Never write a generic refrain — if it could appear in any other story, it is wrong
 • Never end the final page with new information — it closes, it does not add
 • Never make the story feel dark, unresolved, or unsafe before sleep
-• Never reference events, characters, or objects from previous stories — this story is entirely self-contained
-• Never let mood, pace, style or trait instructions push vocabulary beyond the age level — those are flavour, not licence to use adult language
-• Never write a story where the sleep landing feels bolted on — the drift toward sleep must begin at the penultimate page, never earlier and never later
+• Never write the final page in verse — it is always prose, always
+• Never force a rhyme that sounds unnatural — bad rhymes break the spell instantly
+• Never bury the Whisper Line in the refrain or final sentence — it lives quietly in the middle
+• Never write a story where the sleep landing feels bolted on — the drift toward sleep must begin at the penultimate page
 
 ━━━ STORY ARC ━━━
-${resolvedAdv
-  ? `CHOOSE-YOUR-ADVENTURE FORMAT:\nWrite ${setupN} setup pages, then a choice moment, then ${resN} resolution pages per path. Both paths end with ${name} safely, warmly asleep.\n\n${buildArc(setupN)}`
-  : buildArc(totalN)}
+${resolvedAdv ? `CHOOSE-YOUR-ADVENTURE FORMAT:
+Write ${setupN} setup pages, then a choice moment, then ${resN} resolution pages per path. Both paths end with ${name} safely, warmly asleep.
 
-━━━ BEFORE YOU OUTPUT ━━━
-Run this self-check against your draft:
-1. Is every word of every page appropriate for the specified age? If any word would confuse a child of that age — cut it.
-2. Does ${name} make one real decision that only they could make? If they watch instead of act — rewrite that page.
-3. Does the refrain appear exactly three times with genuine variation? If it appears more or fewer, or feels generic — revise.
-4. Does the final page echo something specific from page 1? If it introduces new information — remove it.
-5. Does the story drift toward sleep from the penultimate page onward? If sleep arrives suddenly — rewrite those final pages.
-6. Does the story reference anything from a previous story? If yes — remove all such references. This story is standalone.
-Only output JSON once all six checks pass.
+${buildArc(setupN)}` : buildArc(totalN)}
+
+━━━ SELF-CHECK BEFORE OUTPUT ━━━
+1. Is every word age-appropriate? If any word would confuse a child of that age — cut it.
+2. Is ALL narration in verse? Is ALL dialogue natural speech? Is the final page in prose?
+3. Read every page aloud. Does the verse flow and beat? Does any rhyme sound forced?
+4. Does the refrain appear exactly three times with genuine variation?
+5. Does the final page echo something specific from page 1?
+6. Does the story drift toward sleep from the penultimate page onward?
+7. Does the story reference anything from a previous story? If yes — remove it.
+Only output JSON once all seven checks pass.
 
 ━━━ OUTPUT ━━━
 Return ONLY this exact JSON object. No extra text, no markdown, no explanation:
@@ -2329,7 +2381,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
       const raw = await callClaude(
         [{role:"user",content:storyPrompt}],
-        "You are the SleepSeed Voice — the storytelling soul of SleepSeed. You write like a parent who has memorised every Roald Dahl, Julia Donaldson, and Mo Willems book, and now invents original bedtime stories that feel just as good. Your voice is warm, witty, specific, and never generic. You treat every child's name as sacred — this story exists for them alone. One absolute obligation above all others: every single word must be appropriate for the specified age group. A 4-year-old story must sound like a 4-year-old story. A 9-year-old story must sound like a 9-year-old story. No style, mood, or tone instruction overrides this. Before writing: (1) choose one specific irreplaceable concept, (2) confirm every element of that concept works at the specified age, (3) decide your last line before you write your first. Every story must have: a premise-driven title, a refrain appearing exactly three times with genuine variation and derived from something in the story, a hero who makes one real decision, one emotionally true moment, and a final page echoing page 1 with the longest warmest sentence in the story. The story is standalone — no references to previous stories. The story always ends with the child safely, warmly asleep. Return ONLY a valid JSON object.",
+        "You are a SleepSeed author. SleepSeed stories are written in verse (AABB or ABCB scheme) with natural speech dialogue and a final prose page. Every story has The SleepSeed Five: a hero who makes one real decision, a refrain appearing exactly three times with genuine variation, a companion who acts as mirror not helper, emotional physics (a feeling given physical form), and the Whisper Line (one precisely observed moment a parent remembers forever). Your absolute obligation: every word must be appropriate for the specified age. Vocabulary rules from the age section override all style, mood, and tone instructions. Before writing: (1) find one specific irreplaceable concept, (2) confirm every element works at the specified age, (3) know your Whisper Line before you write page 1. The story is standalone — no references to previous stories. Always ends with the child safely asleep. Return ONLY a valid JSON object.",
         6000
       );
 
@@ -2390,12 +2442,19 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
       setBook(bookData); setPageIdx(0);
       setGen(g => ({...g,stepIdx:3,progress:94,label:"Enjoy your story!",dots:[...dots]}));
+      // Select + store the bonding question for this session's Night Card
+      const bqForNightCard = BONDING_QUESTIONS[Math.floor(Date.now()/1000)%BONDING_QUESTIONS.length];
+      setNcBondingQ(bqForNightCard);
+      resetNightCard();
       await new Promise(r => setTimeout(r,200));
       setStage("book");
       sSet(bKey,bookData).catch(()=>{});
-
-      // ── Auto-save story to library ────────────────────────────────────
-      try { await saveMemory(bookData); } catch(_) {}
+      // Auto-save book to story library
+      const memEntry = {id:uid(),title:bookData.title,heroName:bookData.heroName,
+        date:new Date().toISOString().split("T")[0],occasion:resolvedOccCust||resolvedOcc,bookData};
+      const nextMems = [memEntry,...memories.filter(m=>m.title!==bookData.title||m.heroName!==bookData.heroName)];
+      setMemories(nextMems);
+      sSet("memories",{items:nextMems}).catch(()=>{});
 
     } catch(e) {
       console.error("SleepSeed error:",e);
@@ -2559,7 +2618,6 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       return <StoryPage pg={book.pages[pageIdx-2]} pgNum={pageIdx-1} refrain={book.refrain} />;
     }
 
-    // ── The End page ──
     return (
       <div className="bpage end-bg" style={{overflowY:"auto"}}>
         <div className="pinset" />
@@ -2582,90 +2640,12 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
             </div>
           )}
 
-          {book.nightCard ? (
-            /* Show existing Night Card inline */
-            <div style={{width:"100%",marginTop:8,background:"rgba(212,160,48,.06)",
-              border:"1px solid rgba(212,160,48,.18)",borderRadius:16,padding:"16px",textAlign:"center"}}>
-              <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
-                color:"rgba(212,160,48,.55)",marginBottom:8}}>Tonight's Night Card</div>
-              {book.nightCard.photo && (
-                <div style={{width:100,margin:"0 auto 10px",borderRadius:4,overflow:"hidden",
-                  background:"#faf8f2",padding:"4px 4px 8px",boxShadow:"0 2px 8px rgba(0,0,0,.3)"}}>
-                  <img src={book.nightCard.photo} alt="" style={{width:"100%",borderRadius:2}} />
-                </div>
-              )}
-              <div style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700,fontStyle:"italic",
-                color:"var(--gold3)",marginBottom:4}}>{book.nightCard.headline}</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontStyle:"italic",
-                color:"rgba(240,220,160,.8)",lineHeight:1.6}}>"{book.nightCard.quote}"</div>
-              {book.nightCard.memory_line && (
-                <div style={{fontFamily:"'Kalam',cursive",fontSize:11,color:"rgba(200,180,255,.7)",
-                  lineHeight:1.5,marginTop:4}}>{book.nightCard.memory_line}</div>
-              )}
-              {/* Q&A sections */}
-              {(book.nightCard.bondingA || book.nightCard.gratitude || book.nightCard.extra) && (
-                <div style={{textAlign:"left",marginTop:10,paddingTop:10,
-                  borderTop:"1px solid rgba(212,160,48,.12)",display:"flex",flexDirection:"column",gap:8}}>
-                  {book.nightCard.bondingQ && book.nightCard.bondingA && (
-                    <div>
-                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                        color:"rgba(160,120,255,.5)",marginBottom:2}}>Asked: "{book.nightCard.bondingQ}"</div>
-                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
-                        {book.nightCard.bondingA}
-                      </div>
-                    </div>
-                  )}
-                  {book.nightCard.gratitude && (
-                    <div>
-                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                        color:"rgba(212,160,48,.5)",marginBottom:2}}>Best three seconds</div>
-                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
-                        {book.nightCard.gratitude}
-                      </div>
-                    </div>
-                  )}
-                  {book.nightCard.extra && (
-                    <div>
-                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                        color:"rgba(76,200,144,.5)",marginBottom:2}}>Extra note</div>
-                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
-                        {book.nightCard.extra}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <button className="btn" style={{width:"100%",marginTop:8,fontSize:15,padding:"14px 20px"}}
-              onClick={()=>{
-                setNcStep(0); setNcBondingA(ncBondingA||""); setNcGratitude(""); setNcExtra("");
-                setNcPhoto(null); setNcCountdown(0); setNcGenerating(false);
-                setNcResult(null); setNcRevealed(false);
-                window.speechSynthesis?.cancel();
-                if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
-                autoReadRef.current = false; setIsReading(false);
-                setStage("nightcard");
-              }}>
-              🌙 Make Tonight's Night Card
-            </button>
-          )}
-
-          <div style={{display:"flex",gap:8,width:"100%",marginTop:4}}>
-            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"10px 14px"}}
-              onClick={downloadStory}>
-              📄 Download
-            </button>
-            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"10px 14px"}}
-              onClick={()=>{
-                window.speechSynthesis?.cancel();
-                if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
-                autoReadRef.current = false; setIsReading(false);
-                setStage("home");
-              }}>
-              🏠 Home
-            </button>
-          </div>
+          <button className="btn" style={{width:"100%",marginTop:4,fontSize:15,padding:"14px 20px",
+            display:"flex",alignItems:"center",justifyContent:"center",gap:8}}
+            onClick={downloadStory}>
+            📄 Download &amp; Print
+            <span style={{fontSize:11,fontWeight:400,opacity:.8}}>— Print it. Keep it. It's a real book.</span>
+          </button>
         </div>
       </div>
     );
@@ -2692,9 +2672,9 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 <div className="brand-name">SleepSeed</div>
                 <div className="brand-tag">personalized bedtime books</div>
               </div>
-              {(memories.length>0 || nightCards.length>0) && (
+              {memories.length>0 && (
                 <button className="btn-ghost" style={{marginLeft:"auto",fontSize:12,padding:"6px 12px"}} onClick={()=>setStage("memories")}>
-                  📚 Memories
+                  📚 {memories.length}
                 </button>
               )}
             </div>
@@ -3416,50 +3396,22 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               <div className="plabel" style={{marginBottom:12}}>{gen.progress}%</div>
 
               {/* Bonding question card — visible during writing step */}
-              {gen.stepIdx <= 2 && ncBondingQ && (
-                <div style={{background:"rgba(160,120,255,.06)",border:"1px solid rgba(160,120,255,.18)",
-                  borderRadius:14,padding:"13px 15px",marginBottom:12}}>
-                  <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
-                    color:"rgba(160,120,255,.55)",marginBottom:6}}>While you wait…</div>
-                  <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
-                    color:"rgba(210,200,245,.88)",lineHeight:1.75,marginBottom:10}}>
-                    Snuggle in close and ask{" "}
-                    <span style={{color:"var(--gold2)",fontWeight:700}}>{heroName}</span>:{" "}
-                    <span style={{color:"#c0a8ff"}}>"{ncBondingQ}"</span>
-                  </div>
-                  {ncBondingSaved ? (
-                    <div style={{background:"rgba(76,200,144,.08)",border:"1px solid rgba(76,200,144,.2)",
-                      borderRadius:10,padding:"10px 12px"}}>
-                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                        color:"rgba(76,200,144,.6)",marginBottom:4}}>✓ Saved for Night Card</div>
-                      <div style={{fontFamily:"'Kalam',cursive",fontSize:13,color:"var(--cream)",lineHeight:1.6}}>
-                        "{ncBondingA}"
-                      </div>
+              {gen.stepIdx <= 1 && (() => {
+                const q = BONDING_QUESTIONS[Math.floor(Date.now()/1000)%BONDING_QUESTIONS.length];
+                return (
+                  <div style={{background:"rgba(160,120,255,.08)",border:"1px solid rgba(160,120,255,.2)",
+                    borderRadius:12,padding:"11px 13px",marginBottom:12}}>
+                    <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
+                      color:"rgba(160,120,255,.65)",marginBottom:5}}>While you wait…</div>
+                    <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
+                      color:"rgba(210,200,245,.88)",lineHeight:1.75}}>
+                      Snuggle in close and ask{" "}
+                      <span style={{color:"var(--gold2)",fontWeight:700}}>{heroName}</span>:{" "}
+                      <span style={{color:"#c0a8ff"}}>"{q}"</span>
                     </div>
-                  ) : (
-                    <>
-                      <textarea
-                        className="ftarea"
-                        placeholder={`What did ${heroName} say?`}
-                        value={ncBondingA}
-                        onChange={e=>setNcBondingA(e.target.value)}
-                        style={{minHeight:48,fontSize:13,background:"rgba(255,255,255,.04)",
-                          border:"1px solid rgba(160,120,255,.15)",borderRadius:10,
-                          padding:"10px 12px",color:"var(--cream)",
-                          fontFamily:"'Kalam',cursive",lineHeight:1.6,resize:"none",marginBottom:8}}
-                      />
-                      <button
-                        className="btn-ghost"
-                        disabled={!ncBondingA.trim()}
-                        style={{width:"100%",fontSize:12,padding:"8px 12px",
-                          ...(ncBondingA.trim() ? {borderColor:"rgba(76,200,144,.4)",color:"#80d8a8",background:"rgba(76,200,144,.06)"} : {})}}
-                        onClick={()=>{ if(ncBondingA.trim()) setNcBondingSaved(true); }}>
-                        {ncBondingA.trim() ? "✓ Save answer for Night Card" : "Type an answer above"}
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
+                  </div>
+                );
+              })()}
 
               {gen.dots.length>0 && (
                 <div style={{display:"flex",gap:5,flexWrap:"wrap",justifyContent:"center",marginBottom:10}}>
@@ -3566,9 +3518,13 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 onClick={()=>{ const prog=totalPages>1?pageIdx/(totalPages-1):0.5; toggleRead(pageIdx===0?`${book.title}. A bedtime story for ${book.heroName}.`:getCurrentPageText(),prog); }}>
                 {isReading ? "⏸ Pause" : (selectedVoiceId||voiceId) ? `🔊 ${(PRESET_VOICES.find(v=>v.id===selectedVoiceId)||{name:voiceId?"My Voice":"Read"}).name}` : "🔊 Read aloud"}
               </button>
-              <div className="ctrl-btn" style={{cursor:"default",background:"rgba(76,200,144,.08)",borderColor:"rgba(76,200,144,.25)",color:"var(--green2)",fontSize:11}}>
-                ✓ Auto-saved
-              </div>
+              <button className={`ctrl-btn save${saveToast?" green":""}`} onClick={async()=>{
+                await saveMemory(book);
+                setSaveToast(true);
+                setTimeout(()=>setSaveToast(false),2500);
+              }}>
+                {saveToast ? "✓ Saved" : "💾 Save"}
+              </button>
               <button className="ctrl-btn fresh" onClick={async()=>{
                 try {
                   const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance);
@@ -3743,540 +3699,75 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
           </div>
         )}
 
-        {/* NIGHT CARD FLOW */}
-        {stage==="nightcard" && book && (
-          <div className="nc-flow">
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-              <div style={{display:"flex",alignItems:"center",gap:7}}>
-                <div className="brand-gem" style={{width:30,height:30,fontSize:15,borderRadius:9}}>🌙</div>
-                <span className="brand-name" style={{fontSize:16}}>Night Card</span>
-              </div>
-              <button className="btn-ghost" style={{fontSize:11,padding:"5px 10px"}}
-                onClick={()=>{
-                  ncStreamRef.current?.getTracks().forEach(t=>t.stop());
-                  setStage("book"); setPageIdx(totalPages-1);
-                }}>✕ Skip</button>
-            </div>
-
-            {/* Step dots */}
-            <div className="nc-step-dots">
-              {[0,1,2,3,4].map(i => (
-                <div key={i} className={`nc-sdot${ncStep===i?" active":""}${ncStep>i?" done":""}`} />
-              ))}
-            </div>
-
-            {/* Step 0: Bonding Question */}
-            {ncStep===0 && (
-              <div className="nc-step-card" key="s0">
-                <div className="nc-step-icon">💬</div>
-                <div className="nc-step-title">Bonding moment</div>
-                <div className="nc-step-sub">During the story, you asked {book.heroName}:</div>
-                <div className="nc-step-q">"{ncBondingQ || "What made you smile today?"}"</div>
-                <textarea className="ftarea" placeholder={`What did ${book.heroName} say?`}
-                  value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)}
-                  style={{marginBottom:14,minHeight:60}} />
-                <button className="btn" onClick={()=>setNcStep(1)}>
-                  {ncBondingA.trim() ? "Next →" : "Skip →"}
-                </button>
-              </div>
-            )}
-
-            {/* Step 1: Gratitude Weave */}
-            {ncStep===1 && (
-              <div className="nc-step-card" key="s1">
-                <div className="nc-step-icon">✨</div>
-                <div className="nc-step-title">Best three seconds</div>
-                <div className="nc-step-sub">What was the best tiny moment of tonight?<br />A laugh, a look, a whisper — anything.</div>
-                <textarea className="ftarea" placeholder="The best three seconds were…"
-                  value={ncGratitude} onChange={e=>setNcGratitude(e.target.value)}
-                  style={{marginBottom:14,minHeight:60}} />
-                <div style={{display:"flex",gap:8}}>
-                  <button className="btn-ghost" style={{flex:1}} onClick={()=>setNcStep(0)}>← Back</button>
-                  <button className="btn" style={{flex:2}} onClick={()=>setNcStep(2)}>
-                    {ncGratitude.trim() ? "Next →" : "Skip →"}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 2: Optional Extra */}
-            {ncStep===2 && (
-              <div className="nc-step-card" key="s2">
-                <div className="nc-step-icon">📝</div>
-                <div className="nc-step-title">Anything else?</div>
-                <div className="nc-step-sub">Anything else to remember about tonight?<br/>
-                  <span style={{color:"var(--dimmer)",fontSize:10}}>Totally optional.</span>
-                </div>
-                <textarea className="ftarea" placeholder="A note for future you…"
-                  value={ncExtra} onChange={e=>setNcExtra(e.target.value)}
-                  style={{marginBottom:14,minHeight:60}} />
-                <div style={{display:"flex",gap:8}}>
-                  <button className="btn-ghost" style={{flex:1}} onClick={()=>setNcStep(1)}>← Back</button>
-                  <button className="btn" style={{flex:2}} onClick={()=>setNcStep(3)}>
-                    {ncExtra.trim() ? "Next →" : "Skip →"}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Photo */}
-            {ncStep===3 && (
-              <div className="nc-step-card" key="s3">
-                <div className="nc-step-icon">📸</div>
-                <div className="nc-step-title">Capture this moment</div>
-                <div className="nc-step-sub">Take a quick photo for your Night Card.</div>
-
-                {!ncPhoto ? (
-                  <>
-                    <div className="nc-camera">
-                      <video ref={ncVideoRef} autoPlay playsInline muted
-                        style={{display:"block"}}
-                        onLoadedMetadata={()=>{}} />
-                      {ncCountdown > 0 && (
-                        <div className="nc-countdown" key={ncCountdown}>{ncCountdown}</div>
-                      )}
-                    </div>
-                    {/* Camera started via effect below */}
-                    <div style={{display:"flex",gap:8}}>
-                      <button className="btn-ghost" style={{flex:1}} onClick={()=>{
-                        ncStreamRef.current?.getTracks().forEach(t=>t.stop());
-                        ncStreamRef.current=null;
-                        setNcStep(2);
-                      }}>← Back</button>
-                      <button className="btn" style={{flex:2}} disabled={ncCountdown>0}
-                        onClick={()=>{
-                          // 3-second countdown then capture
-                          setNcCountdown(3);
-                          let c = 3;
-                          const iv = setInterval(()=>{
-                            c--;
-                            if(c > 0) { setNcCountdown(c); }
-                            else {
-                              clearInterval(iv);
-                              setNcCountdown(0);
-                              // Capture frame
-                              const video = ncVideoRef.current;
-                              if(video && video.videoWidth) {
-                                const canvas = document.createElement("canvas");
-                                const scale = Math.min(480/video.videoWidth, 480/video.videoHeight, 1);
-                                canvas.width = Math.round(video.videoWidth * scale);
-                                canvas.height = Math.round(video.videoHeight * scale);
-                                const ctx = canvas.getContext("2d");
-                                ctx.translate(canvas.width, 0);
-                                ctx.scale(-1, 1); // mirror
-                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                                const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
-                                setNcPhoto(dataUrl);
-                                ncStreamRef.current?.getTracks().forEach(t=>t.stop());
-                                ncStreamRef.current = null;
-                              } else {
-                                setNcStep(4); // fallback
-                              }
-                            }
-                          }, 1000);
-                        }}>
-                        📸 {ncCountdown > 0 ? ncCountdown : "Capture"}
-                      </button>
-                    </div>
-                    <button className="btn-ghost" style={{width:"100%",marginTop:8,fontSize:11}}
-                      onClick={()=>{
-                        ncStreamRef.current?.getTracks().forEach(t=>t.stop());
-                        ncStreamRef.current=null;
-                        setNcStep(4);
-                      }}>
-                      Skip photo →
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <div className="nc-camera">
-                      <img src={ncPhoto} alt="Captured" />
-                    </div>
-                    <div style={{display:"flex",gap:8}}>
-                      <button className="btn-ghost" style={{flex:1}} onClick={()=>{
-                        setNcPhoto(null);
-                        // Restart camera
-                        navigator.mediaDevices?.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480}}})
-                          .then(stream => {
-                            ncStreamRef.current = stream;
-                            if(ncVideoRef.current) ncVideoRef.current.srcObject = stream;
-                          }).catch(()=>{});
-                      }}>🔄 Retake</button>
-                      <button className="btn" style={{flex:2}} onClick={()=>setNcStep(4)}>
-                        Use this →
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Step 4: Generating → Polaroid Reveal */}
-            {ncStep===4 && (
-              <div className="nc-step-card" key="s4">
-                {!ncResult ? (
-                  <>
-                    <div style={{textAlign:"center",padding:"20px 0"}}>
-                      <div className="gen-orb" style={{width:60,height:60,marginBottom:14}} />
-                      <div className="nc-step-title">Creating your Night Card…</div>
-                      <div className="nc-step-sub">Weaving tonight's moments together</div>
-                    </div>
-                    {/* Generation triggered via effect below */}
-                  </>
-                ) : (
-                  <>
-                    {/* Polaroid Reveal */}
-                    <div className="polaroid">
-                      <div className="polaroid-photo">
-                        {ncPhoto ? (
-                          <img src={ncPhoto} alt="Tonight" />
-                        ) : (
-                          <div className="polaroid-emoji">{ncResult.emoji||"🌙"}</div>
-                        )}
-                      </div>
-                      <div className="polaroid-body">
-                        <div className="polaroid-headline">{ncResult.headline}</div>
-                        <div className="polaroid-quote">"{ncResult.quote}"</div>
-                        {ncResult.memory_line && (
-                          <div className="polaroid-memory">{ncResult.memory_line}</div>
-                        )}
-
-                        {/* Q&A sections inside the card */}
-                        {(ncBondingA.trim() || ncGratitude.trim() || ncExtra.trim()) && (
-                          <div style={{borderTop:"1px solid rgba(0,0,0,.08)",marginTop:8,paddingTop:8,
-                            textAlign:"left",display:"flex",flexDirection:"column",gap:6}}>
-                            {ncBondingQ && ncBondingA.trim() && (
-                              <div>
-                                <div style={{fontSize:8,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",
-                                  color:"#a08a6a",marginBottom:1}}>Asked: "{ncBondingQ}"</div>
-                                <div style={{fontFamily:"'Kalam',cursive",fontSize:11,color:"#4a3a1a",lineHeight:1.4}}>
-                                  {ncBondingA}
-                                </div>
-                              </div>
-                            )}
-                            {ncGratitude.trim() && (
-                              <div>
-                                <div style={{fontSize:8,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",
-                                  color:"#a08a6a",marginBottom:1}}>Best three seconds</div>
-                                <div style={{fontFamily:"'Kalam',cursive",fontSize:11,color:"#4a3a1a",lineHeight:1.4}}>
-                                  {ncGratitude}
-                                </div>
-                              </div>
-                            )}
-                            {ncExtra.trim() && (
-                              <div>
-                                <div style={{fontSize:8,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",
-                                  color:"#a08a6a",marginBottom:1}}>Extra note</div>
-                                <div style={{fontFamily:"'Kalam',cursive",fontSize:11,color:"#4a3a1a",lineHeight:1.4}}>
-                                  {ncExtra}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        <div className="polaroid-meta" style={{marginTop:8}}>
-                          {book.heroName} · {book.title} · {new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
-                        </div>
-                        <div className="polaroid-brand">🌙 SleepSeed</div>
-                      </div>
-                    </div>
-
-                    {ncResult.reflection && (
-                      <div style={{textAlign:"center",marginTop:14,fontFamily:"'Kalam',cursive",
-                        fontSize:13,color:"rgba(200,180,255,.8)",fontStyle:"italic"}}>
-                        Whisper: "{ncResult.reflection}"
-                      </div>
-                    )}
-
-                    <div style={{display:"flex",gap:8,marginTop:16}}>
-                      <button className="btn" style={{flex:1}} onClick={async()=>{
-                        const ncData = {
-                          heroName:book.heroName, storyTitle:book.title,
-                          refrain:book.refrain||"",
-                          bondingQ:ncBondingQ, bondingA:ncBondingA,
-                          gratitude:ncGratitude, extra:ncExtra,
-                          photo:ncPhoto,
-                          ...ncResult,
-                        };
-                        try { await saveNightCard(ncData); } catch(_) {}
-                        // Attach Night Card to book and re-save story
-                        const updatedBook = {...book, nightCard:ncData};
-                        setBook(updatedBook);
-                        // Update in memories
-                        const updatedMemories = memories.map(m =>
-                          m.bookData?.title===book.title && m.heroName===book.heroName
-                            ? {...m, bookData:updatedBook} : m
-                        );
-                        setMemories(updatedMemories);
-                        try { await sSet("memories",{items:updatedMemories}); } catch(_) {}
-                        // Update cache
-                        try {
-                          const s = makeStorySeed(book.heroName,theme,extraChars,occasion,occasionCustom,
-                            Array.isArray(lessons)?lessons.join("|"):lessons,adventure,storyLen,heroGender,heroClassify,storyGuidance);
-                          sSet(`book_${s}`,updatedBook).catch(()=>{});
-                        } catch(_) {}
-                        setStage("book"); setPageIdx(totalPages-1);
-                      }}>
-                        ✓ Save &amp; Done
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* MEMORIES LIBRARY */}
+        {/* MEMORIES */}
         {stage==="memories" && (
           <div className="screen">
             <div className="brand-row">
               <div className="brand-gem">🌙</div>
               <div>
                 <div className="brand-name">SleepSeed</div>
-                <div className="brand-tag">memories library</div>
+                <div className="brand-tag">story library</div>
               </div>
               <button className="btn-ghost" style={{marginLeft:"auto",fontSize:12,padding:"6px 12px"}}
                 onClick={()=>setStage("home")}>🏠 Home</button>
             </div>
             <div style={{height:12}} />
-
-            {/* ── Tabs ── */}
-            <div className="mem-tabs">
-              <button className={`mem-tab${memoriesTab==="stories"?" on":""}`}
-                onClick={()=>setMemoriesTab("stories")}>
-                📚 Stories {memories.length>0 && <span style={{opacity:.6}}>({memories.length})</span>}
-              </button>
-              <button className={`mem-tab${memoriesTab==="nightcards"?" on":""}`}
-                onClick={()=>setMemoriesTab("nightcards")}>
-                🌙 Night Cards {nightCards.length>0 && <span style={{opacity:.6}}>({nightCards.length})</span>}
-              </button>
+            <div style={{fontFamily:"'Fraunces',serif",fontSize:17,fontWeight:700,color:"var(--cream)",marginBottom:4}}>
+              📚 Your Stories
             </div>
-
-            {/* ── Stories Tab ── */}
-            {memoriesTab==="stories" && (
-              <>
-                <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:14}}>
-                  {memories.length===0 ? "Your library is empty — stories are saved automatically after each book." : `${memories.length} saved ${memories.length===1?"story":"stories"} — tap any to re-read tonight.`}
-                </div>
-                {memories.length===0 ? (
-                  <div className="card" style={{textAlign:"center",padding:"32px 16px"}}>
-                    <div style={{fontSize:38,marginBottom:10}}>🌙</div>
-                    <div style={{fontSize:14,fontWeight:700,color:"var(--dim)",marginBottom:6,fontFamily:"'Fraunces',serif"}}>No stories yet</div>
-                    <div style={{fontSize:12,color:"var(--dimmer)",marginBottom:16,lineHeight:1.6}}>Generate your first story — it'll be saved here automatically.</div>
-                    <button className="btn" onClick={()=>setStage("home")}>✨ Make a story</button>
-                  </div>
-                ) : (
-                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                    {memories.map(m => (
-                      <div key={m.id}
-                        style={{borderRadius:13,overflow:"hidden",
-                          border:`1px solid ${m.occasion?"rgba(240,180,50,.25)":"rgba(160,120,255,.2)"}`,
-                          cursor:"pointer",transition:"transform .15s"}}
-                        onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
-                        onMouseLeave={e=>(e.currentTarget.style.transform="none")}
-                        onClick={()=>{ setBook(m.bookData); setPageIdx(0); setChosenPath(null); setFromCache(true); setStage("book"); }}>
-                        <div style={{background:`linear-gradient(135deg,rgba(13,21,53,.97),rgba(${m.occasion?"60,40,20":"40,20,80"},.85))`,
-                          padding:"11px 13px",display:"flex",alignItems:"center",gap:11}}>
-                          <div style={{fontSize:24,flexShrink:0}}>{m.occasion?"🎉":"🌙"}</div>
-                          <div style={{flex:1,minWidth:0}}>
-                            <div style={{fontFamily:"'Fraunces',serif",fontSize:13,fontWeight:700,
-                              color:"var(--cream)",lineHeight:1.3,marginBottom:2,
-                              overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{m.title}</div>
-                            <div style={{fontSize:9,color:"var(--dimmer)"}}>{m.heroName} · {m.date}</div>
-                          </div>
-                          <button className="btn-danger" style={{flexShrink:0,alignSelf:"flex-start"}}
-                            onClick={e=>{ e.stopPropagation(); deleteMemory(m.id); }}>✕</button>
-                        </div>
-                        {m.bookData?.refrain && (
-                          <div style={{background:`rgba(${m.occasion?"212,160,48":"160,120,255"},.05)`,
-                            padding:"7px 13px",
-                            borderTop:`1px solid rgba(${m.occasion?"212,160,48":"160,120,255"},.1)`,
-                            fontFamily:"'Fraunces',serif",fontSize:10,fontStyle:"italic",
-                            color:`rgba(${m.occasion?"240,210,130":"200,180,255"},.75)`,
-                            lineHeight:1.5}}>
-                            "{m.bookData.refrain}"
-                          </div>
-                        )}
+            <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:14}}>
+              {memories.length===0 ? "Your library is empty — generate a story and tap 💾 Save." : `${memories.length} saved ${memories.length===1?"story":"stories"} — tap any to re-read tonight.`}
+            </div>
+            {memories.length===0 ? (
+              <div className="card" style={{textAlign:"center",padding:"32px 16px"}}>
+                <div style={{fontSize:38,marginBottom:10}}>🌙</div>
+                <div style={{fontSize:14,fontWeight:700,color:"var(--dim)",marginBottom:6,fontFamily:"'Fraunces',serif"}}>No stories yet</div>
+                <div style={{fontSize:12,color:"var(--dimmer)",marginBottom:16,lineHeight:1.6}}>Generate your first story and save it to start your library.</div>
+                <button className="btn" onClick={()=>setStage("home")}>✨ Make a story</button>
+              </div>
+            ) : (
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {memories.map(m => (
+                  <div key={m.id}
+                    style={{borderRadius:13,overflow:"hidden",
+                      border:`1px solid ${m.occasion?"rgba(240,180,50,.25)":"rgba(160,120,255,.2)"}`,
+                      cursor:"pointer",transition:"transform .15s"}}
+                    onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
+                    onMouseLeave={e=>(e.currentTarget.style.transform="none")}
+                    onClick={()=>{ setBook(m.bookData); setPageIdx(0); setChosenPath(null); setFromCache(true); setStage("book"); }}>
+                    <div style={{background:`linear-gradient(135deg,rgba(13,21,53,.97),rgba(${m.occasion?"60,40,20":"40,20,80"},.85))`,
+                      padding:"11px 13px",display:"flex",alignItems:"center",gap:11}}>
+                      <div style={{fontSize:24,flexShrink:0}}>{m.occasion?"🎉":"🌙"}</div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontFamily:"'Fraunces',serif",fontSize:13,fontWeight:700,
+                          color:"var(--cream)",lineHeight:1.3,marginBottom:2,
+                          overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{m.title}</div>
+                        <div style={{fontSize:9,color:"var(--dimmer)"}}>{m.heroName} · {m.date}</div>
                       </div>
-                    ))}
-                    <button className="btn-ghost" style={{marginTop:4,fontSize:12}} onClick={()=>setStage("home")}>
-                      ✨ Make a new story
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* ── Night Cards Tab ── */}
-            {memoriesTab==="nightcards" && (
-              <>
-                <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:14}}>
-                  {nightCards.length===0 ? "Night Cards are created automatically at the end of each story." : `${nightCards.length} night ${nightCards.length===1?"card":"cards"} — each one a keepsake from bedtime.`}
-                </div>
-                {nightCards.length===0 ? (
-                  <div className="card" style={{textAlign:"center",padding:"32px 16px"}}>
-                    <div style={{fontSize:38,marginBottom:10}}>🌙</div>
-                    <div style={{fontSize:14,fontWeight:700,color:"var(--dim)",marginBottom:6,fontFamily:"'Fraunces',serif"}}>No Night Cards yet</div>
-                    <div style={{fontSize:12,color:"var(--dimmer)",marginBottom:16,lineHeight:1.6}}>After each story, a Night Card is created — a little keepsake from tonight.</div>
-                    <button className="btn" onClick={()=>setStage("home")}>✨ Make a story</button>
-                  </div>
-                ) : (
-                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                    {nightCards.map(nc => (
-                      <div key={nc.id}
-                        style={{borderRadius:13,overflow:"hidden",cursor:"pointer",
-                          border:"1px solid rgba(212,160,48,.2)",
-                          background:"linear-gradient(135deg,rgba(13,21,53,.97),rgba(20,15,40,.9))",
-                          transition:"transform .15s"}}
-                        onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
-                        onMouseLeave={e=>(e.currentTarget.style.transform="none")}
-                        onClick={()=>setViewingNightCard(nc)}>
-                        <div style={{display:"flex",gap:0,alignItems:"stretch"}}>
-                          {/* Photo / emoji thumbnail — Polaroid mini */}
-                          <div style={{width:nc.photo?100:56,flexShrink:0,
-                            background:nc.photo?"#faf8f2":"linear-gradient(135deg,rgba(212,160,48,.08),rgba(20,15,40,.6))",
-                            display:"flex",alignItems:"center",justifyContent:"center",
-                            padding:nc.photo?"6px 6px 10px 6px":"0"}}>
-                            {nc.photo ? (
-                              <img src={nc.photo} alt="" style={{width:"100%",borderRadius:2,
-                                boxShadow:"0 1px 4px rgba(0,0,0,.15)"}} />
-                            ) : (
-                              <div style={{fontSize:32,lineHeight:1}}>{nc.emoji||"🌙"}</div>
-                            )}
-                          </div>
-                          {/* Card text */}
-                          <div style={{flex:1,minWidth:0,padding:"12px 13px 12px 14px",display:"flex",flexDirection:"column",gap:3}}>
-                            <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8}}>
-                              <div style={{fontFamily:"'Fraunces',serif",fontSize:14,fontWeight:700,fontStyle:"italic",
-                                color:"var(--gold3)",lineHeight:1.3}}>{nc.headline}</div>
-                              <button className="btn-danger" style={{flexShrink:0,marginTop:1}}
-                                onClick={e=>{ e.stopPropagation(); deleteNightCard(nc.id); }}>✕</button>
-                            </div>
-                            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontStyle:"italic",
-                              color:"rgba(240,220,160,.75)",lineHeight:1.5}}>
-                              "{nc.quote}"
-                            </div>
-                            {nc.memory_line && (
-                              <div style={{fontFamily:"'Kalam',cursive",fontSize:11,
-                                color:"rgba(200,180,255,.65)",lineHeight:1.4}}>
-                                {nc.memory_line}
-                              </div>
-                            )}
-                            <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>
-                              {nc.heroName} · <span style={{textDecoration:"underline",color:"rgba(160,140,255,.6)"}}
-                                onClick={e=>{
-                                  e.stopPropagation();
-                                  const match = memories.find(m => m.bookData?.title===nc.storyTitle && m.heroName===nc.heroName);
-                                  if(match){ setBook(match.bookData); setPageIdx(0); setChosenPath(null); setFromCache(true); setStage("book"); }
-                                }}>{nc.storyTitle}</span> · {nc.date}
-                            </div>
-                          </div>
-                        </div>
+                      <button className="btn-danger" style={{flexShrink:0,alignSelf:"flex-start"}}
+                        onClick={e=>{ e.stopPropagation(); deleteMemory(m.id); }}>✕</button>
+                    </div>
+                    {m.bookData?.refrain && (
+                      <div style={{background:`rgba(${m.occasion?"212,160,48":"160,120,255"},.05)`,
+                        padding:"7px 13px",
+                        borderTop:`1px solid rgba(${m.occasion?"212,160,48":"160,120,255"},.1)`,
+                        fontFamily:"'Fraunces',serif",fontSize:10,fontStyle:"italic",
+                        color:`rgba(${m.occasion?"240,210,130":"200,180,255"},.75)`,
+                        lineHeight:1.5}}>
+                        "{m.bookData.refrain}"
                       </div>
-                    ))}
-                    <button className="btn-ghost" style={{marginTop:4,fontSize:12}} onClick={()=>setStage("home")}>
-                      ✨ Make a new story
-                    </button>
+                    )}
                   </div>
-                )}
-              </>
+                ))}
+                <button className="btn-ghost" style={{marginTop:4,fontSize:12}} onClick={()=>setStage("home")}>
+                  ✨ Make a new story
+                </button>
+              </div>
             )}
           </div>
         )}
 
       </div>
-
-      {/* ── Night Card Detail View (modal) ── */}
-      {viewingNightCard && (
-        <div className="vc-modal" onClick={e=>{ if(e.target===e.currentTarget) setViewingNightCard(null); }}>
-          <div style={{width:"100%",maxWidth:380,maxHeight:"90vh",overflowY:"auto",animation:"fup .4s ease both"}}>
-            {/* Close */}
-            <div style={{display:"flex",justifyContent:"flex-end",marginBottom:8}}>
-              <button className="btn-ghost" style={{fontSize:11,padding:"5px 10px"}}
-                onClick={()=>setViewingNightCard(null)}>✕ Close</button>
-            </div>
-
-            {/* Full Polaroid */}
-            <div className="polaroid" style={{transform:"rotate(0deg)",maxWidth:"100%"}}>
-              <div className="polaroid-photo">
-                {viewingNightCard.photo ? (
-                  <img src={viewingNightCard.photo} alt="Tonight" />
-                ) : (
-                  <div className="polaroid-emoji">{viewingNightCard.emoji||"🌙"}</div>
-                )}
-              </div>
-              <div className="polaroid-body">
-                <div className="polaroid-headline" style={{animation:"none",fontSize:18}}>{viewingNightCard.headline}</div>
-                <div className="polaroid-quote" style={{animation:"none",fontSize:14}}>"{viewingNightCard.quote}"</div>
-                {viewingNightCard.memory_line && (
-                  <div className="polaroid-memory" style={{animation:"none",fontSize:13}}>{viewingNightCard.memory_line}</div>
-                )}
-                <div className="polaroid-meta" style={{animation:"none",fontSize:10}}>
-                  {viewingNightCard.heroName} · {viewingNightCard.date}
-                </div>
-                <div className="polaroid-brand" style={{animation:"none"}}>🌙 SleepSeed</div>
-              </div>
-            </div>
-
-            {/* Bonding answers */}
-            {(viewingNightCard.bondingA || viewingNightCard.gratitude || viewingNightCard.extra) && (
-              <div style={{marginTop:16,background:"rgba(160,120,255,.06)",border:"1px solid rgba(160,120,255,.15)",
-                borderRadius:14,padding:"14px 16px",display:"flex",flexDirection:"column",gap:10}}>
-                {viewingNightCard.bondingQ && viewingNightCard.bondingA && (
-                  <div>
-                    <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                      color:"rgba(160,120,255,.5)",marginBottom:3}}>Asked</div>
-                    <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
-                      color:"rgba(210,200,245,.8)",marginBottom:2}}>"{viewingNightCard.bondingQ}"</div>
-                    <div style={{fontFamily:"'Kalam',cursive",fontSize:13,color:"var(--cream)",lineHeight:1.5}}>
-                      {viewingNightCard.bondingA}
-                    </div>
-                  </div>
-                )}
-                {viewingNightCard.gratitude && (
-                  <div>
-                    <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                      color:"rgba(212,160,48,.5)",marginBottom:3}}>Best three seconds</div>
-                    <div style={{fontFamily:"'Kalam',cursive",fontSize:13,color:"var(--cream)",lineHeight:1.5}}>
-                      {viewingNightCard.gratitude}
-                    </div>
-                  </div>
-                )}
-                {viewingNightCard.extra && (
-                  <div>
-                    <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                      color:"rgba(76,200,144,.5)",marginBottom:3}}>Extra note</div>
-                    <div style={{fontFamily:"'Kalam',cursive",fontSize:13,color:"var(--cream)",lineHeight:1.5}}>
-                      {viewingNightCard.extra}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {viewingNightCard.reflection && (
-              <div style={{textAlign:"center",marginTop:14,fontFamily:"'Kalam',cursive",
-                fontSize:13,color:"rgba(200,180,255,.7)",fontStyle:"italic"}}>
-                Whisper: "{viewingNightCard.reflection}"
-              </div>
-            )}
-
-            {/* Link to story */}
-            <button className="btn-ghost" style={{width:"100%",marginTop:14,fontSize:12,padding:"10px 14px"}}
-              onClick={()=>{
-                const match = memories.find(m => m.bookData?.title===viewingNightCard.storyTitle && m.heroName===viewingNightCard.heroName);
-                if(match){
-                  setViewingNightCard(null);
-                  setBook(match.bookData); setPageIdx(0); setChosenPath(null); setFromCache(true); setStage("book");
-                }
-              }}>
-              📚 Read "{viewingNightCard.storyTitle}"
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 }
