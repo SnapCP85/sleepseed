@@ -1319,6 +1319,7 @@ export default function SleepSeed() {
   const [ncGenerating,   setNcGenerating]   = useState(false);      // Claude generating
   const [ncResult,       setNcResult]       = useState<any>(null);  // final Night Card
   const [ncRevealed,     setNcRevealed]     = useState(false);      // polaroid reveal done
+  const [ncBondingSaved, setNcBondingSaved] = useState(false);      // bonding answer submitted during loading
   const [viewingNightCard, setViewingNightCard] = useState<any>(null); // Night Card detail view
 
   const totalPagesRef = useRef(0);
@@ -1982,6 +1983,7 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     // Pick and store bonding question for Night Card flow
     const bondingIdx = Math.floor(Date.now()/1000) % BONDING_QUESTIONS.length;
     setNcBondingQ(BONDING_QUESTIONS[bondingIdx]);
+    setNcBondingSaved(false); setNcBondingA("");
     const name = heroName.trim();
     const seed = makeStorySeed(name,resolvedTheme,resolvedChars,resolvedOcc,resolvedOccCust,Array.isArray(resolvedLesson)?resolvedLesson.join("|"):resolvedLesson,resolvedAdv,resolvedLen,heroGender,heroClassify,resolvedGuidance);
     const bKey = `book_${seed}`;
@@ -2587,7 +2589,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
                 color:"rgba(212,160,48,.55)",marginBottom:8}}>Tonight's Night Card</div>
               {book.nightCard.photo && (
-                <div style={{width:100,height:100,margin:"0 auto 10px",borderRadius:4,overflow:"hidden",
+                <div style={{width:100,margin:"0 auto 10px",borderRadius:4,overflow:"hidden",
                   background:"#faf8f2",padding:"4px 4px 8px",boxShadow:"0 2px 8px rgba(0,0,0,.3)"}}>
                   <img src={book.nightCard.photo} alt="" style={{width:"100%",borderRadius:2}} />
                 </div>
@@ -2599,6 +2601,39 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               {book.nightCard.memory_line && (
                 <div style={{fontFamily:"'Kalam',cursive",fontSize:11,color:"rgba(200,180,255,.7)",
                   lineHeight:1.5,marginTop:4}}>{book.nightCard.memory_line}</div>
+              )}
+              {/* Q&A sections */}
+              {(book.nightCard.bondingA || book.nightCard.gratitude || book.nightCard.extra) && (
+                <div style={{textAlign:"left",marginTop:10,paddingTop:10,
+                  borderTop:"1px solid rgba(212,160,48,.12)",display:"flex",flexDirection:"column",gap:8}}>
+                  {book.nightCard.bondingQ && book.nightCard.bondingA && (
+                    <div>
+                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
+                        color:"rgba(160,120,255,.5)",marginBottom:2}}>Asked: "{book.nightCard.bondingQ}"</div>
+                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
+                        {book.nightCard.bondingA}
+                      </div>
+                    </div>
+                  )}
+                  {book.nightCard.gratitude && (
+                    <div>
+                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
+                        color:"rgba(212,160,48,.5)",marginBottom:2}}>Best three seconds</div>
+                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
+                        {book.nightCard.gratitude}
+                      </div>
+                    </div>
+                  )}
+                  {book.nightCard.extra && (
+                    <div>
+                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
+                        color:"rgba(76,200,144,.5)",marginBottom:2}}>Extra note</div>
+                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
+                        {book.nightCard.extra}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           ) : (
@@ -3392,24 +3427,37 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                     <span style={{color:"var(--gold2)",fontWeight:700}}>{heroName}</span>:{" "}
                     <span style={{color:"#c0a8ff"}}>"{ncBondingQ}"</span>
                   </div>
-                  <div style={{position:"relative"}}>
-                    <textarea
-                      className="ftarea"
-                      placeholder={`What did ${heroName} say? (for the Night Card)`}
-                      value={ncBondingA}
-                      onChange={e=>setNcBondingA(e.target.value)}
-                      style={{minHeight:48,fontSize:13,background:"rgba(255,255,255,.04)",
-                        border:"1px solid rgba(160,120,255,.15)",borderRadius:10,
-                        padding:"10px 12px",color:"var(--cream)",
-                        fontFamily:"'Kalam',cursive",lineHeight:1.6,resize:"none"}}
-                    />
-                    {!ncBondingA.trim() && (
-                      <div style={{position:"absolute",bottom:8,right:10,fontSize:9,
-                        color:"rgba(160,120,255,.4)",fontWeight:700,pointerEvents:"none"}}>
-                        optional — saves to Night Card
+                  {ncBondingSaved ? (
+                    <div style={{background:"rgba(76,200,144,.08)",border:"1px solid rgba(76,200,144,.2)",
+                      borderRadius:10,padding:"10px 12px"}}>
+                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
+                        color:"rgba(76,200,144,.6)",marginBottom:4}}>✓ Saved for Night Card</div>
+                      <div style={{fontFamily:"'Kalam',cursive",fontSize:13,color:"var(--cream)",lineHeight:1.6}}>
+                        "{ncBondingA}"
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <>
+                      <textarea
+                        className="ftarea"
+                        placeholder={`What did ${heroName} say?`}
+                        value={ncBondingA}
+                        onChange={e=>setNcBondingA(e.target.value)}
+                        style={{minHeight:48,fontSize:13,background:"rgba(255,255,255,.04)",
+                          border:"1px solid rgba(160,120,255,.15)",borderRadius:10,
+                          padding:"10px 12px",color:"var(--cream)",
+                          fontFamily:"'Kalam',cursive",lineHeight:1.6,resize:"none",marginBottom:8}}
+                      />
+                      <button
+                        className="btn-ghost"
+                        disabled={!ncBondingA.trim()}
+                        style={{width:"100%",fontSize:12,padding:"8px 12px",
+                          ...(ncBondingA.trim() ? {borderColor:"rgba(76,200,144,.4)",color:"#80d8a8",background:"rgba(76,200,144,.06)"} : {})}}
+                        onClick={()=>{ if(ncBondingA.trim()) setNcBondingSaved(true); }}>
+                        {ncBondingA.trim() ? "✓ Save answer for Night Card" : "Type an answer above"}
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -3892,7 +3940,42 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                         {ncResult.memory_line && (
                           <div className="polaroid-memory">{ncResult.memory_line}</div>
                         )}
-                        <div className="polaroid-meta">
+
+                        {/* Q&A sections inside the card */}
+                        {(ncBondingA.trim() || ncGratitude.trim() || ncExtra.trim()) && (
+                          <div style={{borderTop:"1px solid rgba(0,0,0,.08)",marginTop:8,paddingTop:8,
+                            textAlign:"left",display:"flex",flexDirection:"column",gap:6}}>
+                            {ncBondingQ && ncBondingA.trim() && (
+                              <div>
+                                <div style={{fontSize:8,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",
+                                  color:"#a08a6a",marginBottom:1}}>Asked: "{ncBondingQ}"</div>
+                                <div style={{fontFamily:"'Kalam',cursive",fontSize:11,color:"#4a3a1a",lineHeight:1.4}}>
+                                  {ncBondingA}
+                                </div>
+                              </div>
+                            )}
+                            {ncGratitude.trim() && (
+                              <div>
+                                <div style={{fontSize:8,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",
+                                  color:"#a08a6a",marginBottom:1}}>Best three seconds</div>
+                                <div style={{fontFamily:"'Kalam',cursive",fontSize:11,color:"#4a3a1a",lineHeight:1.4}}>
+                                  {ncGratitude}
+                                </div>
+                              </div>
+                            )}
+                            {ncExtra.trim() && (
+                              <div>
+                                <div style={{fontSize:8,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",
+                                  color:"#a08a6a",marginBottom:1}}>Extra note</div>
+                                <div style={{fontFamily:"'Kalam',cursive",fontSize:11,color:"#4a3a1a",lineHeight:1.4}}>
+                                  {ncExtra}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="polaroid-meta" style={{marginTop:8}}>
                           {book.heroName} · {book.title} · {new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
                         </div>
                         <div className="polaroid-brand">🌙 SleepSeed</div>
