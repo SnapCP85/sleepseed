@@ -1319,6 +1319,7 @@ export default function SleepSeed() {
   const [ncGenerating,   setNcGenerating]   = useState(false);      // Claude generating
   const [ncResult,       setNcResult]       = useState<any>(null);  // final Night Card
   const [ncRevealed,     setNcRevealed]     = useState(false);      // polaroid reveal done
+  const [viewingNightCard, setViewingNightCard] = useState<any>(null); // Night Card detail view
 
   const totalPagesRef = useRef(0);
   const fileRefs      = useRef({});
@@ -2579,18 +2580,41 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
             </div>
           )}
 
-          <button className="btn" style={{width:"100%",marginTop:8,fontSize:15,padding:"14px 20px"}}
-            onClick={()=>{
-              setNcStep(0); setNcBondingA(""); setNcGratitude(""); setNcExtra("");
-              setNcPhoto(null); setNcCountdown(0); setNcGenerating(false);
-              setNcResult(null); setNcRevealed(false);
-              window.speechSynthesis?.cancel();
-              if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
-              autoReadRef.current = false; setIsReading(false);
-              setStage("nightcard");
-            }}>
-            🌙 Make Tonight's Night Card
-          </button>
+          {book.nightCard ? (
+            /* Show existing Night Card inline */
+            <div style={{width:"100%",marginTop:8,background:"rgba(212,160,48,.06)",
+              border:"1px solid rgba(212,160,48,.18)",borderRadius:16,padding:"16px",textAlign:"center"}}>
+              <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
+                color:"rgba(212,160,48,.55)",marginBottom:8}}>Tonight's Night Card</div>
+              {book.nightCard.photo && (
+                <div style={{width:100,height:100,margin:"0 auto 10px",borderRadius:4,overflow:"hidden",
+                  background:"#faf8f2",padding:"4px 4px 8px",boxShadow:"0 2px 8px rgba(0,0,0,.3)"}}>
+                  <img src={book.nightCard.photo} alt="" style={{width:"100%",borderRadius:2}} />
+                </div>
+              )}
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700,fontStyle:"italic",
+                color:"var(--gold3)",marginBottom:4}}>{book.nightCard.headline}</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontStyle:"italic",
+                color:"rgba(240,220,160,.8)",lineHeight:1.6}}>"{book.nightCard.quote}"</div>
+              {book.nightCard.memory_line && (
+                <div style={{fontFamily:"'Kalam',cursive",fontSize:11,color:"rgba(200,180,255,.7)",
+                  lineHeight:1.5,marginTop:4}}>{book.nightCard.memory_line}</div>
+              )}
+            </div>
+          ) : (
+            <button className="btn" style={{width:"100%",marginTop:8,fontSize:15,padding:"14px 20px"}}
+              onClick={()=>{
+                setNcStep(0); setNcBondingA(ncBondingA||""); setNcGratitude(""); setNcExtra("");
+                setNcPhoto(null); setNcCountdown(0); setNcGenerating(false);
+                setNcResult(null); setNcRevealed(false);
+                window.speechSynthesis?.cancel();
+                if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
+                autoReadRef.current = false; setIsReading(false);
+                setStage("nightcard");
+              }}>
+              🌙 Make Tonight's Night Card
+            </button>
+          )}
 
           <div style={{display:"flex",gap:8,width:"100%",marginTop:4}}>
             <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"10px 14px"}}
@@ -3884,17 +3908,32 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
                     <div style={{display:"flex",gap:8,marginTop:16}}>
                       <button className="btn" style={{flex:1}} onClick={async()=>{
+                        const ncData = {
+                          heroName:book.heroName, storyTitle:book.title,
+                          refrain:book.refrain||"",
+                          bondingQ:ncBondingQ, bondingA:ncBondingA,
+                          gratitude:ncGratitude, extra:ncExtra,
+                          photo:ncPhoto,
+                          ...ncResult,
+                        };
+                        try { await saveNightCard(ncData); } catch(_) {}
+                        // Attach Night Card to book and re-save story
+                        const updatedBook = {...book, nightCard:ncData};
+                        setBook(updatedBook);
+                        // Update in memories
+                        const updatedMemories = memories.map(m =>
+                          m.bookData?.title===book.title && m.heroName===book.heroName
+                            ? {...m, bookData:updatedBook} : m
+                        );
+                        setMemories(updatedMemories);
+                        try { await sSet("memories",{items:updatedMemories}); } catch(_) {}
+                        // Update cache
                         try {
-                          await saveNightCard({
-                            heroName:book.heroName, storyTitle:book.title,
-                            refrain:book.refrain||"",
-                            bondingQ:ncBondingQ, bondingA:ncBondingA,
-                            gratitude:ncGratitude, extra:ncExtra,
-                            photo:ncPhoto,
-                            ...ncResult,
-                          });
+                          const s = makeStorySeed(book.heroName,theme,extraChars,occasion,occasionCustom,
+                            Array.isArray(lessons)?lessons.join("|"):lessons,adventure,storyLen,heroGender,heroClassify,storyGuidance);
+                          sSet(`book_${s}`,updatedBook).catch(()=>{});
                         } catch(_) {}
-                        setStage("home");
+                        setStage("book"); setPageIdx(totalPages-1);
                       }}>
                         ✓ Save &amp; Done
                       </button>
@@ -4004,12 +4043,13 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     {nightCards.map(nc => (
                       <div key={nc.id}
-                        style={{borderRadius:13,overflow:"hidden",
+                        style={{borderRadius:13,overflow:"hidden",cursor:"pointer",
                           border:"1px solid rgba(212,160,48,.2)",
                           background:"linear-gradient(135deg,rgba(13,21,53,.97),rgba(20,15,40,.9))",
                           transition:"transform .15s"}}
                         onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
-                        onMouseLeave={e=>(e.currentTarget.style.transform="none")}>
+                        onMouseLeave={e=>(e.currentTarget.style.transform="none")}
+                        onClick={()=>setViewingNightCard(nc)}>
                         <div style={{display:"flex",gap:0,alignItems:"stretch"}}>
                           {/* Photo / emoji thumbnail — Polaroid mini */}
                           <div style={{width:nc.photo?100:56,flexShrink:0,
@@ -4042,7 +4082,12 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                               </div>
                             )}
                             <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>
-                              {nc.heroName} · {nc.storyTitle} · {nc.date}
+                              {nc.heroName} · <span style={{textDecoration:"underline",color:"rgba(160,140,255,.6)"}}
+                                onClick={e=>{
+                                  e.stopPropagation();
+                                  const match = memories.find(m => m.bookData?.title===nc.storyTitle && m.heroName===nc.heroName);
+                                  if(match){ setBook(match.bookData); setPageIdx(0); setChosenPath(null); setFromCache(true); setStage("book"); }
+                                }}>{nc.storyTitle}</span> · {nc.date}
                             </div>
                           </div>
                         </div>
@@ -4059,6 +4104,96 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
         )}
 
       </div>
+
+      {/* ── Night Card Detail View (modal) ── */}
+      {viewingNightCard && (
+        <div className="vc-modal" onClick={e=>{ if(e.target===e.currentTarget) setViewingNightCard(null); }}>
+          <div style={{width:"100%",maxWidth:380,maxHeight:"90vh",overflowY:"auto",animation:"fup .4s ease both"}}>
+            {/* Close */}
+            <div style={{display:"flex",justifyContent:"flex-end",marginBottom:8}}>
+              <button className="btn-ghost" style={{fontSize:11,padding:"5px 10px"}}
+                onClick={()=>setViewingNightCard(null)}>✕ Close</button>
+            </div>
+
+            {/* Full Polaroid */}
+            <div className="polaroid" style={{transform:"rotate(0deg)",maxWidth:"100%"}}>
+              <div className="polaroid-photo">
+                {viewingNightCard.photo ? (
+                  <img src={viewingNightCard.photo} alt="Tonight" />
+                ) : (
+                  <div className="polaroid-emoji">{viewingNightCard.emoji||"🌙"}</div>
+                )}
+              </div>
+              <div className="polaroid-body">
+                <div className="polaroid-headline" style={{animation:"none",fontSize:18}}>{viewingNightCard.headline}</div>
+                <div className="polaroid-quote" style={{animation:"none",fontSize:14}}>"{viewingNightCard.quote}"</div>
+                {viewingNightCard.memory_line && (
+                  <div className="polaroid-memory" style={{animation:"none",fontSize:13}}>{viewingNightCard.memory_line}</div>
+                )}
+                <div className="polaroid-meta" style={{animation:"none",fontSize:10}}>
+                  {viewingNightCard.heroName} · {viewingNightCard.date}
+                </div>
+                <div className="polaroid-brand" style={{animation:"none"}}>🌙 SleepSeed</div>
+              </div>
+            </div>
+
+            {/* Bonding answers */}
+            {(viewingNightCard.bondingA || viewingNightCard.gratitude || viewingNightCard.extra) && (
+              <div style={{marginTop:16,background:"rgba(160,120,255,.06)",border:"1px solid rgba(160,120,255,.15)",
+                borderRadius:14,padding:"14px 16px",display:"flex",flexDirection:"column",gap:10}}>
+                {viewingNightCard.bondingQ && viewingNightCard.bondingA && (
+                  <div>
+                    <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
+                      color:"rgba(160,120,255,.5)",marginBottom:3}}>Asked</div>
+                    <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
+                      color:"rgba(210,200,245,.8)",marginBottom:2}}>"{viewingNightCard.bondingQ}"</div>
+                    <div style={{fontFamily:"'Kalam',cursive",fontSize:13,color:"var(--cream)",lineHeight:1.5}}>
+                      {viewingNightCard.bondingA}
+                    </div>
+                  </div>
+                )}
+                {viewingNightCard.gratitude && (
+                  <div>
+                    <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
+                      color:"rgba(212,160,48,.5)",marginBottom:3}}>Best three seconds</div>
+                    <div style={{fontFamily:"'Kalam',cursive",fontSize:13,color:"var(--cream)",lineHeight:1.5}}>
+                      {viewingNightCard.gratitude}
+                    </div>
+                  </div>
+                )}
+                {viewingNightCard.extra && (
+                  <div>
+                    <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
+                      color:"rgba(76,200,144,.5)",marginBottom:3}}>Extra note</div>
+                    <div style={{fontFamily:"'Kalam',cursive",fontSize:13,color:"var(--cream)",lineHeight:1.5}}>
+                      {viewingNightCard.extra}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {viewingNightCard.reflection && (
+              <div style={{textAlign:"center",marginTop:14,fontFamily:"'Kalam',cursive",
+                fontSize:13,color:"rgba(200,180,255,.7)",fontStyle:"italic"}}>
+                Whisper: "{viewingNightCard.reflection}"
+              </div>
+            )}
+
+            {/* Link to story */}
+            <button className="btn-ghost" style={{width:"100%",marginTop:14,fontSize:12,padding:"10px 14px"}}
+              onClick={()=>{
+                const match = memories.find(m => m.bookData?.title===viewingNightCard.storyTitle && m.heroName===viewingNightCard.heroName);
+                if(match){
+                  setViewingNightCard(null);
+                  setBook(match.bookData); setPageIdx(0); setChosenPath(null); setFromCache(true); setStage("book");
+                }
+              }}>
+              📚 Read "{viewingNightCard.storyTitle}"
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
