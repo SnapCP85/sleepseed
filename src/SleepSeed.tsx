@@ -257,6 +257,29 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .end-lay{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:28px}
 .end-moon{font-size:48px;animation:mfloat 6s ease-in-out infinite}
 .end-title{font-family:'Fraunces',serif;font-size:30px;font-weight:700;font-style:italic;color:var(--gold3)}
+.nc-bg{background:linear-gradient(160deg,#0a0e24,#101838,#0c1430)}
+.nc-lay{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px 24px;text-align:center}
+.nc-emoji{font-size:42px;animation:mfloat 5s ease-in-out infinite}
+.nc-label{font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(212,160,48,.6)}
+.nc-headline{font-family:'Fraunces',serif;font-size:clamp(18px,4.5vw,24px);font-weight:700;font-style:italic;
+  color:var(--gold3);line-height:1.3;max-width:300px}
+.nc-divider{width:40px;height:2px;background:linear-gradient(90deg,transparent,rgba(212,160,48,.45),transparent);margin:4px 0}
+.nc-quote{font-family:'Cormorant Garamond',serif;font-size:clamp(14px,3.2vw,17px);font-style:italic;font-weight:600;
+  color:rgba(240,220,160,.85);line-height:1.7;max-width:320px}
+.nc-hero{font-size:11px;color:var(--dimmer);font-weight:700;font-style:italic}
+.nc-reflect{background:rgba(160,120,255,.08);border:1px solid rgba(160,120,255,.2);border-radius:12px;
+  padding:10px 14px;margin-top:4px;width:100%;max-width:320px}
+.nc-reflect-label{font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(160,120,255,.6);margin-bottom:5px}
+.nc-reflect-q{font-family:'Kalam',cursive;font-size:13px;color:rgba(200,180,255,.85);line-height:1.6}
+.nc-date{font-size:10px;color:var(--dimmer);margin-top:4px}
+.nc-brand{font-family:'Fraunces',serif;font-size:11px;color:rgba(212,160,48,.35);margin-top:2px}
+.mem-tabs{display:flex;gap:4px;margin-bottom:14px;background:rgba(255,255,255,.04);border-radius:12px;padding:3px;
+  border:1px solid rgba(255,255,255,.07)}
+.mem-tab{flex:1;padding:9px 12px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;
+  text-align:center;color:var(--dim);background:transparent;border:none;font-family:'Nunito',sans-serif;transition:all .2s}
+.mem-tab.on{background:rgba(212,160,48,.12);color:var(--gold2)}
+.mem-tab:hover:not(.on){color:var(--cream);background:rgba(255,255,255,.05)}
 .end-msg{font-family:'Kalam',cursive;font-size:14px;color:var(--ui);text-align:center;line-height:1.9}
 .illo-slot{position:absolute;inset:0}
 .shimmer{position:absolute;inset:0;background:linear-gradient(110deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.09) 50%,rgba(255,255,255,.04) 75%);
@@ -471,6 +494,12 @@ const DEMO_BOOK = {
     {text:"The room was very quiet.\n\nThe moon shone on the stone.\n\nAdina\u2019s pocket was empty now.\n\nThat was a good feeling.\n\nA light feeling.\n\nExactly the right feeling.", imgUrl:"https://image.pollinations.ai/prompt/a%20cosy%20bedroom%20at%20night%2C%20moonlight%20on%20a%20stone%20on%20a%20windowsill%2C%20child%20sleepy%20in%20bed%2C%20warm%20and%20peaceful%2C%20children%27s%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=50&nofeed=true"},
     {text:"That wasn\u2019t you, Adina.\n\nShe pulled the covers all the way up to her chin.\n\nThe stone glowed softly in the moonlight, right where she had left it.\n\nAnd Adina \u2014 all the brave, kind, worm-saving, lonely-boy-noticing parts of Adina \u2014 closed her eyes, and let go, and drifted into the deepest, warmest, most entirely-herself sleep she had had in a very long time.", imgUrl:"https://image.pollinations.ai/prompt/a%20child%20asleep%20in%20a%20cosy%20bed%2C%20stuffed%20rabbit%20tucked%20in%20beside%20her%2C%20stone%20glowing%20on%20windowsill%20in%20moonlight%2C%20final%20page%20watercolor%2C%20peaceful?width=400&height=190&nologo=true&model=turbo&seed=51&nofeed=true"},
   ],
+  nightCard: {
+    headline: "Putting the stone down",
+    quote: "That wasn\u2019t you, Adina.",
+    reflection: "Is there anything you\u2019d like to leave on the windowsill tonight?",
+    emoji: "\uD83E\uDEA8",
+  },
 };
 
 const CHAR_TYPES = [
@@ -1243,6 +1272,8 @@ export default function SleepSeed() {
   const [isListening,    setIsListening]    = useState(false);
   const [hasSeenOnboard, setHasSeenOnboard] = useState(false);
   const [lastErrStage,   setLastErrStage]   = useState<string|null>(null);
+  const [nightCards,     setNightCards]     = useState([]);
+  const [memoriesTab,    setMemoriesTab]    = useState<"stories"|"nightcards">("stories");
 
   const totalPagesRef = useRef(0);
   const fileRefs      = useRef({});
@@ -1267,6 +1298,7 @@ export default function SleepSeed() {
 
   useEffect(() => {
     sGet("memories").then(s => { if(s?.items) setMemories(s.items); });
+    sGet("nightcards").then(s => { if(s?.items) setNightCards(s.items); });
     sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); });
     sGet("onboarded").then(s => { if(s?.v) setHasSeenOnboard(true); });
 
@@ -1825,6 +1857,20 @@ export default function SleepSeed() {
     await sSet("memories",{items:next});
   },[memories]);
 
+  const saveNightCard = useCallback(async (cardData) => {
+    const entry = {id:uid(),...cardData,date:new Date().toISOString().split("T")[0]};
+    const next = [entry,...nightCards];
+    setNightCards(next);
+    await sSet("nightcards",{items:next});
+    return entry;
+  },[nightCards]);
+
+  const deleteNightCard = useCallback(async (id) => {
+    const next = nightCards.filter(c => c.id!==id);
+    setNightCards(next);
+    await sSet("nightcards",{items:next});
+  },[nightCards]);
+
   /* ══ GENERATE ══ */
   const generate = async (overrides:any={}) => {
     const resolvedTheme   = overrides.theme         ?? theme;
@@ -1864,6 +1910,16 @@ export default function SleepSeed() {
           () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:true})); },
           () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); }
         ));
+        // Backfill Night Card for books cached before this feature
+        if(!cached.nightCard) {
+          cached.nightCard = {
+            headline: `A night with ${name}`,
+            quote: cached.refrain || cached.title,
+            reflection: "What was your favourite part of tonight's story?",
+            emoji: "🌙",
+          };
+          sSet(bKey,cached).catch(()=>{});
+        }
         setBook(cached); setPageIdx(0); setFromCache(true);
         await new Promise(r => setTimeout(r,180));
         setStage("book");
@@ -2020,7 +2076,7 @@ PENULTIMATE + FINAL PAGE: Follow the STORY CRAFT rules exactly — they are your
       const advSchema    = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"Write a short, exciting, specific choice question for ${name} — not generic. It must follow directly from what just happened on the last setup page. Make it feel urgent. Two paths must feel genuinely different.","option_a_label":"4-7 fun exciting words","option_b_label":"4-7 fun exciting words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}],"refrain":"Now that you have written all the pages: look back at what you wrote. The refrain must be a phrase that already appears in your story — a line of dialogue, a sound, a repeated image. It could only belong to THIS story. 4-8 words. Never generic. A child must say it before you on the third reading."}`;
 
       // ── Master story prompt ───────────────────────────────────────────────
-      const storyPrompt = `You are writing a children's picture book that will be read aloud at bedtime. Your models are Roald Dahl, Julia Donaldson, Mo Willems, Eric Carle, and A.A. Milne. Every page must feel like it belongs in a book a child could buy at a bookstore and memorise by the third reading.
+      const storyPrompt = `You are the SleepSeed Voice — writing a children's picture book that will be read aloud at bedtime. Your models are Roald Dahl, Julia Donaldson, Mo Willems, Eric Carle, and A.A. Milne. Every page must feel like it belongs in a book a child could buy at a bookstore and memorise by the third reading.
 
 THE PRIME DIRECTIVE: The story is ALWAYS the priority. Page count is a target, not a ceiling. All rules exist to serve the story.
 
@@ -2190,7 +2246,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
       const raw = await callClaude(
         [{role:"user",content:storyPrompt}],
-        "You are a master children's picture book author with one absolute obligation above all others: every single word must be appropriate for the specified age group. A 4-year-old story must sound like a 4-year-old story. A 9-year-old story must sound like a 9-year-old story. No style, mood, or tone instruction overrides this. Before writing: (1) choose one specific irreplaceable concept, (2) confirm every element of that concept works at the specified age, (3) decide your last line before you write your first. Every story must have: a premise-driven title, a refrain appearing exactly three times with genuine variation and derived from something in the story, a hero who makes one real decision, one emotionally true moment, and a final page echoing page 1 with the longest warmest sentence in the story. The story is standalone — no references to previous stories. The story always ends with the child safely asleep. Return ONLY a valid JSON object.",
+        "You are the SleepSeed Voice — the storytelling soul of SleepSeed. You write like a parent who has memorised every Roald Dahl, Julia Donaldson, and Mo Willems book, and now invents original bedtime stories that feel just as good. Your voice is warm, witty, specific, and never generic. You treat every child's name as sacred — this story exists for them alone. One absolute obligation above all others: every single word must be appropriate for the specified age group. A 4-year-old story must sound like a 4-year-old story. A 9-year-old story must sound like a 9-year-old story. No style, mood, or tone instruction overrides this. Before writing: (1) choose one specific irreplaceable concept, (2) confirm every element of that concept works at the specified age, (3) decide your last line before you write your first. Every story must have: a premise-driven title, a refrain appearing exactly three times with genuine variation and derived from something in the story, a hero who makes one real decision, one emotionally true moment, and a final page echoing page 1 with the longest warmest sentence in the story. The story is standalone — no references to previous stories. The story always ends with the child safely, warmly asleep. Return ONLY a valid JSON object.",
         6000
       );
 
@@ -2249,11 +2305,38 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       } catch(_) {}
       bookData.parentNote = parentNote;
 
+      // ── Generate Night Card ────────────────────────────────────────────
+      let nightCardData = null;
+      try {
+        const ncPrompt = `A child named ${name} just finished a personalised bedtime story called "${story.title}". The refrain was: "${story.refrain||""}". ${parentNote ? `Parent note: ${parentNote}` : ""}
+
+Write a Night Card — a short, beautiful keepsake for this night. Return ONLY this JSON:
+{"headline":"A tender 3-6 word headline for tonight (not the story title — something that captures this night's feeling)","quote":"The single most beautiful or funny sentence from the refrain or story that a parent would want to remember. 8-15 words max.","reflection":"One gentle question a parent could whisper to their child right now, about tonight's story. Under 15 words.","emoji":"One emoji that captures tonight's story mood"}`;
+        const ncRaw = await callClaude([{role:"user",content:ncPrompt}], "You create beautiful, brief Night Card keepsakes for parents after bedtime stories. Warm, concise, never clinical.", 300);
+        nightCardData = extractJSON(ncRaw);
+      } catch(_) {}
+      // Fallback Night Card from existing book data if Claude call failed
+      if(!nightCardData || !nightCardData.headline) {
+        nightCardData = {
+          headline: `A night with ${name}`,
+          quote: story.refrain || story.title,
+          reflection: `What was your favourite part of tonight's story?`,
+          emoji: "🌙",
+        };
+      }
+      bookData.nightCard = nightCardData;
+
       setBook(bookData); setPageIdx(0);
       setGen(g => ({...g,stepIdx:3,progress:94,label:"Enjoy your story!",dots:[...dots]}));
       await new Promise(r => setTimeout(r,200));
       setStage("book");
       sSet(bKey,bookData).catch(()=>{});
+
+      // ── Auto-save to library ──────────────────────────────────────────
+      try { await saveMemory(bookData); } catch(_) {}
+      if(nightCardData) {
+        try { await saveNightCard({heroName:name,storyTitle:story.title,refrain:story.refrain||"",...nightCardData}); } catch(_) {}
+      }
 
     } catch(e) {
       console.error("SleepSeed error:",e);
@@ -2276,9 +2359,10 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
   const choicePgIdx = isAdv ? 2+setupLen : -1;
   const onChoicePg  = pageIdx===choicePgIdx;
   const resPages    = isAdv&&chosenPath ? (chosenPath==="a" ? book.path_a : book.path_b) : [];
+  const hasNightCard = !!book?.nightCard;
   const totalPages  = !book ? 0
-    : isAdv ? 2+setupLen+1+(chosenPath?resPages.length+1:0)
-    : 2+(book.pages?.length||0)+1;
+    : isAdv ? 2+setupLen+1+(chosenPath?resPages.length+1+(hasNightCard?1:0):0)
+    : 2+(book.pages?.length||0)+1+(hasNightCard?1:0);
 
   totalPagesRef.current = totalPages;
 
@@ -2304,8 +2388,10 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
     return `Sweet dreams, ${book.heroName}.`;
   };
 
-  const isLastPage  = pageIdx===totalPages-1;
-  const isStoryPage = book&&pageIdx>=2&&!onChoicePg&&!isLastPage;
+  const isLastPage    = pageIdx===totalPages-1;
+  const isNightCardPg = hasNightCard && pageIdx===totalPages-1;
+  const isEndPage     = hasNightCard ? pageIdx===totalPages-2 : pageIdx===totalPages-1;
+  const isStoryPage   = book&&pageIdx>=2&&!onChoicePg&&!isEndPage&&!isNightCardPg;
 
   /* ── Story page ── */
   const StoryPage = ({pg,pgNum,refrain}) => (
@@ -2417,6 +2503,33 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       return <StoryPage pg={book.pages[pageIdx-2]} pgNum={pageIdx-1} refrain={book.refrain} />;
     }
 
+    // ── Night Card page ──
+    if(isNightCardPg && book.nightCard) {
+      const nc = book.nightCard;
+      return (
+        <div className="bpage nc-bg">
+          <div className="pinset" style={{borderColor:"rgba(212,160,48,.2)"}} />
+          <div className="nc-lay">
+            <div className="nc-emoji">{nc.emoji||"🌙"}</div>
+            <div className="nc-label">Tonight's Night Card</div>
+            <div className="nc-headline">{nc.headline}</div>
+            <div className="nc-divider" />
+            <div className="nc-quote">"{nc.quote}"</div>
+            <div className="nc-hero">— a story for {book.heroName}</div>
+            {nc.reflection && (
+              <div className="nc-reflect">
+                <div className="nc-reflect-label">Whisper this</div>
+                <div className="nc-reflect-q">{nc.reflection}</div>
+              </div>
+            )}
+            <div className="nc-date">{new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}</div>
+            <div className="nc-brand">🌙 SleepSeed Night Card</div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── The End page ──
     return (
       <div className="bpage end-bg" style={{overflowY:"auto"}}>
         <div className="pinset" />
@@ -2445,6 +2558,13 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
             📄 Download &amp; Print
             <span style={{fontSize:11,fontWeight:400,opacity:.8}}>— Print it. Keep it. It's a real book.</span>
           </button>
+
+          {hasNightCard && (
+            <button className="btn-ghost" style={{width:"100%",marginTop:4,fontSize:13,padding:"12px 16px"}}
+              onClick={()=>goPage(1)}>
+              🌙 See Tonight's Night Card →
+            </button>
+          )}
         </div>
       </div>
     );
@@ -2471,9 +2591,9 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 <div className="brand-name">SleepSeed</div>
                 <div className="brand-tag">personalized bedtime books</div>
               </div>
-              {memories.length>0 && (
+              {(memories.length>0 || nightCards.length>0) && (
                 <button className="btn-ghost" style={{marginLeft:"auto",fontSize:12,padding:"6px 12px"}} onClick={()=>setStage("memories")}>
-                  📚 {memories.length}
+                  📚 Memories
                 </button>
               )}
             </div>
@@ -3317,13 +3437,9 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 onClick={()=>{ const prog=totalPages>1?pageIdx/(totalPages-1):0.5; toggleRead(pageIdx===0?`${book.title}. A bedtime story for ${book.heroName}.`:getCurrentPageText(),prog); }}>
                 {isReading ? "⏸ Pause" : (selectedVoiceId||voiceId) ? `🔊 ${(PRESET_VOICES.find(v=>v.id===selectedVoiceId)||{name:voiceId?"My Voice":"Read"}).name}` : "🔊 Read aloud"}
               </button>
-              <button className={`ctrl-btn save${saveToast?" green":""}`} onClick={async()=>{
-                await saveMemory(book);
-                setSaveToast(true);
-                setTimeout(()=>setSaveToast(false),2500);
-              }}>
-                {saveToast ? "✓ Saved" : "💾 Save"}
-              </button>
+              <div className="ctrl-btn" style={{cursor:"default",background:"rgba(76,200,144,.08)",borderColor:"rgba(76,200,144,.25)",color:"var(--green2)",fontSize:11}}>
+                ✓ Auto-saved
+              </div>
               <button className="ctrl-btn fresh" onClick={async()=>{
                 try {
                   const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance);
@@ -3498,70 +3614,142 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
           </div>
         )}
 
-        {/* MEMORIES */}
+        {/* MEMORIES LIBRARY */}
         {stage==="memories" && (
           <div className="screen">
             <div className="brand-row">
               <div className="brand-gem">🌙</div>
               <div>
                 <div className="brand-name">SleepSeed</div>
-                <div className="brand-tag">story library</div>
+                <div className="brand-tag">memories library</div>
               </div>
               <button className="btn-ghost" style={{marginLeft:"auto",fontSize:12,padding:"6px 12px"}}
                 onClick={()=>setStage("home")}>🏠 Home</button>
             </div>
             <div style={{height:12}} />
-            <div style={{fontFamily:"'Fraunces',serif",fontSize:17,fontWeight:700,color:"var(--cream)",marginBottom:4}}>
-              📚 Your Stories
+
+            {/* ── Tabs ── */}
+            <div className="mem-tabs">
+              <button className={`mem-tab${memoriesTab==="stories"?" on":""}`}
+                onClick={()=>setMemoriesTab("stories")}>
+                📚 Stories {memories.length>0 && <span style={{opacity:.6}}>({memories.length})</span>}
+              </button>
+              <button className={`mem-tab${memoriesTab==="nightcards"?" on":""}`}
+                onClick={()=>setMemoriesTab("nightcards")}>
+                🌙 Night Cards {nightCards.length>0 && <span style={{opacity:.6}}>({nightCards.length})</span>}
+              </button>
             </div>
-            <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:14}}>
-              {memories.length===0 ? "Your library is empty — generate a story and tap 💾 Save." : `${memories.length} saved ${memories.length===1?"story":"stories"} — tap any to re-read tonight.`}
-            </div>
-            {memories.length===0 ? (
-              <div className="card" style={{textAlign:"center",padding:"32px 16px"}}>
-                <div style={{fontSize:38,marginBottom:10}}>🌙</div>
-                <div style={{fontSize:14,fontWeight:700,color:"var(--dim)",marginBottom:6,fontFamily:"'Fraunces',serif"}}>No stories yet</div>
-                <div style={{fontSize:12,color:"var(--dimmer)",marginBottom:16,lineHeight:1.6}}>Generate your first story and save it to start your library.</div>
-                <button className="btn" onClick={()=>setStage("home")}>✨ Make a story</button>
-              </div>
-            ) : (
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {memories.map(m => (
-                  <div key={m.id}
-                    style={{borderRadius:13,overflow:"hidden",
-                      border:`1px solid ${m.occasion?"rgba(240,180,50,.25)":"rgba(160,120,255,.2)"}`,
-                      cursor:"pointer",transition:"transform .15s"}}
-                    onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
-                    onMouseLeave={e=>(e.currentTarget.style.transform="none")}
-                    onClick={()=>{ setBook(m.bookData); setPageIdx(0); setChosenPath(null); setFromCache(true); setStage("book"); }}>
-                    <div style={{background:`linear-gradient(135deg,rgba(13,21,53,.97),rgba(${m.occasion?"60,40,20":"40,20,80"},.85))`,
-                      padding:"11px 13px",display:"flex",alignItems:"center",gap:11}}>
-                      <div style={{fontSize:24,flexShrink:0}}>{m.occasion?"🎉":"🌙"}</div>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontFamily:"'Fraunces',serif",fontSize:13,fontWeight:700,
-                          color:"var(--cream)",lineHeight:1.3,marginBottom:2,
-                          overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{m.title}</div>
-                        <div style={{fontSize:9,color:"var(--dimmer)"}}>{m.heroName} · {m.date}</div>
-                      </div>
-                      <button className="btn-danger" style={{flexShrink:0,alignSelf:"flex-start"}}
-                        onClick={e=>{ e.stopPropagation(); deleteMemory(m.id); }}>✕</button>
-                    </div>
-                    {m.bookData?.refrain && (
-                      <div style={{background:`rgba(${m.occasion?"212,160,48":"160,120,255"},.05)`,
-                        padding:"7px 13px",
-                        borderTop:`1px solid rgba(${m.occasion?"212,160,48":"160,120,255"},.1)`,
-                        fontFamily:"'Fraunces',serif",fontSize:10,fontStyle:"italic",
-                        color:`rgba(${m.occasion?"240,210,130":"200,180,255"},.75)`,
-                        lineHeight:1.5}}>
-                        "{m.bookData.refrain}"
-                      </div>
-                    )}
+
+            {/* ── Stories Tab ── */}
+            {memoriesTab==="stories" && (
+              <>
+                <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:14}}>
+                  {memories.length===0 ? "Your library is empty — stories are saved automatically after each book." : `${memories.length} saved ${memories.length===1?"story":"stories"} — tap any to re-read tonight.`}
+                </div>
+                {memories.length===0 ? (
+                  <div className="card" style={{textAlign:"center",padding:"32px 16px"}}>
+                    <div style={{fontSize:38,marginBottom:10}}>🌙</div>
+                    <div style={{fontSize:14,fontWeight:700,color:"var(--dim)",marginBottom:6,fontFamily:"'Fraunces',serif"}}>No stories yet</div>
+                    <div style={{fontSize:12,color:"var(--dimmer)",marginBottom:16,lineHeight:1.6}}>Generate your first story — it'll be saved here automatically.</div>
+                    <button className="btn" onClick={()=>setStage("home")}>✨ Make a story</button>
                   </div>
-                ))}
-                <button className="btn-ghost" style={{marginTop:4,fontSize:12}} onClick={()=>setStage("home")}>
-                  ✨ Make a new story
-                </button>
-              </div>
+                ) : (
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    {memories.map(m => (
+                      <div key={m.id}
+                        style={{borderRadius:13,overflow:"hidden",
+                          border:`1px solid ${m.occasion?"rgba(240,180,50,.25)":"rgba(160,120,255,.2)"}`,
+                          cursor:"pointer",transition:"transform .15s"}}
+                        onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
+                        onMouseLeave={e=>(e.currentTarget.style.transform="none")}
+                        onClick={()=>{ setBook(m.bookData); setPageIdx(0); setChosenPath(null); setFromCache(true); setStage("book"); }}>
+                        <div style={{background:`linear-gradient(135deg,rgba(13,21,53,.97),rgba(${m.occasion?"60,40,20":"40,20,80"},.85))`,
+                          padding:"11px 13px",display:"flex",alignItems:"center",gap:11}}>
+                          <div style={{fontSize:24,flexShrink:0}}>{m.occasion?"🎉":"🌙"}</div>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontFamily:"'Fraunces',serif",fontSize:13,fontWeight:700,
+                              color:"var(--cream)",lineHeight:1.3,marginBottom:2,
+                              overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{m.title}</div>
+                            <div style={{fontSize:9,color:"var(--dimmer)"}}>{m.heroName} · {m.date}</div>
+                          </div>
+                          <button className="btn-danger" style={{flexShrink:0,alignSelf:"flex-start"}}
+                            onClick={e=>{ e.stopPropagation(); deleteMemory(m.id); }}>✕</button>
+                        </div>
+                        {m.bookData?.refrain && (
+                          <div style={{background:`rgba(${m.occasion?"212,160,48":"160,120,255"},.05)`,
+                            padding:"7px 13px",
+                            borderTop:`1px solid rgba(${m.occasion?"212,160,48":"160,120,255"},.1)`,
+                            fontFamily:"'Fraunces',serif",fontSize:10,fontStyle:"italic",
+                            color:`rgba(${m.occasion?"240,210,130":"200,180,255"},.75)`,
+                            lineHeight:1.5}}>
+                            "{m.bookData.refrain}"
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    <button className="btn-ghost" style={{marginTop:4,fontSize:12}} onClick={()=>setStage("home")}>
+                      ✨ Make a new story
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ── Night Cards Tab ── */}
+            {memoriesTab==="nightcards" && (
+              <>
+                <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:14}}>
+                  {nightCards.length===0 ? "Night Cards are created automatically at the end of each story." : `${nightCards.length} night ${nightCards.length===1?"card":"cards"} — each one a keepsake from bedtime.`}
+                </div>
+                {nightCards.length===0 ? (
+                  <div className="card" style={{textAlign:"center",padding:"32px 16px"}}>
+                    <div style={{fontSize:38,marginBottom:10}}>🌙</div>
+                    <div style={{fontSize:14,fontWeight:700,color:"var(--dim)",marginBottom:6,fontFamily:"'Fraunces',serif"}}>No Night Cards yet</div>
+                    <div style={{fontSize:12,color:"var(--dimmer)",marginBottom:16,lineHeight:1.6}}>After each story, a Night Card is created — a little keepsake from tonight.</div>
+                    <button className="btn" onClick={()=>setStage("home")}>✨ Make a story</button>
+                  </div>
+                ) : (
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    {nightCards.map(nc => (
+                      <div key={nc.id}
+                        style={{borderRadius:13,overflow:"hidden",
+                          border:"1px solid rgba(212,160,48,.2)",
+                          background:"linear-gradient(135deg,rgba(13,21,53,.97),rgba(20,15,40,.9))",
+                          transition:"transform .15s"}}
+                        onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
+                        onMouseLeave={e=>(e.currentTarget.style.transform="none")}>
+                        <div style={{padding:"14px 15px",display:"flex",gap:12,alignItems:"flex-start"}}>
+                          <div style={{fontSize:28,flexShrink:0,lineHeight:1}}>{nc.emoji||"🌙"}</div>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontFamily:"'Fraunces',serif",fontSize:14,fontWeight:700,fontStyle:"italic",
+                              color:"var(--gold3)",lineHeight:1.3,marginBottom:3}}>{nc.headline}</div>
+                            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontStyle:"italic",
+                              color:"rgba(240,220,160,.75)",lineHeight:1.6,marginBottom:4}}>
+                              "{nc.quote}"
+                            </div>
+                            <div style={{fontSize:9,color:"var(--dimmer)"}}>
+                              {nc.heroName} · {nc.storyTitle} · {nc.date}
+                            </div>
+                          </div>
+                          <button className="btn-danger" style={{flexShrink:0}}
+                            onClick={e=>{ e.stopPropagation(); deleteNightCard(nc.id); }}>✕</button>
+                        </div>
+                        {nc.reflection && (
+                          <div style={{background:"rgba(160,120,255,.05)",padding:"8px 15px",
+                            borderTop:"1px solid rgba(160,120,255,.1)",
+                            fontFamily:"'Kalam',cursive",fontSize:11,
+                            color:"rgba(200,180,255,.7)",lineHeight:1.5}}>
+                            Whisper: {nc.reflection}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    <button className="btn-ghost" style={{marginTop:4,fontSize:12}} onClick={()=>setStage("home")}>
+                      ✨ Make a new story
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
