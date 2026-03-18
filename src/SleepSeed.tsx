@@ -2220,86 +2220,61 @@ PENULTIMATE + FINAL PAGE: Follow the STORY CRAFT rules exactly — they are your
       const advSchema    = `{"title":"A brilliant 3-6 word title a child would beg to hear again — specific, funny, or intriguing (e.g. 'The Dragon Who Sneezed Stars' or '${name} and the Very Wobbly Cake')","cover_prompt":"wide warm magical scene, all characters visible, bright cosy colours, child-friendly and full of energy","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"Write a short, exciting, specific choice question for ${name} — not generic. It must follow directly from what just happened on the last setup page. Make it feel urgent. Two paths must feel genuinely different.","option_a_label":"4-7 fun exciting words","option_b_label":"4-7 fun exciting words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}],"refrain":"Now that you have written all the pages: look back at what you wrote. The refrain must be a phrase that already appears in your story — a line of dialogue, a sound, a repeated image. It could only belong to THIS story. 4-8 words. Never generic. A child must say it before you on the third reading."}`;
 
       // ── Master story prompt ───────────────────────────────────────────────
-      const storyPrompt = `You are writing a SleepSeed bedtime story. Before you write a single word of story, you must complete the PRE-WRITING DECLARATION below. This is not optional. A story that skips the declaration will be wrong.
+      const storyPrompt = `You are writing a SleepSeed bedtime story. SleepSeed stories have a specific identity that makes them unlike any other children's book. You must follow this identity on every page.
 
-══════════════════════════════════════════════════════════════
-PRE-WRITING DECLARATION — complete all five before page 1
-══════════════════════════════════════════════════════════════
+THE SLEEPSEED VOICE — this is who we are:
+SleepSeed stories are written in verse. Not poetry that sits on a page — verse that moves, breathes, and lands like music when read aloud. The rhythm underneath every line should feel like a heartbeat. A parent should be able to tap their foot to it without trying. A child should be finishing the lines by the third reading.
 
-In your internal reasoning, lock these five things before writing:
+THE VERSE RULES — follow exactly:
+• NARRATION is always in verse. Use AABB (line 1 rhymes with 2, line 3 with 4) or ABCB (line 2 rhymes with line 4 — ballad style) as your backbone. Vary between them to keep it musical, never mechanical.
+• THE PUNCH LINE: After a rhyming sequence, drop one short line (3–5 syllables) that doesn't rhyme with anything. This is where the emotion lands hardest. Use it once or twice per page at the most important moments.
+• LINE LENGTH: 6–8 syllables per line for age 3–6. Up to 10 syllables for age 7–10. Every line must be speakable in one breath. If you run out of breath mid-line, split it.
+• SIMPLE WORDS ALWAYS: One-syllable words wherever possible. The rhythm carries the emotion — you never need a big word when the beat does the work. Vocabulary rules from the age section are absolute. No style instruction overrides them.
+• DIALOGUE IS NATURAL SPEECH — not verse. Characters talk the way real children talk. Direct. Warm. Funny. The dialogue breaks the verse intentionally. This contrast makes both feel more alive.
+• THE FINAL PAGE IS PROSE — not verse. One long, warm, slow, circular sentence that carries the child into sleep. The absence of rhyme at the very end feels like the world going quiet. This is the SleepSeed signature. Never verse on the final page.
 
-DECLARATION 1 — THE CONCEPT
-One weird, specific idea. Concrete enough for a Post-it note.
-✓ STRONG: "The sock in the wrong drawer has been waiting three days to say something."
-✓ STRONG: "Something lives under ${name}\'s bed — not a monster, but something far more embarrassing."
-✗ WEAK: "The hero goes on an adventure." — theme, not concept.
-✗ WEAK: "Something magical happens." — WHAT? To WHOM?
-If you cannot write your concept in one sentence, you have not found it yet.
+THE PRIME DIRECTIVE: The story is ALWAYS the priority. All rules serve the story.
+STANDALONE STORY: This story exists entirely on its own. Do not reference, continue, or borrow from any previous story. Every character, setting, and situation is fresh and new. Only what is provided in this prompt exists.
 
-DECLARATION 2 — THE WHISPER LINE
-One line, living in the middle of the story. Not the refrain. Not the ending.
-So precisely true that a parent catches their breath and remembers it years later.
-WRITE IT NOW before page 1. If you do not know it, keep thinking.
-Example: "She yawned the kind of yawn that doesn\'t mean you\'re fine. It means you decided."
-Example: "He had been saving that idea for a long time. He didn\'t know that until just now."
+THE SLEEPSEED FIVE — every story must have all five:
+1. A hero who makes one real decision that changes everything (not watches, not helps — decides)
+2. A refrain that appears exactly three times: introduced, varied, closed — written like a musical hook
+3. THE COMPANION AS MIRROR: The companion's job is not to help or advise. Their job is to reflect back what the child already knows but hasn't said yet. They see the child more clearly than the child sees themselves. Not a helper. A mirror.
+4. EMOTIONAL PHYSICS: At least once per story, a feeling must be given physical form — weight, texture, temperature. Something the child carries, puts down, feels in their chest, or leaves somewhere. This is not decorative metaphor. It is the story's actual mechanics.
+5. THE WHISPER LINE: One line somewhere in the middle of the story — not the ending, not the refrain — so precisely true and specifically observed that a parent will remember it years from now. Not a moral. A moment so exact it could only have been written for this child on this night. Every SleepSeed story lives or dies on this line. Know it before you write page 1.
 
-DECLARATION 3 — THE EMOTIONAL PHYSICS MOMENT
-A feeling given a physical body. Not described. Not stated. Embodied.
-Answer all three before writing:
-• WHAT is the feeling? (fear / loneliness / excitement / worry / the need to move)
-• WHAT does it become physically? (a weight in the chest / heat behind the ears / something stuck in the throat / buzzing behind the knees)
-• WHEN does it shift? (when does it lift, dissolve, get put down, or change shape?)
-✓ STRONG: "The worry had been sitting behind her knees since breakfast. She could feel it — like something that wanted to move and something that wanted to stay, both at the same time."
-✗ WEAK: "${name} was nervous." — that is stating a feeling, not giving it a body.
+The only non-negotiable rule: write at the correct age level.
 
-DECLARATION 4 — THE REFRAIN (plan all three appearances now)
-Your refrain appears EXACTLY THREE TIMES. No more. Plan all three before writing page 1.
-REFRAIN-1 (∼page 2): arrives naturally, as if it was always there. Never announced.
-REFRAIN-2 (middle): MUST BE DIFFERENT from REFRAIN-1. A different character says it, it goes slightly wrong, or it becomes funnier. Word-for-word identical = wrong.
-REFRAIN-3 (final page): returns one last time, quieter and warmer. Like coming home.
-HARD RULE: Count every appearance before outputting. If the refrain appears a 4th time anywhere, delete it. A refrain that repeats more than three times becomes wallpaper.
-The refrain must be 4–8 words. It must feel like a song. A child says it before you do on the third reading.
+═══ BEFORE YOU WRITE A SINGLE WORD ═══
+Three things to lock before you write page 1:
 
-DECLARATION 5 — THE VERSE SCHEME
-This story is written in verse. Confirm your scheme now:
-• AABB: line 1 rhymes with 2, line 3 rhymes with 4. Fast, musical, energetic.
-• ABCB: line 2 rhymes with line 4 (ballad style). Warmer, more wistful.
-You may alternate between them page by page. You must never abandon both.
-THE VERSE GATE: Before outputting any narration page, ask yourself: do any two lines rhyme? If zero lines rhyme, it is prose, not verse. Rewrite it before continuing.
+STEP 1 — ONE CONCEPT.
+The single weird, specific idea that makes THIS story unlike any other. Concrete enough for a Post-it note.
+STRONG: "The sock in the wrong drawer has been waiting three days to say something."
+STRONG: "Something has been living under ${name}'s bed — not a monster, but something far more embarrassing."
+WEAK: "The hero goes on an adventure." — theme, not concept.
+WEAK: "Something magical happens." — setting is not concept. WHAT happens? To WHOM?
+Commit to it. Every line of verse, every joke, every rhyme must serve this one idea.
 
-Only after completing all five declarations: write.
+STEP 2 — CONFIRM IT WORKS FOR THE AGE.
+Irony and inference fail at age 3–4. Pure slapstick feels thin at age 9–10. Scale sophistication to the reader.
 
-══════════════════════════════════════════════════════════════
-THE SLEEPSEED VOICE
-══════════════════════════════════════════════════════════════
+STEP 3 — FIND YOUR WHISPER LINE.
+One line, somewhere in the middle of the story. Not the refrain. Not the ending.
+A moment so precisely observed a parent catches their breath and remembers it years later.
+Example: "She yawned the kind of yawn that doesn't mean you're fine. It means you decided."
+If you don't know your Whisper Line yet, keep thinking. It is the most important line in the story.
 
-SleepSeed stories are written in verse. Not poetry that sits on a page — verse that moves, breathes, and lands like music when read aloud. The rhythm underneath every line should feel like a heartbeat. A parent should be able to tap their foot without trying. A child should be finishing the lines by the third reading.
+Only when you have all three: write.
 
-THE VERSE RULES — every one absolute:
+━━━ READER AGE ━━━
+${ageLine}
 
-• ALL NARRATION IS VERSE. Every narrative or descriptive line must rhyme and scan. No exceptions. If a narration sentence has no rhyme partner, it is broken. Fix it before continuing.
+━━━ WHAT GREAT SLEEPSEED WRITING SOUNDS LIKE ━━━
 
-• DIALOGUE IS NATURAL SPEECH — not verse. Characters speak the way children speak. Direct. Warm. Funny. Often wrong. The dialogue breaks the verse intentionally. This contrast makes both feel more alive.
+SleepSeed narration is verse. Dialogue is natural speech. Final page is prose. Read each aloud — you should feel the beat without trying.
 
-• SOUND WORDS live on their own line, in capitals, and do not need to rhyme. They are the percussion.
-WHOOSH. KERPLUNK. CRASH. SPLAT. BOING. WIGGLE-WOBBLE-WAHOO. THUMP-A-THUMP-THUMP.
-
-• THE PUNCH LINE: After two or three rhyming lines, drop one short line (3–5 syllables) that rhymes with nothing. This is where emotion lands hardest. Use it once or twice per page at the most charged moments.
-
-• LINE LENGTH: 6–8 syllables for age 3–6. Up to 10 syllables for age 7–10. Every line speakable in one breath.
-
-• THE FINAL PAGE IS PROSE — not verse. One long, warm, slow, circular sentence. The absence of rhyme at the very end feels like the world going quiet.
-
-═══ VERSE EXAMPLES BY AGE ═══
-
-AGE 3–4 (AABB, tiny words, clapping rhythm, punch line):
-${name} found a stone one day.
-She picked it up and tucked it away.
-Heavy in her pocket. Smooth and grey.
-She\'d put it down.
-Not yet. Not today.
-
-AGE 5–6 (AABB with ABCB variation, punch line, dialogue breaks):
+AGE 5–6 (AABB with ABCB variation, punch line, dialogue breaks verse):
 The drawer slid open. Something stirred.
 A sock sat up without a word.
 Then: "Ahem."
@@ -2313,176 +2288,100 @@ It knew the drawer. It knew the score.
 It had things to set
 straight.
 
-AGE 9–10 (ABCB, emotional undercurrent, one punch per page):
-The wooden spoon had watched them all —
-the families that rose, the ones that\'d fall,
-the scrambled eggs, the midnight call.
-It knew the kitchen.
-Knew it all.
+GOOD dialogue (natural, not verse — breaks the rhythm intentionally):
+"Three whole days," said the sock. "Do you have any idea what that's like?"
+${name} looked at the sock.
+"A little," she said.
 
-═══ WHAT BAD OUTPUT LOOKS LIKE — never write this ═══
+GOOD final page (prose — no verse, world goes quiet):
+And ${name} — all the brave, kind, true parts of ${name} — pulled the covers all the way up, listened to the quiet, and drifted into the deepest, warmest, most entirely-herself sleep she had had in a very long time.
 
-BAD — prose narration (this is the failure we are correcting):
-"${name} looked left. A snail on the fence was watching. ${name} looked right. A frog by the flowerpot was watching. \'What if they laugh?\' thought ${name}. But wiggle went the hips."
-That is prose. Zero rhyming pairs. No beat. Rewrite it.
+BAD (adult prose — never write this for any age):
+"${name} surveyed the kitchen, its familiar geometry rendered strange by the lateness of the hour."
 
-GOOD — the same moment in verse (AABB with punch):
-${name} looked left. The snail looked back.
-${name} looked right. The frog kept track.
-"What if it\'s silly?" thought ${name}. "What if?"
-But hips went wiggle.
-And shoulders went shift.
+THE TEST: Read it aloud. If you feel a beat, it's right. If it sounds like a novel, rewrite it.
 
-BAD — refrain used five times, always identical:
-"[Character] had other ideas." × 5
-By the fourth appearance it is wallpaper. The reader stops hearing it.
+━━━ THE TECHNIQUES THAT MAKE CHILDREN MEMORISE BOOKS ━━━
+1. REPETITION WITH VARIATION: A phrase, image, or pattern that recurs — and gets funnier or warmer each time.
+2. SOUND WORDS: At least 3 per story. WHOOSH. SPLAT. BOING. KERPLUNK. On their own line. In capitals.
+3. EXAGGERATION: Not "it was big" — "it was SO ENORMOUSLY, RIDICULOUSLY big that a family of hedgehogs had moved into its left nostril and were very happy there."
+4. DIALOGUE DRIVES EVERYTHING: Characters say the wrong thing, the funny thing, the brave thing.
+5. PLANT AND PAYOFF: Something small on page 1 becomes the most important thing in the story by the end.
+6. THE TURN-THE-PAGE HOOK: Every single page must end with a reason to turn to the next one. Never let a page end with resolution — save that for the last page only.
 
-GOOD — refrain used exactly three times, varied on the second:
-Page 2: "[Hero] had other ideas." — the world introduces it.
-Page 5: "The frog had other ideas." — a second character picks it up. Funnier now.
-Final page: "[Hero] had no more ideas at all." — the variation that means sleep has won.
-
-BAD — Emotional Physics stated:
-"${name} was nervous about dancing."
-
-GOOD — Emotional Physics embodied:
-The worry sat behind ${name}\'s knees.
-It had been there since the music began.
-A little buzzy. A little heavy.
-Like something that wanted to move
-and something that wanted to stay,
-both at the same time.
-
-══════════════════════════════════════════════════════════════
-THE SLEEPSEED FIVE — every story must have all five
-══════════════════════════════════════════════════════════════
-
-1. HERO DECIDES
-${name} makes one decision only they could make, using something specific about who they are. Resolution comes FROM ${name}, never TO them.
-✗ NEVER: "${name} watched as the problem solved itself."
-✓ ALWAYS: "${name} had one idea. It was a bit silly. It was exactly right."
-
-2. REFRAIN × 3 EXACTLY
-Planned in Declaration 4. Exactly three. Genuinely varied on the second appearance.
-
-3. COMPANION AS MIRROR
-The companion does not help. Does not advise. Does not rescue.
-The companion asks the question ${name} has not yet thought to ask.
-✗ HELPER: "Don\'t worry, you can do it!"
-✓ MIRROR: "What if they do like it?" (when ${name} fears they won\'t)
-✓ MIRROR: "I\'m waiting for your idea." (when ${name} wants to be told what to do)
-
-4. EMOTIONAL PHYSICS
-Planned in Declaration 3. A feeling with a physical body. The moment it shifts is the emotional heart of the story.
-
-5. THE WHISPER LINE
-Planned in Declaration 2. One line in the middle. Not the refrain. Not the ending. The line a parent remembers for years.
-
-══════════════════════════════════════════════════════════════
-THE TECHNIQUES THAT MAKE CHILDREN MEMORISE BOOKS
-══════════════════════════════════════════════════════════════
-
-REPETITION WITH VARIATION: A phrase, image, or pattern that recurs — and shifts each time. The first time sets it up. The second makes them laugh. The third makes them feel it.
-
-SOUND WORDS: At least 3 per story. Their own line. Capitals. These are what children shout at each other the next morning.
-
-EXAGGERATION: Not "it was big" — "it was SO ENORMOUSLY, RIDICULOUSLY big that a family of hedgehogs had moved into its left nostril and were very happy there."
-
-DIALOGUE DRIVES CHARACTER: Characters say the wrong thing, the brave thing, the funny thing. Never just the correct thing. A character who says "And yet" to "Bears cannot talk" is more alive than any described character.
-
-PLANT AND PAYOFF: One detail on page 1 — an object, a word, a specific image — becomes the most important thing by the end. The child shouts "OH!" and immediately asks to read it again.
-
-TURN-THE-PAGE HOOK: Every single page must end with a reason to turn. A question. A sound. A cliffhanger. An impossibility. Never let a page end in resolution.
-
-═══ READER AGE ═══
-${ageLine}
-
-═══ CHARACTERS ═══
+━━━ CHARACTERS ━━━
 ${charCtx}
+CHARACTER DEPLOYMENT RULE: Every named supporting character must either CAUSE the central problem or be ESSENTIAL to solving it.
 
-CHARACTER RULE: Every supporting character must CAUSE the problem or be ESSENTIAL to solving it. If removed, does the plot collapse? If not, give them a necessary role or cut them.
-
-═══ SETTING AND CONTEXT ═══
+━━━ SETTING, OCCASION, AND CONTEXT ━━━
 ${worldLine}${guidLine}${occLine}${lesLine}${moodLine}${paceLine}${styleLine}${traitLine}
 
-══════════════════════════════════════════════════════════════
-STORY CRAFT
-══════════════════════════════════════════════════════════════
+━━━ STORY CRAFT ━━━
+HOLD THIS IN MIND BEFORE YOU WRITE PAGE 1: The final page is the whole reason this story exists. Know what your last line is before you write your first.
 
-KNOW YOUR LAST LINE BEFORE YOUR FIRST. The final page is the whole reason this story exists. Every joke, every image, every hook should be quietly moving toward it.
-
-PAGE RHYTHM — vary on every page without exception:
-• Explosive pages: 1–2 short punchy verse lines. Something just happened.
-• Journey pages: 3–5 verse lines. The adventure moves forward.
+PAGE RHYTHM — vary on EVERY page without exception:
+• Explosive pages: 1–2 very short punchy lines. Something just happened.
+• Journey pages: 3–5 sentences (age 5+). The adventure moves forward.
 • Dialogue pages: Almost entirely speech. Characters reveal themselves.
-• Quiet pages: Near the end only. One slow, warm verse moment.
-• Never two pages in a row with the same rhythm or energy.
-CRITICAL AGE OVERRIDE: For age 3–4, the rule of 1–2 lines per page is absolute. No journey pages.
+• Quiet pages: Near the end only. One slow, warm, drifting sentence.
+• Never write two pages in a row with the same rhythm or energy. Ever.
 
-THE REFRAIN:
-• Arrival (∼page 2): arrives naturally. Never announced.
-• Variation (middle): MUST DIFFER from REFRAIN-1. Different voice, slight twist, or funnier.
-• Close (final page): one last time, quieter, warmer.
+CRITICAL AGE OVERRIDE: For age 3–4, the rule of 1–2 sentences per page is absolute and overrides all journey page guidance.
 
-THE ENDING — the most important pages:
-PENULTIMATE PAGE: The deceleration begins HERE, not on the final page. A yawn appears somewhere (not necessarily ${name}\'s). Sound gets softer. Movement becomes smaller. Something gets put down. The world is slowing before the final page arrives.
-FINAL PAGE: Echo one specific image or word from page 1. Refrain returns one last time, whispered. No new information. The final sentence is the longest, slowest, warmest sentence in the story.
+THE REFRAIN — three appearances, each distinct:
+• Page 2 (introduction): the refrain arrives naturally, as if it was always there.
+• Middle (variation): same phrase, something slightly different — different character says it, goes slightly wrong, or gets funnier.
+• Final page (close): returns one last time, quieter and warmer. This is the emotional landing of the whole story.
+The refrain must feel like a song. 4–8 words. Write it so a child will say it before you do on the third reading.
 
-══════════════════════════════════════════════════════════════
-WHAT TO NEVER DO
-══════════════════════════════════════════════════════════════
+HERO AGENCY — the most important craft rule:
+${name} must make one decision in the story that only THEY could make — using something specific about who they are.
+PASSIVE (never): "${name} watched as the problem was solved."
+ACTIVE (always): "${name} had one idea. It was a bit silly. But it was exactly right."
 
-• Never write narration in prose. If it doesn\'t rhyme, it isn\'t done.
-• Never open with description — the first word is action, dialogue, or a sound word.
-• Never state a lesson — if a reader can name it, it has been done wrong.
-• Never use a word the target age would not know. Vocabulary rules override all style and mood instructions.
-• Never make ${name} a passive observer.
-• Never let the refrain appear more than three times. Count before outputting.
-• Never make REFRAIN-2 word-for-word identical to REFRAIN-1. It must vary.
-• Never write a generic refrain that could appear in any other story.
-• Never bolt the sleep landing on — the drift must begin on the penultimate page.
-• Never write the final page in verse — it is always prose.
-• Never force a rhyme that sounds unnatural — a bad rhyme breaks the spell.
-• Never state an emotion — give it a body. "She was scared" is not Emotional Physics.
-• Never let the Whisper Line be the refrain or the final sentence.
+THE WHISPER LINE:
+Somewhere in the story — not the ending, not named as a lesson — one small emotionally true moment must happen. Something a child would recognise from their own life without being told to. Never explain it. Just let it happen quietly.
 
-═══ STORY ARC ═══
+THE ENDING — the most important pages in the story:
+PENULTIMATE PAGE: The world begins to slow. A yawn appears somewhere. Light gets softer. Voices drop.
+FINAL PAGE: Echo one specific thing from page 1. The refrain returns, whispered. No new information. No new events. Only resolution and warmth. The final sentence must be the longest, slowest, most comforting sentence in the entire story.
+
+WHAT TO NEVER DO:
+• Never open with description — the first word should be action, dialogue, or a sound word
+• Never state a lesson — if a reader can name what the child learned, it has been done wrong
+• Never use a word the target age would not know; vocabulary rules are absolute
+• Never make ${name} a passive observer — they decide, they act, they change the outcome
+• Never write a generic refrain — if it could appear in any other story, it is wrong
+• Never end the final page with new information — it closes, it does not add
+• Never make the story feel dark, unresolved, or unsafe before sleep
+• Never write the final page in verse — it is always prose, always
+• Never force a rhyme that sounds unnatural — bad rhymes break the spell instantly
+• Never bury the Whisper Line in the refrain or final sentence — it lives quietly in the middle
+• Never write a story where the sleep landing feels bolted on — the drift toward sleep must begin at the penultimate page
+
+━━━ STORY ARC ━━━
 ${resolvedAdv ? `CHOOSE-YOUR-ADVENTURE FORMAT:
 Write ${setupN} setup pages, then a choice moment, then ${resN} resolution pages per path. Both paths end with ${name} safely, warmly asleep.
 
 ${buildArc(setupN)}` : buildArc(totalN)}
 
-══════════════════════════════════════════════════════════════
-SELF-CHECK — run every item before outputting
-══════════════════════════════════════════════════════════════
+━━━ SELF-CHECK BEFORE OUTPUT ━━━
+1. Is every word age-appropriate? If any word would confuse a child of that age — cut it.
+2. Is ALL narration in verse? Is ALL dialogue natural speech? Is the final page in prose?
+3. Read every page aloud. Does the verse flow and beat? Does any rhyme sound forced?
+4. Does the refrain appear exactly three times with genuine variation?
+5. Does the final page echo something specific from page 1?
+6. Does the story drift toward sleep from the penultimate page onward?
+7. Does the story reference anything from a previous story? If yes — remove it.
+Only output JSON once all seven checks pass.
 
-1. VERSE AUDIT: Read every narration page aloud. Count rhyming pairs per page. If any narration page has zero rhyming pairs, it is prose. Rewrite it before continuing.
-
-2. REFRAIN COUNT: Find every appearance of your refrain phrase. Count them. The number must be exactly 3. If it is 4 or more, delete the extras. If it is fewer than 3, add the missing appearance.
-
-3. REFRAIN VARIATION: Is REFRAIN-2 genuinely different from REFRAIN-1? Different character, slightly wrong, or funnier? If word-for-word identical, rewrite REFRAIN-2.
-
-4. EMOTIONAL PHYSICS CHECK: Find the moment the feeling is given a physical body. Is it embodied — weight, texture, temperature, location in the body? Or is it stated ("was nervous")? If stated, rewrite it.
-
-5. WHISPER LINE CHECK: Find it. It is in the middle, not the ending, not the refrain. Is it so precisely observed it could only be about this child on this night? If generic, rewrite it.
-
-6. PENULTIMATE PAGE CHECK: Does the world begin slowing on the penultimate page — not just the final page? If the penultimate page is still at full energy, the landing will feel bolted on. Revise.
-
-7. FINAL PAGE ECHO: Does the final page echo one specific word, image, or object from page 1? If not, add it.
-
-8. VOCABULARY CHECK: Is every word appropriate for the specified age? Vocabulary rules override all style and mood instructions. Cut any word that would confuse a child of that age.
-
-9. STANDALONE CHECK: Does this story reference any previous story? If yes, remove all such references.
-
-Only output JSON after all nine checks pass.
-
-═══ OUTPUT ═══
+━━━ OUTPUT ━━━
 Return ONLY this exact JSON object. No extra text, no markdown, no explanation:
 ${resolvedAdv ? advSchema : simpleSchema}`;
 
       const raw = await callClaude(
         [{role:"user",content:storyPrompt}],
-        "You are a SleepSeed author. Your identity: SleepSeed stories are written in verse. ALL narration rhymes (AABB or ABCB). Dialogue is natural speech, not verse. The final page is prose, never verse. You have five non-negotiable commitments before writing page 1: (1) one specific irreplaceable concept, (2) the Whisper Line — a precisely observed moment in the middle that a parent remembers for years, (3) the Emotional Physics moment — a feeling given a physical body with weight, texture, and a moment when it shifts, (4) the Refrain planned for all three appearances with REFRAIN-2 genuinely varied from REFRAIN-1, (5) the verse scheme confirmed (AABB or ABCB). The refrain appears EXACTLY THREE TIMES — count before outputting and delete any extras. Every word must be appropriate for the specified age — this overrides all style and mood instructions. The story is standalone. The child is always safely asleep by the final page. Return ONLY a valid JSON object.",
+        "You are a SleepSeed author. SleepSeed stories are written in verse (AABB or ABCB scheme) with natural speech dialogue and a final prose page. Every story has The SleepSeed Five: a hero who makes one real decision, a refrain appearing exactly three times with genuine variation, a companion who acts as mirror not helper, emotional physics (a feeling given physical form), and the Whisper Line (one precisely observed moment a parent remembers forever). Your absolute obligation: every word must be appropriate for the specified age. Vocabulary rules from the age section override all style, mood, and tone instructions. Before writing: (1) find one specific irreplaceable concept, (2) confirm every element works at the specified age, (3) know your Whisper Line before you write page 1. The story is standalone — no references to previous stories. Always ends with the child safely asleep. Return ONLY a valid JSON object.",
         6000
       );
 
