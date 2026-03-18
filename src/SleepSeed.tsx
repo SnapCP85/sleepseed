@@ -280,6 +280,47 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
   text-align:center;color:var(--dim);background:transparent;border:none;font-family:'Nunito',sans-serif;transition:all .2s}
 .mem-tab.on{background:rgba(212,160,48,.12);color:var(--gold2)}
 .mem-tab:hover:not(.on){color:var(--cream);background:rgba(255,255,255,.05)}
+.nc-flow{width:100%;max-width:420px;animation:fup .5s cubic-bezier(.16,1,.3,1) both}
+.nc-step-dots{display:flex;gap:6px;justify-content:center;margin-bottom:18px}
+.nc-sdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s}
+.nc-sdot.active{background:var(--gold2);transform:scale(1.3)}
+.nc-sdot.done{background:var(--green2)}
+.nc-step-card{background:linear-gradient(150deg,rgba(22,32,84,.72),rgba(11,18,42,.88));
+  border:1px solid rgba(212,160,48,.15);border-radius:22px;padding:26px;
+  backdrop-filter:blur(20px);box-shadow:0 20px 64px rgba(0,0,0,.55);animation:fup .4s ease both}
+.nc-step-icon{font-size:36px;text-align:center;margin-bottom:8px}
+.nc-step-title{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--cream);
+  text-align:center;margin-bottom:4px}
+.nc-step-sub{font-size:12px;color:var(--dim);text-align:center;line-height:1.7;margin-bottom:16px}
+.nc-step-q{font-family:'Fraunces',serif;font-size:14px;font-style:italic;color:var(--gold3);
+  text-align:center;line-height:1.6;margin-bottom:14px;padding:0 8px}
+.nc-camera{width:100%;aspect-ratio:4/3;border-radius:14px;overflow:hidden;background:#0a0e24;
+  position:relative;margin-bottom:14px}
+.nc-camera video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.nc-camera img{width:100%;height:100%;object-fit:cover}
+.nc-countdown{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.5);font-family:'Fraunces',serif;font-size:72px;font-weight:700;
+  color:var(--gold3);animation:countPop .4s ease}
+@keyframes countPop{from{transform:scale(1.8);opacity:0}to{transform:scale(1);opacity:1}}
+.polaroid{background:#faf8f2;border-radius:4px;padding:14px 14px 28px;
+  box-shadow:0 8px 40px rgba(0,0,0,.5);transform:rotate(-2deg);
+  max-width:320px;margin:0 auto;animation:polaroidIn 1.2s cubic-bezier(.16,1,.3,1) both}
+@keyframes polaroidIn{from{opacity:0;transform:scale(.75) rotate(-10deg)}to{opacity:1;transform:scale(1) rotate(-2deg)}}
+.polaroid-photo{width:100%;aspect-ratio:4/3;border-radius:2px;overflow:hidden;
+  background:linear-gradient(135deg,#1a1428,#2a1f3d);margin-bottom:14px}
+.polaroid-photo img{width:100%;height:100%;object-fit:cover}
+.polaroid-emoji{display:flex;align-items:center;justify-content:center;font-size:48px;
+  width:100%;height:100%;background:linear-gradient(135deg,#0a0e24,#14204a)}
+.polaroid-body{text-align:center}
+.polaroid-headline{font-family:'Fraunces',serif;font-size:16px;font-weight:700;font-style:italic;
+  color:#2a1f0a;margin-bottom:4px;animation:fadeUp .5s ease .5s both}
+.polaroid-quote{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;
+  color:#5a4a2a;line-height:1.6;margin-bottom:6px;animation:fadeUp .5s ease .8s both}
+.polaroid-memory{font-family:'Kalam',cursive;font-size:12px;color:#7a5a2a;line-height:1.5;
+  margin-bottom:8px;animation:fadeUp .5s ease 1.1s both}
+.polaroid-meta{font-size:9px;color:#a08a5a;animation:fadeUp .5s ease 1.4s both}
+.polaroid-brand{font-family:'Fraunces',serif;font-size:10px;color:#c0a870;margin-top:4px;
+  animation:fadeUp .5s ease 1.6s both}
 .end-msg{font-family:'Kalam',cursive;font-size:14px;color:var(--ui);text-align:center;line-height:1.9}
 .illo-slot{position:absolute;inset:0}
 .shimmer{position:absolute;inset:0;background:linear-gradient(110deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.09) 50%,rgba(255,255,255,.04) 75%);
@@ -494,12 +535,6 @@ const DEMO_BOOK = {
     {text:"The room was very quiet.\n\nThe moon shone on the stone.\n\nAdina\u2019s pocket was empty now.\n\nThat was a good feeling.\n\nA light feeling.\n\nExactly the right feeling.", imgUrl:"https://image.pollinations.ai/prompt/a%20cosy%20bedroom%20at%20night%2C%20moonlight%20on%20a%20stone%20on%20a%20windowsill%2C%20child%20sleepy%20in%20bed%2C%20warm%20and%20peaceful%2C%20children%27s%20watercolor?width=400&height=190&nologo=true&model=turbo&seed=50&nofeed=true"},
     {text:"That wasn\u2019t you, Adina.\n\nShe pulled the covers all the way up to her chin.\n\nThe stone glowed softly in the moonlight, right where she had left it.\n\nAnd Adina \u2014 all the brave, kind, worm-saving, lonely-boy-noticing parts of Adina \u2014 closed her eyes, and let go, and drifted into the deepest, warmest, most entirely-herself sleep she had had in a very long time.", imgUrl:"https://image.pollinations.ai/prompt/a%20child%20asleep%20in%20a%20cosy%20bed%2C%20stuffed%20rabbit%20tucked%20in%20beside%20her%2C%20stone%20glowing%20on%20windowsill%20in%20moonlight%2C%20final%20page%20watercolor%2C%20peaceful?width=400&height=190&nologo=true&model=turbo&seed=51&nofeed=true"},
   ],
-  nightCard: {
-    headline: "Putting the stone down",
-    quote: "That wasn\u2019t you, Adina.",
-    reflection: "Is there anything you\u2019d like to leave on the windowsill tonight?",
-    emoji: "\uD83E\uDEA8",
-  },
 };
 
 const CHAR_TYPES = [
@@ -1274,6 +1309,16 @@ export default function SleepSeed() {
   const [lastErrStage,   setLastErrStage]   = useState<string|null>(null);
   const [nightCards,     setNightCards]     = useState([]);
   const [memoriesTab,    setMemoriesTab]    = useState<"stories"|"nightcards">("stories");
+  const [ncStep,         setNcStep]         = useState(0);          // 0-4 for 5 Night Card steps
+  const [ncBondingQ,     setNcBondingQ]     = useState("");         // bonding question from generation
+  const [ncBondingA,     setNcBondingA]     = useState("");         // child's answer
+  const [ncGratitude,    setNcGratitude]    = useState("");         // "best three seconds"
+  const [ncExtra,        setNcExtra]        = useState("");         // optional extra note
+  const [ncPhoto,        setNcPhoto]        = useState<string|null>(null); // base64 data URL
+  const [ncCountdown,    setNcCountdown]    = useState(0);          // 3-2-1 countdown
+  const [ncGenerating,   setNcGenerating]   = useState(false);      // Claude generating
+  const [ncResult,       setNcResult]       = useState<any>(null);  // final Night Card
+  const [ncRevealed,     setNcRevealed]     = useState(false);      // polaroid reveal done
 
   const totalPagesRef = useRef(0);
   const fileRefs      = useRef({});
@@ -1284,6 +1329,8 @@ export default function SleepSeed() {
   const voiceIdRef       = useRef<string|null>(null); // always-current cloned voice ID
   const speakELRef       = useRef<any>(null);          // always-current speakTextEL fn
   const speakTextRef     = useRef<any>(null);          // always-current speakText fn
+  const ncVideoRef       = useRef<HTMLVideoElement>(null);
+  const ncStreamRef      = useRef<MediaStream|null>(null);
 
   const imgReady = (url) => !!imgLoaded[strHash(url)];
 
@@ -1826,6 +1873,47 @@ export default function SleepSeed() {
     setTimeout(() => setSparkles(s => s.filter(sp => sp.id!==id)),700);
   },[]);
 
+  // ── Night Card camera effect ──
+  useEffect(() => {
+    if(stage!=="nightcard" || ncStep!==3 || ncPhoto) return;
+    let cancelled = false;
+    navigator.mediaDevices?.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480}}})
+      .then(stream => {
+        if(cancelled){ stream.getTracks().forEach(t=>t.stop()); return; }
+        ncStreamRef.current = stream;
+        if(ncVideoRef.current) ncVideoRef.current.srcObject = stream;
+      })
+      .catch(() => { if(!cancelled) setNcStep(4); });
+    return () => { cancelled = true; ncStreamRef.current?.getTracks().forEach(t=>t.stop()); ncStreamRef.current=null; };
+  },[stage,ncStep,ncPhoto]);
+
+  // ── Night Card generation effect ──
+  useEffect(() => {
+    if(stage!=="nightcard" || ncStep!==4 || ncGenerating || ncResult) return;
+    setNcGenerating(true);
+    const name = book?.heroName||"";
+    const ncPrompt = `A child named ${name} just finished a bedtime story called "${book?.title||""}".
+Refrain: "${book?.refrain||""}"
+${book?.parentNote ? `Parent note: ${book.parentNote}` : ""}
+
+Tonight's bonding moments:
+${ncBondingQ && ncBondingA.trim() ? `- Question: "${ncBondingQ}" — ${name} said: "${ncBondingA.trim()}"` : ""}
+${ncGratitude.trim() ? `- Best three seconds: "${ncGratitude.trim()}"` : ""}
+${ncExtra.trim() ? `- Extra note: "${ncExtra.trim()}"` : ""}
+
+Write a Night Card keepsake. Return ONLY this JSON:
+{"headline":"A tender 3-6 word headline for tonight (captures this specific night's feeling, not the story title)","quote":"The most beautiful or funny sentence from the refrain or story. 8-15 words.","memory_line":"A single warm sentence weaving the child's own words or tonight's real moments into a keepsake. Use what they actually said if available. Under 20 words.","reflection":"One gentle whispered question for the child right now. Under 12 words.","emoji":"One emoji capturing tonight's mood"}`;
+    const fallback = {
+      headline:`A night with ${name}`,quote:book?.refrain||book?.title||"",
+      memory_line:ncGratitude.trim()||ncBondingA.trim()||`A story just for ${name}.`,
+      reflection:"What will you dream about tonight?",emoji:"🌙",
+    };
+    callClaude([{role:"user",content:ncPrompt}],
+      "You create beautiful Night Card keepsakes. Weave real bonding moments into warm, specific mementos. Never generic. Always use the child's actual words when available.", 400
+    ).then(raw => { try { setNcResult(extractJSON(raw)); } catch(_) { setNcResult(fallback); } })
+     .catch(() => setNcResult(fallback));
+  },[stage,ncStep,ncGenerating,ncResult]);
+
   const newChar = () => ({id:uid(),type:"friend",name:"",photo:null,classify:"",gender:"",note:""});
   const addExtraChar    = () => setExtraChars(cs => cs.length<4 ? [...cs,newChar()] : cs);
   const removeExtraChar = (id) => setExtraChars(cs => cs.filter(c => c.id!==id));
@@ -1891,6 +1979,9 @@ export default function SleepSeed() {
     const resolvedStyle   = overrides.storyStyle    ?? storyStyle;
     const resolvedTraits  = overrides.heroTraits    ?? heroTraits;
     setError(""); setStage("generating"); setFromCache(false); setChosenPath(null);
+    // Pick and store bonding question for Night Card flow
+    const bondingIdx = Math.floor(Date.now()/1000) % BONDING_QUESTIONS.length;
+    setNcBondingQ(BONDING_QUESTIONS[bondingIdx]);
     const name = heroName.trim();
     const seed = makeStorySeed(name,resolvedTheme,resolvedChars,resolvedOcc,resolvedOccCust,Array.isArray(resolvedLesson)?resolvedLesson.join("|"):resolvedLesson,resolvedAdv,resolvedLen,heroGender,heroClassify,resolvedGuidance);
     const bKey = `book_${seed}`;
@@ -1910,16 +2001,6 @@ export default function SleepSeed() {
           () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:true})); },
           () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); }
         ));
-        // Backfill Night Card for books cached before this feature
-        if(!cached.nightCard) {
-          cached.nightCard = {
-            headline: `A night with ${name}`,
-            quote: cached.refrain || cached.title,
-            reflection: "What was your favourite part of tonight's story?",
-            emoji: "🌙",
-          };
-          sSet(bKey,cached).catch(()=>{});
-        }
         setBook(cached); setPageIdx(0); setFromCache(true);
         await new Promise(r => setTimeout(r,180));
         setStage("book");
@@ -2305,38 +2386,14 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       } catch(_) {}
       bookData.parentNote = parentNote;
 
-      // ── Generate Night Card ────────────────────────────────────────────
-      let nightCardData = null;
-      try {
-        const ncPrompt = `A child named ${name} just finished a personalised bedtime story called "${story.title}". The refrain was: "${story.refrain||""}". ${parentNote ? `Parent note: ${parentNote}` : ""}
-
-Write a Night Card — a short, beautiful keepsake for this night. Return ONLY this JSON:
-{"headline":"A tender 3-6 word headline for tonight (not the story title — something that captures this night's feeling)","quote":"The single most beautiful or funny sentence from the refrain or story that a parent would want to remember. 8-15 words max.","reflection":"One gentle question a parent could whisper to their child right now, about tonight's story. Under 15 words.","emoji":"One emoji that captures tonight's story mood"}`;
-        const ncRaw = await callClaude([{role:"user",content:ncPrompt}], "You create beautiful, brief Night Card keepsakes for parents after bedtime stories. Warm, concise, never clinical.", 300);
-        nightCardData = extractJSON(ncRaw);
-      } catch(_) {}
-      // Fallback Night Card from existing book data if Claude call failed
-      if(!nightCardData || !nightCardData.headline) {
-        nightCardData = {
-          headline: `A night with ${name}`,
-          quote: story.refrain || story.title,
-          reflection: `What was your favourite part of tonight's story?`,
-          emoji: "🌙",
-        };
-      }
-      bookData.nightCard = nightCardData;
-
       setBook(bookData); setPageIdx(0);
       setGen(g => ({...g,stepIdx:3,progress:94,label:"Enjoy your story!",dots:[...dots]}));
       await new Promise(r => setTimeout(r,200));
       setStage("book");
       sSet(bKey,bookData).catch(()=>{});
 
-      // ── Auto-save to library ──────────────────────────────────────────
+      // ── Auto-save story to library ────────────────────────────────────
       try { await saveMemory(bookData); } catch(_) {}
-      if(nightCardData) {
-        try { await saveNightCard({heroName:name,storyTitle:story.title,refrain:story.refrain||"",...nightCardData}); } catch(_) {}
-      }
 
     } catch(e) {
       console.error("SleepSeed error:",e);
@@ -2359,10 +2416,9 @@ Write a Night Card — a short, beautiful keepsake for this night. Return ONLY t
   const choicePgIdx = isAdv ? 2+setupLen : -1;
   const onChoicePg  = pageIdx===choicePgIdx;
   const resPages    = isAdv&&chosenPath ? (chosenPath==="a" ? book.path_a : book.path_b) : [];
-  const hasNightCard = !!book?.nightCard;
   const totalPages  = !book ? 0
-    : isAdv ? 2+setupLen+1+(chosenPath?resPages.length+1+(hasNightCard?1:0):0)
-    : 2+(book.pages?.length||0)+1+(hasNightCard?1:0);
+    : isAdv ? 2+setupLen+1+(chosenPath?resPages.length+1:0)
+    : 2+(book.pages?.length||0)+1;
 
   totalPagesRef.current = totalPages;
 
@@ -2388,10 +2444,8 @@ Write a Night Card — a short, beautiful keepsake for this night. Return ONLY t
     return `Sweet dreams, ${book.heroName}.`;
   };
 
-  const isLastPage    = pageIdx===totalPages-1;
-  const isNightCardPg = hasNightCard && pageIdx===totalPages-1;
-  const isEndPage     = hasNightCard ? pageIdx===totalPages-2 : pageIdx===totalPages-1;
-  const isStoryPage   = book&&pageIdx>=2&&!onChoicePg&&!isEndPage&&!isNightCardPg;
+  const isLastPage  = pageIdx===totalPages-1;
+  const isStoryPage = book&&pageIdx>=2&&!onChoicePg&&!isLastPage;
 
   /* ── Story page ── */
   const StoryPage = ({pg,pgNum,refrain}) => (
@@ -2503,32 +2557,6 @@ Write a Night Card — a short, beautiful keepsake for this night. Return ONLY t
       return <StoryPage pg={book.pages[pageIdx-2]} pgNum={pageIdx-1} refrain={book.refrain} />;
     }
 
-    // ── Night Card page ──
-    if(isNightCardPg && book.nightCard) {
-      const nc = book.nightCard;
-      return (
-        <div className="bpage nc-bg">
-          <div className="pinset" style={{borderColor:"rgba(212,160,48,.2)"}} />
-          <div className="nc-lay">
-            <div className="nc-emoji">{nc.emoji||"🌙"}</div>
-            <div className="nc-label">Tonight's Night Card</div>
-            <div className="nc-headline">{nc.headline}</div>
-            <div className="nc-divider" />
-            <div className="nc-quote">"{nc.quote}"</div>
-            <div className="nc-hero">— a story for {book.heroName}</div>
-            {nc.reflection && (
-              <div className="nc-reflect">
-                <div className="nc-reflect-label">Whisper this</div>
-                <div className="nc-reflect-q">{nc.reflection}</div>
-              </div>
-            )}
-            <div className="nc-date">{new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}</div>
-            <div className="nc-brand">🌙 SleepSeed Night Card</div>
-          </div>
-        </div>
-      );
-    }
-
     // ── The End page ──
     return (
       <div className="bpage end-bg" style={{overflowY:"auto"}}>
@@ -2552,19 +2580,34 @@ Write a Night Card — a short, beautiful keepsake for this night. Return ONLY t
             </div>
           )}
 
-          <button className="btn" style={{width:"100%",marginTop:4,fontSize:15,padding:"14px 20px",
-            display:"flex",alignItems:"center",justifyContent:"center",gap:8}}
-            onClick={downloadStory}>
-            📄 Download &amp; Print
-            <span style={{fontSize:11,fontWeight:400,opacity:.8}}>— Print it. Keep it. It's a real book.</span>
+          <button className="btn" style={{width:"100%",marginTop:8,fontSize:15,padding:"14px 20px"}}
+            onClick={()=>{
+              setNcStep(0); setNcBondingA(""); setNcGratitude(""); setNcExtra("");
+              setNcPhoto(null); setNcCountdown(0); setNcGenerating(false);
+              setNcResult(null); setNcRevealed(false);
+              window.speechSynthesis?.cancel();
+              if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
+              autoReadRef.current = false; setIsReading(false);
+              setStage("nightcard");
+            }}>
+            🌙 Make Tonight's Night Card
           </button>
 
-          {hasNightCard && (
-            <button className="btn-ghost" style={{width:"100%",marginTop:4,fontSize:13,padding:"12px 16px"}}
-              onClick={()=>goPage(1)}>
-              🌙 See Tonight's Night Card →
+          <div style={{display:"flex",gap:8,width:"100%",marginTop:4}}>
+            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"10px 14px"}}
+              onClick={downloadStory}>
+              📄 Download
             </button>
-          )}
+            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"10px 14px"}}
+              onClick={()=>{
+                window.speechSynthesis?.cancel();
+                if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
+                autoReadRef.current = false; setIsReading(false);
+                setStage("home");
+              }}>
+              🏠 Home
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -3315,22 +3358,19 @@ Write a Night Card — a short, beautiful keepsake for this night. Return ONLY t
               <div className="plabel" style={{marginBottom:12}}>{gen.progress}%</div>
 
               {/* Bonding question card — visible during writing step */}
-              {gen.stepIdx <= 1 && (() => {
-                const q = BONDING_QUESTIONS[Math.floor(Date.now()/1000)%BONDING_QUESTIONS.length];
-                return (
-                  <div style={{background:"rgba(160,120,255,.08)",border:"1px solid rgba(160,120,255,.2)",
-                    borderRadius:12,padding:"11px 13px",marginBottom:12}}>
-                    <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
-                      color:"rgba(160,120,255,.65)",marginBottom:5}}>While you wait…</div>
-                    <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
-                      color:"rgba(210,200,245,.88)",lineHeight:1.75}}>
-                      Snuggle in close and ask{" "}
-                      <span style={{color:"var(--gold2)",fontWeight:700}}>{heroName}</span>:{" "}
-                      <span style={{color:"#c0a8ff"}}>"{q}"</span>
-                    </div>
+              {gen.stepIdx <= 1 && ncBondingQ && (
+                <div style={{background:"rgba(160,120,255,.08)",border:"1px solid rgba(160,120,255,.2)",
+                  borderRadius:12,padding:"11px 13px",marginBottom:12}}>
+                  <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
+                    color:"rgba(160,120,255,.65)",marginBottom:5}}>While you wait…</div>
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
+                    color:"rgba(210,200,245,.88)",lineHeight:1.75}}>
+                    Snuggle in close and ask{" "}
+                    <span style={{color:"var(--gold2)",fontWeight:700}}>{heroName}</span>:{" "}
+                    <span style={{color:"#c0a8ff"}}>"{ncBondingQ}"</span>
                   </div>
-                );
-              })()}
+                </div>
+              )}
 
               {gen.dots.length>0 && (
                 <div style={{display:"flex",gap:5,flexWrap:"wrap",justifyContent:"center",marginBottom:10}}>
@@ -3614,6 +3654,241 @@ Write a Night Card — a short, beautiful keepsake for this night. Return ONLY t
           </div>
         )}
 
+        {/* NIGHT CARD FLOW */}
+        {stage==="nightcard" && book && (
+          <div className="nc-flow">
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+              <div style={{display:"flex",alignItems:"center",gap:7}}>
+                <div className="brand-gem" style={{width:30,height:30,fontSize:15,borderRadius:9}}>🌙</div>
+                <span className="brand-name" style={{fontSize:16}}>Night Card</span>
+              </div>
+              <button className="btn-ghost" style={{fontSize:11,padding:"5px 10px"}}
+                onClick={()=>{
+                  ncStreamRef.current?.getTracks().forEach(t=>t.stop());
+                  setStage("book"); setPageIdx(totalPages-1);
+                }}>✕ Skip</button>
+            </div>
+
+            {/* Step dots */}
+            <div className="nc-step-dots">
+              {[0,1,2,3,4].map(i => (
+                <div key={i} className={`nc-sdot${ncStep===i?" active":""}${ncStep>i?" done":""}`} />
+              ))}
+            </div>
+
+            {/* Step 0: Bonding Question */}
+            {ncStep===0 && (
+              <div className="nc-step-card" key="s0">
+                <div className="nc-step-icon">💬</div>
+                <div className="nc-step-title">Bonding moment</div>
+                <div className="nc-step-sub">During the story, you asked {book.heroName}:</div>
+                <div className="nc-step-q">"{ncBondingQ || "What made you smile today?"}"</div>
+                <textarea className="ftarea" placeholder={`What did ${book.heroName} say?`}
+                  value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)}
+                  style={{marginBottom:14,minHeight:60}} />
+                <button className="btn" onClick={()=>setNcStep(1)}>
+                  {ncBondingA.trim() ? "Next →" : "Skip →"}
+                </button>
+              </div>
+            )}
+
+            {/* Step 1: Gratitude Weave */}
+            {ncStep===1 && (
+              <div className="nc-step-card" key="s1">
+                <div className="nc-step-icon">✨</div>
+                <div className="nc-step-title">Best three seconds</div>
+                <div className="nc-step-sub">What was the best tiny moment of tonight?<br />A laugh, a look, a whisper — anything.</div>
+                <textarea className="ftarea" placeholder="The best three seconds were…"
+                  value={ncGratitude} onChange={e=>setNcGratitude(e.target.value)}
+                  style={{marginBottom:14,minHeight:60}} />
+                <div style={{display:"flex",gap:8}}>
+                  <button className="btn-ghost" style={{flex:1}} onClick={()=>setNcStep(0)}>← Back</button>
+                  <button className="btn" style={{flex:2}} onClick={()=>setNcStep(2)}>
+                    {ncGratitude.trim() ? "Next →" : "Skip →"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Optional Extra */}
+            {ncStep===2 && (
+              <div className="nc-step-card" key="s2">
+                <div className="nc-step-icon">📝</div>
+                <div className="nc-step-title">Anything else?</div>
+                <div className="nc-step-sub">Anything else to remember about tonight?<br/>
+                  <span style={{color:"var(--dimmer)",fontSize:10}}>Totally optional.</span>
+                </div>
+                <textarea className="ftarea" placeholder="A note for future you…"
+                  value={ncExtra} onChange={e=>setNcExtra(e.target.value)}
+                  style={{marginBottom:14,minHeight:60}} />
+                <div style={{display:"flex",gap:8}}>
+                  <button className="btn-ghost" style={{flex:1}} onClick={()=>setNcStep(1)}>← Back</button>
+                  <button className="btn" style={{flex:2}} onClick={()=>setNcStep(3)}>
+                    {ncExtra.trim() ? "Next →" : "Skip →"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Photo */}
+            {ncStep===3 && (
+              <div className="nc-step-card" key="s3">
+                <div className="nc-step-icon">📸</div>
+                <div className="nc-step-title">Capture this moment</div>
+                <div className="nc-step-sub">Take a quick photo for your Night Card.</div>
+
+                {!ncPhoto ? (
+                  <>
+                    <div className="nc-camera">
+                      <video ref={ncVideoRef} autoPlay playsInline muted
+                        style={{display:"block"}}
+                        onLoadedMetadata={()=>{}} />
+                      {ncCountdown > 0 && (
+                        <div className="nc-countdown" key={ncCountdown}>{ncCountdown}</div>
+                      )}
+                    </div>
+                    {/* Camera started via effect below */}
+                    <div style={{display:"flex",gap:8}}>
+                      <button className="btn-ghost" style={{flex:1}} onClick={()=>{
+                        ncStreamRef.current?.getTracks().forEach(t=>t.stop());
+                        ncStreamRef.current=null;
+                        setNcStep(2);
+                      }}>← Back</button>
+                      <button className="btn" style={{flex:2}} disabled={ncCountdown>0}
+                        onClick={()=>{
+                          // 3-second countdown then capture
+                          setNcCountdown(3);
+                          let c = 3;
+                          const iv = setInterval(()=>{
+                            c--;
+                            if(c > 0) { setNcCountdown(c); }
+                            else {
+                              clearInterval(iv);
+                              setNcCountdown(0);
+                              // Capture frame
+                              const video = ncVideoRef.current;
+                              if(video && video.videoWidth) {
+                                const canvas = document.createElement("canvas");
+                                const scale = Math.min(480/video.videoWidth, 480/video.videoHeight, 1);
+                                canvas.width = Math.round(video.videoWidth * scale);
+                                canvas.height = Math.round(video.videoHeight * scale);
+                                const ctx = canvas.getContext("2d");
+                                ctx.translate(canvas.width, 0);
+                                ctx.scale(-1, 1); // mirror
+                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+                                setNcPhoto(dataUrl);
+                                ncStreamRef.current?.getTracks().forEach(t=>t.stop());
+                                ncStreamRef.current = null;
+                              } else {
+                                setNcStep(4); // fallback
+                              }
+                            }
+                          }, 1000);
+                        }}>
+                        📸 {ncCountdown > 0 ? ncCountdown : "Capture"}
+                      </button>
+                    </div>
+                    <button className="btn-ghost" style={{width:"100%",marginTop:8,fontSize:11}}
+                      onClick={()=>{
+                        ncStreamRef.current?.getTracks().forEach(t=>t.stop());
+                        ncStreamRef.current=null;
+                        setNcStep(4);
+                      }}>
+                      Skip photo →
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="nc-camera">
+                      <img src={ncPhoto} alt="Captured" />
+                    </div>
+                    <div style={{display:"flex",gap:8}}>
+                      <button className="btn-ghost" style={{flex:1}} onClick={()=>{
+                        setNcPhoto(null);
+                        // Restart camera
+                        navigator.mediaDevices?.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480}}})
+                          .then(stream => {
+                            ncStreamRef.current = stream;
+                            if(ncVideoRef.current) ncVideoRef.current.srcObject = stream;
+                          }).catch(()=>{});
+                      }}>🔄 Retake</button>
+                      <button className="btn" style={{flex:2}} onClick={()=>setNcStep(4)}>
+                        Use this →
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Step 4: Generating → Polaroid Reveal */}
+            {ncStep===4 && (
+              <div className="nc-step-card" key="s4">
+                {!ncResult ? (
+                  <>
+                    <div style={{textAlign:"center",padding:"20px 0"}}>
+                      <div className="gen-orb" style={{width:60,height:60,marginBottom:14}} />
+                      <div className="nc-step-title">Creating your Night Card…</div>
+                      <div className="nc-step-sub">Weaving tonight's moments together</div>
+                    </div>
+                    {/* Generation triggered via effect below */}
+                  </>
+                ) : (
+                  <>
+                    {/* Polaroid Reveal */}
+                    <div className="polaroid">
+                      <div className="polaroid-photo">
+                        {ncPhoto ? (
+                          <img src={ncPhoto} alt="Tonight" />
+                        ) : (
+                          <div className="polaroid-emoji">{ncResult.emoji||"🌙"}</div>
+                        )}
+                      </div>
+                      <div className="polaroid-body">
+                        <div className="polaroid-headline">{ncResult.headline}</div>
+                        <div className="polaroid-quote">"{ncResult.quote}"</div>
+                        {ncResult.memory_line && (
+                          <div className="polaroid-memory">{ncResult.memory_line}</div>
+                        )}
+                        <div className="polaroid-meta">
+                          {book.heroName} · {book.title} · {new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
+                        </div>
+                        <div className="polaroid-brand">🌙 SleepSeed</div>
+                      </div>
+                    </div>
+
+                    {ncResult.reflection && (
+                      <div style={{textAlign:"center",marginTop:14,fontFamily:"'Kalam',cursive",
+                        fontSize:13,color:"rgba(200,180,255,.8)",fontStyle:"italic"}}>
+                        Whisper: "{ncResult.reflection}"
+                      </div>
+                    )}
+
+                    <div style={{display:"flex",gap:8,marginTop:16}}>
+                      <button className="btn" style={{flex:1}} onClick={async()=>{
+                        try {
+                          await saveNightCard({
+                            heroName:book.heroName, storyTitle:book.title,
+                            refrain:book.refrain||"",
+                            bondingQ:ncBondingQ, bondingA:ncBondingA,
+                            gratitude:ncGratitude, extra:ncExtra,
+                            photo:ncPhoto,
+                            ...ncResult,
+                          });
+                        } catch(_) {}
+                        setStage("home");
+                      }}>
+                        ✓ Save &amp; Done
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* MEMORIES LIBRARY */}
         {stage==="memories" && (
           <div className="screen">
@@ -3718,6 +3993,11 @@ Write a Night Card — a short, beautiful keepsake for this night. Return ONLY t
                           transition:"transform .15s"}}
                         onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
                         onMouseLeave={e=>(e.currentTarget.style.transform="none")}>
+                        {nc.photo && (
+                          <div style={{height:120,overflow:"hidden"}}>
+                            <img src={nc.photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                          </div>
+                        )}
                         <div style={{padding:"14px 15px",display:"flex",gap:12,alignItems:"flex-start"}}>
                           <div style={{fontSize:28,flexShrink:0,lineHeight:1}}>{nc.emoji||"🌙"}</div>
                           <div style={{flex:1,minWidth:0}}>
@@ -3727,6 +4007,12 @@ Write a Night Card — a short, beautiful keepsake for this night. Return ONLY t
                               color:"rgba(240,220,160,.75)",lineHeight:1.6,marginBottom:4}}>
                               "{nc.quote}"
                             </div>
+                            {nc.memory_line && (
+                              <div style={{fontFamily:"'Kalam',cursive",fontSize:11,
+                                color:"rgba(200,180,255,.7)",lineHeight:1.5,marginBottom:4}}>
+                                {nc.memory_line}
+                              </div>
+                            )}
                             <div style={{fontSize:9,color:"var(--dimmer)"}}>
                               {nc.heroName} · {nc.storyTitle} · {nc.date}
                             </div>
