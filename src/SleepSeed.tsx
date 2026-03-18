@@ -1892,24 +1892,23 @@ export default function SleepSeed() {
     if(stage!=="nightcard" || ncStep!==4 || ncGenerating || ncResult) return;
     setNcGenerating(true);
     const name = book?.heroName||"";
-    const ncPrompt = `A child named ${name} just finished a bedtime story called "${book?.title||""}".
-Refrain: "${book?.refrain||""}"
-${book?.parentNote ? `Parent note: ${book.parentNote}` : ""}
+    // Build bonding context — only include fields that have content
+    const bondingParts = [];
+    if(ncBondingQ && ncBondingA.trim()) bondingParts.push(`Asked "${ncBondingQ}" — ${name} said: "${ncBondingA.trim()}"`);
+    if(ncGratitude.trim()) bondingParts.push(`Best moment: "${ncGratitude.trim()}"`);
+    if(ncExtra.trim()) bondingParts.push(`Note: "${ncExtra.trim()}"`);
+    const bondingCtx = bondingParts.length ? `\nTonight: ${bondingParts.join(". ")}` : "";
 
-Tonight's bonding moments:
-${ncBondingQ && ncBondingA.trim() ? `- Question: "${ncBondingQ}" — ${name} said: "${ncBondingA.trim()}"` : ""}
-${ncGratitude.trim() ? `- Best three seconds: "${ncGratitude.trim()}"` : ""}
-${ncExtra.trim() ? `- Extra note: "${ncExtra.trim()}"` : ""}
+    const ncPrompt = `Night Card for ${name} after "${book?.title||""}". Refrain: "${book?.refrain||""}"${bondingCtx}
 
-Write a Night Card keepsake. Return ONLY this JSON:
-{"headline":"A tender 3-6 word headline for tonight (captures this specific night's feeling, not the story title)","quote":"The most beautiful or funny sentence from the refrain or story. 8-15 words.","memory_line":"A single warm sentence weaving the child's own words or tonight's real moments into a keepsake. Use what they actually said if available. Under 20 words.","reflection":"One gentle whispered question for the child right now. Under 12 words.","emoji":"One emoji capturing tonight's mood"}`;
+Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the title)","quote":"best line from the story refrain, 8-15 words","memory_line":"one warm sentence weaving the child's real words into a keepsake, under 20 words${ncBondingA.trim() ? ` — must include something ${name} actually said` : ""}","reflection":"whispered bedtime question, under 12 words","emoji":"one emoji"}`;
     const fallback = {
       headline:`A night with ${name}`,quote:book?.refrain||book?.title||"",
       memory_line:ncGratitude.trim()||ncBondingA.trim()||`A story just for ${name}.`,
       reflection:"What will you dream about tonight?",emoji:"🌙",
     };
     callClaude([{role:"user",content:ncPrompt}],
-      "You create beautiful Night Card keepsakes. Weave real bonding moments into warm, specific mementos. Never generic. Always use the child's actual words when available.", 400
+      "Write Night Card keepsakes. Weave real bonding moments — the child's actual words — into warm, specific mementos. Be concise. Return only JSON.", 300
     ).then(raw => { try { setNcResult(extractJSON(raw)); } catch(_) { setNcResult(fallback); } })
      .catch(() => setNcResult(fallback));
   },[stage,ncStep,ncGenerating,ncResult]);
@@ -3358,16 +3357,34 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               <div className="plabel" style={{marginBottom:12}}>{gen.progress}%</div>
 
               {/* Bonding question card — visible during writing step */}
-              {gen.stepIdx <= 1 && ncBondingQ && (
-                <div style={{background:"rgba(160,120,255,.08)",border:"1px solid rgba(160,120,255,.2)",
-                  borderRadius:12,padding:"11px 13px",marginBottom:12}}>
+              {gen.stepIdx <= 2 && ncBondingQ && (
+                <div style={{background:"rgba(160,120,255,.06)",border:"1px solid rgba(160,120,255,.18)",
+                  borderRadius:14,padding:"13px 15px",marginBottom:12}}>
                   <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
-                    color:"rgba(160,120,255,.65)",marginBottom:5}}>While you wait…</div>
+                    color:"rgba(160,120,255,.55)",marginBottom:6}}>While you wait…</div>
                   <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
-                    color:"rgba(210,200,245,.88)",lineHeight:1.75}}>
+                    color:"rgba(210,200,245,.88)",lineHeight:1.75,marginBottom:10}}>
                     Snuggle in close and ask{" "}
                     <span style={{color:"var(--gold2)",fontWeight:700}}>{heroName}</span>:{" "}
                     <span style={{color:"#c0a8ff"}}>"{ncBondingQ}"</span>
+                  </div>
+                  <div style={{position:"relative"}}>
+                    <textarea
+                      className="ftarea"
+                      placeholder={`What did ${heroName} say? (for the Night Card)`}
+                      value={ncBondingA}
+                      onChange={e=>setNcBondingA(e.target.value)}
+                      style={{minHeight:48,fontSize:13,background:"rgba(255,255,255,.04)",
+                        border:"1px solid rgba(160,120,255,.15)",borderRadius:10,
+                        padding:"10px 12px",color:"var(--cream)",
+                        fontFamily:"'Kalam',cursive",lineHeight:1.6,resize:"none"}}
+                    />
+                    {!ncBondingA.trim() && (
+                      <div style={{position:"absolute",bottom:8,right:10,fontSize:9,
+                        color:"rgba(160,120,255,.4)",fontWeight:700,pointerEvents:"none"}}>
+                        optional — saves to Night Card
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -3993,41 +4010,42 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                           transition:"transform .15s"}}
                         onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
                         onMouseLeave={e=>(e.currentTarget.style.transform="none")}>
-                        {nc.photo && (
-                          <div style={{height:120,overflow:"hidden"}}>
-                            <img src={nc.photo} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                        <div style={{display:"flex",gap:0,alignItems:"stretch"}}>
+                          {/* Photo / emoji thumbnail — Polaroid mini */}
+                          <div style={{width:nc.photo?100:56,flexShrink:0,
+                            background:nc.photo?"#faf8f2":"linear-gradient(135deg,rgba(212,160,48,.08),rgba(20,15,40,.6))",
+                            display:"flex",alignItems:"center",justifyContent:"center",
+                            padding:nc.photo?"6px 6px 10px 6px":"0"}}>
+                            {nc.photo ? (
+                              <img src={nc.photo} alt="" style={{width:"100%",borderRadius:2,
+                                boxShadow:"0 1px 4px rgba(0,0,0,.15)"}} />
+                            ) : (
+                              <div style={{fontSize:32,lineHeight:1}}>{nc.emoji||"🌙"}</div>
+                            )}
                           </div>
-                        )}
-                        <div style={{padding:"14px 15px",display:"flex",gap:12,alignItems:"flex-start"}}>
-                          <div style={{fontSize:28,flexShrink:0,lineHeight:1}}>{nc.emoji||"🌙"}</div>
-                          <div style={{flex:1,minWidth:0}}>
-                            <div style={{fontFamily:"'Fraunces',serif",fontSize:14,fontWeight:700,fontStyle:"italic",
-                              color:"var(--gold3)",lineHeight:1.3,marginBottom:3}}>{nc.headline}</div>
+                          {/* Card text */}
+                          <div style={{flex:1,minWidth:0,padding:"12px 13px 12px 14px",display:"flex",flexDirection:"column",gap:3}}>
+                            <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:8}}>
+                              <div style={{fontFamily:"'Fraunces',serif",fontSize:14,fontWeight:700,fontStyle:"italic",
+                                color:"var(--gold3)",lineHeight:1.3}}>{nc.headline}</div>
+                              <button className="btn-danger" style={{flexShrink:0,marginTop:1}}
+                                onClick={e=>{ e.stopPropagation(); deleteNightCard(nc.id); }}>✕</button>
+                            </div>
                             <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontStyle:"italic",
-                              color:"rgba(240,220,160,.75)",lineHeight:1.6,marginBottom:4}}>
+                              color:"rgba(240,220,160,.75)",lineHeight:1.5}}>
                               "{nc.quote}"
                             </div>
                             {nc.memory_line && (
                               <div style={{fontFamily:"'Kalam',cursive",fontSize:11,
-                                color:"rgba(200,180,255,.7)",lineHeight:1.5,marginBottom:4}}>
+                                color:"rgba(200,180,255,.65)",lineHeight:1.4}}>
                                 {nc.memory_line}
                               </div>
                             )}
-                            <div style={{fontSize:9,color:"var(--dimmer)"}}>
+                            <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>
                               {nc.heroName} · {nc.storyTitle} · {nc.date}
                             </div>
                           </div>
-                          <button className="btn-danger" style={{flexShrink:0}}
-                            onClick={e=>{ e.stopPropagation(); deleteNightCard(nc.id); }}>✕</button>
                         </div>
-                        {nc.reflection && (
-                          <div style={{background:"rgba(160,120,255,.05)",padding:"8px 15px",
-                            borderTop:"1px solid rgba(160,120,255,.1)",
-                            fontFamily:"'Kalam',cursive",fontSize:11,
-                            color:"rgba(200,180,255,.7)",lineHeight:1.5}}>
-                            Whisper: {nc.reflection}
-                          </div>
-                        )}
                       </div>
                     ))}
                     <button className="btn-ghost" style={{marginTop:4,fontSize:12}} onClick={()=>setStage("home")}>
