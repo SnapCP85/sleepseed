@@ -1483,6 +1483,7 @@ export default function SleepSeed({
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareLink,      setShareLink]      = useState("");
   const [shareCopied,    setShareCopied]    = useState(false);
+  const [shareIncludeNC, setShareIncludeNC] = useState(true);
   const [saveToast,      setSaveToast]      = useState(false);
   const [isListening,    setIsListening]    = useState(false);
   const [hasSeenOnboard, setHasSeenOnboard] = useState(false);
@@ -1810,9 +1811,9 @@ export default function SleepSeed({
   };
 
   // ── Generate share link for grandma / anyone ───────────────────────────
-  const generateShareLink = () => {
+  const generateShareLink = (includeNC = true) => {
     if (!book) return "";
-    const storyData = {
+    const storyData: any = {
       t: book.title,
       n: book.heroName,
       r: book.refrain || "",
@@ -1821,6 +1822,19 @@ export default function SleepSeed({
       v: voiceId || selectedVoiceId || "",
       d: new Date().toISOString().split("T")[0],
     };
+    if (includeNC && book.nightCard) {
+      storyData.nc = {
+        h: book.nightCard.headline || "",
+        q: book.nightCard.quote || "",
+        m: book.nightCard.memory_line || "",
+        e: book.nightCard.emoji || "",
+        ph: book.nightCard.photo || "",
+        ba: book.nightCard.bondingA || "",
+        bq: book.nightCard.bondingQ || "",
+        gr: book.nightCard.gratitude || "",
+        ex: book.nightCard.extra || "",
+      };
+    }
     try {
       const encoded = btoa(encodeURIComponent(JSON.stringify(storyData)));
       return `${window.location.origin}?s=${encoded}`;
@@ -1832,7 +1846,8 @@ export default function SleepSeed({
   // ── Open share modal ───────────────────────────────────────────────────
   const shareStory = async () => {
     if (!book) return;
-    const link = generateShareLink();
+    setShareIncludeNC(!!book.nightCard);
+    const link = generateShareLink(!!book.nightCard);
     setShareLink(link);
     setShareCopied(false);
     setShowShareModal(true);
@@ -3447,7 +3462,74 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
             </div>
             {showVoicePicker&&(<div className="vc-modal" onClick={e=>{if(e.target===e.currentTarget)setShowVoicePicker(false);}}><div className="vc-card" style={{maxHeight:"80vh",overflowY:"auto"}}><div className="vc-title">🎤 Choose a Voice</div><div className="vc-sub">Who reads tonight's story?</div><div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:8}}>Narrators</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:14}}>{PRESET_VOICES.map(v=>(<button key={v.id} style={{padding:"10px",borderRadius:11,cursor:"pointer",textAlign:"left",border:`1.5px solid ${selectedVoiceId===v.id?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,background:selectedVoiceId===v.id?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",transition:"all .15s"}} onClick={()=>{setSelectedVoiceId(selectedVoiceId===v.id?null:v.id);}}><div style={{fontSize:16,marginBottom:3}}>{v.emoji}</div><div style={{fontSize:12,fontWeight:700,color:selectedVoiceId===v.id?"var(--gold2)":"var(--cream)"}}>{v.name}</div><div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>{v.desc}</div></button>))}</div><div style={{height:1,background:"rgba(255,255,255,.08)",marginBottom:14}}/><div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:8}}>Your Own Voice</div><button style={{width:"100%",padding:"12px 14px",borderRadius:11,cursor:"pointer",textAlign:"left",border:`1.5px solid ${voiceId?"rgba(76,200,144,.5)":"rgba(255,255,255,.1)"}`,background:voiceId?"rgba(76,200,144,.08)":"rgba(255,255,255,.04)",marginBottom:14}} onClick={()=>{setShowVoicePicker(false);setVcStage(voiceId?"ready":"idle");setShowVcModal(true);}}><div style={{display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:22}}>🎙️</span><div><div style={{fontSize:12,fontWeight:700,color:voiceId?"#80d8a8":"var(--cream)"}}>{voiceId?"My Voice ✓":"Record My Voice"}</div><div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>{voiceId?"Tap to manage":"Clone your voice in 45 seconds"}</div></div></div></button><div style={{display:"flex",gap:8}}>{(selectedVoiceId||voiceId)&&(<button className="btn-ghost" style={{flex:1,fontSize:12,padding:10}} onClick={()=>{setSelectedVoiceId(null);}}>🔇 No Voice</button>)}<button className="btn" style={{flex:2,padding:11,fontSize:14}} onClick={()=>setShowVoicePicker(false)}>Done ✓</button></div></div></div>)}
             {showVcModal&&(<div className="vc-modal" onClick={e=>{if(e.target===e.currentTarget){cancelRecording();setShowVcModal(false);} }}><div className="vc-card"><div className="vc-title">🎤 Use Your Voice</div><div className="vc-sub">Read the script below — SleepSeed learns your voice. ✨</div>{(vcStage==="idle"||vcStage==="error"||vcStage==="recording")&&(<><div className="vc-script-label">{vcStage==="recording"?"🔴 Recording — calm, warm pace:":"Read this aloud — warmly and clearly:"}</div><div className="vc-script">Once upon a time, in a land where the stars came out to play, a little child looked up at the sky and smiled. "Good evening," said the moon. "Are you ready for tonight's adventure?" And the child, heart full of wonder, whispered: "I'm always ready." So together they set off into the most magical night imaginable, where every shadow hid a friendly surprise, and every sound was the beginning of a brand new story.</div>{vcStage==="recording"?(<div style={{marginBottom:8}}><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}><div style={{fontSize:11,color:"var(--dim)"}}>{vcSeconds<15?"Keep going — aim for 30 seconds":vcSeconds<30?"Great! A little more…":"✓ Ready to stop"}</div><div style={{fontSize:22,fontFamily:"monospace",fontWeight:700,color:"var(--gold2)",letterSpacing:1}}>{String(Math.floor(vcSeconds/60)).padStart(2,"0")}:{String(vcSeconds%60).padStart(2,"0")}</div></div><div style={{height:4,background:"rgba(255,255,255,.08)",borderRadius:99,marginBottom:14,overflow:"hidden"}}><div style={{height:"100%",borderRadius:99,background:"var(--gold2)",width:`${Math.min(100,(vcSeconds/60)*100)}%`,transition:"width 1s linear"}}/></div><button className="btn" style={{marginBottom:8}} onClick={stopRecording}>⏹ Stop &amp; Use This Recording</button><button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={cancelRecording}>Cancel</button></div>):(<><div style={{fontSize:11,color:"var(--dim)",marginBottom:14,lineHeight:1.6}}>🎧 <strong style={{color:"var(--cream)"}}>Tips:</strong> Quiet room · calm bedtime pace · 30–60 seconds</div>{vcError&&<div style={{fontSize:11,color:"#f09080",marginBottom:10,lineHeight:1.5}}>{vcError}</div>}<button className="btn" style={{marginBottom:8}} onClick={startRecording}>🔴 Start Recording</button>{voiceId&&(<button className="btn-ghost" style={{width:"100%",fontSize:12,marginBottom:8}} onClick={resetVoice}>🗑 Remove current voice</button>)}<button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={()=>setShowVcModal(false)}>Close</button></>)}</>)}{vcStage==="uploading"&&(<div style={{textAlign:"center",padding:"24px 0"}}><div style={{fontSize:36,marginBottom:12}}>✨</div><div className="vc-status">Learning your voice…</div><div style={{fontSize:11,color:"var(--dimmer)",marginTop:6}}>This takes about 15 seconds</div></div>)}{vcStage==="ready"&&(<><div style={{textAlign:"center",padding:"16px 0 12px"}}><div style={{fontSize:40,marginBottom:8}}>🎉</div><div className="vc-status" style={{color:"var(--green2)"}}>Your voice is ready!</div><div style={{fontSize:11,color:"var(--dim)",marginTop:6}}>Every story will now be narrated in your voice.</div></div><div style={{display:"flex",gap:8}}><button className="btn" style={{flex:1,padding:11,fontSize:14}} onClick={()=>setShowVcModal(false)}>Done ✓</button><button className="btn-ghost" style={{flex:1,padding:11,fontSize:13}} onClick={()=>{setVcStage("idle");setVcSeconds(0);}}>Re-record</button></div><button className="btn-ghost" style={{width:"100%",fontSize:12,marginTop:8}} onClick={resetVoice}>🗑 Remove voice</button></>)}</div></div>)}
-            {showShareModal&&(<div className="share-modal-bg" onClick={e=>{if(e.target===e.currentTarget)setShowShareModal(false);}}><div className="share-modal"><div className="share-modal-title">Share tonight's story</div><div className="share-modal-sub">Send it to anyone — they don't need an account.</div><div style={{marginBottom:4}}><div className="share-option" style={{cursor:"default"}}><div className="share-option-icon" style={{background:"rgba(232,151,42,.1)"}}>👵</div><div className="share-option-info"><div className="share-option-h">Send to Grandma (or anyone)</div><div className="share-option-sub">{(voiceId||selectedVoiceId)?"They can read and listen — no account needed":"They can read the full story — no account needed"}</div></div></div><div className="share-link-row"><input id="share-link-input" className="share-link-input" readOnly value={shareLink} onClick={e=>(e.target as HTMLInputElement).select()}/><button className={`share-link-copy${shareCopied?" copied":""}`} onClick={copyShareLink}>{shareCopied?"✓ Copied!":"Copy link"}</button></div></div><button className="share-option" onClick={()=>{setShowShareModal(false);shareSocialCard();}}><div className="share-option-icon" style={{background:"rgba(96,165,250,.08)"}}>📱</div><div className="share-option-info"><div className="share-option-h">Share to Stories</div><div className="share-option-sub">Beautiful 9:16 card for Instagram or WhatsApp</div></div><div style={{fontSize:11,color:"rgba(244,239,232,.25)"}}>›</div></button><button className="share-option" onClick={()=>{setShowShareModal(false);downloadStory();}}><div className="share-option-icon" style={{background:"rgba(76,200,144,.07)"}}>📄</div><div className="share-option-info"><div className="share-option-h">Download as PDF</div><div className="share-option-sub">A printable picture book</div></div><div style={{fontSize:11,color:"rgba(244,239,232,.25)"}}>›</div></button><button className="share-dismiss" onClick={()=>setShowShareModal(false)}>Close</button></div></div>)}
+            {showShareModal&&(
+              <div className="share-modal-bg" onClick={e=>{if(e.target===e.currentTarget)setShowShareModal(false);}}>
+                <div className="share-modal">
+                  <div className="share-modal-title">Share tonight's story</div>
+                  <div className="share-modal-sub">Send it to anyone — they don't need an account.</div>
+
+                  {/* Night Card toggle */}
+                  {book.nightCard && (
+                    <label style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",marginBottom:14,
+                      borderRadius:12,cursor:"pointer",transition:"all .2s",
+                      border:`1px solid ${shareIncludeNC?"rgba(232,151,42,.3)":"rgba(255,255,255,.08)"}`,
+                      background:shareIncludeNC?"rgba(232,151,42,.06)":"rgba(255,255,255,.02)"}}
+                      onClick={()=>{
+                        const next = !shareIncludeNC;
+                        setShareIncludeNC(next);
+                        setShareLink(generateShareLink(next));
+                        setShareCopied(false);
+                      }}>
+                      <div style={{width:20,height:20,borderRadius:5,flexShrink:0,
+                        border:`1.5px solid ${shareIncludeNC?"var(--amber,#E8972A)":"rgba(255,255,255,.2)"}`,
+                        background:shareIncludeNC?"var(--amber,#E8972A)":"transparent",
+                        display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s"}}>
+                        {shareIncludeNC && <span style={{color:"#1A1420",fontSize:13,fontWeight:700}}>✓</span>}
+                      </div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:13,fontWeight:600,color:shareIncludeNC?"var(--cream)":"rgba(244,239,232,.5)"}}>
+                          🌙 Include tonight's Night Card
+                        </div>
+                        <div style={{fontSize:10,color:"rgba(244,239,232,.3)",marginTop:1}}>
+                          Share the bonding moment, photo, and answers alongside the story
+                        </div>
+                      </div>
+                    </label>
+                  )}
+
+                  <div style={{marginBottom:4}}>
+                    <div className="share-option" style={{cursor:"default"}}>
+                      <div className="share-option-icon" style={{background:"rgba(232,151,42,.1)"}}>👵</div>
+                      <div className="share-option-info">
+                        <div className="share-option-h">Send to Grandma (or anyone)</div>
+                        <div className="share-option-sub">{(voiceId||selectedVoiceId)?"They can read and listen — no account needed":"They can read the full story — no account needed"}</div>
+                      </div>
+                    </div>
+                    <div className="share-link-row">
+                      <input id="share-link-input" className="share-link-input" readOnly value={shareLink} onClick={e=>(e.target as HTMLInputElement).select()}/>
+                      <button className={`share-link-copy${shareCopied?" copied":""}`} onClick={copyShareLink}>{shareCopied?"✓ Copied!":"Copy link"}</button>
+                    </div>
+                  </div>
+                  <button className="share-option" onClick={()=>{setShowShareModal(false);shareSocialCard();}}>
+                    <div className="share-option-icon" style={{background:"rgba(96,165,250,.08)"}}>📱</div>
+                    <div className="share-option-info">
+                      <div className="share-option-h">Share to Stories</div>
+                      <div className="share-option-sub">Beautiful 9:16 card for Instagram or WhatsApp</div>
+                    </div>
+                    <div style={{fontSize:11,color:"rgba(244,239,232,.25)"}}>›</div>
+                  </button>
+                  <button className="share-option" onClick={()=>{setShowShareModal(false);downloadStory();}}>
+                    <div className="share-option-icon" style={{background:"rgba(76,200,144,.07)"}}>📄</div>
+                    <div className="share-option-info">
+                      <div className="share-option-h">Download as PDF</div>
+                      <div className="share-option-sub">A printable picture book</div>
+                    </div>
+                    <div style={{fontSize:11,color:"rgba(244,239,232,.25)"}}>›</div>
+                  </button>
+                  <button className="share-dismiss" onClick={()=>setShowShareModal(false)}>Close</button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
