@@ -760,6 +760,8 @@ const extractJSON = (text) => {
 
 /* ── Storage ── */
 const S_PFX = "ss9_";
+// Helper to get user-scoped storage key (falls back to shared if no userId)
+const userKey = (k: string, uid?: string) => uid ? `ss2_u${uid}_${k}` : S_PFX + k;
 const sGet = async (k) => { try { const v=localStorage.getItem(S_PFX+k); return v?JSON.parse(v):null; } catch { return null; } };
 const sSet = async (k,v) => { try { localStorage.setItem(S_PFX+k,JSON.stringify(v)); } catch {} };
 const sDel = async (k) => { try { localStorage.removeItem(S_PFX+k); } catch {} };
@@ -1258,7 +1260,21 @@ const MiniGenderPills = ({value,onChange}) => (
 /* ══════════════════════════════════════════════════════════════
    MAIN COMPONENT
 ══════════════════════════════════════════════════════════════ */
-export default function SleepSeed() {
+interface SleepSeedCoreProps {
+  userId?: string;
+  isGuest?: boolean;
+  preloadedCharacter?: any;
+  onCharacterSavePrompt?: (charData: any) => void;
+  onStoryReady?: (storyData: any) => void;
+}
+
+export default function SleepSeed({
+  userId,
+  isGuest = false,
+  preloadedCharacter,
+  onCharacterSavePrompt,
+  onStoryReady,
+}: SleepSeedCoreProps = {}) {
   const [stage,          setStage]          = useState("home");
   const [heroName,       setHeroName]       = useState("");
   const [heroGender,     setHeroGender]     = useState("");
@@ -1358,6 +1374,21 @@ export default function SleepSeed() {
     sGet("onboarded").then(s => { if(s?.v) setHasSeenOnboard(true); });
 
   },[]);
+
+  // Pre-populate from a saved character when passed in from the dashboard
+  useEffect(() => {
+    if (!preloadedCharacter) return;
+    const c = preloadedCharacter;
+    if (c.name)          setHeroName(c.name);
+    if (c.pronouns) {
+      if (c.pronouns === 'she/her')  setHeroGender('girl');
+      else if (c.pronouns === 'he/him') setHeroGender('boy');
+      else setHeroGender('');
+    }
+    if (c.ageDescription) setHeroClassify(c.ageDescription);
+    if (c.currentSituation) setStoryContext(c.currentSituation);
+    if (c.weirdDetail) setStoryGuidance(c.weirdDetail);
+  }, [preloadedCharacter]);
 
 
   useEffect(() => {
@@ -1940,11 +1971,27 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
   const saveMemory = useCallback(async (bookData) => {
     const occ = occasionCustom || occasion;
     const entry = {id:uid(),title:bookData.title,heroName:bookData.heroName,
-      date:new Date().toISOString().split("T")[0],occasion:occ,bookData};
+      date:new Date().toISOString().split("T")[0],occasion:occ,bookData,
+      characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
+      refrain: bookData.refrain || ""};
     const next = [entry,...memories];
     setMemories(next);
     await sSet("memories",{items:next});
-  },[memories,occasion,occasionCustom]);
+    // Also mirror to v2 user-scoped storage so UserDashboard can read it
+    if (userId) {
+      try {
+        const v2Key = `ss2_stories_${userId}`;
+        const existing = JSON.parse(localStorage.getItem(v2Key) || "[]");
+        const v2Entry = {
+          id: entry.id, userId, title: entry.title,
+          heroName: entry.heroName, characterIds: entry.characterIds,
+          refrain: entry.refrain, date: entry.date,
+          occasion: occ, bookData
+        };
+        localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
+      } catch(_) {}
+    }
+  },[memories,occasion,occasionCustom,userId,preloadedCharacter]);
 
   const deleteMemory = useCallback(async (id) => {
     const next = memories.filter(m => m.id!==id);
@@ -1957,8 +2004,32 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     const next = [entry,...nightCards];
     setNightCards(next);
     await sSet("nightcards",{items:next});
+    // Mirror to v2 user-scoped storage
+    if (userId) {
+      try {
+        const v2Key = `ss2_nightcards_${userId}`;
+        const existing = JSON.parse(localStorage.getItem(v2Key) || "[]");
+        const v2Entry = {
+          id: entry.id, userId,
+          heroName: entry.heroName || cardData.heroName || "",
+          storyTitle: entry.storyTitle || "",
+          characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
+          headline: entry.headline || "",
+          quote: entry.quote || cardData.bondingA || "",
+          memory_line: entry.memory_line || "",
+          bondingQuestion: entry.bondingQ || "",
+          bondingAnswer: entry.bondingA || "",
+          gratitude: entry.gratitudeA || "",
+          extra: entry.extraA || "",
+          photo: entry.photo || null,
+          emoji: entry.emoji || "🌙",
+          date: entry.date
+        };
+        localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
+      } catch(_) {}
+    }
     return entry;
-  },[nightCards]);
+  },[nightCards,userId,preloadedCharacter]);
 
   const deleteNightCard = useCallback(async (id) => {
     const next = nightCards.filter(c => c.id!==id);
