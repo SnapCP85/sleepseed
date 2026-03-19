@@ -3093,7 +3093,9 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
               <div style={{marginBottom:16}}>
                 <div className="nb-label">Who else is in the story?</div>
-                {savedCharsBuilder.length > 0 && (
+
+                {/* Saved characters as toggleable chips */}
+                {savedCharsBuilder.filter((c: any) => c.name !== heroName).length > 0 && (
                   <div className="nb-char-strip" style={{marginBottom:10}}>
                     {savedCharsBuilder.filter((c: any) => c.name !== heroName).slice(0,5).map((c: any) => {
                       const isIn = extraChars.some(ec => ec.name === c.name);
@@ -3110,25 +3112,19 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                         </div>
                       );
                     })}
-                    {extraChars.length < 4 && (
-                      <div className="nb-char-chip" onClick={addExtraChar}>
-                        <div className="nb-char-av nb-char-av-add">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="rgba(232,151,42,.55)" strokeWidth="1.8" strokeLinecap="round"/></svg>
-                        </div>
-                        <div className="nb-char-nm">Add new</div>
-                      </div>
-                    )}
                   </div>
                 )}
-                {extraChars.length > 0 && savedCharsBuilder.length === 0 && (
-                  <div className="char-simple-list">
-                    {extraChars.map(c => (
+
+                {/* Inline-added characters (editable rows) */}
+                {extraChars.filter(c => !savedCharsBuilder.some((sc: any) => sc.name === c.name)).length > 0 && (
+                  <div className="char-simple-list" style={{marginBottom:10}}>
+                    {extraChars.filter(c => !savedCharsBuilder.some((sc: any) => sc.name === c.name)).map(c => (
                       <div className="char-simple-row" key={c.id}>
                         <div className="char-photo" style={{width:34,height:34,fontSize:16,borderRadius:8,flexShrink:0}} onClick={()=>pickPhoto(c.id)}>
                           {c.photo ? <img src={c.photo.preview} alt={c.name} /> : <span>{CHAR_ICONS[c.type]||"👫"}</span>}
                         </div>
                         <div style={{display:"flex",flexDirection:"column",gap:4,flex:1}}>
-                          <input className="char-name-in" placeholder={`${CHAR_TYPES.find(t=>t.value===c.type)?.label||"Friend"}'s name…`}
+                          <input className="char-name-in" placeholder="Character name…"
                             value={c.name} maxLength={16} onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
                           <input className="char-name-in" placeholder={`Tell me about ${c.name||"them"}…`}
                             value={c.note||""} maxLength={80} style={{fontSize:10,opacity:.85}}
@@ -3139,11 +3135,13 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                     ))}
                   </div>
                 )}
-                {savedCharsBuilder.length === 0 && extraChars.length < 4 && (
-                  <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:8}}>
+
+                {/* Add character button — always shown if under limit */}
+                {extraChars.length < 4 && (
+                  <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:extraChars.length > 0 || savedCharsBuilder.filter((c: any) => c.name !== heroName).length > 0 ? 0 : 4}}>
                     {CHAR_TYPES.map(t => (
                       <button key={t.value} className="char-add-pill"
-                        onClick={()=>setExtraChars(cs=>[...cs,{...{id:uid(),type:"friend",name:"",photo:null,classify:"",gender:"",note:""},type:t.value}])}>
+                        onClick={()=>setExtraChars(cs=>[...cs,{id:uid(),type:t.value,name:"",photo:null,classify:"",gender:"",note:""}])}>
                         <span className="char-add-pill-icon">{t.icon}</span><span>+ {t.label}</span>
                       </button>
                     ))}
@@ -3191,7 +3189,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 <div className="nb-label">Settings</div>
                 <div style={{display:"flex",flexDirection:"column",gap:10}}>
                   <div>
-                    <div style={{fontSize:8.5,fontFamily:"var(--mono2)",color:"rgba(244,239,232,.28)",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px"}}>Age</div>
+                    <div style={{fontSize:8.5,fontFamily:"var(--mono2)",color:"rgba(244,239,232,.28)",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px"}}>Reading Level</div>
                     <div className="nb-age-row">
                       {AGES.map(a => (
                         <button key={a.value} className={`nb-age-pill${ageGroup===a.value?" sel":""}`}
@@ -3213,11 +3211,30 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                   <div>
                     <div style={{fontSize:8.5,fontFamily:"var(--mono2)",color:"rgba(244,239,232,.28)",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px"}}>Style</div>
                     <div className="nb-setting-chips">
-                      {[{v:"standard",l:"Standard"},{v:"rhyming",l:"Rhyming"},{v:"mystery",l:"Mystery"},{v:"adventure",l:"Choose-your-path"}].map(o => (
+                      {[{v:"standard",l:"Standard"},{v:"rhyming",l:"Rhyming"},{v:"mystery",l:"Mystery"}].map(o => (
                         <button key={o.v} className={`nb-setting-chip${storyStyle===o.v?" sel":""}`}
                           onClick={()=>setStoryStyle(o.v)}>{o.l}</button>
                       ))}
                     </div>
+                  </div>
+                  <div style={{marginTop:4}}>
+                    <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer",padding:"10px 12px",
+                      borderRadius:11,border:`1px solid ${storyStyle==="adventure"?"rgba(232,151,42,.32)":"rgba(255,255,255,.08)"}`,
+                      background:storyStyle==="adventure"?"rgba(232,151,42,.09)":"rgba(255,255,255,.03)",transition:"all .2s"}}
+                      onClick={()=>setStoryStyle(storyStyle==="adventure"?"standard":"adventure")}>
+                      <div style={{width:18,height:18,borderRadius:4,border:`1.5px solid ${storyStyle==="adventure"?"var(--amber)":"rgba(255,255,255,.2)"}`,
+                        background:storyStyle==="adventure"?"var(--amber)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",
+                        flexShrink:0,marginTop:1,transition:"all .2s"}}>
+                        {storyStyle==="adventure" && <span style={{color:"#1A1420",fontSize:12,fontWeight:700}}>✓</span>}
+                      </div>
+                      <div>
+                        <div style={{fontSize:12,fontWeight:600,color:storyStyle==="adventure"?"var(--amber2)":"rgba(244,239,232,.55)",
+                          fontFamily:"var(--sans2)",marginBottom:2}}>🔀 Choose-Your-Path</div>
+                        <div style={{fontSize:10,color:"rgba(244,239,232,.3)",fontFamily:"var(--sans2)",lineHeight:1.5}}>
+                          Your child gets to choose options within the story — two paths, both end in sleep.
+                        </div>
+                      </div>
+                    </label>
                   </div>
                 </div>
               </div>
@@ -3231,9 +3248,9 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </div>
 
               <div style={{marginBottom:16}}>
-                <div className="nb-label">One weird detail about {heroName || "them"} <span style={{color:"rgba(244,239,232,.25)",fontSize:"8px",fontStyle:"italic",textTransform:"none",letterSpacing:0,marginLeft:4}}>optional but powerful</span></div>
+                <div className="nb-label">One interesting, quirky, or special detail about {heroName || "them"} <span style={{color:"rgba(244,239,232,.25)",fontSize:"8px",fontStyle:"italic",textTransform:"none",letterSpacing:0,marginLeft:4}}>optional but powerful</span></div>
                 <textarea className="nb-textarea"
-                  placeholder={`The one thing that makes ${heroName||"them"} uniquely themselves…`}
+                  placeholder={`Something that makes ${heroName||"them"} uniquely themselves… e.g. "keeps a list of every dog she's met in order of how much they understood her"`}
                   value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)}
                   maxLength={200} rows={2} />
               </div>
