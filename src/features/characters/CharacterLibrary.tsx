@@ -9,8 +9,8 @@ const CSS = `
 .cl{min-height:100vh;background:var(--night);font-family:var(--sans);color:#F4EFE8;-webkit-font-smoothing:antialiased}
 .cl-nav{display:flex;align-items:center;justify-content:space-between;padding:0 6%;height:64px;border-bottom:1px solid rgba(232,151,42,.1);background:rgba(13,16,24,.97);position:sticky;top:0;z-index:10;backdrop-filter:blur(16px)}
 .cl-nav-left{display:flex;align-items:center;gap:14px}
-.cl-back{background:transparent;border:none;color:rgba(244,239,232,.4);font-size:13px;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:6px;transition:color .15s}
-.cl-back:hover{color:rgba(244,239,232,.75)}
+.cl-back{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.14);color:rgba(244,239,232,.7);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:6px;transition:all .15s;padding:8px 16px;border-radius:50px}
+.cl-back:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);color:#F4EFE8}
 .cl-title{font-family:var(--serif);font-size:18px;font-weight:700;color:#F4EFE8}
 .cl-new-btn{background:var(--amber);color:var(--ink);border:none;border-radius:50px;padding:9px 22px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .2s}
 .cl-new-btn:hover{background:var(--amber2);transform:translateY(-1px)}

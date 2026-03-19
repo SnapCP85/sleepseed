@@ -9,8 +9,8 @@ const CSS = `
 .ncl{min-height:100vh;background:var(--night);font-family:var(--sans);color:#F4EFE8;-webkit-font-smoothing:antialiased}
 .ncl-nav{display:flex;align-items:center;justify-content:space-between;padding:0 6%;height:64px;border-bottom:1px solid rgba(232,151,42,.1);background:rgba(13,16,24,.97);position:sticky;top:0;z-index:10;backdrop-filter:blur(16px)}
 .ncl-nav-left{display:flex;align-items:center;gap:14px}
-.ncl-back{background:transparent;border:none;color:rgba(244,239,232,.4);font-size:13px;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:6px;transition:color .15s}
-.ncl-back:hover{color:rgba(244,239,232,.75)}
+.ncl-back{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.14);color:rgba(244,239,232,.7);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:6px;transition:all .15s;padding:8px 16px;border-radius:50px}
+.ncl-back:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);color:#F4EFE8}
 .ncl-title{font-family:var(--serif);font-size:18px;font-weight:700;color:#F4EFE8}
 .ncl-count{font-size:10px;color:rgba(244,239,232,.25);font-family:var(--mono);background:rgba(255,255,255,.04);padding:3px 9px;border-radius:50px;border:1px solid rgba(255,255,255,.06)}
 .ncl-inner{max-width:920px;margin:0 auto;padding:36px 24px}

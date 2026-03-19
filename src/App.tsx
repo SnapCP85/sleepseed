@@ -28,10 +28,13 @@ function AppInner() {
   // Shared story viewer — no auth required
   if (isSharedStory) return <SharedStoryViewer />;
 
+  const [preloadedBook, setPreloadedBook] = useState<any>(null);
+
   const goAuth = () => setView('auth');
   const goDashboard = () => setView('dashboard');
   const goStoryBuilder = (char?: Character) => {
     if (char) setSelectedCharacter(char);
+    setPreloadedBook(null);
     setView('story-builder');
   };
   const goCharacters = () => setView('characters');
@@ -39,6 +42,12 @@ function AppInner() {
   const goEditCharacter = (c: Character) => { setEditingCharacter(c); setView('character-builder'); };
   const goNightCards = () => setView('nightcard-library');
   const goStoryLibrary = () => setView('story-library');
+
+  // Fix 6: If user is signed in and lands on public homepage, go to dashboard
+  if (view === 'public' && user && !user.isGuest) {
+    setView('dashboard');
+    return null;
+  }
 
   if (view === 'public') return (
     <PublicHomepage
@@ -86,7 +95,7 @@ function AppInner() {
     <StoryLibrary
       userId={user!.id}
       onBack={goDashboard}
-      onReadStory={() => setView('story-builder')}
+      onReadStory={(bookData: any) => { setPreloadedBook(bookData); setView('story-builder'); }}
       onCreateStory={() => goStoryBuilder()}
     />
   );
@@ -136,6 +145,7 @@ function AppInner() {
           userId={user?.id}
           isGuest={user?.isGuest}
           preloadedCharacter={selectedCharacter}
+          preloadedBook={preloadedBook}
           onCharacterSavePrompt={() => {}}
           onStoryReady={() => {}}
         />

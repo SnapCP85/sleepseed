@@ -242,7 +242,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .story-txt-col::-webkit-scrollbar{width:3px}
 .story-txt-col::-webkit-scrollbar-thumb{background:rgba(90,56,10,.15);border-radius:99px}
 .s-pgnum{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:7px;flex-shrink:0}
-.s-text{font-family:'Patrick Hand',cursive;font-size:clamp(18px,3.8vw,20px);color:var(--ink);line-height:1.75;flex:1;min-height:0;overflow-y:auto}
+.s-text{font-family:'Patrick Hand',cursive;font-size:clamp(14px,3vw,16px);color:var(--ink);line-height:1.65;flex:1;min-height:0;overflow-y:auto}
 .s-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;flex-shrink:0}
 .orn{font-size:9px;color:rgba(90,56,10,.28);letter-spacing:4px}
 .orn-num{font-family:'Kalam',cursive;font-size:15px;color:rgba(90,56,10,.22)}
@@ -863,7 +863,8 @@ TONE: Intelligent, funny, and emotionally honest. Not condescending. The best mo
 
 BEDTIME GUARD: No matter how sophisticated the structure, this is still a bedtime story. The emotional complexity earns its place only if it resolves completely and lands in warmth and sleep. A 9-year-old reading this at 9pm should feel satisfied, seen, and sleepy — not stimulated or unsettled.`},
 ];
-const CHAR_ICONS = {hero:"⭐",friend:"👫",sibling:"👶",parent:"🧑‍🍼",pet:"🐾",toy:"🧸"};
+const CHAR_ICONS = {hero:"⭐",friend:"👫",sibling:"👶",parent:"🧑‍🍼",pet:"🐾",toy:"🧸"} as Record<string,string>;
+const FUN_ICONS = ["🧒","👧","👦","🧒🏽","👧🏾","👦🏻","🐶","🐱","🐰","🐻","🦁","🐸","🦊","🐧","🦄","🐲","🧸","🤖","👸","🤴","🧙","🧚","🦸","🌟","✨","💫"];
 const BONDING_QUESTIONS = [
   "If you could be any animal for one day, what would you be?",
   "What's the silliest dream you can remember?",
@@ -1455,6 +1456,7 @@ interface SleepSeedCoreProps {
   userId?: string;
   isGuest?: boolean;
   preloadedCharacter?: any;
+  preloadedBook?: any;
   onCharacterSavePrompt?: (charData: any) => void;
   onStoryReady?: (storyData: any) => void;
 }
@@ -1463,6 +1465,7 @@ export default function SleepSeed({
   userId,
   isGuest = false,
   preloadedCharacter,
+  preloadedBook,
   onCharacterSavePrompt,
   onStoryReady,
 }: SleepSeedCoreProps = {}) {
@@ -1595,6 +1598,16 @@ export default function SleepSeed({
     if (c.currentSituation) setStoryContext(c.currentSituation);
     if (c.weirdDetail) setStoryGuidance(c.weirdDetail);
   }, [preloadedCharacter]);
+
+  // Load a preloaded book (from story library re-read)
+  useEffect(() => {
+    if (!preloadedBook) return;
+    setBook(preloadedBook);
+    setPageIdx(0);
+    setChosenPath(null);
+    setFromCache(true);
+    setStage("book");
+  }, [preloadedBook]);
 
   // Select a saved character and populate hero fields
   const selectCharacter = useCallback((c: Character) => {
@@ -3253,18 +3266,33 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 {extraChars.filter(c => !savedCharsBuilder.some((sc: any) => sc.name === c.name)).length > 0 && (
                   <div className="char-simple-list" style={{marginBottom:10}}>
                     {extraChars.filter(c => !savedCharsBuilder.some((sc: any) => sc.name === c.name)).map(c => (
-                      <div className="char-simple-row" key={c.id}>
-                        <div className="char-photo" style={{width:34,height:34,fontSize:16,borderRadius:8,flexShrink:0}} onClick={()=>pickPhoto(c.id)}>
-                          {c.photo ? <img src={c.photo.preview} alt={c.name} /> : <span>{CHAR_ICONS[c.type]||"👫"}</span>}
+                      <div key={c.id}>
+                        <div className="char-simple-row">
+                          <div className="char-photo" style={{width:38,height:38,fontSize:18,borderRadius:10,flexShrink:0,cursor:"pointer"}} onClick={()=>pickPhoto(c.id)}>
+                            {c.photo ? <img src={c.photo.preview} alt={c.name} /> : <span>{(c as any).emoji || CHAR_ICONS[c.type]||"👫"}</span>}
+                          </div>
+                          <div style={{display:"flex",flexDirection:"column",gap:4,flex:1}}>
+                            <input className="char-name-in" placeholder="Character name…"
+                              value={c.name} maxLength={16} onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
+                            <input className="char-name-in" placeholder={`Tell me about ${c.name||"them"}…`}
+                              value={c.note||""} maxLength={80} style={{fontSize:10,opacity:.85}}
+                              onChange={e=>updateExtraChar(c.id,{note:e.target.value})} />
+                          </div>
+                          <button className="btn-danger" style={{flexShrink:0,alignSelf:"flex-start"}} onClick={()=>removeExtraChar(c.id)}>✕</button>
                         </div>
-                        <div style={{display:"flex",flexDirection:"column",gap:4,flex:1}}>
-                          <input className="char-name-in" placeholder="Character name…"
-                            value={c.name} maxLength={16} onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
-                          <input className="char-name-in" placeholder={`Tell me about ${c.name||"them"}…`}
-                            value={c.note||""} maxLength={80} style={{fontSize:10,opacity:.85}}
-                            onChange={e=>updateExtraChar(c.id,{note:e.target.value})} />
-                        </div>
-                        <button className="btn-danger" style={{flexShrink:0,alignSelf:"flex-start"}} onClick={()=>removeExtraChar(c.id)}>✕</button>
+                        {!c.photo && (
+                          <div style={{display:"flex",gap:4,flexWrap:"wrap",padding:"6px 0 4px",marginLeft:48}}>
+                            {FUN_ICONS.slice(0,14).map(e => (
+                              <div key={e} onClick={()=>updateExtraChar(c.id,{emoji:e} as any)}
+                                style={{width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",
+                                  fontSize:15,cursor:"pointer",transition:"all .15s",
+                                  border:(c as any).emoji===e?"1.5px solid rgba(212,160,48,.5)":"1px solid rgba(255,255,255,.06)",
+                                  background:(c as any).emoji===e?"rgba(212,160,48,.1)":"rgba(255,255,255,.03)"}}>
+                                {e}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
