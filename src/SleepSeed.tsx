@@ -2694,11 +2694,9 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 <div className="brand-tag">personalized bedtime books</div>
               </div>
               <div style={{marginLeft:"auto",display:"flex",gap:6}}>
-                {(memories.length>0 || nightCards.length>0) && (
-                  <button className="btn-ghost" style={{fontSize:11,padding:"6px 11px"}} onClick={()=>setStage("memories")}>
-                    📚 Memories
-                  </button>
-                )}
+                <button className="btn-ghost" style={{fontSize:11,padding:"6px 11px"}} onClick={()=>setStage("memories")}>
+                  📚 Memories
+                </button>
                 <button className="btn-ghost" style={{fontSize:11,padding:"6px 11px",
                   borderColor:"rgba(160,120,255,.25)",color:"rgba(160,120,255,.8)"}}
                   onClick={()=>setStage("library")}>
