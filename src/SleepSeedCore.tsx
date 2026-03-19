@@ -11,102 +11,102 @@ const CSS = `
 ${FONTS}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --night:#0B0B1A;--gold:#A855F7;--gold2:#C084FC;--gold3:#E9D5FF;
-  --cream:#F0EDE8;--parch:#F5EDD8;--ink:#1a1a2e;--ink2:#2E2E4A;--ink3:#5A5A7A;
-  --ui:#c4d0f0;--dim:rgba(240,237,232,.45);--dimmer:rgba(240,237,232,.25);--green2:#34D399;
+  --night:#060b18;--gold:#d4a030;--gold2:#f0cc60;--gold3:#fae9a8;
+  --cream:#fdf5e0;--parch:#f5e8c0;--ink:#261600;--ink2:#5a380a;--ink3:#8a5a1a;
+  --ui:#c4d0f0;--dim:#6070a0;--dimmer:#3a4878;--green2:#4cc890;
 }
-body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream);min-height:100vh;overflow-x:hidden}
+body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);min-height:100vh;overflow-x:hidden}
 .stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
 .star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d) ease-in-out infinite var(--dl)}
 @keyframes twinkle{0%,100%{opacity:var(--lo)}50%{opacity:var(--hi);transform:scale(1.4)}}
 .moon{position:fixed;top:40px;right:56px;z-index:1;width:68px;height:68px;border-radius:50%;
-  background:radial-gradient(circle at 34% 32%,#E9D5FF,#A855F7,#7C3AED);
-  box-shadow:0 0 40px 12px rgba(168,85,247,.15);animation:mfloat 9s ease-in-out infinite}
+  background:radial-gradient(circle at 34% 32%,#fdf0c0,#e2c050,#b07818);
+  box-shadow:0 0 40px 12px rgba(210,170,50,.2);animation:mfloat 9s ease-in-out infinite}
 @keyframes mfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
 .app{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px}
 .screen{width:100%;max-width:540px;animation:fup .5s cubic-bezier(.16,1,.3,1) both}
 @keyframes fup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-.card{background:linear-gradient(150deg,rgba(20,18,42,.85),rgba(14,14,34,.92));
-  border:1px solid rgba(168,85,247,.12);border-radius:22px;padding:26px;
+.card{background:linear-gradient(150deg,rgba(22,32,84,.72),rgba(11,18,42,.88));
+  border:1px solid rgba(212,160,48,.15);border-radius:22px;padding:26px;
   backdrop-filter:blur(20px);box-shadow:0 20px 64px rgba(0,0,0,.55)}
 .btn{width:100%;padding:15px;border:none;border-radius:14px;cursor:pointer;
-  background:linear-gradient(135deg,#7C3AED,#A855F7);color:white;
-  font-family:'Lora',serif;font-size:17px;font-weight:700;
-  box-shadow:0 4px 22px rgba(124,58,237,.35);transition:all .2s}
+  background:linear-gradient(135deg,#a87818,#d4a030,#b88820);color:#180e00;
+  font-family:'Fraunces',serif;font-size:18px;font-weight:700;
+  box-shadow:0 4px 22px rgba(170,130,30,.35);transition:all .2s}
 .btn:hover:not(:disabled){transform:translateY(-2px)}
 .btn:disabled{opacity:.35;cursor:not-allowed}
 .btn-ghost{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.14);color:var(--dim);
-  padding:9px 16px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+  padding:9px 16px;border-radius:10px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
 .btn-ghost:hover{border-color:rgba(255,255,255,.28);color:var(--cream)}
 .btn-danger{background:rgba(192,64,48,.12);border:1px solid rgba(192,64,48,.28);color:#f09080;
   padding:5px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer}
 .finput,.fselect{width:100%;padding:12px 16px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);
-  border-radius:12px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:all .2s;-webkit-appearance:none}
-.finput:focus,.fselect:focus{border-color:rgba(168,85,247,.55);background:rgba(168,85,247,.05)}
+  border-radius:12px;color:var(--cream);font-family:'Nunito',sans-serif;font-size:14px;outline:none;transition:all .2s;-webkit-appearance:none}
+.finput:focus,.fselect:focus{border-color:rgba(212,160,48,.55);background:rgba(212,160,48,.05)}
 .finput::placeholder{color:rgba(90,110,170,.4)}
-.fselect option,.fselect optgroup{background:#1a1a2e}
+.fselect option,.fselect optgroup{background:#19286a}
 .ftarea{width:100%;padding:11px 14px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);
-  border-radius:12px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;
+  border-radius:12px;color:var(--cream);font-family:'Nunito',sans-serif;font-size:13px;outline:none;
   transition:all .2s;resize:vertical;min-height:76px;line-height:1.6}
 .ftarea::placeholder{color:rgba(175,185,225,.7)}
-.ftarea:focus{border-color:rgba(168,85,247,.55)}
-.hero-input{font-size:22px;font-family:'Lora',serif;font-weight:600;padding:16px 20px;text-align:center;border-radius:16px}
+.ftarea:focus{border-color:rgba(212,160,48,.55)}
+.hero-input{font-size:22px;font-family:'Fraunces',serif;font-weight:600;padding:16px 20px;text-align:center;border-radius:16px}
 .hero-input::placeholder{font-size:18px;font-style:italic}
 .section-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
 .divider{height:1px;background:rgba(255,255,255,.07);border-radius:99px}
 .gender-row{display:flex;gap:8px;justify-content:center;margin-bottom:18px}
 .gender-pill{padding:8px 20px;border-radius:99px;font-size:13px;font-weight:700;cursor:pointer;
-  border:1.5px solid rgba(255,255,255,.13);color:var(--dim);background:transparent;font-family:'DM Sans',sans-serif;transition:all .2s}
-.gender-pill.sel-any{background:rgba(168,85,247,.12);border-color:var(--gold2);color:var(--gold2)}
+  border:1.5px solid rgba(255,255,255,.13);color:var(--dim);background:transparent;font-family:'Nunito',sans-serif;transition:all .2s}
+.gender-pill.sel-any{background:rgba(212,160,48,.12);border-color:var(--gold2);color:var(--gold2)}
 .gender-pill.sel-girl{background:rgba(220,100,160,.15);border-color:rgba(220,100,160,.55);color:#f4b8d4}
 .gender-pill.sel-boy{background:rgba(80,140,220,.15);border-color:rgba(80,140,220,.55);color:#b8d0f8}
 .theme-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
 .theme-btn{padding:12px 6px;border-radius:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;
-  border:2px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);transition:all .2s;font-family:'DM Sans',sans-serif}
+  border:2px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);transition:all .2s;font-family:'Nunito',sans-serif}
 .theme-btn:hover{background:rgba(255,255,255,.09)}
-.theme-btn.sel{background:rgba(168,85,247,.14);border-color:var(--gold2)}
+.theme-btn.sel{background:rgba(212,160,48,.14);border-color:var(--gold2)}
 .theme-emoji{font-size:26px;line-height:1}
 .theme-label{font-size:9px;font-weight:700;color:var(--dim);text-align:center;line-height:1.3}
 .theme-btn.sel .theme-label{color:var(--gold2)}
 .cust-toggle{
   display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;
   padding:14px 18px;border-radius:16px;user-select:none;position:relative;
-  background:linear-gradient(135deg,rgba(120,60,220,.18),rgba(180,80,200,.14),rgba(168,85,247,.12));
+  background:linear-gradient(135deg,rgba(120,60,220,.18),rgba(180,80,200,.14),rgba(212,160,48,.12));
   border:1.5px solid transparent;
   background-clip:padding-box;
   box-shadow:0 0 0 1.5px rgba(160,80,240,.35),0 4px 24px rgba(120,40,200,.18);
   transition:all .25s}
 .cust-toggle::before{content:'';position:absolute;inset:-1.5px;border-radius:17px;z-index:-1;
-  background:linear-gradient(135deg,rgba(160,80,255,.7),rgba(220,100,220,.5),rgba(168,85,247,.6));
+  background:linear-gradient(135deg,rgba(160,80,255,.7),rgba(220,100,220,.5),rgba(212,160,48,.6));
   animation:magicBorder 3s ease-in-out infinite}
 @keyframes magicBorder{
-  0%,100%{opacity:.6;background:linear-gradient(135deg,rgba(160,80,255,.7),rgba(168,85,247,.5))}
-  50%{opacity:1;background:linear-gradient(135deg,rgba(168,85,247,.8),rgba(160,80,255,.7))}}
+  0%,100%{opacity:.6;background:linear-gradient(135deg,rgba(160,80,255,.7),rgba(212,160,48,.5))}
+  50%{opacity:1;background:linear-gradient(135deg,rgba(212,160,48,.8),rgba(160,80,255,.7))}}
 .cust-toggle:hover{
-  background:linear-gradient(135deg,rgba(140,70,240,.24),rgba(200,90,210,.2),rgba(168,85,247,.16));
+  background:linear-gradient(135deg,rgba(140,70,240,.24),rgba(200,90,210,.2),rgba(212,160,48,.16));
   box-shadow:0 0 0 1.5px rgba(180,100,255,.55),0 6px 32px rgba(140,50,220,.28);
   transform:translateY(-1px)}
 .cust-toggle.open{
-  background:linear-gradient(135deg,rgba(140,70,240,.28),rgba(180,80,200,.22),rgba(168,85,247,.18));
-  box-shadow:0 0 0 1.5px rgba(168,85,247,.6),0 4px 28px rgba(180,100,60,.2)}
+  background:linear-gradient(135deg,rgba(140,70,240,.28),rgba(180,80,200,.22),rgba(212,160,48,.18));
+  box-shadow:0 0 0 1.5px rgba(212,160,48,.6),0 4px 28px rgba(180,100,60,.2)}
 .cust-toggle.open::before{
   animation:magicBorderOpen 3s ease-in-out infinite}
 @keyframes magicBorderOpen{
-  0%,100%{background:linear-gradient(135deg,rgba(168,85,247,.8),rgba(240,200,80,.6))}
+  0%,100%{background:linear-gradient(135deg,rgba(212,160,48,.8),rgba(240,200,80,.6))}
   50%{background:linear-gradient(135deg,rgba(240,180,60,.9),rgba(160,80,255,.5))}}
 .cust-label{font-size:14px;font-weight:800;letter-spacing:.01em;
   background:linear-gradient(90deg,#e8b8ff,#f0cc60,#c8a8ff);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.cust-chevron{font-size:13px;color:rgba(168,85,247,.8);transition:transform .28s;flex-shrink:0}
+.cust-chevron{font-size:13px;color:rgba(212,160,48,.8);transition:transform .28s;flex-shrink:0}
 .cust-toggle.open .cust-chevron{transform:rotate(180deg)}
 .cust-body{display:flex;flex-direction:column;gap:14px;padding:16px;
   background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;margin-bottom:14px}
 .pill-row{display:flex;gap:6px;flex-wrap:wrap}
 .pill{padding:6px 13px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;
-  border:1.5px solid rgba(255,255,255,.12);color:var(--dim);background:transparent;font-family:'DM Sans',sans-serif;transition:all .2s}
+  border:1.5px solid rgba(255,255,255,.12);color:var(--dim);background:transparent;font-family:'Nunito',sans-serif;transition:all .2s}
 .pill:hover{border-color:rgba(255,255,255,.25);color:var(--cream)}
-.pill.on{background:rgba(168,85,247,.14);border-color:var(--gold2);color:var(--gold2)}
+.pill.on{background:rgba(212,160,48,.14);border-color:var(--gold2);color:var(--gold2)}
 .tog-row{display:flex;align-items:center;justify-content:space-between}
 .tog-label{font-size:13px;font-weight:700;color:var(--cream)}
 .tog-sub{font-size:11px;color:var(--dim);margin-top:2px}
@@ -123,37 +123,37 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
 .char-photo{width:38px;height:38px;border-radius:8px;overflow:hidden;background:rgba(255,255,255,.08);
   cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;position:relative}
 .char-photo img{width:100%;height:100%;object-fit:cover}
-.char-photo:hover{background:rgba(168,85,247,.1)}
+.char-photo:hover{background:rgba(212,160,48,.1)}
 .char-name-in{flex:1;padding:8px 11px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
-  border-radius:9px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;outline:none}
+  border-radius:9px;color:var(--cream);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;outline:none}
 .char-name-in::placeholder{color:rgba(90,110,170,.4);font-weight:400}
-.char-name-in:focus{border-color:rgba(168,85,247,.45)}
+.char-name-in:focus{border-color:rgba(212,160,48,.45)}
 .char-type-sel{padding:7px 8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
-  border-radius:9px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:11px;outline:none;-webkit-appearance:none;cursor:pointer}
-.char-type-sel option{background:#1a1a2e}
+  border-radius:9px;color:var(--cream);font-family:'Nunito',sans-serif;font-size:11px;outline:none;-webkit-appearance:none;cursor:pointer}
+.char-type-sel option{background:#19286a}
 .char-details{display:flex;align-items:center;gap:6px;padding:7px 10px 9px;border-top:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02)}
 .char-cls-sel{flex:1;padding:6px 9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);
-  border-radius:8px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:11px;outline:none;-webkit-appearance:none}
-.char-cls-sel option,.char-cls-sel optgroup{background:#1a1a2e}
+  border-radius:8px;color:var(--cream);font-family:'Nunito',sans-serif;font-size:11px;outline:none;-webkit-appearance:none}
+.char-cls-sel option,.char-cls-sel optgroup{background:#19286a}
 .mini-gpills{display:flex;gap:4px}
 .mgp{padding:4px 9px;border-radius:99px;font-size:10px;font-weight:700;cursor:pointer;
-  border:1px solid rgba(255,255,255,.1);color:var(--dimmer);background:transparent;font-family:'DM Sans',sans-serif;transition:all .15s}
+  border:1px solid rgba(255,255,255,.1);color:var(--dimmer);background:transparent;font-family:'Nunito',sans-serif;transition:all .15s}
 .mgp:hover{color:var(--cream)}
-.mgp.on{border-color:rgba(168,85,247,.5);color:var(--gold2);background:rgba(168,85,247,.1)}
+.mgp.on{border-color:rgba(212,160,48,.5);color:var(--gold2);background:rgba(212,160,48,.1)}
 .btn-add-char{padding:9px;border-radius:10px;border:1.5px dashed rgba(76,200,144,.35);
   background:rgba(76,200,144,.06);color:#80d8a8;font-size:13px;font-weight:700;cursor:pointer;
-  width:100%;text-align:center;transition:all .2s;font-family:'DM Sans',sans-serif}
+  width:100%;text-align:center;transition:all .2s;font-family:'Nunito',sans-serif}
 .btn-add-char:hover{background:rgba(76,200,144,.13)}
 .occ-pills{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:4px}
 .occ-pill{padding:8px 13px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;
   border:1.5px solid rgba(255,255,255,.11);color:var(--dim);background:rgba(255,255,255,.04);
-  font-family:'DM Sans',sans-serif;transition:all .18s;display:flex;align-items:center;gap:5px;line-height:1.2}
+  font-family:'Nunito',sans-serif;transition:all .18s;display:flex;align-items:center;gap:5px;line-height:1.2}
 .occ-pill:hover{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.08)}
-.occ-pill.on{background:rgba(168,85,247,.13);border-color:var(--gold2);color:var(--gold2)}
+.occ-pill.on{background:rgba(212,160,48,.13);border-color:var(--gold2);color:var(--gold2)}
 .les-pills{display:flex;gap:7px;flex-wrap:wrap}
 .les-pill{padding:8px 13px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;
   border:1.5px solid rgba(255,255,255,.11);color:var(--dim);background:rgba(255,255,255,.04);
-  font-family:'DM Sans',sans-serif;transition:all .18s}
+  font-family:'Nunito',sans-serif;transition:all .18s}
 .les-pill:hover{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.08)}
 .les-pill.on{background:rgba(76,200,144,.12);border-color:rgba(76,200,144,.5);color:#80d8a8}
 .char-simple-list{display:flex;flex-direction:column;gap:7px}
@@ -163,36 +163,36 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
 .guidance-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .guidance-chip{padding:5px 11px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;
   border:1.5px solid rgba(255,255,255,.1);color:var(--dim);background:transparent;
-  font-family:'DM Sans',sans-serif;transition:all .18s}
-.guidance-chip:hover{border-color:rgba(168,85,247,.4);color:var(--gold2);background:rgba(168,85,247,.06)}
+  font-family:'Nunito',sans-serif;transition:all .18s}
+.guidance-chip:hover{border-color:rgba(212,160,48,.4);color:var(--gold2);background:rgba(212,160,48,.06)}
 .guidance-chip.on{background:rgba(76,200,144,.12);border-color:rgba(76,200,144,.5);color:#80d8a8}
 .magic-hint{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(200,160,255,.7);margin-top:3px}
 .magic-hint-badge{background:rgba(160,80,255,.1);border:1px solid rgba(160,80,255,.25);
   border-radius:7px;padding:2px 8px;font-size:10px;font-weight:700;color:rgba(210,170,255,.85)}
-.quick-go{background:rgba(168,85,247,.07);border:1.5px dashed rgba(168,85,247,.25);
+.quick-go{background:rgba(212,160,48,.07);border:1.5px dashed rgba(212,160,48,.25);
   border-radius:14px;padding:12px;text-align:center;margin-bottom:10px}
 .quick-go-label{font-size:11px;color:var(--dim);margin-bottom:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 .age-pills{display:flex;gap:7px;flex-wrap:wrap}
 .age-pill{padding:9px 13px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;
   border:1.5px solid rgba(255,255,255,.11);color:var(--dim);background:rgba(255,255,255,.04);
-  font-family:'DM Sans',sans-serif;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:64px;text-align:center}
+  font-family:'Nunito',sans-serif;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:64px;text-align:center}
 .age-pill:hover{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.08)}
 .age-pill.on{background:rgba(100,160,255,.13);border-color:rgba(100,160,255,.5);color:#a8c8ff}
 .age-pill-grade{font-size:9px;font-weight:700;opacity:.6;text-transform:uppercase;letter-spacing:.05em}
 .char-add-pill{display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:12px;cursor:pointer;
   border:1.5px solid rgba(255,255,255,.11);color:var(--dim);background:rgba(255,255,255,.04);
-  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;transition:all .18s}
+  font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;transition:all .18s}
 .char-add-pill:hover{border-color:rgba(76,200,144,.4);background:rgba(76,200,144,.07);color:#80d8a8}
 .char-add-pill-icon{font-size:20px;line-height:1}
 .gen-wrap{text-align:center;padding:32px 24px}
 .gen-orb{width:76px;height:76px;border-radius:50%;margin:0 auto 18px;
-  background:radial-gradient(circle at 35% 35%,#A855F7,#7C3AED);
-  box-shadow:0 0 40px 12px rgba(124,58,237,.3);animation:orbPulse 2s ease-in-out infinite}
+  background:radial-gradient(circle at 35% 35%,#3a5ccc,#1a2870);
+  box-shadow:0 0 40px 12px rgba(60,100,220,.3);animation:orbPulse 2s ease-in-out infinite}
 @keyframes orbPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
-.gen-title{font-family:'Lora',serif;font-size:21px;font-weight:700;color:var(--cream);margin-bottom:7px}
+.gen-title{font-family:'Fraunces',serif;font-size:21px;font-weight:700;color:var(--cream);margin-bottom:7px}
 .gen-sub{font-size:13px;color:var(--dim);line-height:1.7;margin-bottom:20px}
 .pbar{height:6px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;margin-bottom:5px}
-.pfill{height:100%;background:linear-gradient(90deg,#7C3AED,#A855F7);border-radius:99px;transition:width .6s ease}
+.pfill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:99px;transition:width .6s ease}
 .plabel{font-size:11px;color:var(--dim);font-weight:700;text-align:right;margin-bottom:14px}
 .pstep{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--dimmer);padding:3px 0;transition:color .3s}
 .pstep.active{color:var(--gold2);font-weight:700}
@@ -200,7 +200,7 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
 .pstep-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
 .img-dot{width:26px;height:26px;border-radius:7px;border:1.5px solid rgba(255,255,255,.1);
   background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .4s}
-.img-dot.busy{border-color:rgba(168,85,247,.4);animation:dotPulse .8s ease-in-out infinite}
+.img-dot.busy{border-color:rgba(212,160,48,.4);animation:dotPulse .8s ease-in-out infinite}
 .img-dot.done{border-color:rgba(76,200,144,.6);background:rgba(76,200,144,.12)}
 @keyframes dotPulse{0%,100%{opacity:.5}50%{opacity:1}}
 .err-box{background:rgba(192,64,48,.14);border:1px solid rgba(192,64,48,.28);border-radius:10px;padding:10px 14px;font-size:13px;color:#f09080;margin-bottom:14px}
@@ -209,26 +209,26 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
   height:520px;position:relative;background:#0e1428;cursor:pointer}
 .bpage{position:absolute;inset:0;width:100%;height:100%;animation:pageFade .3s ease both}
 @keyframes pageFade{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
-.pinset{position:absolute;inset:10px;border:1px solid rgba(168,85,247,.1);border-radius:8px;pointer-events:none;z-index:2}
-.cover-bg{background:linear-gradient(160deg,#0B0B1A,#12122A,#0E0E22)}
+.pinset{position:absolute;inset:10px;border:1px solid rgba(212,160,48,.1);border-radius:8px;pointer-events:none;z-index:2}
+.cover-bg{background:linear-gradient(160deg,#0a0f28,#14204a,#0e1830)}
 .cover-lay{height:100%;display:flex;flex-direction:column}
 .cover-art{flex:1;position:relative;overflow:hidden}
 .cover-bot{padding:14px 20px 18px;background:linear-gradient(0deg,rgba(8,12,28,.98),rgba(8,12,28,.6));position:relative;z-index:3}
-.c-stars{font-size:10px;color:rgba(168,85,247,.45);letter-spacing:8px;text-align:center;margin-bottom:5px}
-.c-title{font-family:'Lora',serif;font-size:clamp(15px,4vw,22px);font-weight:700;font-style:italic;
+.c-stars{font-size:10px;color:rgba(212,160,48,.45);letter-spacing:8px;text-align:center;margin-bottom:5px}
+.c-title{font-family:'Fraunces',serif;font-size:clamp(15px,4vw,22px);font-weight:700;font-style:italic;
   color:var(--gold3);text-align:center;line-height:1.25;margin-bottom:4px}
 .c-for{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);text-align:center;margin-bottom:6px}
-.c-brand{font-family:'Lora',serif;font-size:12px;color:rgba(168,85,247,.5);text-align:center}
+.c-brand{font-family:'Fraunces',serif;font-size:12px;color:rgba(212,160,48,.5);text-align:center}
 .cast-bg{background:linear-gradient(160deg,#fef8e8,#f5e8c0);color:var(--ink)}
 .cast-lay{height:100%;display:flex;flex-direction:column;padding:22px 20px}
-.cast-title{font-family:'Lora',serif;font-size:18px;font-weight:700;font-style:italic;color:var(--ink2);margin-bottom:2px}
+.cast-title{font-family:'Fraunces',serif;font-size:18px;font-weight:700;font-style:italic;color:var(--ink2);margin-bottom:2px}
 .cast-sub{font-family:'Kalam',cursive;font-size:12px;color:var(--ink3);margin-bottom:14px}
 .cast-grid{display:flex;flex-wrap:wrap;gap:12px;flex:1;align-content:flex-start}
 .cast-char{display:flex;flex-direction:column;align-items:center;gap:4px}
 .cast-av{width:52px;height:52px;border-radius:12px;overflow:hidden;background:var(--parch);
   border:2px solid rgba(90,56,10,.15);display:flex;align-items:center;justify-content:center;font-size:24px}
 .cast-av img{width:100%;height:100%;object-fit:cover}
-.cast-name{font-family:'Lora',serif;font-size:12px;font-weight:600;color:var(--ink2);text-align:center;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cast-name{font-family:'Fraunces',serif;font-size:12px;font-weight:600;color:var(--ink2);text-align:center;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cast-role{font-size:9px;color:var(--ink3);font-weight:700;text-transform:uppercase;text-align:center;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .story-bg{background:linear-gradient(160deg,#fef8e8,#f5e4b8)}
 .story-lay{height:100%;display:flex;flex-direction:column}
@@ -245,30 +245,30 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
 .s-refrain{font-family:'Kalam',cursive;font-size:10px;color:rgba(90,56,10,.38);text-align:center;
   font-style:italic;letter-spacing:.04em;padding:5px 8px;margin-top:4px;
   border-top:1px solid rgba(90,56,10,.08);line-height:1.5;flex-shrink:0}
-.choice-bg{background:linear-gradient(160deg,#0B0B1A,#18183A)}
+.choice-bg{background:linear-gradient(160deg,#0a1030,#14204a)}
 .choice-lay{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 18px;gap:14px}
 .choice-star{font-size:28px;animation:orbPulse 3s ease-in-out infinite}
-.choice-q{font-family:'Lora',serif;font-size:clamp(14px,3.2vw,17px);font-weight:700;font-style:italic;color:var(--gold3);text-align:center;line-height:1.4}
+.choice-q{font-family:'Fraunces',serif;font-size:clamp(14px,3.2vw,17px);font-weight:700;font-style:italic;color:var(--gold3);text-align:center;line-height:1.4}
 .choice-opts{display:flex;flex-direction:column;gap:10px;width:100%}
 .choice-btn{padding:13px 16px;border-radius:12px;cursor:pointer;text-align:left;
-  font-family:'Lora',serif;font-size:clamp(12px,2.6vw,14px);font-style:italic;line-height:1.4;border:2px solid;transition:all .2s}
+  font-family:'Fraunces',serif;font-size:clamp(12px,2.6vw,14px);font-style:italic;line-height:1.4;border:2px solid;transition:all .2s}
 .choice-btn.a{background:rgba(60,100,220,.14);border-color:rgba(60,100,220,.44);color:#c0d4ff}
 .choice-btn.b{background:rgba(180,80,180,.11);border-color:rgba(180,80,180,.38);color:#e8c0f8}
 .choice-btn.a:hover{background:rgba(60,100,220,.26)}
 .choice-btn.b:hover{background:rgba(180,80,180,.22)}
 .choice-tag{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:3px;opacity:.65}
 .choice-hint{font-size:10px;color:var(--dimmer);text-align:center}
-.end-bg{background:linear-gradient(160deg,#0B0B1A,#0E0E22)}
+.end-bg{background:linear-gradient(160deg,#060b18,#0b1428)}
 .end-lay{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:28px}
 .end-moon{font-size:48px;animation:mfloat 6s ease-in-out infinite}
-.end-title{font-family:'Lora',serif;font-size:30px;font-weight:700;font-style:italic;color:var(--gold3)}
+.end-title{font-family:'Fraunces',serif;font-size:30px;font-weight:700;font-style:italic;color:var(--gold3)}
 .nc-bg{background:linear-gradient(160deg,#0a0e24,#101838,#0c1430)}
 .nc-lay{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px 24px;text-align:center}
 .nc-emoji{font-size:42px;animation:mfloat 5s ease-in-out infinite}
-.nc-label{font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(168,85,247,.6)}
-.nc-headline{font-family:'Lora',serif;font-size:clamp(18px,4.5vw,24px);font-weight:700;font-style:italic;
+.nc-label{font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(212,160,48,.6)}
+.nc-headline{font-family:'Fraunces',serif;font-size:clamp(18px,4.5vw,24px);font-weight:700;font-style:italic;
   color:var(--gold3);line-height:1.3;max-width:300px}
-.nc-divider{width:40px;height:2px;background:linear-gradient(90deg,transparent,rgba(168,85,247,.45),transparent);margin:4px 0}
+.nc-divider{width:40px;height:2px;background:linear-gradient(90deg,transparent,rgba(212,160,48,.45),transparent);margin:4px 0}
 .nc-quote{font-family:'Cormorant Garamond',serif;font-size:clamp(14px,3.2vw,17px);font-style:italic;font-weight:600;
   color:rgba(240,220,160,.85);line-height:1.7;max-width:320px}
 .nc-hero{font-size:11px;color:var(--dimmer);font-weight:700;font-style:italic}
@@ -278,25 +278,25 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
   color:rgba(160,120,255,.6);margin-bottom:5px}
 .nc-reflect-q{font-family:'Kalam',cursive;font-size:13px;color:rgba(200,180,255,.85);line-height:1.6}
 .nc-date{font-size:10px;color:var(--dimmer);margin-top:4px}
-.nc-brand{font-family:'Lora',serif;font-size:11px;color:rgba(168,85,247,.35);margin-top:2px}
+.nc-brand{font-family:'Fraunces',serif;font-size:11px;color:rgba(212,160,48,.35);margin-top:2px}
 .mem-tabs{display:flex;gap:4px;margin-bottom:14px;background:rgba(255,255,255,.04);border-radius:12px;padding:3px;
   border:1px solid rgba(255,255,255,.07)}
 .mem-tab{flex:1;padding:9px 12px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;
-  text-align:center;color:var(--dim);background:transparent;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
-.mem-tab.on{background:rgba(168,85,247,.12);color:var(--gold2)}
+  text-align:center;color:var(--dim);background:transparent;border:none;font-family:'Nunito',sans-serif;transition:all .2s}
+.mem-tab.on{background:rgba(212,160,48,.12);color:var(--gold2)}
 .mem-tab:hover:not(.on){color:var(--cream);background:rgba(255,255,255,.05)}
 .char-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:12px}
 .char-chip{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:50px;cursor:pointer;
   border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);transition:all .2s;
-  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:rgba(240,237,232,.55)}
-.char-chip:hover{border-color:rgba(168,85,247,.35);color:var(--cream);background:rgba(168,85,247,.06)}
-.char-chip.on{border-color:rgba(168,85,247,.6);color:#C084FC;background:rgba(168,85,247,.12)}
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:500;color:rgba(240,237,232,.55)}
+.char-chip:hover{border-color:rgba(212,160,48,.35);color:var(--cream);background:rgba(212,160,48,.06)}
+.char-chip.on{border-color:var(--gold2);color:var(--gold2);background:rgba(212,160,48,.14)}
 .char-chip-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-size:14px;flex-shrink:0}
 .char-chip-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}
-.char-chip-add{border-style:dashed;border-color:rgba(168,85,247,.25);color:rgba(168,85,247,.6)}
-.char-chip-add:hover{border-color:rgba(168,85,247,.5);color:rgba(168,85,247,.9);background:rgba(168,85,247,.08)}
-.new-char-form{background:rgba(168,85,247,.05);border:1px solid rgba(168,85,247,.15);border-radius:14px;
+.char-chip-add{border-style:dashed;border-color:rgba(212,160,48,.25);color:rgba(212,160,48,.6)}
+.char-chip-add:hover{border-color:rgba(212,160,48,.5);color:rgba(212,160,48,.9);background:rgba(212,160,48,.08)}
+.new-char-form{background:rgba(212,160,48,.05);border:1px solid rgba(212,160,48,.15);border-radius:14px;
   padding:16px;margin-bottom:12px;display:flex;flex-direction:column;gap:10px;animation:fup .3s ease}
 .new-char-row{display:flex;gap:8px}
 .new-char-row .finput{flex:1}
@@ -306,20 +306,20 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
 .nc-sdot.active{background:var(--gold2);transform:scale(1.3)}
 .nc-sdot.done{background:var(--green2)}
 .nc-step-card{background:linear-gradient(150deg,rgba(22,32,84,.72),rgba(11,18,42,.88));
-  border:1px solid rgba(168,85,247,.15);border-radius:22px;padding:26px;
+  border:1px solid rgba(212,160,48,.15);border-radius:22px;padding:26px;
   backdrop-filter:blur(20px);box-shadow:0 20px 64px rgba(0,0,0,.55);animation:fup .4s ease both}
 .nc-step-icon{font-size:36px;text-align:center;margin-bottom:8px}
-.nc-step-title{font-family:'Lora',serif;font-size:18px;font-weight:700;color:var(--cream);
+.nc-step-title{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--cream);
   text-align:center;margin-bottom:4px}
 .nc-step-sub{font-size:12px;color:var(--dim);text-align:center;line-height:1.7;margin-bottom:16px}
-.nc-step-q{font-family:'Lora',serif;font-size:14px;font-style:italic;color:var(--gold3);
+.nc-step-q{font-family:'Fraunces',serif;font-size:14px;font-style:italic;color:var(--gold3);
   text-align:center;line-height:1.6;margin-bottom:14px;padding:0 8px}
 .nc-camera{width:100%;aspect-ratio:4/3;border-radius:14px;overflow:hidden;background:#0a0e24;
   position:relative;margin-bottom:14px}
 .nc-camera video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
 .nc-camera img{width:100%;height:100%;object-fit:cover}
 .nc-countdown{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  background:rgba(0,0,0,.5);font-family:'Lora',serif;font-size:72px;font-weight:700;
+  background:rgba(0,0,0,.5);font-family:'Fraunces',serif;font-size:72px;font-weight:700;
   color:var(--gold3);animation:countPop .4s ease}
 @keyframes countPop{from{transform:scale(1.8);opacity:0}to{transform:scale(1);opacity:1}}
 .polaroid{background:#faf8f2;border-radius:4px;padding:14px 14px 28px;
@@ -332,14 +332,14 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
 .polaroid-emoji{display:flex;align-items:center;justify-content:center;font-size:48px;
   width:100%;height:100%;background:linear-gradient(135deg,#0a0e24,#14204a)}
 .polaroid-body{text-align:center}
-.polaroid-headline{font-family:'Lora',serif;font-size:16px;font-weight:700;font-style:italic;
+.polaroid-headline{font-family:'Fraunces',serif;font-size:16px;font-weight:700;font-style:italic;
   color:#2a1f0a;margin-bottom:4px;animation:fadeUp .5s ease .5s both}
 .polaroid-quote{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;
   color:#5a4a2a;line-height:1.6;margin-bottom:6px;animation:fadeUp .5s ease .8s both}
 .polaroid-memory{font-family:'Kalam',cursive;font-size:12px;color:#7a5a2a;line-height:1.5;
   margin-bottom:8px;animation:fadeUp .5s ease 1.1s both}
 .polaroid-meta{font-size:9px;color:#a08a5a;animation:fadeUp .5s ease 1.4s both}
-.polaroid-brand{font-family:'Lora',serif;font-size:10px;color:#c0a870;margin-top:4px;
+.polaroid-brand{font-family:'Fraunces',serif;font-size:10px;color:#c0a870;margin-top:4px;
   animation:fadeUp .5s ease 1.6s both}
 .end-msg{font-family:'Kalam',cursive;font-size:14px;color:var(--ui);text-align:center;line-height:1.9}
 .illo-slot{position:absolute;inset:0}
@@ -355,7 +355,7 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
 @keyframes sparkOut{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0)}}
 .book-nav{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
 .nav-btn{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);color:var(--cream);
-  padding:8px 18px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+  padding:8px 18px;border-radius:10px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
 .nav-btn:hover:not(:disabled){background:rgba(255,255,255,.13)}
 .nav-btn:disabled{opacity:.28;cursor:not-allowed}
 .dots{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:180px}
@@ -365,9 +365,9 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
 .auto-fill{height:100%;background:var(--gold2);border-radius:99px;transition:width .12s linear}
 .ctrl-bar{display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap}
 .ctrl-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;transition:all .2s;border:1.5px solid}
-.ctrl-btn.read{background:rgba(168,85,247,.1);border-color:rgba(168,85,247,.28);color:var(--gold2)}
-.ctrl-btn.read.active{background:rgba(168,85,247,.24);border-color:var(--gold2)}
+  font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;transition:all .2s;border:1.5px solid}
+.ctrl-btn.read{background:rgba(212,160,48,.1);border-color:rgba(212,160,48,.28);color:var(--gold2)}
+.ctrl-btn.read.active{background:rgba(212,160,48,.24);border-color:var(--gold2)}
 .ctrl-btn.save{background:rgba(100,130,220,.07);border-color:rgba(100,130,220,.24);color:var(--ui)}
 .ctrl-btn.fresh{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.11);color:var(--dim)}
 .ctrl-btn.dl{background:rgba(100,180,255,.07);border-color:rgba(100,180,255,.28);color:rgba(140,200,255,.9)}
@@ -378,7 +378,7 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
 .ctrl-btn:hover{opacity:.85}
 .snd-bar{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;flex-wrap:wrap}
 .snd-tog{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;cursor:pointer;
-  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);font-family:'DM Sans',sans-serif;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);font-family:'Nunito',sans-serif;
   font-size:11px;font-weight:700;color:var(--dim);transition:all .18s;user-select:none}
 .snd-tog:hover{background:rgba(255,255,255,.09);color:var(--cream)}
 .snd-tog.on{background:rgba(100,180,255,.1);border-color:rgba(100,180,255,.3);color:#a8d8ff}
@@ -388,7 +388,7 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
 .snd-gear:hover{color:var(--cream);background:rgba(255,255,255,.07)}
 .vc-badge{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:7px;font-size:11px;
   font-weight:700;cursor:pointer;border:1.5px solid rgba(240,100,120,.4);
-  background:rgba(240,100,120,.1);color:#f8a0b0;font-family:'DM Sans',sans-serif;transition:all .18s}
+  background:rgba(240,100,120,.1);color:#f8a0b0;font-family:'Nunito',sans-serif;transition:all .18s}
 .vc-badge:hover{background:rgba(240,100,120,.2)}
 .vc-badge.active{border-color:rgba(240,100,120,.7);background:rgba(240,100,120,.18);animation:vcPulse 2s ease-in-out infinite}
 @keyframes vcPulse{0%,100%{box-shadow:0 0 0 0 rgba(240,100,120,.0)}50%{box-shadow:0 0 8px 2px rgba(240,100,120,.25)}}
@@ -397,7 +397,7 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
 .vc-card{background:linear-gradient(150deg,rgba(22,32,84,.96),rgba(11,18,42,.98));
   border:1.5px solid rgba(240,100,120,.3);border-radius:22px;padding:24px;width:100%;max-width:420px;
   box-shadow:0 24px 80px rgba(0,0,0,.7)}
-.vc-title{font-family:'Lora',serif;font-size:20px;font-weight:700;color:var(--cream);margin-bottom:4px}
+.vc-title{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--cream);margin-bottom:4px}
 .vc-sub{font-size:12px;color:var(--dim);margin-bottom:18px;line-height:1.6}
 .vc-script{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;
   padding:14px 16px;font-family:'Kalam',cursive;font-size:14px;color:var(--cream);
@@ -419,9 +419,9 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
 .mem-list{display:flex;flex-direction:column;gap:9px;margin-bottom:14px;max-height:380px;overflow-y:auto}
 .mem-card{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:12px;
   padding:13px 15px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:all .2s}
-.mem-card:hover{border-color:rgba(168,85,247,.25);background:rgba(255,255,255,.07)}
+.mem-card:hover{border-color:rgba(212,160,48,.25);background:rgba(255,255,255,.07)}
 .mem-info{flex:1;min-width:0}
-.mem-title{font-family:'Lora',serif;font-size:13px;font-weight:700;color:var(--cream);
+.mem-title{font-family:'Fraunces',serif;font-size:13px;font-weight:700;color:var(--cream);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
 .mem-meta{font-size:11px;color:var(--dim)}
 .path-row{display:flex;gap:10px;margin-bottom:10px}
@@ -429,17 +429,17 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
   padding:20px 12px;border-radius:18px;cursor:pointer;border:1.5px solid;text-align:center;
   transition:all .2s;position:relative;overflow:hidden;min-height:110px}
 .path-btn:disabled{opacity:.4;cursor:not-allowed}
-.path-btn.quick{background:rgba(168,85,247,.08);border-color:rgba(168,85,247,.3);color:var(--gold2)}
-.path-btn.quick:not(:disabled):hover{background:rgba(168,85,247,.18);border-color:var(--gold2);transform:translateY(-2px)}
+.path-btn.quick{background:rgba(212,160,48,.08);border-color:rgba(212,160,48,.3);color:var(--gold2)}
+.path-btn.quick:not(:disabled):hover{background:rgba(212,160,48,.18);border-color:var(--gold2);transform:translateY(-2px)}
 .path-btn.build{background:rgba(120,80,220,.08);border-color:rgba(160,100,255,.3);color:rgba(180,140,255,.9)}
 .path-btn.build:not(:disabled):hover{background:rgba(120,80,220,.18);border-color:rgba(160,100,255,.7);transform:translateY(-2px)}
 .path-icon{font-size:32px;line-height:1}
-.path-title{font-family:'Lora',serif;font-size:15px;font-weight:700;line-height:1.2}
+.path-title{font-family:'Fraunces',serif;font-size:15px;font-weight:700;line-height:1.2}
 .path-sub{font-size:10px;opacity:.7;font-weight:400;line-height:1.4}
 .brand-row{display:flex;align-items:center;gap:9px;margin-bottom:6px}
 .brand-gem{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#1a2870,#2840b0);
-  border:1.5px solid rgba(168,85,247,.4);display:flex;align-items:center;justify-content:center;font-size:18px}
-.brand-name{font-family:'Lora',serif;font-size:22px;font-weight:700;
+  border:1.5px solid rgba(212,160,48,.4);display:flex;align-items:center;justify-content:center;font-size:18px}
+.brand-name{font-family:'Fraunces',serif;font-size:22px;font-weight:700;
   background:linear-gradient(135deg,var(--gold3),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .brand-tag{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dimmer)}
 `;
@@ -1683,7 +1683,7 @@ export default function SleepSeed({
       stars.forEach(([x,y]) => { ctx.beginPath(); ctx.arc(x,y,1.5,0,Math.PI*2); ctx.fill(); });
 
       // Gold border
-      ctx.strokeStyle = "rgba(168,85,247,.35)";
+      ctx.strokeStyle = "rgba(212,160,48,.35)";
       ctx.lineWidth = 3;
       ctx.strokeRect(28,28,SIZE-56,SIZE-56);
 
@@ -1694,7 +1694,7 @@ export default function SleepSeed({
       ctx.beginPath(); ctx.arc(SIZE/2-18,250,44,0,Math.PI*2); ctx.fill();
 
       // SleepSeed label
-      ctx.fillStyle = "rgba(168,85,247,.55)";
+      ctx.fillStyle = "rgba(212,160,48,.55)";
       ctx.font = "500 26px sans-serif";
       ctx.textAlign = "center";
       ctx.letterSpacing = "4px";
@@ -1719,9 +1719,9 @@ export default function SleepSeed({
       // Gold rule
       const ruleY = titleY + titleLines.length*76 + 28;
       const grad = ctx.createLinearGradient(SIZE/2-120,0,SIZE/2+120,0);
-      grad.addColorStop(0,"rgba(168,85,247,0)");
-      grad.addColorStop(0.5,"rgba(168,85,247,.6)");
-      grad.addColorStop(1,"rgba(168,85,247,0)");
+      grad.addColorStop(0,"rgba(212,160,48,0)");
+      grad.addColorStop(0.5,"rgba(212,160,48,.6)");
+      grad.addColorStop(1,"rgba(212,160,48,0)");
       ctx.fillStyle = grad;
       ctx.fillRect(SIZE/2-120, ruleY, 240, 2);
 
@@ -1745,7 +1745,7 @@ export default function SleepSeed({
       }
 
       // Footer
-      ctx.fillStyle = "rgba(168,85,247,.35)";
+      ctx.fillStyle = "rgba(212,160,48,.35)";
       ctx.font = "500 22px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(`A story for ${book.heroName}  ·  sleepseed.app`, SIZE/2, SIZE-52);
@@ -2496,7 +2496,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
     if(pageIdx===0) return (
       <div className="bpage cover-bg">
-        <div className="pinset" style={{borderColor:"rgba(168,85,247,.15)"}} />
+        <div className="pinset" style={{borderColor:"rgba(212,160,48,.15)"}} />
         <div className="cover-lay">
           <div className="cover-art">
             <DreamIllo />
@@ -2542,7 +2542,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
     if(isAdv && onChoicePg) return (
       <div className="bpage choice-bg">
-        <div className="pinset" style={{borderColor:"rgba(168,85,247,.15)"}} />
+        <div className="pinset" style={{borderColor:"rgba(212,160,48,.15)"}} />
         <div className="choice-lay">
           <div className="choice-star">⭐</div>
           <div className="choice-q">{book.choice?.question}</div>
@@ -2592,10 +2592,10 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
           </div>
 
           {book.parentNote && (
-            <div style={{width:"100%",background:"rgba(168,85,247,.08)",border:"1px solid rgba(168,85,247,.2)",
+            <div style={{width:"100%",background:"rgba(212,160,48,.08)",border:"1px solid rgba(212,160,48,.2)",
               borderRadius:14,padding:"12px 16px",marginTop:4}}>
               <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                color:"rgba(168,85,247,.7)",marginBottom:6}}>A note for you 👋</div>
+                color:"rgba(212,160,48,.7)",marginBottom:6}}>A note for you 👋</div>
               <div style={{fontSize:12,color:"var(--cream)",lineHeight:1.7,fontFamily:"'Nunito',sans-serif"}}>
                 {book.parentNote}
               </div>
@@ -2604,10 +2604,10 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
           {book.nightCard ? (
             /* Show existing Night Card inline */
-            <div style={{width:"100%",marginTop:8,background:"rgba(168,85,247,.06)",
-              border:"1px solid rgba(168,85,247,.18)",borderRadius:16,padding:"16px",textAlign:"center"}}>
+            <div style={{width:"100%",marginTop:8,background:"rgba(212,160,48,.06)",
+              border:"1px solid rgba(212,160,48,.18)",borderRadius:16,padding:"16px",textAlign:"center"}}>
               <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
-                color:"rgba(168,85,247,.55)",marginBottom:8}}>Tonight's Night Card</div>
+                color:"rgba(212,160,48,.55)",marginBottom:8}}>Tonight's Night Card</div>
               {book.nightCard.photo && (
                 <div style={{width:100,margin:"0 auto 10px",borderRadius:4,overflow:"hidden",
                   background:"#faf8f2",padding:"4px 4px 8px",boxShadow:"0 2px 8px rgba(0,0,0,.3)"}}>
@@ -2625,7 +2625,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               {/* Q&A sections */}
               {(book.nightCard.bondingA || book.nightCard.gratitude || book.nightCard.extra) && (
                 <div style={{textAlign:"left",marginTop:10,paddingTop:10,
-                  borderTop:"1px solid rgba(168,85,247,.12)",display:"flex",flexDirection:"column",gap:8}}>
+                  borderTop:"1px solid rgba(212,160,48,.12)",display:"flex",flexDirection:"column",gap:8}}>
                   {book.nightCard.bondingQ && book.nightCard.bondingA && (
                     <div>
                       <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
@@ -2638,7 +2638,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                   {book.nightCard.gratitude && (
                     <div>
                       <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                        color:"rgba(168,85,247,.5)",marginBottom:2}}>Best three seconds</div>
+                        color:"rgba(212,160,48,.5)",marginBottom:2}}>Best three seconds</div>
                       <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
                         {book.nightCard.gratitude}
                       </div>
@@ -2751,8 +2751,8 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
             {/* ── Demo story strip ── */}
             <div onClick={()=>{ setBook({...DEMO_BOOK}); setPageIdx(0); setStage("book"); setFromCache(false); }}
               style={{borderRadius:14,overflow:"hidden",
-                border:"1.5px solid rgba(168,85,247,.5)",
-                boxShadow:"0 0 0 3px rgba(168,85,247,.06)",
+                border:"1.5px solid rgba(212,160,48,.5)",
+                boxShadow:"0 0 0 3px rgba(212,160,48,.06)",
                 cursor:"pointer",marginBottom:18,transition:"transform .15s",
                 background:"rgba(13,21,53,.95)"}}
               onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
@@ -2761,14 +2761,14 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 <div style={{fontSize:26,flexShrink:0}}>🌙</div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
-                    color:"rgba(168,85,247,.7)",marginBottom:3}}>Example story</div>
+                    color:"rgba(212,160,48,.7)",marginBottom:3}}>Example story</div>
                   <div style={{fontFamily:"'Fraunces',serif",fontSize:13,fontWeight:700,
                     color:"var(--cream)",lineHeight:1.3,marginBottom:2}}>The Stone in Her Pocket</div>
                   <div style={{fontSize:9,color:"rgba(140,100,220,.9)",fontWeight:700}}>Tap to read →</div>
                 </div>
               </div>
-              <div style={{background:"rgba(168,85,247,.05)",padding:"8px 14px",
-                borderTop:"1px solid rgba(168,85,247,.12)",
+              <div style={{background:"rgba(212,160,48,.05)",padding:"8px 14px",
+                borderTop:"1px solid rgba(212,160,48,.12)",
                 fontFamily:"'Fraunces',serif",fontSize:11,fontStyle:"italic",
                 color:"rgba(240,210,130,.85)",lineHeight:1.6}}>
                 "Adina yawned the kind of yawn that means everything is okay now."
@@ -2787,7 +2787,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                     <div key={c.id}
                       className={`char-chip${selectedCharId===c.id?" on":""}`}
                       onClick={()=>selectCharacter(c)}>
-                      <div className="char-chip-av" style={{background:c.color||"rgba(168,85,247,.15)"}}>
+                      <div className="char-chip-av" style={{background:c.color||"rgba(212,160,48,.15)"}}>
                         {c.photo ? <img src={c.photo} alt="" style={{width:"100%",height:"100%",borderRadius:"50%",objectFit:"cover"}} /> : (c.emoji||"⭐")}
                       </div>
                       <span className="char-chip-name">{c.name}</span>
@@ -2804,7 +2804,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 <div className={savedChars.length > 0 ? "new-char-form" : ""}>
                   {savedChars.length === 0 && (
                     <div style={{textAlign:"center",marginBottom:8}}>
-                      <div style={{fontSize:10,color:"rgba(168,85,247,.7)",fontStyle:"italic",fontFamily:"'Lora',serif",marginBottom:3}}>
+                      <div style={{fontSize:10,color:"rgba(212,160,48,.7)",fontStyle:"italic",fontFamily:"'Lora',serif",marginBottom:3}}>
                         Create your child's character
                       </div>
                     </div>
@@ -2813,7 +2813,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                     value={newCharName.length > 0 ? newCharName : heroName}
                     onChange={e=>{ setNewCharName(e.target.value); setHeroName(e.target.value); }}
                     maxLength={20}
-                    style={{textAlign:"center",borderColor:heroName.trim().length<2?"rgba(168,85,247,.35)":"rgba(255,255,255,.1)"}} />
+                    style={{textAlign:"center",borderColor:heroName.trim().length<2?"rgba(212,160,48,.35)":"rgba(255,255,255,.1)"}} />
                   <div className="gender-row" style={{marginBottom:0,marginTop:8}}>
                     {[
                       {v:"she/her",l:"👧 She/Her",cls:"sel-girl",g:"girl"},
@@ -2845,7 +2845,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                   )}
                   {savedChars.length === 0 && heroName.trim().length >= 2 && (
                     <div style={{textAlign:"center",marginTop:6}}>
-                      <button className="btn-ghost" style={{fontSize:11,padding:"6px 14px",color:"rgba(168,85,247,.7)"}}
+                      <button className="btn-ghost" style={{fontSize:11,padding:"6px 14px",color:"rgba(212,160,48,.7)"}}
                         onClick={()=>{
                           if(!heroName.trim()) return;
                           const nc: Character = {
@@ -2876,7 +2876,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                     {heroName}
                   </div>
                   {(() => { const sc = savedChars.find(c=>c.id===selectedCharId); return sc?.ageDescription ? (
-                    <div style={{fontSize:11,color:"rgba(168,85,247,.6)",marginTop:2}}>{sc.ageDescription}</div>
+                    <div style={{fontSize:11,color:"rgba(212,160,48,.6)",marginTop:2}}>{sc.ageDescription}</div>
                   ) : null; })()}
                   <button className="btn-ghost" style={{fontSize:10,padding:"4px 10px",marginTop:6}}
                     onClick={()=>{setSelectedCharId(null);setHeroName("");setShowNewCharForm(false);}}>
@@ -2941,8 +2941,8 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               {/* Divider 5 — centred stack */}
               <div style={{textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:4,marginBottom:16}}>
                 <span style={{fontSize:16,filter:"opacity(.55)"}}>🌙</span>
-                <span style={{fontSize:8.5,fontWeight:700,letterSpacing:".13em",textTransform:"uppercase",color:"rgba(168,85,247,.5)"}}>About SleepSeed</span>
-                <div style={{width:26,height:1,background:"rgba(168,85,247,.3)",marginTop:1}} />
+                <span style={{fontSize:8.5,fontWeight:700,letterSpacing:".13em",textTransform:"uppercase",color:"rgba(212,160,48,.5)"}}>About SleepSeed</span>
+                <div style={{width:26,height:1,background:"rgba(212,160,48,.3)",marginTop:1}} />
               </div>
 
               {/* Headline */}
@@ -2952,10 +2952,10 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                   letterSpacing:".01em"}}>
                   Bedtime, but better.
                 </div>
-                <div style={{width:36,height:2,background:"linear-gradient(90deg,transparent,rgba(168,85,247,.55),transparent)",
+                <div style={{width:36,height:2,background:"linear-gradient(90deg,transparent,rgba(212,160,48,.55),transparent)",
                   margin:"0 auto 12px"}} />
                 <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
-                  color:"rgba(168,85,247,.78)",lineHeight:1.85,maxWidth:300,margin:"0 auto",padding:"0 4px"}}>
+                  color:"rgba(212,160,48,.78)",lineHeight:1.85,maxWidth:300,margin:"0 auto",padding:"0 4px"}}>
                   A bedtime story written{" "}
                   <span style={{color:"var(--gold2)",fontStyle:"italic"}}>just for your child, in seconds</span>
                   {" "}— about their day, their feelings, or the wildest adventure their imagination can dream up.{" "}
@@ -2966,7 +2966,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               {/* Three compact cards */}
               <div style={{display:"flex",gap:6,marginBottom:16}}>
                 {[
-                  {icon:"🌟", title:"Their world", body:"Real life or pure fantasy", accent:"rgba(168,85,247,.15)", border:"rgba(168,85,247,.2)"},
+                  {icon:"🌟", title:"Their world", body:"Real life or pure fantasy", accent:"rgba(212,160,48,.15)", border:"rgba(212,160,48,.2)"},
                   {icon:"💛", title:"Real bonding", body:"Connection every night",    accent:"rgba(76,200,144,.1)",  border:"rgba(76,200,144,.2)"},
                   {icon:"📄", title:"Keep forever", body:"A real printed book",       accent:"rgba(160,120,255,.1)", border:"rgba(160,120,255,.2)"},
                 ].map(({icon,title,body,accent,border}) => (
@@ -2981,21 +2981,21 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
               {/* Quote */}
               <div style={{padding:"14px 16px",
-                background:"linear-gradient(135deg,rgba(168,85,247,.07),rgba(180,130,30,.03))",
-                border:"1px solid rgba(168,85,247,.2)",borderRadius:13,marginBottom:14}}>
-                <div style={{fontSize:26,color:"rgba(168,85,247,.22)",fontFamily:"Georgia,serif",
+                background:"linear-gradient(135deg,rgba(212,160,48,.07),rgba(180,130,30,.03))",
+                border:"1px solid rgba(212,160,48,.2)",borderRadius:13,marginBottom:14}}>
+                <div style={{fontSize:26,color:"rgba(212,160,48,.22)",fontFamily:"Georgia,serif",
                   lineHeight:1,marginBottom:5,fontWeight:700}}>"</div>
                 <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
                   color:"var(--gold3)",lineHeight:1.85,textAlign:"center"}}>
                   Children don't remember the nights they fell asleep quickly.
                   They remember the nights someone made something just for them.
                 </div>
-                <div style={{fontSize:26,color:"rgba(168,85,247,.22)",fontFamily:"Georgia,serif",
+                <div style={{fontSize:26,color:"rgba(212,160,48,.22)",fontFamily:"Georgia,serif",
                   lineHeight:1,marginTop:4,fontWeight:700,textAlign:"right"}}>"</div>
               </div>
 
               <div style={{textAlign:"center",paddingBottom:6}}>
-                <div style={{fontSize:9,color:"rgba(168,85,247,.4)",letterSpacing:".12em",textTransform:"uppercase",fontWeight:700}}>
+                <div style={{fontSize:9,color:"rgba(212,160,48,.4)",letterSpacing:".12em",textTransform:"uppercase",fontWeight:700}}>
                   Made with love · sleepseed.app
                 </div>
               </div>
@@ -3047,8 +3047,8 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                     {LENGTHS.map(l => (
                       <button key={l.value}
                         style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",borderRadius:11,cursor:"pointer",
-                          border:`1.5px solid ${storyLen===l.value?"rgba(168,85,247,.7)":"rgba(255,255,255,.1)"}`,
-                          background:storyLen===l.value?"rgba(168,85,247,.1)":"rgba(255,255,255,.04)",
+                          border:`1.5px solid ${storyLen===l.value?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
+                          background:storyLen===l.value?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
                           transition:"all .2s"}}
                         onClick={()=>setStoryLen(l.value)}>
                         <span style={{fontSize:13,fontWeight:700,color:storyLen===l.value?"var(--gold2)":"var(--cream)"}}>{l.label}</span>
@@ -3083,9 +3083,9 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                       onClick={startListening}
                       title="Hold to speak"
                       style={{position:"absolute",right:8,bottom:8,width:28,height:28,borderRadius:"50%",
-                        border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(168,85,247,.4)"}`,
-                        background:isListening?"rgba(240,80,80,.15)":"rgba(168,85,247,.08)",
-                        color:isListening?"#f08080":"rgba(168,85,247,.8)",
+                        border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.4)"}`,
+                        background:isListening?"rgba(240,80,80,.15)":"rgba(212,160,48,.08)",
+                        color:isListening?"#f08080":"rgba(212,160,48,.8)",
                         fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
                         transition:"all .2s",flexShrink:0}}>
                       {isListening ? "⏹" : "🎤"}
@@ -3139,7 +3139,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
                   {/* Live preview */}
                   {(storyBrief1||storyBrief2) && (
-                    <div style={{background:"rgba(168,85,247,.07)",border:"1px solid rgba(168,85,247,.2)",borderRadius:10,padding:"10px 13px",fontSize:12,lineHeight:1.7,marginBottom:10,color:"var(--cream)"}}>
+                    <div style={{background:"rgba(212,160,48,.07)",border:"1px solid rgba(212,160,48,.2)",borderRadius:10,padding:"10px 13px",fontSize:12,lineHeight:1.7,marginBottom:10,color:"var(--cream)"}}>
                       {storyBrief1 && <span style={{color:"var(--gold2)",fontWeight:700}}>{heroName} is {storyBrief1}.</span>}
                       {storyBrief1 && storyBrief2 && " "}
                       {storyBrief2 && <span>The story should feel <span style={{color:"var(--gold2)",fontWeight:700}}>{storyBrief2}</span>.</span>}
@@ -3193,9 +3193,9 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                               }}
                               title="Tap to speak"
                               style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
-                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(168,85,247,.35)"}`,
-                                background:isListening?"rgba(240,80,80,.12)":"rgba(168,85,247,.06)",
-                                color:isListening?"#f08080":"rgba(168,85,247,.7)",
+                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
+                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
+                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
                                 fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
                                 transition:"all .2s",flexShrink:0}}>
                               {isListening ? "⏹" : "🎤"}
@@ -3223,8 +3223,8 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                           ].map(o => (
                             <button key={o.v}
                               style={{padding:"4px 10px",borderRadius:99,fontSize:11,fontWeight:700,cursor:"pointer",
-                                border:`1px solid ${storyBrief1===o.v?"rgba(168,85,247,.6)":"rgba(168,85,247,.25)"}`,
-                                background:storyBrief1===o.v?"rgba(168,85,247,.12)":"transparent",
+                                border:`1px solid ${storyBrief1===o.v?"rgba(212,160,48,.6)":"rgba(212,160,48,.25)"}`,
+                                background:storyBrief1===o.v?"rgba(212,160,48,.12)":"transparent",
                                 color:storyBrief1===o.v?"#f0cc60":"rgba(240,200,80,.85)",fontFamily:"'Nunito',sans-serif",
                                 transition:"all .15s"}}
                               onClick={()=>{ setStoryBrief1(o.v); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(false); setBriefStep2Open(true); }}>
@@ -3260,9 +3260,9 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                               }}
                               title="Tap to speak"
                               style={{position:"absolute",right:8,bottom:8,width:28,height:28,borderRadius:"50%",
-                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(168,85,247,.4)"}`,
-                                background:isListening?"rgba(240,80,80,.15)":"rgba(168,85,247,.08)",
-                                color:isListening?"#f08080":"rgba(168,85,247,.8)",
+                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.4)"}`,
+                                background:isListening?"rgba(240,80,80,.15)":"rgba(212,160,48,.08)",
+                                color:isListening?"#f08080":"rgba(212,160,48,.8)",
                                 fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
                                 transition:"all .2s"}}>
                               {isListening ? "⏹" : "🎤"}
@@ -3322,9 +3322,9 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                               }}
                               title="Tap to speak"
                               style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
-                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(168,85,247,.35)"}`,
-                                background:isListening?"rgba(240,80,80,.12)":"rgba(168,85,247,.06)",
-                                color:isListening?"#f08080":"rgba(168,85,247,.7)",
+                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
+                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
+                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
                                 fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
                                 transition:"all .2s",flexShrink:0}}>
                               {isListening ? "⏹" : "🎤"}
@@ -3418,9 +3418,9 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                               }}
                               title="Tap to speak"
                               style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
-                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(168,85,247,.35)"}`,
-                                background:isListening?"rgba(240,80,80,.12)":"rgba(168,85,247,.06)",
-                                color:isListening?"#f08080":"rgba(168,85,247,.7)",
+                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
+                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
+                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
                                 fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
                                 transition:"all .2s",flexShrink:0}}>
                               {isListening ? "⏹" : "🎤"}
@@ -3463,8 +3463,8 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                       {LENGTHS.map(l => (
                         <button key={l.value}
                           style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 13px",borderRadius:11,cursor:"pointer",textAlign:"left",
-                            border:`1.5px solid ${storyLen===l.value?"rgba(168,85,247,.7)":"rgba(255,255,255,.1)"}`,
-                            background:storyLen===l.value?"rgba(168,85,247,.1)":"rgba(255,255,255,.04)",
+                            border:`1.5px solid ${storyLen===l.value?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
+                            background:storyLen===l.value?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
                             transition:"all .2s"}}
                           onClick={()=>setStoryLen(l.value)}>
                           <span style={{fontSize:12,fontWeight:700,color:storyLen===l.value?"var(--gold2)":"var(--cream)"}}>{l.label}</span>
@@ -3757,8 +3757,8 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                     {PRESET_VOICES.map(v => (
                       <button key={v.id}
                         style={{padding:"10px 10px",borderRadius:11,cursor:"pointer",textAlign:"left",
-                          border:`1.5px solid ${selectedVoiceId===v.id?"rgba(168,85,247,.7)":"rgba(255,255,255,.1)"}`,
-                          background:selectedVoiceId===v.id?"rgba(168,85,247,.1)":"rgba(255,255,255,.04)",
+                          border:`1.5px solid ${selectedVoiceId===v.id?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
+                          background:selectedVoiceId===v.id?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
                           transition:"all .15s"}}
                         onClick={()=>{ setSelectedVoiceId(selectedVoiceId===v.id?null:v.id); }}>
                         <div style={{fontSize:16,marginBottom:3}}>{v.emoji}</div>
@@ -4227,7 +4227,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                     {memories.map(m => (
                       <div key={m.id}
                         style={{borderRadius:13,overflow:"hidden",
-                          border:`1px solid ${m.occasion?"rgba(168,85,247,.25)":"rgba(160,120,255,.2)"}`,
+                          border:`1px solid ${m.occasion?"rgba(212,160,48,.25)":"rgba(160,120,255,.2)"}`,
                           cursor:"pointer",transition:"transform .15s"}}
                         onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
                         onMouseLeave={e=>(e.currentTarget.style.transform="none")}
@@ -4282,7 +4282,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                     {nightCards.map(nc => (
                       <div key={nc.id}
                         style={{borderRadius:13,overflow:"hidden",cursor:"pointer",
-                          border:"1px solid rgba(168,85,247,.2)",
+                          border:"1px solid rgba(212,160,48,.2)",
                           background:"linear-gradient(135deg,rgba(13,21,53,.97),rgba(20,15,40,.9))",
                           transition:"transform .15s"}}
                         onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
@@ -4291,7 +4291,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                         <div style={{display:"flex",gap:0,alignItems:"stretch"}}>
                           {/* Photo / emoji thumbnail — Polaroid mini */}
                           <div style={{width:nc.photo?100:56,flexShrink:0,
-                            background:nc.photo?"#faf8f2":"linear-gradient(135deg,rgba(168,85,247,.08),rgba(20,15,40,.6))",
+                            background:nc.photo?"#faf8f2":"linear-gradient(135deg,rgba(212,160,48,.08),rgba(20,15,40,.6))",
                             display:"flex",alignItems:"center",justifyContent:"center",
                             padding:nc.photo?"6px 6px 10px 6px":"0"}}>
                             {nc.photo ? (
@@ -4406,7 +4406,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 {viewingNightCard.gratitude && (
                   <div>
                     <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                      color:"rgba(168,85,247,.5)",marginBottom:3}}>Best three seconds</div>
+                      color:"rgba(212,160,48,.5)",marginBottom:3}}>Best three seconds</div>
                     <div style={{fontFamily:"'Kalam',cursive",fontSize:13,color:"var(--cream)",lineHeight:1.5}}>
                       {viewingNightCard.gratitude}
                     </div>
