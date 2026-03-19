@@ -5,7 +5,7 @@ import { StoryFeedback, RereadCheck } from "./StoryFeedback";
 import { getCharacters, saveCharacter as saveCharToStorage } from "./lib/storage";
 import type { Character } from "./lib/types";
 
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Cormorant+Garamond:ital,wght@1,600&family=Patrick+Hand&family=Nunito:wght@400;600;700&family=Kalam:wght@400;700&display=swap');`;
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Kalam:wght@400;700&display=swap');`;
 
 const CSS = `
 ${FONTS}
@@ -14,6 +14,10 @@ ${FONTS}
   --night:#060b18;--gold:#d4a030;--gold2:#f0cc60;--gold3:#fae9a8;
   --cream:#fdf5e0;--parch:#f5e8c0;--ink:#261600;--ink2:#5a380a;--ink3:#8a5a1a;
   --ui:#c4d0f0;--dim:#6070a0;--dimmer:#3a4878;--green2:#4cc890;
+  --amber:#E8972A;--amber2:#F5B84C;--amber-glow:rgba(232,151,42,.15);
+  --serif2:'Playfair Display',Georgia,serif;
+  --sans2:'Plus Jakarta Sans',system-ui,sans-serif;
+  --mono2:'DM Mono',monospace;
 }
 body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);min-height:100vh;overflow-x:hidden}
 .stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
@@ -285,6 +289,106 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
   text-align:center;color:var(--dim);background:transparent;border:none;font-family:'Nunito',sans-serif;transition:all .2s}
 .mem-tab.on{background:rgba(212,160,48,.12);color:var(--gold2)}
 .mem-tab:hover:not(.on){color:var(--cream);background:rgba(255,255,255,.05)}
+/* ── NEW THEME — story builder screens ── */
+.nb-nav{display:flex;align-items:center;gap:10px;padding:16px 20px 14px;border-bottom:1px solid rgba(232,151,42,.08);background:rgba(6,11,24,.98);position:sticky;top:0;z-index:50;backdrop-filter:blur(16px)}
+.nb-back{background:transparent;border:none;color:rgba(244,239,232,.38);font-size:13px;cursor:pointer;font-family:var(--sans2);display:flex;align-items:center;gap:5px;transition:color .15s}
+.nb-back:hover{color:rgba(244,239,232,.75)}
+.nb-logo{font-family:var(--serif2);font-size:16px;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:8px;margin:0 auto}
+.nb-moon{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020);flex-shrink:0}
+.nb-body{padding:22px 20px;font-family:var(--sans2)}
+.nb-label{font-size:9px;font-family:var(--mono2);letter-spacing:2px;text-transform:uppercase;color:rgba(232,151,42,.55);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.nb-label::before{content:'';width:16px;height:1px;background:rgba(232,151,42,.35);flex-shrink:0}
+.nb-divider{height:1px;background:rgba(255,255,255,.05);margin:16px 0}
+.nb-hero-input{width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(232,151,42,.3);border-radius:14px;padding:16px 18px;font-size:20px;color:var(--cream);font-family:var(--serif2);font-style:italic;font-weight:700;outline:none;text-align:center;letter-spacing:-.02em;transition:border-color .2s}
+.nb-hero-input:focus{border-color:var(--amber);box-shadow:0 0 0 4px rgba(232,151,42,.07)}
+.nb-hero-input::placeholder{color:rgba(244,239,232,.22);font-weight:400;font-style:italic;font-size:15px}
+.nb-pronoun-row{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.nb-pronoun{padding:7px 14px;border-radius:50px;cursor:pointer;border:1px solid rgba(255,255,255,.09);color:rgba(244,239,232,.38);background:transparent;font-size:11.5px;font-weight:500;font-family:var(--sans2);transition:all .2s}
+.nb-pronoun.sel{background:rgba(232,151,42,.12);border-color:rgba(232,151,42,.38);color:var(--amber2)}
+.nb-char-strip{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:0}
+.nb-char-chip{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:transform .15s}
+.nb-char-chip:hover{transform:translateY(-2px)}
+.nb-char-av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid rgba(232,151,42,.12);transition:all .2s;overflow:hidden}
+.nb-char-av.sel{border-color:var(--amber);box-shadow:0 0 0 3px rgba(232,151,42,.14)}
+.nb-char-av-add{background:rgba(232,151,42,.05);border:1.5px dashed rgba(232,151,42,.22)!important}
+.nb-char-nm{font-size:10px;color:rgba(244,239,232,.45);font-weight:500;font-family:var(--mono2);text-align:center;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nb-char-nm.sel{color:var(--amber2)}
+.nb-char-detail{background:rgba(232,151,42,.05);border:1px solid rgba(232,151,42,.12);border-radius:11px;padding:10px 13px;margin-top:11px;animation:fup .3s cubic-bezier(.16,1,.3,1)}
+.nb-prefill-tag{font-size:9.5px;color:rgba(76,200,144,.75);font-family:var(--mono2);margin-top:5px}
+.nb-cta{width:100%;padding:16px;background:var(--amber);color:#1A1420;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--sans2);transition:all .2s;letter-spacing:-.01em}
+.nb-cta:hover{background:var(--amber2);transform:translateY(-1px);box-shadow:0 8px 24px rgba(232,151,42,.25)}
+.nb-cta:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.nb-customise{text-align:center;font-size:11.5px;color:rgba(232,151,42,.45);cursor:pointer;padding:10px 0;font-weight:500;font-family:var(--mono2);letter-spacing:.5px;transition:color .2s}
+.nb-customise:hover{color:rgba(232,151,42,.75)}
+.nb-preview{background:rgba(232,151,42,.06);border:1px solid rgba(232,151,42,.16);border-radius:12px;padding:12px 14px;margin-bottom:16px;animation:fup .35s cubic-bezier(.16,1,.3,1)}
+.nb-preview-label{font-size:8.5px;font-family:var(--mono2);color:rgba(232,151,42,.5);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
+.nb-preview-text{font-family:var(--serif2);font-size:12.5px;font-style:italic;color:rgba(244,239,232,.65);line-height:1.68}
+.nb-about-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
+.nb-about-pill{padding:10px 11px;border-radius:11px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(244,239,232,.48);font-size:12px;font-weight:500;cursor:pointer;text-align:left;font-family:var(--sans2);transition:all .2s;display:flex;align-items:center;gap:7px}
+.nb-about-pill:hover{background:rgba(255,255,255,.06)}
+.nb-about-pill.sel{background:rgba(232,151,42,.09);border-color:rgba(232,151,42,.32);color:var(--amber2)}
+.nb-mood-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:0}
+.nb-mood-pill{padding:10px 11px;border-radius:11px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(244,239,232,.48);font-size:12px;font-weight:500;cursor:pointer;text-align:left;font-family:var(--sans2);transition:all .2s;display:flex;align-items:center;gap:7px}
+.nb-mood-pill:hover{background:rgba(255,255,255,.06)}
+.nb-mood-pill.sel{background:rgba(232,151,42,.09);border-color:rgba(232,151,42,.32);color:var(--amber2)}
+.nb-textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:11px 14px;font-size:13px;color:var(--cream);font-family:var(--sans2);outline:none;resize:none;min-height:64px;line-height:1.6;transition:border-color .2s;margin-top:9px}
+.nb-textarea:focus{border-color:rgba(232,151,42,.38)}
+.nb-textarea::placeholder{color:rgba(244,239,232,.2)}
+.nb-lesson-group-label{font-size:8.5px;font-family:var(--mono2);color:rgba(244,239,232,.28);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-weight:500}
+.nb-lesson-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.nb-lesson-pill{padding:5px 12px;border-radius:50px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(244,239,232,.42);font-size:11px;font-weight:500;cursor:pointer;font-family:var(--sans2);transition:all .2s}
+.nb-lesson-pill:hover{background:rgba(255,255,255,.06)}
+.nb-lesson-pill.sel{background:rgba(232,151,42,.1);border-color:rgba(232,151,42,.3);color:var(--amber2)}
+.nb-age-row{display:flex;gap:6px}
+.nb-age-pill{flex:1;padding:9px 5px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(244,239,232,.42);font-size:11px;font-weight:600;cursor:pointer;text-align:center;font-family:var(--mono2);transition:all .2s}
+.nb-age-pill:hover{background:rgba(255,255,255,.06)}
+.nb-age-pill.sel{background:rgba(232,151,42,.1);border-color:rgba(232,151,42,.32);color:var(--amber2)}
+.nb-age-pill-sub{font-size:7.5px;font-weight:400;color:rgba(244,239,232,.28);margin-top:2px}
+.nb-age-pill.sel .nb-age-pill-sub{color:rgba(245,184,76,.55)}
+.nb-setting-chips{display:flex;gap:6px;flex-wrap:wrap}
+.nb-setting-chip{padding:6px 13px;border-radius:50px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(244,239,232,.42);font-size:11px;font-weight:500;cursor:pointer;font-family:var(--mono2);transition:all .2s}
+.nb-setting-chip:hover{background:rgba(255,255,255,.06)}
+.nb-setting-chip.sel{background:rgba(232,151,42,.1);border-color:rgba(232,151,42,.3);color:var(--amber2)}
+.nb-input-sm{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:11px;padding:11px 14px;font-size:13px;color:var(--cream);font-family:var(--sans2);outline:none;transition:border-color .2s}
+.nb-input-sm:focus{border-color:rgba(232,151,42,.38)}
+.nb-input-sm::placeholder{color:rgba(244,239,232,.2)}
+.nb-sticky-bar{background:rgba(6,11,24,.98);border-top:1px solid rgba(232,151,42,.14);padding:14px 20px;margin-top:0}
+.nb-sticky-inner{display:flex;align-items:center;gap:11px}
+.nb-sticky-av{width:36px;height:36px;border-radius:50%;background:#1E1640;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:2px solid rgba(232,151,42,.2);overflow:hidden}
+.nb-sticky-info{flex:1;min-width:0}
+.nb-sticky-name{font-size:13px;font-weight:600;color:var(--cream);font-family:var(--serif2)}
+.nb-sticky-sub{font-size:9.5px;color:rgba(244,239,232,.35);font-family:var(--mono2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb-sticky-btn{background:var(--amber);color:#1A1420;border:none;border-radius:11px;padding:11px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans2);white-space:nowrap;flex-shrink:0;transition:all .2s}
+.nb-sticky-btn:hover{background:var(--amber2)}
+.nb-ready-label{font-size:8px;font-family:var(--mono2);color:rgba(232,151,42,.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;text-align:center}
+.nb-gen-body{padding:22px 20px;font-family:var(--sans2);display:flex;flex-direction:column;align-items:center}
+.nb-gen-progress{height:3px;background:rgba(255,255,255,.06);border-radius:2px;margin-bottom:24px;overflow:hidden;width:100%}
+.nb-gen-fill{height:100%;background:var(--amber);border-radius:2px}
+.nb-gen-dots{display:flex;gap:6px;justify-content:center;margin-bottom:20px}
+.nb-gen-dot{height:3px;border-radius:2px;background:rgba(255,255,255,.1)}
+.nb-gen-dot.done{background:var(--amber)}
+.nb-gen-dot.active{background:rgba(232,151,42,.5)}
+.nb-gen-moon{width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020);margin:0 auto 8px;box-shadow:0 0 40px 8px rgba(232,151,42,.1)}
+.nb-gen-title{font-family:var(--serif2);font-size:20px;font-weight:700;color:var(--cream);text-align:center;margin-bottom:4px;font-style:italic}
+.nb-gen-sub{font-size:11px;color:rgba(244,239,232,.38);font-family:var(--mono2);text-align:center;margin-bottom:22px}
+.nb-bq-card{background:rgba(255,255,255,.04);border:1px solid rgba(232,151,42,.14);border-radius:16px;padding:18px;width:100%;margin-bottom:14px}
+.nb-bq-while{font-size:8.5px;font-family:var(--mono2);color:rgba(232,151,42,.48);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.nb-bq-q{font-family:var(--serif2);font-size:17px;font-style:italic;color:rgba(244,239,232,.82);line-height:1.5;margin-bottom:14px}
+.nb-bq-answer{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:12px 14px;font-size:14px;color:var(--cream);font-family:var(--serif2);font-style:italic;outline:none;resize:none;min-height:70px;line-height:1.6;margin-bottom:10px}
+.nb-bq-answer::placeholder{color:rgba(244,239,232,.2);font-size:12px;font-style:normal}
+.nb-bq-save{width:100%;padding:11px;background:rgba(76,200,144,.1);border:1px solid rgba(76,200,144,.2);border-radius:10px;color:rgba(76,200,144,.85);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans2);transition:all .2s}
+.nb-bq-save:hover{background:rgba(76,200,144,.16)}
+.nb-step-list{display:flex;flex-direction:column;gap:5px;width:100%;margin-top:2px}
+.nb-step-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;font-size:12px;font-family:var(--sans2)}
+.nb-step-item.done{background:rgba(76,200,144,.05);border:1px solid rgba(76,200,144,.12);color:rgba(76,200,144,.8)}
+.nb-step-item.active{background:rgba(232,151,42,.06);border:1px solid rgba(232,151,42,.14);color:rgba(232,151,42,.85);font-weight:600}
+.nb-step-item.pending{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);color:rgba(244,239,232,.28)}
+.nb-step-icon{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nb-step-icon.done{background:rgba(76,200,144,.18)}
+.nb-step-icon.active{background:rgba(232,151,42,.14)}
+.nb-step-icon.pending{background:rgba(255,255,255,.04)}
+.nb-step-pulse{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:nb-pulse 1s ease-in-out infinite}
+@keyframes nb-pulse{0%,100%{opacity:.5;transform:scale(.7)}50%{opacity:1;transform:scale(1.2)}}
 .char-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:12px}
 .char-chip{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:50px;cursor:pointer;
   border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);transition:all .2s;
@@ -2711,927 +2815,523 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       <div className="app">
 
         {/* HOME */}
-        {stage==="home" && (
-          <div className="screen">
-            <div className="brand-row">
-              <div className="brand-gem">🌙</div>
-              <div>
-                <div className="brand-name">SleepSeed</div>
-                <div className="brand-tag">personalized bedtime books</div>
-              </div>
-              <div style={{marginLeft:"auto",display:"flex",gap:6}}>
-                <button className="btn-ghost" style={{fontSize:11,padding:"6px 11px"}} onClick={()=>setStage("memories")}>
-                  📚 Memories
-                </button>
-                <button className="btn-ghost" style={{fontSize:11,padding:"6px 11px",
-                  borderColor:"rgba(160,120,255,.25)",color:"rgba(160,120,255,.8)"}}
-                  onClick={()=>setStage("library")}>
-                  📖 Library
-                </button>
-              </div>
-            </div>
-            <div style={{height:10}} />
+        {stage==="home" && (() => {
+          const savedCharsHome: any[] = (() => {
+            try {
+              if (!userId) return [];
+              const raw = localStorage.getItem(`ss2_chars_${userId}`);
+              return raw ? JSON.parse(raw) : [];
+            } catch { return []; }
+          })();
 
-            {/* ── Re-read check (from StoryFeedback) ── */}
-            {styleDna?.pendingRereadChecks?.[0] && (
-              <RereadCheck
-                pendingCheck={styleDna.pendingRereadChecks[0]}
-                styleDna={styleDna}
-                onAnswer={(updatedDna) => {
-                  setStyleDna(updatedDna);
-                  sSet("style_dna", updatedDna).catch(()=>{});
-                }}
-                onDismiss={() => {
-                  const updated = {...styleDna, pendingRereadChecks: (styleDna.pendingRereadChecks||[]).slice(1)};
-                  setStyleDna(updated);
-                  sSet("style_dna", updated).catch(()=>{});
-                }}
-              />
-            )}
-
-            {/* ── Demo story strip ── */}
-            <div onClick={()=>{ setBook({...DEMO_BOOK}); setPageIdx(0); setStage("book"); setFromCache(false); }}
-              style={{borderRadius:14,overflow:"hidden",
-                border:"1.5px solid rgba(212,160,48,.5)",
-                boxShadow:"0 0 0 3px rgba(212,160,48,.06)",
-                cursor:"pointer",marginBottom:18,transition:"transform .15s",
-                background:"rgba(13,21,53,.95)"}}
-              onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
-              onMouseLeave={e=>(e.currentTarget.style.transform="none")}>
-              <div style={{padding:"11px 14px",display:"flex",alignItems:"center",gap:11}}>
-                <div style={{fontSize:26,flexShrink:0}}>🌙</div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
-                    color:"rgba(212,160,48,.7)",marginBottom:3}}>Example story</div>
-                  <div style={{fontFamily:"'Fraunces',serif",fontSize:13,fontWeight:700,
-                    color:"var(--cream)",lineHeight:1.3,marginBottom:2}}>The Stone in Her Pocket</div>
-                  <div style={{fontSize:9,color:"rgba(140,100,220,.9)",fontWeight:700}}>Tap to read →</div>
-                </div>
-              </div>
-              <div style={{background:"rgba(212,160,48,.05)",padding:"8px 14px",
-                borderTop:"1px solid rgba(212,160,48,.12)",
-                fontFamily:"'Fraunces',serif",fontSize:11,fontStyle:"italic",
-                color:"rgba(240,210,130,.85)",lineHeight:1.6}}>
-                "Adina yawned the kind of yawn that means everything is okay now."
+          return (
+          <div className="screen" style={{padding:0}}>
+            {/* Nav */}
+            <div className="nb-nav">
+              <div className="nb-logo">
+                <div className="nb-moon" />
+                SleepSeed
               </div>
             </div>
 
-            <div className="card" style={{marginBottom:10}}>
-              <div style={{fontFamily:"'Lora',serif",fontSize:17,fontWeight:700,color:"var(--cream)",marginBottom:14,textAlign:"center",fontStyle:"italic"}}>
-                ✨ Tonight's story is for…
-              </div>
-
-              {/* ── Character chips ── */}
-              {savedChars.length > 0 && (
-                <div className="char-chips">
-                  {savedChars.slice(0,6).map(c => (
-                    <div key={c.id}
-                      className={`char-chip${selectedCharId===c.id?" on":""}`}
-                      onClick={()=>selectCharacter(c)}>
-                      <div className="char-chip-av" style={{background:c.color||"rgba(212,160,48,.15)"}}>
-                        {c.photo ? <img src={c.photo} alt="" style={{width:"100%",height:"100%",borderRadius:"50%",objectFit:"cover"}} /> : (c.emoji||"⭐")}
-                      </div>
-                      <span className="char-chip-name">{c.name}</span>
-                    </div>
-                  ))}
-                  <div className="char-chip char-chip-add" onClick={()=>{setShowNewCharForm(true);setSelectedCharId(null);setHeroName("");}}>
-                    + New
-                  </div>
-                </div>
+            <div className="nb-body">
+              {/* Re-read check */}
+              {styleDna?.pendingRereadChecks?.[0] && (
+                <RereadCheck
+                  pendingCheck={styleDna.pendingRereadChecks[0]}
+                  styleDna={styleDna}
+                  onAnswer={(updatedDna) => { setStyleDna(updatedDna); sSet("style_dna", updatedDna).catch(()=>{}); }}
+                  onDismiss={() => { const updated={...styleDna,pendingRereadChecks:(styleDna.pendingRereadChecks||[]).slice(1)}; setStyleDna(updated); sSet("style_dna",updated).catch(()=>{}); }}
+                />
               )}
 
-              {/* ── New character form (inline) ── */}
-              {(showNewCharForm || savedChars.length === 0) && !selectedCharId && (
-                <div className={savedChars.length > 0 ? "new-char-form" : ""}>
-                  {savedChars.length === 0 && (
-                    <div style={{textAlign:"center",marginBottom:8}}>
-                      <div style={{fontSize:10,color:"rgba(212,160,48,.7)",fontStyle:"italic",fontFamily:"'Lora',serif",marginBottom:3}}>
-                        Create your child's character
-                      </div>
-                    </div>
-                  )}
-                  <input className="finput hero-input" placeholder="Their name…"
-                    value={newCharName.length > 0 ? newCharName : heroName}
-                    onChange={e=>{ setNewCharName(e.target.value); setHeroName(e.target.value); }}
-                    maxLength={20}
-                    style={{textAlign:"center",borderColor:heroName.trim().length<2?"rgba(212,160,48,.35)":"rgba(255,255,255,.1)"}} />
-                  <div className="gender-row" style={{marginBottom:0,marginTop:8}}>
-                    {[
-                      {v:"she/her",l:"👧 She/Her",cls:"sel-girl",g:"girl"},
-                      {v:"he/him",l:"👦 He/Him",cls:"sel-boy",g:"boy"},
-                      {v:"they/them",l:"✨ They/Them",cls:"sel-any",g:""},
-                    ].map(o => (
-                      <button key={o.v} className={`gender-pill${newCharPronouns===o.v?" "+o.cls:""}`}
-                        onClick={()=>{setNewCharPronouns(o.v);setHeroGender(o.g);}}>{o.l}</button>
-                    ))}
-                  </div>
-                  {savedChars.length > 0 && (
-                    <>
-                      <input className="finput" placeholder="Age (e.g. 5 years old)"
-                        value={newCharAge} onChange={e=>setNewCharAge(e.target.value)} maxLength={30}
-                        style={{fontSize:13,marginTop:4}} />
-                      <input className="finput" placeholder="One weird detail about them (optional)"
-                        value={newCharDetail} onChange={e=>setNewCharDetail(e.target.value)} maxLength={100}
-                        style={{fontSize:13}} />
-                      <div style={{display:"flex",gap:8,marginTop:4}}>
-                        <button className="btn-ghost" style={{flex:1,fontSize:12}} onClick={()=>{setShowNewCharForm(false);setNewCharName("");setNewCharAge("");setNewCharDetail("");}}>
-                          Cancel
-                        </button>
-                        <button className="btn" style={{flex:2,padding:10,fontSize:13}} disabled={!newCharName.trim() && !heroName.trim()}
-                          onClick={createAndSelectNewChar}>
-                          Save &amp; Select
-                        </button>
-                      </div>
-                    </>
-                  )}
-                  {savedChars.length === 0 && heroName.trim().length >= 2 && (
-                    <div style={{textAlign:"center",marginTop:6}}>
-                      <button className="btn-ghost" style={{fontSize:11,padding:"6px 14px",color:"rgba(212,160,48,.7)"}}
-                        onClick={()=>{
-                          if(!heroName.trim()) return;
-                          const nc: Character = {
-                            id: Math.random().toString(36).slice(2), userId: userId||'guest',
-                            name: heroName.trim(), type:'human', ageDescription:'',
-                            pronouns: (heroGender==='girl'?'she/her':heroGender==='boy'?'he/him':'they/them') as any,
-                            personalityTags:[], weirdDetail:'', currentSituation:'',
-                            color:['#7C3AED','#A855F7','#60A5FA','#34D399','#F472B6'][Math.floor(Math.random()*5)],
-                            emoji:['🌟','✨','🌙','⭐'][Math.floor(Math.random()*4)],
-                            storyIds:[], createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(),
-                          };
-                          try { saveCharToStorage(nc); } catch(_) {}
-                          setSavedChars(prev=>[nc,...prev]);
-                          setSelectedCharId(nc.id);
-                          setHasSeenOnboard(true); sSet("onboarded",{v:true});
-                        }}>
-                        💾 Save to my characters
-                      </button>
-                    </div>
-                  )}
+              {/* Hero — name input */}
+              <div style={{textAlign:"center",marginBottom:22}}>
+                <div style={{fontSize:9,fontFamily:"var(--mono2)",color:"rgba(232,151,42,.5)",letterSpacing:"2px",textTransform:"uppercase",marginBottom:10}}>
+                  Tonight's story is for
                 </div>
-              )}
-
-              {/* ── Selected character summary ── */}
-              {selectedCharId && !showNewCharForm && (
-                <div style={{textAlign:"center",marginTop:4}}>
-                  <div style={{fontFamily:"'Lora',serif",fontSize:20,fontWeight:700,color:"var(--cream)"}}>
-                    {heroName}
-                  </div>
-                  {(() => { const sc = savedChars.find(c=>c.id===selectedCharId); return sc?.ageDescription ? (
-                    <div style={{fontSize:11,color:"rgba(212,160,48,.6)",marginTop:2}}>{sc.ageDescription}</div>
-                  ) : null; })()}
-                  <button className="btn-ghost" style={{fontSize:10,padding:"4px 10px",marginTop:6}}
-                    onClick={()=>{setSelectedCharId(null);setHeroName("");setShowNewCharForm(false);}}>
-                    Change
-                  </button>
-                </div>
-              )}
-            </div>
-            {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
-            <div className="path-row">
-              <button className="path-btn quick" disabled={heroName.trim().length<2}
-                onClick={()=>{
-                  if(heroName.trim().length<2) return;
-                  // Auto-save new character if first time and not yet saved
-                  if(!selectedCharId && heroName.trim().length>=2) {
-                    const nc: Character = {
-                      id:Math.random().toString(36).slice(2), userId:userId||'guest',
-                      name:heroName.trim(), type:'human', ageDescription:'',
-                      pronouns:(heroGender==='girl'?'she/her':heroGender==='boy'?'he/him':'they/them') as any,
-                      personalityTags:[], weirdDetail:'', currentSituation:'',
-                      color:['#7C3AED','#A855F7','#60A5FA','#34D399','#F472B6'][Math.floor(Math.random()*5)],
-                      emoji:['🌟','✨','🌙','⭐'][Math.floor(Math.random()*4)],
-                      storyIds:[], createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(),
-                    };
-                    try { saveCharToStorage(nc); } catch(_) {}
-                    setSavedChars(prev=>[nc,...prev]); setSelectedCharId(nc.id);
-                  }
-                  setStage("quick");
-                }}>
-                <div className="path-icon">⚡</div>
-                <div className="path-title">Quick Story</div>
-                <div className="path-sub">3 questions,<br/>then generate</div>
-              </button>
-              <button className="path-btn build" disabled={heroName.trim().length<2}
-                onClick={()=>{
-                  if(heroName.trim().length<2) return;
-                  if(!selectedCharId && heroName.trim().length>=2) {
-                    const nc: Character = {
-                      id:Math.random().toString(36).slice(2), userId:userId||'guest',
-                      name:heroName.trim(), type:'human', ageDescription:'',
-                      pronouns:(heroGender==='girl'?'she/her':heroGender==='boy'?'he/him':'they/them') as any,
-                      personalityTags:[], weirdDetail:'', currentSituation:'',
-                      color:['#7C3AED','#A855F7','#60A5FA','#34D399','#F472B6'][Math.floor(Math.random()*5)],
-                      emoji:['🌟','✨','🌙','⭐'][Math.floor(Math.random()*4)],
-                      storyIds:[], createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(),
-                    };
-                    try { saveCharToStorage(nc); } catch(_) {}
-                    setSavedChars(prev=>[nc,...prev]); setSelectedCharId(nc.id);
-                  }
-                  setStage("builder");
-                }}>
-                <div className="path-icon">🎨</div>
-                <div className="path-title">Build My Story</div>
-                <div className="path-sub">Full customise,<br/>more control</div>
-              </button>
-            </div>
-
-
-                        {/* ── About section ── */}
-            <div style={{marginTop:32,paddingTop:22}}>
-
-              {/* Divider 5 — centred stack */}
-              <div style={{textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:4,marginBottom:16}}>
-                <span style={{fontSize:16,filter:"opacity(.55)"}}>🌙</span>
-                <span style={{fontSize:8.5,fontWeight:700,letterSpacing:".13em",textTransform:"uppercase",color:"rgba(212,160,48,.5)"}}>About SleepSeed</span>
-                <div style={{width:26,height:1,background:"rgba(212,160,48,.3)",marginTop:1}} />
-              </div>
-
-              {/* Headline */}
-              <div style={{textAlign:"center",marginBottom:14}}>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:600,
-                  color:"var(--gold2)",marginBottom:8,fontStyle:"italic",lineHeight:1.15,
-                  letterSpacing:".01em"}}>
-                  Bedtime, but better.
-                </div>
-                <div style={{width:36,height:2,background:"linear-gradient(90deg,transparent,rgba(212,160,48,.55),transparent)",
-                  margin:"0 auto 12px"}} />
-                <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
-                  color:"rgba(212,160,48,.78)",lineHeight:1.85,maxWidth:300,margin:"0 auto",padding:"0 4px"}}>
-                  A bedtime story written{" "}
-                  <span style={{color:"var(--gold2)",fontStyle:"italic"}}>just for your child, in seconds</span>
-                  {" "}— about their day, their feelings, or the wildest adventure their imagination can dream up.{" "}
-                  Every night. Always different. Always theirs.
-                </div>
-              </div>
-
-              {/* Three compact cards */}
-              <div style={{display:"flex",gap:6,marginBottom:16}}>
-                {[
-                  {icon:"🌟", title:"Their world", body:"Real life or pure fantasy", accent:"rgba(212,160,48,.15)", border:"rgba(212,160,48,.2)"},
-                  {icon:"💛", title:"Real bonding", body:"Connection every night",    accent:"rgba(76,200,144,.1)",  border:"rgba(76,200,144,.2)"},
-                  {icon:"📄", title:"Keep forever", body:"A real printed book",       accent:"rgba(160,120,255,.1)", border:"rgba(160,120,255,.2)"},
-                ].map(({icon,title,body,accent,border}) => (
-                  <div key={title} style={{flex:1,background:accent,border:`1px solid ${border}`,
-                    borderRadius:11,padding:"10px 8px",textAlign:"center"}}>
-                    <div style={{fontSize:18,marginBottom:5}}>{icon}</div>
-                    <div style={{fontSize:10,fontWeight:700,color:"var(--cream)",marginBottom:3,lineHeight:1.3}}>{title}</div>
-                    <div style={{fontSize:9,color:"rgba(190,200,240,.6)",lineHeight:1.4}}>{body}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Quote */}
-              <div style={{padding:"14px 16px",
-                background:"linear-gradient(135deg,rgba(212,160,48,.07),rgba(180,130,30,.03))",
-                border:"1px solid rgba(212,160,48,.2)",borderRadius:13,marginBottom:14}}>
-                <div style={{fontSize:26,color:"rgba(212,160,48,.22)",fontFamily:"Georgia,serif",
-                  lineHeight:1,marginBottom:5,fontWeight:700}}>"</div>
-                <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
-                  color:"var(--gold3)",lineHeight:1.85,textAlign:"center"}}>
-                  Children don't remember the nights they fell asleep quickly.
-                  They remember the nights someone made something just for them.
-                </div>
-                <div style={{fontSize:26,color:"rgba(212,160,48,.22)",fontFamily:"Georgia,serif",
-                  lineHeight:1,marginTop:4,fontWeight:700,textAlign:"right"}}>"</div>
-              </div>
-
-              <div style={{textAlign:"center",paddingBottom:6}}>
-                <div style={{fontSize:9,color:"rgba(212,160,48,.4)",letterSpacing:".12em",textTransform:"uppercase",fontWeight:700}}>
-                  Made with love · sleepseed.app
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-        )}
-
-        {/* QUICK STORY */}
-        {stage==="quick" && (
-          <div className="screen">
-            <div className="brand-row">
-              <button className="btn-ghost" style={{fontSize:12,padding:"6px 12px",marginRight:8}} onClick={()=>setStage("home")}>← Back</button>
-              <div className="brand-gem">⚡</div>
-              <div>
-                <div className="brand-name" style={{fontSize:16}}>Quick Story</div>
-                <div className="brand-tag">for {heroName}</div>
-              </div>
-            </div>
-            <div style={{height:10}} />
-            <div className="card" style={{marginBottom:10}}>
-              <div style={{display:"flex",flexDirection:"column",gap:18}}>
-
-                {/* Age */}
-                <div>
-                  <div className="section-label" style={{marginBottom:8}}>🎓 How old is {heroName}?</div>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
-                    {AGES.map(a => (
-                      <button key={a.value}
-                        style={{padding:"10px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",
-                          border:`1.5px solid ${ageGroup===a.value?"rgba(100,160,255,.7)":"rgba(255,255,255,.1)"}`,
-                          background:ageGroup===a.value?"rgba(100,160,255,.13)":"rgba(255,255,255,.04)",
-                          transition:"all .2s"}}
-                        onClick={()=>setAgeGroup(a.value)}>
-                        <div style={{fontSize:13,fontWeight:700,color:ageGroup===a.value?"#a8c8ff":"var(--cream)"}}>{a.label}</div>
-                        <div style={{fontSize:9,color:"var(--dimmer)",marginTop:2,textTransform:"uppercase",letterSpacing:".06em"}}>{a.grade}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="divider" />
-
-                {/* Story Length */}
-                <div>
-                  <div className="section-label" style={{marginBottom:8}}>📖 Story Length</div>
-                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                    {LENGTHS.map(l => (
-                      <button key={l.value}
-                        style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",borderRadius:11,cursor:"pointer",
-                          border:`1.5px solid ${storyLen===l.value?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
-                          background:storyLen===l.value?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
-                          transition:"all .2s"}}
-                        onClick={()=>setStoryLen(l.value)}>
-                        <span style={{fontSize:13,fontWeight:700,color:storyLen===l.value?"var(--gold2)":"var(--cream)"}}>{l.label}</span>
-                        <span style={{fontSize:11,color:"var(--dimmer)"}}>{l.desc}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="divider" />
-
-                {/* Open prompt */}
-                <div>
-                  <div className="section-label" style={{marginBottom:8}}>
-                    ✏️ Make it yours <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:9}}>(optional)</span>
-                  </div>
-                  <div style={{display:"flex",gap:6,marginBottom:9}}>
-                    {["Who","What","Where"].map(w => (
-                      <div key={w} style={{padding:"3px 9px",borderRadius:99,fontSize:9,fontWeight:700,letterSpacing:".04em",
-                        border:"1px solid rgba(255,255,255,.12)",color:"rgba(190,200,240,.6)",background:"rgba(255,255,255,.04)"}}>
-                        {w}
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{position:"relative"}}>
-                    <textarea className="ftarea"
-                      style={{fontSize:12,border:"1.5px solid rgba(255,255,255,.2)",background:"rgba(255,255,255,.07)",
-                        minHeight:78,paddingRight:40,"--placeholder-color":"rgba(175,185,225,.7)" as any}}
-                      placeholder={`e.g. '${heroName} and her dog Biscuit find a dragon who is scared of the dark' or 'something funny happens at bedtime involving a very grumpy sock'…`}
-                      value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)} maxLength={300} />
-                    <button
-                      onClick={startListening}
-                      title="Hold to speak"
-                      style={{position:"absolute",right:8,bottom:8,width:28,height:28,borderRadius:"50%",
-                        border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.4)"}`,
-                        background:isListening?"rgba(240,80,80,.15)":"rgba(212,160,48,.08)",
-                        color:isListening?"#f08080":"rgba(212,160,48,.8)",
-                        fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-                        transition:"all .2s",flexShrink:0}}>
-                      {isListening ? "⏹" : "🎤"}
-                    </button>
-                  </div>
-                  <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
-                    {isListening
-                      ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
-                      : <span>Tap 🎤 to speak · For more control, use <span style={{color:"rgba(160,120,255,.85)",fontWeight:700}}>Build My Story →</span></span>
+                <input
+                  className="nb-hero-input"
+                  placeholder="Your child's name…"
+                  value={heroName}
+                  maxLength={20}
+                  onChange={e => {
+                    setHeroName(e.target.value);
+                    if (!hasSeenOnboard && e.target.value.trim().length >= 1) {
+                      setHasSeenOnboard(true);
+                      sSet("onboarded",{v:true});
                     }
-                  </div>
+                  }}
+                />
+                <div className="nb-pronoun-row">
+                  {[{v:"",l:"Any"},{v:"girl",l:"She / her"},{v:"boy",l:"He / him"}].map(o => (
+                    <button key={o.v} className={`nb-pronoun${heroGender===o.v?" sel":""}`}
+                      onClick={() => setHeroGender(o.v)}>{o.l}</button>
+                  ))}
                 </div>
-
               </div>
-            </div>
 
-            {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
-            <button className="btn" style={{marginBottom:10}} onClick={()=>{
-              generate({extraChars:[], occasion:"", occasionCustom:"", lessons:[], adventure:false, storyMood:"", storyPace:"normal", storyStyle:"standard", heroTraits:[]});
-            }}>
-              ✨ Make {heroName}'s story!
-            </button>
-            <div style={{textAlign:"center",fontSize:12,color:"var(--dimmer)",cursor:"pointer"}}
-              onClick={()=>setStage("builder")}>
-              Want more control? → Build My Story
-            </div>
-          </div>
-        )}
-        {/* BUILDER */}
-        {stage==="builder" && (
-          <div className="screen">
-            <div className="brand-row">
-              <button className="btn-ghost" style={{fontSize:12,padding:"6px 12px",marginRight:8}} onClick={()=>setStage("home")}>← Back</button>
-              <div className="brand-gem">🌙</div>
-              <div>
-                <div className="brand-name" style={{fontSize:16}}>{heroName}'s Story</div>
-                <div className="brand-tag">Build your adventure</div>
-              </div>
-            </div>
-            <div style={{height:10}} />
-
-            <div className="card" style={{marginBottom:10}}>
-              <div style={{display:"flex",flexDirection:"column",gap:14}}>
-
-                {/* ── Story Brief Builder ── */}
-                <div>
-                  <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:700,color:"var(--cream)",marginBottom:4}}>
-                    What's tonight's story about?
-                  </div>
-                  <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:10}}>Two steps build your brief — or just type anything</div>
-
-                  {/* Live preview */}
-                  {(storyBrief1||storyBrief2) && (
-                    <div style={{background:"rgba(212,160,48,.07)",border:"1px solid rgba(212,160,48,.2)",borderRadius:10,padding:"10px 13px",fontSize:12,lineHeight:1.7,marginBottom:10,color:"var(--cream)"}}>
-                      {storyBrief1 && <span style={{color:"var(--gold2)",fontWeight:700}}>{heroName} is {storyBrief1}.</span>}
-                      {storyBrief1 && storyBrief2 && " "}
-                      {storyBrief2 && <span>The story should feel <span style={{color:"var(--gold2)",fontWeight:700}}>{storyBrief2}</span>.</span>}
-                    </div>
-                  )}
-
-                  {/* Step 1 */}
-                  <div style={{border:"1px solid rgba(255,255,255,.1)",borderRadius:10,overflow:"hidden",marginBottom:6}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 12px",cursor:"pointer",background:"rgba(255,255,255,.03)"}}
-                      onClick={()=>setBriefStep1Open(o=>!o)}>
-                      <div style={{width:18,height:18,borderRadius:"50%",background:storyBrief1?"rgba(76,200,144,.2)":"rgba(100,160,255,.2)",color:storyBrief1?"#80d8a8":"#a8c8ff",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>1</div>
-                      <div style={{fontSize:11,fontWeight:700,color:"var(--dim)",flex:1}}>Tonight, {heroName} is…</div>
-                      {storyBrief1 && <div style={{fontSize:10,color:"#a8c8ff",maxWidth:150,textAlign:"right",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{storyBrief1}</div>}
-                    </div>
-                    {briefStep1Open && (
-                      <div style={{padding:"10px 12px",borderTop:"1px solid rgba(255,255,255,.07)"}}>
-                        <div style={{fontSize:9,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:5}}>Real life</div>
-                        <div className="guidance-chips" style={{marginBottom:realLifeChip?6:8}}>
-                          {[
-                            {l:"something real today",    v:"going through something real from today",   p:`What happened? e.g. '${heroName} had a falling out with her best friend' or 'he tried really hard at something and didn't quite get there'…`},
-                            {l:"feeling something big",   v:"feeling a big emotion tonight",             p:`What's ${heroName} feeling? e.g. 'she's been really anxious about something' or 'he's upset but not sure why'…`},
-                            {l:"a tricky situation",      v:"dealing with a tricky situation",           p:`What's the situation? e.g. 'there's been tension with a sibling all day' or 'she said something she wishes she hadn't'…`},
-                            {l:"celebrating something",   v:"celebrating something that happened",       p:`What happened? e.g. 'she got the main part in the school play' or 'he finally learned to ride his bike today'…`},
-                          ].map(o => (
-                            <button key={o.v} className={`guidance-chip${storyBrief1===o.v?" on":""}`}
-                              onClick={()=>{ setStoryBrief1(o.v); setRealLifeChip(o.p); setRealLifeCtx(""); }}>
-                              {o.l}
-                            </button>
-                          ))}
-                        </div>
-                        {realLifeChip && (
-                          <div style={{marginBottom:8,animation:"fadeUp .2s ease"}}>
-                            <div style={{fontSize:10,color:"rgba(76,200,144,.8)",marginBottom:4,fontWeight:700}}>
-                              Tell us more <span style={{fontWeight:400,color:"var(--dimmer)"}}>— optional, but makes the story much more personal</span>
-                            </div>
-                            <div style={{position:"relative"}}>
-                              <textarea className="ftarea" rows={2} style={{minHeight:52,fontSize:12,paddingRight:38}}
-                                placeholder={realLifeChip}
-                                value={realLifeCtx}
-                                onChange={e=>setRealLifeCtx(e.target.value)}
-                                maxLength={200} />
-                              <button onClick={()=>{
-                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
-                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
-                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
-                                rec.onstart=()=>setIsListening(true);
-                                rec.onend=()=>setIsListening(false);
-                                rec.onerror=()=>setIsListening(false);
-                                rec.onresult=(e)=>{ const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" "); setRealLifeCtx(g=>g?g+' '+t:t); setIsListening(false); };
-                                rec.start();
-                              }}
-                              title="Tap to speak"
-                              style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
-                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
-                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
-                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
-                                fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-                                transition:"all .2s",flexShrink:0}}>
-                              {isListening ? "⏹" : "🎤"}
-                            </button>
-                            </div>
-                            <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
-                              {isListening
-                                ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
-                                : <span>Tap 🎤 to speak</span>
-                              }
-                            </div>
-                            <button style={{fontSize:10,color:"var(--dimmer)",background:"none",border:"none",cursor:"pointer",padding:"2px 0",textDecoration:"underline"}}
-                              onClick={()=>{ setBriefStep1Open(false); setBriefStep2Open(true); }}>
-                              {realLifeCtx.trim() ? "Done — continue to step 2 →" : "Skip — continue to step 2 →"}
-                            </button>
+              {/* Saved characters */}
+              {savedCharsHome.length > 0 && (
+                <>
+                  <div className="nb-divider" />
+                  <div style={{marginBottom:18}}>
+                    <div className="nb-label">Saved characters</div>
+                    <div className="nb-char-strip">
+                      {savedCharsHome.slice(0, 6).map((c: any) => (
+                        <div key={c.id} className="nb-char-chip"
+                          onClick={() => {
+                            setHeroName(c.name);
+                            if (c.pronouns === "she/her") setHeroGender("girl");
+                            else if (c.pronouns === "he/him") setHeroGender("boy");
+                            else setHeroGender("");
+                            if (c.currentSituation) setStoryContext(c.currentSituation);
+                            if (c.weirdDetail) setStoryGuidance(c.weirdDetail);
+                          }}>
+                          <div className={`nb-char-av${heroName===c.name?" sel":""}`} style={{background:c.color||"#1E1640"}}>
+                            {c.photo
+                              ? <img src={c.photo} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"50%"}} alt="" />
+                              : <span style={{fontSize:18}}>{c.emoji||"🧒"}</span>}
                           </div>
-                        )}
-                        <div style={{fontSize:9,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:5}}>Fun &amp; fantasy</div>
-                        <div className="guidance-chips" style={{marginBottom:8}}>
-                          {[
-                            {l:"a made-up adventure",     v:"about to go on a completely made-up adventure"},
-                            {l:"discovering magic",       v:"about to discover something magical"},
-                            {l:"a silly quest",           v:"on a silly quest with friends"},
-                            {l:"a funny world",           v:"in a world where everything goes hilariously wrong"},
-                          ].map(o => (
-                            <button key={o.v}
-                              style={{padding:"4px 10px",borderRadius:99,fontSize:11,fontWeight:700,cursor:"pointer",
-                                border:`1px solid ${storyBrief1===o.v?"rgba(212,160,48,.6)":"rgba(212,160,48,.25)"}`,
-                                background:storyBrief1===o.v?"rgba(212,160,48,.12)":"transparent",
-                                color:storyBrief1===o.v?"#f0cc60":"rgba(240,200,80,.85)",fontFamily:"'Nunito',sans-serif",
-                                transition:"all .15s"}}
-                              onClick={()=>{ setStoryBrief1(o.v); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(false); setBriefStep2Open(true); }}>
-                              {o.l}
-                            </button>
-                          ))}
-                        </div>
-                        <div style={{borderTop:"1px dashed rgba(255,255,255,.12)",margin:"10px 0 10px",paddingTop:10}}>
-                          <div style={{fontSize:11,fontWeight:700,color:"var(--cream)",marginBottom:5}}>
-                            ✏️ Or just write anything you want
-                          </div>
-                          <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginBottom:7,lineHeight:1.5}}>
-                            Skip the chips entirely — describe the story in your own words
-                          </div>
-                          <div style={{position:"relative"}}>
-                            <textarea className="ftarea" rows={3} style={{minHeight:68,fontSize:12,border:"1.5px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.07)",paddingRight:40}}
-                              placeholder="e.g. 'Lily is nervous about starting at her new school next week' or 'a dragon who is scared of fire goes on a quest to find someone who can help' or 'something silly and funny involving bedtime and a talking sock'…"
-                              value={storyBrief1.startsWith("about")||storyBrief1.startsWith("on ")||storyBrief1.startsWith("in ")||storyBrief1.startsWith("going")||storyBrief1.startsWith("feeling")||storyBrief1.startsWith("dealing")||storyBrief1.startsWith("celebrating")? "":(storyBrief1||"")}
-                              onChange={e=>{ setStoryBrief1(e.target.value); }} />
-                            <button onClick={()=>{
-                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
-                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
-                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
-                                rec.onstart=()=>setIsListening(true);
-                                rec.onend=()=>setIsListening(false);
-                                rec.onerror=()=>setIsListening(false);
-                                rec.onresult=(e)=>{
-                                  const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" ");
-                                  setStoryBrief1(g=>(g&&!["about","on ","in ","going","feeling","dealing","celebrating"].some(p=>g.startsWith(p))?g+" ":"")+t);
-                                  setIsListening(false);
-                                };
-                                rec.start();
-                              }}
-                              title="Tap to speak"
-                              style={{position:"absolute",right:8,bottom:8,width:28,height:28,borderRadius:"50%",
-                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.4)"}`,
-                                background:isListening?"rgba(240,80,80,.15)":"rgba(212,160,48,.08)",
-                                color:isListening?"#f08080":"rgba(212,160,48,.8)",
-                                fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-                                transition:"all .2s"}}>
-                              {isListening ? "⏹" : "🎤"}
-                            </button>
-                          </div>
-                          <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
-                            {isListening
-                              ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
-                              : <span>Tap 🎤 to speak</span>
-                            }
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Step 2 */}
-                  <div style={{border:"1px solid rgba(255,255,255,.1)",borderRadius:10,overflow:"hidden"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 12px",cursor:"pointer",background:"rgba(255,255,255,.03)"}}
-                      onClick={()=>setBriefStep2Open(o=>!o)}>
-                      <div style={{width:18,height:18,borderRadius:"50%",background:storyBrief2?"rgba(76,200,144,.2)":"rgba(100,160,255,.2)",color:storyBrief2?"#80d8a8":"#a8c8ff",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>2</div>
-                      <div style={{fontSize:11,fontWeight:700,color:"var(--dim)",flex:1}}>The story should feel…</div>
-                      {storyBrief2 && <div style={{fontSize:10,color:"#a8c8ff",maxWidth:150,textAlign:"right",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{storyBrief2}</div>}
-                    </div>
-                    {briefStep2Open && (
-                      <div style={{padding:"10px 12px",borderTop:"1px solid rgba(255,255,255,.07)"}}>
-                        <div className="guidance-chips" style={{marginBottom:8}}>
-                          {[
-                            {l:"😂 Warm & funny",     v:"warm and funny, with lots of laughs"},
-                            {l:"🌙 Calm & cosy",      v:"calm and cosy, drifting toward sleep"},
-                            {l:"⚡ Exciting",          v:"exciting and full of surprises"},
-                            {l:"💛 Heartfelt",        v:"heartfelt and emotionally true"},
-                            {l:"🤪 Completely silly", v:"completely silly from start to finish"},
-                            {l:"🔍 Mysterious",       v:"mysterious with a satisfying ending"},
-                          ].map(o => (
-                            <button key={o.v} className={`guidance-chip${storyBrief2===o.v?" on":""}`}
-                              onClick={()=>{ setStoryBrief2(o.v); setBriefStep2Open(false); }}>
-                              {o.l}
-                            </button>
-                          ))}
-                        </div>
-                        <div style={{fontSize:9,color:"var(--dimmer)",marginBottom:4}}>or describe it yourself:</div>
-                        <div style={{position:"relative"}}>
-                          <textarea className="ftarea" rows={1} style={{minHeight:38,fontSize:12,paddingRight:38}}
-                            placeholder="e.g. gentle and slow, action-packed, the funniest story ever told…"
-                            value={["warm and funny, with lots of laughs","calm and cosy, drifting toward sleep","exciting and full of surprises","heartfelt and emotionally true","completely silly from start to finish","mysterious with a satisfying ending"].includes(storyBrief2)?"":storyBrief2}
-                            onChange={e=>setStoryBrief2(e.target.value)} />
-                          <button onClick={()=>{
-                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
-                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
-                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
-                                rec.onstart=()=>setIsListening(true);
-                                rec.onend=()=>setIsListening(false);
-                                rec.onerror=()=>setIsListening(false);
-                                rec.onresult=(e)=>{ const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" "); setStoryBrief2(g=>g?g+' '+t:t); setIsListening(false); };
-                                rec.start();
-                              }}
-                              title="Tap to speak"
-                              style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
-                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
-                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
-                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
-                                fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-                                transition:"all .2s",flexShrink:0}}>
-                              {isListening ? "⏹" : "🎤"}
-                            </button>
-                        </div>
-                        <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
-                          {isListening
-                            ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
-                            : <span>Tap 🎤 to speak</span>
-                          }
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="divider" />
-
-                {/* ── Characters ── */}
-                <div>
-                  <div className="section-label" style={{marginBottom:8}}>👥 Who's in the story with {heroName}?</div>
-                  {extraChars.length<4 && (
-                    <div style={{marginBottom:extraChars.length?10:0}}>
-                      <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-                        {CHAR_TYPES.map(t => (
-                          <button key={t.value} className="char-add-pill"
-                            onClick={()=>setExtraChars(cs=>[...cs,{...newChar(),type:t.value}])}>
-                            <span className="char-add-pill-icon">{t.icon}</span>
-                            <span>+ {t.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {extraChars.length>0 && (
-                    <div className="char-simple-list">
-                      {extraChars.map(c => (
-                        <div className="char-simple-row" key={c.id}>
-                          <div className="char-photo" style={{width:34,height:34,fontSize:16,borderRadius:8,flexShrink:0}} onClick={()=>pickPhoto(c.id)}>
-                            {c.photo ? <img src={c.photo.preview} alt={c.name} /> : <span>{CHAR_ICONS[c.type]||"👫"}</span>}
-                          </div>
-                          <div style={{display:"flex",flexDirection:"column",gap:4,flex:1}}>
-                            <input className="char-name-in"
-                              placeholder={`${CHAR_TYPES.find(t=>t.value===c.type)?.label||"Friend"}'s name…`}
-                              value={c.name} maxLength={16}
-                              onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
-                            <input className="char-name-in"
-                              placeholder={`Tell me about ${c.name||"them"}… e.g. 'best friend she argued with' or 'funny little brother'`}
-                              value={c.note||""} maxLength={80}
-                              style={{fontSize:10,opacity:.85}}
-                              onChange={e=>updateExtraChar(c.id,{note:e.target.value})} />
-                          </div>
-                          <button className="btn-danger" style={{flexShrink:0,alignSelf:"flex-start"}} onClick={()=>removeExtraChar(c.id)}>✕</button>
+                          <div className={`nb-char-nm${heroName===c.name?" sel":""}`}>{c.name}</div>
                         </div>
                       ))}
+                      <div className="nb-char-chip" onClick={() => { /* navigate to characters — TODO */ }}>
+                        <div className="nb-char-av nb-char-av-add">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M8 3v10M3 8h10" stroke="rgba(232,151,42,.55)" strokeWidth="1.8" strokeLinecap="round"/>
+                          </svg>
+                        </div>
+                        <div className="nb-char-nm">New</div>
+                      </div>
                     </div>
-                  )}
+                    {heroName.trim().length >= 2 && savedCharsHome.find((c: any) => c.name === heroName) && (() => {
+                      const matched = savedCharsHome.find((c: any) => c.name === heroName);
+                      return matched ? (
+                        <div className="nb-char-detail">
+                          <div style={{fontSize:9.5,fontFamily:"var(--mono2)",color:"rgba(232,151,42,.55)",marginBottom:4}}>
+                            {matched.name}{matched.ageDescription ? ` · ${matched.ageDescription}` : ""}{matched.pronouns ? ` · ${matched.pronouns}` : ""}
+                          </div>
+                          {matched.weirdDetail && (
+                            <div style={{fontFamily:"var(--serif2)",fontSize:11.5,fontStyle:"italic",color:"rgba(244,239,232,.58)",lineHeight:1.62}}>
+                              "{matched.weirdDetail}"
+                            </div>
+                          )}
+                          <div className="nb-prefill-tag">✓ Fields pre-filled from saved profile</div>
+                        </div>
+                      ) : null;
+                    })()}
+                  </div>
+                </>
+              )}
+
+              {error && <div className="err-box" style={{marginBottom:10}}>⚠️ {error}</div>}
+
+              <div className="nb-divider" />
+
+              {/* Single CTA */}
+              <div style={{paddingTop:4,paddingBottom:6}}>
+                <button
+                  className="nb-cta"
+                  disabled={heroName.trim().length < 2}
+                  onClick={() => { if (heroName.trim().length < 2) return; setStage("builder"); }}>
+                  Build tonight's story →
+                </button>
+                <div className="nb-customise" onClick={() => setStage("library")} style={{opacity: heroName.trim().length < 2 ? 0.3 : 1}}>
+                  Or browse the story library ↓
                 </div>
+              </div>
 
-                <div className="divider" />
+              {/* Demo strip */}
+              <div className="nb-divider" />
+              <div
+                onClick={() => { setBook({...DEMO_BOOK}); setPageIdx(0); setStage("book"); setFromCache(false); }}
+                style={{borderRadius:14,overflow:"hidden",border:"1px solid rgba(212,160,48,.2)",cursor:"pointer",transition:"transform .15s",background:"rgba(13,21,53,.7)"}}
+                onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
+                onMouseLeave={e=>(e.currentTarget.style.transform="none")}>
+                <div style={{padding:"11px 14px",display:"flex",alignItems:"center",gap:11}}>
+                  <div style={{fontSize:22,flexShrink:0}}>🌙</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(232,151,42,.6)",marginBottom:3,fontFamily:"var(--mono2)"}}>Example story — tap to read</div>
+                    <div style={{fontFamily:"var(--serif2)",fontSize:13,fontWeight:700,color:"var(--cream)",lineHeight:1.3}}>The Stone in Her Pocket</div>
+                  </div>
+                  <div style={{fontSize:11,color:"rgba(232,151,42,.5)"}}>›</div>
+                </div>
+                <div style={{background:"rgba(232,151,42,.04)",padding:"8px 14px",borderTop:"1px solid rgba(232,151,42,.1)",fontFamily:"var(--serif2)",fontSize:11,fontStyle:"italic",color:"rgba(240,210,130,.75)",lineHeight:1.6}}>
+                  "Adina yawned the kind of yawn that means everything is okay now."
+                </div>
+              </div>
 
-                {/* ── Lessons ── */}
-                <div>
-                  <div className="section-label" style={{marginBottom:8}}>💛 Sneak in a lesson? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
-                  <div className="les-pills">
-                    {[...LESSONS_CHARACTER,...LESSONS_EMOTIONAL].map(l => (
-                      <button key={l.value} className={`les-pill${lessons.includes(l.value)?" on":""}`}
-                        onClick={()=>setLessons(ls=>ls.includes(l.value)?ls.filter(x=>x!==l.value):[...ls,l.value])}>
-                        {l.label}
+            </div>
+          </div>
+          );
+        })()}
+
+        {/* QUICK STORY — redirects to builder */}
+        {stage==="quick" && (() => { setStage("builder"); return null; })()}
+
+        {/* BUILDER */}
+        {stage==="builder" && (() => {
+          const savedCharsBuilder: any[] = (() => {
+            try {
+              if (!userId) return [];
+              const raw = localStorage.getItem(`ss2_chars_${userId}`);
+              return raw ? JSON.parse(raw) : [];
+            } catch { return []; }
+          })();
+
+          const buildPreview = () => {
+            if (!heroName.trim()) return "";
+            const matched = savedCharsBuilder.find((c: any) => c.name === heroName);
+            const moodMap: Record<string,string> = {
+              "calm and cosy, drifting toward sleep": "calm",
+              "warm and funny, with lots of laughs": "warm & funny",
+              "exciting and full of surprises": "exciting",
+              "heartfelt and emotionally true": "heartfelt",
+              "completely silly from start to finish": "silly",
+              "mysterious with a satisfying ending": "mysterious",
+            };
+            const moodLabel = moodMap[storyBrief2] || (storyBrief2 ? storyBrief2.slice(0,20) : "");
+            const brief = storyBrief1 || storyContext;
+            const detail = matched?.weirdDetail || storyGuidance;
+            const charNames = extraChars.filter(c => c.name.trim()).map(c => c.name.trim());
+            let line = `A${moodLabel ? ` ${moodLabel}` : ""} story about ${heroName}`;
+            if (detail) line += ` — the ${heroName} who ${detail.toLowerCase().replace(/^[^a-z]/,"")}`;
+            if (brief && !detail) line += `. ${brief}`;
+            if (charNames.length) line += `. Featuring ${charNames.join(" and ")}.`;
+            else line += ".";
+            return line;
+          };
+
+          const preview = buildPreview();
+
+          const stickyLabel = (() => {
+            const parts: string[] = [];
+            if (storyBrief2) {
+              const short: Record<string,string> = {
+                "calm and cosy, drifting toward sleep":"Calm",
+                "warm and funny, with lots of laughs":"Funny",
+                "exciting and full of surprises":"Exciting",
+                "heartfelt and emotionally true":"Heartfelt",
+                "completely silly from start to finish":"Silly",
+                "mysterious with a satisfying ending":"Mystery",
+              };
+              parts.push(short[storyBrief2] || "Story");
+            }
+            if (storyBrief1) parts.push(storyBrief1.slice(0,24)+(storyBrief1.length>24?"…":""));
+            const charNames = extraChars.filter(c=>c.name.trim()).map(c=>c.name);
+            if (charNames.length) parts.push(`with ${charNames.join(", ")}`);
+            return parts.length ? parts.join(" · ") : "Set up your story above";
+          })();
+
+          const canGenerate = heroName.trim().length >= 2;
+          const hasGoodInfo = canGenerate && (storyBrief1 || storyBrief2 || storyContext || storyGuidance);
+          const matchedChar = savedCharsBuilder.find((c: any) => c.name === heroName);
+
+          return (
+          <div className="screen" style={{padding:0,paddingBottom:0}}>
+            <div className="nb-nav">
+              <button className="nb-back" onClick={() => setStage("home")}>← Back</button>
+              <div className="nb-logo" style={{transform:"translateX(-20px)"}}>
+                <div className="nb-moon" />
+                {heroName ? `${heroName}'s Story` : "Story Builder"}
+              </div>
+            </div>
+
+            <div className="nb-body" style={{paddingBottom:0}}>
+
+              {preview && (
+                <div className="nb-preview">
+                  <div className="nb-preview-label">Story preview</div>
+                  <div className="nb-preview-text">{preview}</div>
+                </div>
+              )}
+
+              <div style={{marginBottom:16}}>
+                <div className="nb-label">What's tonight about?</div>
+                <div className="nb-about-grid">
+                  {[
+                    {v:"going through something real from today", l:"Something real", e:"💛"},
+                    {v:"about to go on a completely made-up adventure", l:"Made-up adventure", e:"🗺️"},
+                    {v:"feeling a big emotion tonight", l:"Big feelings", e:"🌊"},
+                    {v:"on a silly quest with friends", l:"Silly quest", e:"🤪"},
+                  ].map(o => (
+                    <button key={o.v} className={`nb-about-pill${storyBrief1===o.v?" sel":""}`}
+                      onClick={() => setStoryBrief1(o.v)}>
+                      <span style={{fontSize:15,width:20,textAlign:"center"}}>{o.e}</span>{o.l}
+                    </button>
+                  ))}
+                </div>
+                <textarea className="nb-textarea"
+                  placeholder={`Or describe in your own words… e.g. "${heroName} is nervous about swimming tomorrow"`}
+                  value={storyBrief1.startsWith("about")||storyBrief1.startsWith("on ")||storyBrief1.startsWith("feeling")||storyBrief1.startsWith("going")?"":(storyBrief1||"")}
+                  onChange={e => setStoryBrief1(e.target.value)} rows={2} />
+              </div>
+
+              <div className="nb-divider" />
+
+              <div style={{marginBottom:16}}>
+                <div className="nb-label">The story should feel…</div>
+                <div className="nb-mood-grid">
+                  {[
+                    {v:"calm and cosy, drifting toward sleep", l:"Calm & cosy", e:"🌙"},
+                    {v:"warm and funny, with lots of laughs", l:"Warm & funny", e:"😄"},
+                    {v:"exciting and full of surprises", l:"Exciting", e:"⚡"},
+                    {v:"heartfelt and emotionally true", l:"Heartfelt", e:"💛"},
+                    {v:"completely silly from start to finish", l:"Completely silly", e:"🤪"},
+                    {v:"mysterious with a satisfying ending", l:"Mysterious", e:"🔍"},
+                  ].map(o => (
+                    <button key={o.v} className={`nb-mood-pill${storyBrief2===o.v?" sel":""}`}
+                      onClick={() => setStoryBrief2(o.v)}>
+                      <span style={{fontSize:15,width:20,textAlign:"center"}}>{o.e}</span>{o.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="nb-divider" />
+
+              <div style={{marginBottom:16}}>
+                <div className="nb-label">Who else is in the story?</div>
+                {savedCharsBuilder.length > 0 && (
+                  <div className="nb-char-strip" style={{marginBottom:10}}>
+                    {savedCharsBuilder.filter((c: any) => c.name !== heroName).slice(0,5).map((c: any) => {
+                      const isIn = extraChars.some(ec => ec.name === c.name);
+                      return (
+                        <div key={c.id} className="nb-char-chip"
+                          onClick={() => {
+                            if (isIn) setExtraChars(cs => cs.filter(ec => ec.name !== c.name));
+                            else if (extraChars.length < 4) setExtraChars(cs => [...cs, {id:uid(), type:"friend", name:c.name, photo:c.photo||null, classify:"", gender:c.pronouns||"", note:c.weirdDetail||""}]);
+                          }}>
+                          <div className={`nb-char-av${isIn?" sel":""}`} style={{background:c.color||"#1E1640"}}>
+                            {c.photo ? <img src={c.photo} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"50%"}} alt=""/> : <span style={{fontSize:18}}>{c.emoji||"🧒"}</span>}
+                          </div>
+                          <div className={`nb-char-nm${isIn?" sel":""}`}>{c.name}</div>
+                        </div>
+                      );
+                    })}
+                    {extraChars.length < 4 && (
+                      <div className="nb-char-chip" onClick={addExtraChar}>
+                        <div className="nb-char-av nb-char-av-add">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="rgba(232,151,42,.55)" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                        </div>
+                        <div className="nb-char-nm">Add new</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {extraChars.length > 0 && savedCharsBuilder.length === 0 && (
+                  <div className="char-simple-list">
+                    {extraChars.map(c => (
+                      <div className="char-simple-row" key={c.id}>
+                        <div className="char-photo" style={{width:34,height:34,fontSize:16,borderRadius:8,flexShrink:0}} onClick={()=>pickPhoto(c.id)}>
+                          {c.photo ? <img src={c.photo.preview} alt={c.name} /> : <span>{CHAR_ICONS[c.type]||"👫"}</span>}
+                        </div>
+                        <div style={{display:"flex",flexDirection:"column",gap:4,flex:1}}>
+                          <input className="char-name-in" placeholder={`${CHAR_TYPES.find(t=>t.value===c.type)?.label||"Friend"}'s name…`}
+                            value={c.name} maxLength={16} onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
+                          <input className="char-name-in" placeholder={`Tell me about ${c.name||"them"}…`}
+                            value={c.note||""} maxLength={80} style={{fontSize:10,opacity:.85}}
+                            onChange={e=>updateExtraChar(c.id,{note:e.target.value})} />
+                        </div>
+                        <button className="btn-danger" style={{flexShrink:0,alignSelf:"flex-start"}} onClick={()=>removeExtraChar(c.id)}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {savedCharsBuilder.length === 0 && extraChars.length < 4 && (
+                  <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:8}}>
+                    {CHAR_TYPES.map(t => (
+                      <button key={t.value} className="char-add-pill"
+                        onClick={()=>setExtraChars(cs=>[...cs,{...{id:uid(),type:"friend",name:"",photo:null,classify:"",gender:"",note:""},type:t.value}])}>
+                        <span className="char-add-pill-icon">{t.icon}</span><span>+ {t.label}</span>
                       </button>
                     ))}
                   </div>
-                  {lessons.length>0 && (
-                    <div style={{marginTop:8}}>
-                      <div style={{fontSize:10,color:"rgba(190,200,240,.65)",marginBottom:4}}>
-                        What's {heroName} experiencing? <span style={{opacity:.7}}>(makes it feel real, not preachy)</span>
-                      </div>
-                      <div style={{position:"relative"}}>
-                        <textarea className="ftarea" rows={1} style={{minHeight:40,fontSize:12,paddingRight:38}}
-                          placeholder={`e.g. '${heroName} has been scared about swimming lessons tomorrow' or 'gets very frustrated when things don't go her way'…`}
-                          value={lessonContext} onChange={e=>setLessonContext(e.target.value)} maxLength={200} />
-                        <button onClick={()=>{
-                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
-                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
-                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
-                                rec.onstart=()=>setIsListening(true);
-                                rec.onend=()=>setIsListening(false);
-                                rec.onerror=()=>setIsListening(false);
-                                rec.onresult=(e)=>{ const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" "); setLessonContext(g=>g?g+' '+t:t); setIsListening(false); };
-                                rec.start();
-                              }}
-                              title="Tap to speak"
-                              style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
-                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
-                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
-                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
-                                fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-                                transition:"all .2s",flexShrink:0}}>
-                              {isListening ? "⏹" : "🎤"}
-                            </button>
-                      </div>
-                      <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
-                        {isListening
-                          ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
-                          : <span>Tap 🎤 to speak</span>
-                        }
-                      </div>
-                    </div>
-                  )}
-                </div>
+                )}
+              </div>
 
-                <div className="divider" />
+              <div className="nb-divider" />
 
-                {/* ── Settings ── */}
+              <div style={{marginBottom:16}}>
+                <div className="nb-label">Sneak in a lesson? <span style={{color:"rgba(244,239,232,.25)",fontSize:"8px",fontStyle:"italic",textTransform:"none",letterSpacing:0,marginLeft:4}}>optional</span></div>
                 <div>
-                  <div className="section-label" style={{marginBottom:8}}>📖 Story settings</div>
-                  <div style={{marginBottom:8}}>
-                    <div style={{fontSize:10,color:"rgba(190,200,240,.65)",marginBottom:5}}>Age group</div>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                  <div className="nb-lesson-group-label">Emotional</div>
+                  <div className="nb-lesson-pills">
+                    {LESSONS_EMOTIONAL.map(l => (
+                      <button key={l.value} className={`nb-lesson-pill${lessons.includes(l.value)?" sel":""}`}
+                        onClick={()=>setLessons(ls=>ls.includes(l.value)?ls.filter(x=>x!==l.value):[...ls,l.value])}>
+                        {l.label.replace(/^[^ ]+ /,"")}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{marginTop:8}}>
+                  <div className="nb-lesson-group-label">Character</div>
+                  <div className="nb-lesson-pills">
+                    {LESSONS_CHARACTER.map(l => (
+                      <button key={l.value} className={`nb-lesson-pill${lessons.includes(l.value)?" sel":""}`}
+                        onClick={()=>setLessons(ls=>ls.includes(l.value)?ls.filter(x=>x!==l.value):[...ls,l.value])}>
+                        {l.label.replace(/^[^ ]+ /,"")}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {lessons.length > 0 && (
+                  <textarea className="nb-textarea"
+                    placeholder={`What's ${heroName} experiencing?`}
+                    value={lessonContext} onChange={e=>setLessonContext(e.target.value)}
+                    maxLength={200} rows={2} style={{marginTop:8}} />
+                )}
+              </div>
+
+              <div className="nb-divider" />
+
+              <div style={{marginBottom:16}}>
+                <div className="nb-label">Settings</div>
+                <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                  <div>
+                    <div style={{fontSize:8.5,fontFamily:"var(--mono2)",color:"rgba(244,239,232,.28)",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px"}}>Age</div>
+                    <div className="nb-age-row">
                       {AGES.map(a => (
-                        <button key={a.value}
-                          style={{padding:"9px 10px",borderRadius:11,cursor:"pointer",textAlign:"center",
-                            border:`1.5px solid ${ageGroup===a.value?"rgba(100,160,255,.7)":"rgba(255,255,255,.1)"}`,
-                            background:ageGroup===a.value?"rgba(100,160,255,.13)":"rgba(255,255,255,.04)",
-                            transition:"all .2s"}}
+                        <button key={a.value} className={`nb-age-pill${ageGroup===a.value?" sel":""}`}
                           onClick={()=>setAgeGroup(a.value)}>
-                          <div style={{fontSize:12,fontWeight:700,color:ageGroup===a.value?"#a8c8ff":"var(--cream)"}}>{a.label}</div>
-                          <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1,textTransform:"uppercase",letterSpacing:".05em"}}>{a.grade}</div>
+                          <div>{a.label}</div><div className="nb-age-pill-sub">{a.grade}</div>
                         </button>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <div style={{fontSize:10,color:"rgba(190,200,240,.65)",marginBottom:5}}>Story length</div>
-                    <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                    <div style={{fontSize:8.5,fontFamily:"var(--mono2)",color:"rgba(244,239,232,.28)",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px"}}>Length</div>
+                    <div className="nb-setting-chips">
                       {LENGTHS.map(l => (
-                        <button key={l.value}
-                          style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 13px",borderRadius:11,cursor:"pointer",textAlign:"left",
-                            border:`1.5px solid ${storyLen===l.value?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
-                            background:storyLen===l.value?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
-                            transition:"all .2s"}}
-                          onClick={()=>setStoryLen(l.value)}>
-                          <span style={{fontSize:12,fontWeight:700,color:storyLen===l.value?"var(--gold2)":"var(--cream)"}}>{l.label}</span>
-                          <span style={{fontSize:10,color:"var(--dimmer)"}}>{l.desc}</span>
-                        </button>
+                        <button key={l.value} className={`nb-setting-chip${storyLen===l.value?" sel":""}`}
+                          onClick={()=>setStoryLen(l.value)}>{l.label} · {l.desc}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{fontSize:8.5,fontFamily:"var(--mono2)",color:"rgba(244,239,232,.28)",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px"}}>Style</div>
+                    <div className="nb-setting-chips">
+                      {[{v:"standard",l:"Standard"},{v:"rhyming",l:"Rhyming"},{v:"mystery",l:"Mystery"},{v:"adventure",l:"Choose-your-path"}].map(o => (
+                        <button key={o.v} className={`nb-setting-chip${storyStyle===o.v?" sel":""}`}
+                          onClick={()=>setStoryStyle(o.v)}>{o.l}</button>
                       ))}
                     </div>
                   </div>
                 </div>
-
-                <div className="divider" />
-
-                {/* ── More options ── */}
-                <div>
-                  <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
-                    background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:12,
-                    padding:"10px 14px",cursor:"pointer"}}
-                    onClick={()=>setMoreOpen(o=>!o)}>
-                    <div style={{textAlign:"left"}}>
-                      <div style={{fontSize:12,fontWeight:700,color:"var(--cream)"}}>✨ More options</div>
-                      <div style={{fontSize:10,fontWeight:400,color:"var(--dimmer)",marginTop:2}}>Special night · pace · style · {heroName}'s personality</div>
-                    </div>
-                    <span style={{fontSize:12,color:"var(--dim)",transition:"transform .25s",transform:moreOpen?"rotate(180deg)":"none"}}>▼</span>
-                  </button>
-
-                  {moreOpen && (
-                    <div style={{display:"flex",flexDirection:"column",gap:14,marginTop:14}}>
-
-                      <div>
-                        <div className="section-label" style={{marginBottom:6}}>🎉 Is tonight a special night? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"rgba(190,200,240,.65)",fontSize:10}}>(optional)</span></div>
-                        <input className="finput" style={{fontSize:13}}
-                          placeholder="e.g. Birthday, 1st day of school tomorrow, lost a tooth, new baby…"
-                          value={occasionCustom} onChange={e=>setOccasionCustom(e.target.value)} maxLength={120} />
-                      </div>
-
-                      <div className="divider" />
-
-                      <div>
-                        <div className="section-label" style={{marginBottom:8}}>💤 Narration pace</div>
-                        <div className="les-pills">
-                          {[{v:"normal",l:"Normal"},{v:"sleepy",l:"😴 Extra sleepy"},{v:"snappy",l:"⚡ Quick & snappy"}].map(o => (
-                            <button key={o.v} className={`les-pill${storyPace===o.v?" on":""}`}
-                              onClick={()=>setStoryPace(o.v)}>{o.l}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="divider" />
-
-                      <div>
-                        <div className="section-label" style={{marginBottom:8}}>📚 Story style</div>
-                        <div className="les-pills">
-                          {[{v:"standard",l:"Standard"},{v:"rhyming",l:"🎵 Rhyming"},{v:"adventure",l:"🔀 Choose-your-adventure"},{v:"mystery",l:"🔍 Mystery"}].map(o => (
-                            <button key={o.v} className={`les-pill${storyStyle===o.v?" on":""}`}
-                              onClick={()=>setStoryStyle(o.v)}>{o.l}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="divider" />
-
-                      <div>
-                        <div className="section-label" style={{marginBottom:8}}>✨ {heroName} is… <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
-                        <div className="les-pills">
-                          {["Brave","Silly","Curious","Kind","Adventurous","Shy","Clever","Caring"].map(t => (
-                            <button key={t} className={`les-pill${heroTraits.includes(t)?" on":""}`}
-                              onClick={()=>setHeroTraits(ts=>ts.includes(t)?ts.filter(x=>x!==t):[...ts,t])}>
-                              {t}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                    </div>
-                  )}
-                </div>
-
               </div>
+
+              <div className="nb-divider" />
+
+              <div style={{marginBottom:16}}>
+                <div className="nb-label">Special occasion? <span style={{color:"rgba(244,239,232,.25)",fontSize:"8px",fontStyle:"italic",textTransform:"none",letterSpacing:0,marginLeft:4}}>optional</span></div>
+                <input className="nb-input-sm" placeholder="e.g. Birthday, first day, lost a tooth…"
+                  value={occasionCustom} onChange={e=>setOccasionCustom(e.target.value)} maxLength={120} />
+              </div>
+
+              <div style={{marginBottom:16}}>
+                <div className="nb-label">One weird detail about {heroName || "them"} <span style={{color:"rgba(244,239,232,.25)",fontSize:"8px",fontStyle:"italic",textTransform:"none",letterSpacing:0,marginLeft:4}}>optional but powerful</span></div>
+                <textarea className="nb-textarea"
+                  placeholder={`The one thing that makes ${heroName||"them"} uniquely themselves…`}
+                  value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)}
+                  maxLength={200} rows={2} />
+              </div>
+
+              {error && <div className="err-box" style={{marginBottom:10}}>⚠️ {error}</div>}
+              <div style={{height:90}} />
             </div>
 
-            {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
-            <button className="btn" style={{marginBottom:16}} onClick={()=>generate({storyBrief1,storyBrief2,realLifeCtx})}>
-              ✨ Make {heroName}'s story!
-            </button>
+            <div className="nb-sticky-bar">
+              {hasGoodInfo && <div className="nb-ready-label">Story is ready to generate</div>}
+              <div className="nb-sticky-inner">
+                <div className="nb-sticky-av">
+                  {matchedChar?.photo ? <img src={matchedChar.photo} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"50%"}} alt="" /> : <span style={{fontSize:18}}>{matchedChar?.emoji || "🌙"}</span>}
+                </div>
+                <div className="nb-sticky-info">
+                  <div className="nb-sticky-name">{heroName || "Your story"}</div>
+                  <div className="nb-sticky-sub">{stickyLabel}</div>
+                </div>
+                <button className="nb-sticky-btn" disabled={!canGenerate}
+                  onClick={() => generate({storyBrief1, storyBrief2, realLifeCtx})}>
+                  Create →
+                </button>
+              </div>
+            </div>
           </div>
-        )}
-        {/* GENERATING */}
+          );
+        })()}
+
         {/* GENERATING */}
         {stage==="generating" && (
-          <div className="screen" style={{maxWidth:420}}>
-            <div className="card gen-wrap">
-              <div className="gen-orb" />
-              <div className="gen-title">{gen.label||"Writing the story…"}</div>
-              <div className="gen-sub">
-                A one-of-a-kind picture book for{" "}
-                <strong style={{color:"var(--gold2)"}}>{heroName}</strong>
-                {adventure && <span style={{display:"block",fontSize:12,color:"var(--gold)",marginTop:3}}>🔀 Choose-Your-Adventure mode</span>}
+          <div className="screen" style={{maxWidth:420,padding:0}}>
+            <div className="nb-nav">
+              <div className="nb-logo"><div className="nb-moon" />SleepSeed</div>
+            </div>
+            <div className="nb-gen-body">
+              <div className="nb-gen-progress">
+                <div className="nb-gen-fill" style={{width:`${gen.progress}%`,transition:"width .5s ease"}} />
               </div>
-              <div className="pbar">
-                <div className="pfill" style={{width:`${gen.progress}%`}} />
+              <div className="nb-gen-dots">
+                {[0,1,2,3].map(i => (
+                  <div key={i} className={`nb-gen-dot${i<gen.stepIdx?" done":i===gen.stepIdx?" active":""}`}
+                    style={{width: i===gen.stepIdx ? 22 : i<gen.stepIdx ? 18 : 14}} />
+                ))}
               </div>
-              <div className="plabel" style={{marginBottom:12}}>{gen.progress}%</div>
+              <div className="nb-gen-moon" />
+              <div className="nb-gen-title">Writing {heroName}'s story…</div>
+              <div className="nb-gen-sub">
+                A one-of-a-kind bedtime story.{adventure && " Choose-Your-Adventure mode."}<br/>About no one else on earth.
+              </div>
 
-              {/* Bonding question card — visible during writing step */}
               {gen.stepIdx <= 2 && ncBondingQ && (
-                <div style={{background:"rgba(160,120,255,.06)",border:"1px solid rgba(160,120,255,.18)",
-                  borderRadius:14,padding:"13px 15px",marginBottom:12}}>
-                  <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
-                    color:"rgba(160,120,255,.55)",marginBottom:6}}>While you wait…</div>
-                  <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
-                    color:"rgba(210,200,245,.88)",lineHeight:1.75,marginBottom:10}}>
-                    Snuggle in close and ask{" "}
-                    <span style={{color:"var(--gold2)",fontWeight:700}}>{heroName}</span>:{" "}
-                    <span style={{color:"#c0a8ff"}}>"{ncBondingQ}"</span>
-                  </div>
+                <div className="nb-bq-card">
+                  <div className="nb-bq-while">While you wait — ask {heroName}:</div>
+                  <div className="nb-bq-q">"{ncBondingQ}"</div>
                   {ncBondingSaved ? (
-                    <div style={{background:"rgba(76,200,144,.08)",border:"1px solid rgba(76,200,144,.2)",
-                      borderRadius:10,padding:"10px 12px"}}>
-                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                        color:"rgba(76,200,144,.6)",marginBottom:4}}>✓ Saved for Night Card</div>
-                      <div style={{fontFamily:"'Kalam',cursive",fontSize:13,color:"var(--cream)",lineHeight:1.6}}>
-                        "{ncBondingA}"
-                      </div>
+                    <div style={{background:"rgba(76,200,144,.08)",border:"1px solid rgba(76,200,144,.18)",borderRadius:10,padding:"10px 13px"}}>
+                      <div style={{fontSize:8.5,fontFamily:"var(--mono2)",color:"rgba(76,200,144,.6)",marginBottom:4,textTransform:"uppercase",letterSpacing:"1px"}}>✓ Saved for Night Card</div>
+                      <div style={{fontFamily:"var(--serif2)",fontSize:13,fontStyle:"italic",color:"var(--cream)",lineHeight:1.6}}>"{ncBondingA}"</div>
                     </div>
                   ) : (
                     <>
-                      <textarea
-                        className="ftarea"
-                        placeholder={`What did ${heroName} say?`}
-                        value={ncBondingA}
-                        onChange={e=>setNcBondingA(e.target.value)}
-                        style={{minHeight:48,fontSize:13,background:"rgba(255,255,255,.04)",
-                          border:"1px solid rgba(160,120,255,.15)",borderRadius:10,
-                          padding:"10px 12px",color:"var(--cream)",
-                          fontFamily:"'Kalam',cursive",lineHeight:1.6,resize:"none",marginBottom:8}}
-                      />
-                      <button
-                        className="btn-ghost"
-                        disabled={!ncBondingA.trim()}
-                        style={{width:"100%",fontSize:12,padding:"8px 12px",
-                          ...(ncBondingA.trim() ? {borderColor:"rgba(76,200,144,.4)",color:"#80d8a8",background:"rgba(76,200,144,.06)"} : {})}}
-                        onClick={()=>{ if(ncBondingA.trim()) setNcBondingSaved(true); }}>
-                        {ncBondingA.trim() ? "✓ Save answer for Night Card" : "Type an answer above"}
+                      <textarea className="nb-bq-answer"
+                        placeholder={`What did ${heroName} say?\nTheir answer gets saved to tonight's Night Card…`}
+                        value={ncBondingA} onChange={e => setNcBondingA(e.target.value)} rows={3} />
+                      <button className="nb-bq-save" disabled={!ncBondingA.trim()}
+                        onClick={() => { if (ncBondingA.trim()) setNcBondingSaved(true); }}>
+                        {ncBondingA.trim() ? "Save for tonight's Night Card ✓" : "Type their answer above…"}
                       </button>
                     </>
                   )}
                 </div>
               )}
 
-              {gen.dots.length>0 && (
-                <div style={{display:"flex",gap:5,flexWrap:"wrap",justifyContent:"center",marginBottom:10}}>
+              <div className="nb-step-list">
+                {["Setting the scene…","Writing the story…","Painting illustrations…","Book is ready!"].map((s,i) => {
+                  const state = i < gen.stepIdx ? "done" : i === gen.stepIdx ? "active" : "pending";
+                  return (
+                    <div key={i} className={`nb-step-item ${state}`}>
+                      <div className={`nb-step-icon ${state}`}>
+                        {state === "done" ? (
+                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#34D399" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        ) : state === "active" ? (
+                          <div className="nb-step-pulse" />
+                        ) : null}
+                      </div>
+                      <span>{state === "done" ? "✓ " : ""}{s}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {gen.dots.length > 0 && (
+                <div style={{display:"flex",gap:5,flexWrap:"wrap",justifyContent:"center",marginTop:10}}>
                   {gen.dots.map((s,i) => (
                     <div key={i} className={`img-dot ${s==="p"?"busy":"done"}`}>{s==="d"?"✓":"…"}</div>
                   ))}
                 </div>
               )}
-              <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                {["Setting the scene…","Writing the story…","Painting illustrations…","Book is ready!"].map((s,i) => (
-                  <div key={i} className={`pstep ${i===gen.stepIdx?"active":i<gen.stepIdx?"done":""}`}>
-                    <div className="pstep-dot" />
-                    <span>{i<gen.stepIdx?"✓ ":""}{s}</span>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         )}
@@ -3648,7 +3348,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </div>
               <button className="btn" style={{marginBottom:10}} onClick={()=>{
                 setError("");
-                setStage(lastErrStage||"quick");
+                setStage(lastErrStage||"builder");
               }}>
                 ✨ Try again
               </button>
