@@ -135,36 +135,38 @@ function AppInner() {
         {/* Minimal top nav for context */}
         <div style={{
           position: 'sticky', top: 0, zIndex: 999,
-          background: 'rgba(6,11,24,.97)', backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid rgba(255,255,255,.06)',
-          display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px',
+          background: 'rgba(13,16,24,.97)', backdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(232,151,42,.1)',
+          display: 'flex', alignItems: 'center', gap: 14, padding: '0 6%', height: 64,
         }}>
           <button
             onClick={goDashboard}
             style={{
-              background: 'transparent', border: 'none', color: 'rgba(240,237,232,.4)',
-              fontSize: 13, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif",
-              display: 'flex', alignItems: 'center', gap: 5, transition: 'color .2s',
+              background: 'transparent', border: 'none', color: 'rgba(244,239,232,.4)',
+              fontSize: 13, cursor: 'pointer', fontFamily: "'Plus Jakarta Sans',system-ui,sans-serif",
+              display: 'flex', alignItems: 'center', gap: 6, transition: 'color .15s', padding: 0,
             }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'rgba(240,237,232,.75)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(240,237,232,.4)')}
+            onMouseEnter={e => (e.currentTarget.style.color = 'rgba(244,239,232,.75)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(244,239,232,.4)')}
           >
-            ← Back to dashboard
+            ← Back
           </button>
           <div style={{
-            fontFamily: "'Lora',serif", fontSize: 15, fontWeight: 700,
-            color: '#F0EDE8', display: 'flex', alignItems: 'center', gap: 7,
+            fontFamily: "'Playfair Display',Georgia,serif", fontSize: 16, fontWeight: 700,
+            color: '#F4EFE8', display: 'flex', alignItems: 'center', gap: 8,
           }}>
-            🌙 SleepSeed
+            <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'radial-gradient(circle at 38% 38%,#F5C060,#C87020)', flexShrink: 0 }} />
+            SleepSeed
           </div>
           {user?.isGuest && (
             <div style={{
-              marginLeft: 'auto', background: 'rgba(251,191,36,.08)',
-              border: '1px solid rgba(251,191,36,.2)', borderRadius: 50,
-              padding: '5px 14px', fontSize: 11, color: 'rgba(251,191,36,.8)',
-              cursor: 'pointer',
+              marginLeft: 'auto', background: 'rgba(232,151,42,.08)',
+              border: '1px solid rgba(232,151,42,.2)', borderRadius: 50,
+              padding: '7px 18px', fontSize: 12, color: 'rgba(232,151,42,.75)',
+              cursor: 'pointer', fontFamily: "'Plus Jakarta Sans',system-ui,sans-serif",
+              fontWeight: 500, transition: 'all .2s',
             }} onClick={goAuth}>
-              Save your stories — create account
+              Save your stories — create free account
             </div>
           )}
         </div>
