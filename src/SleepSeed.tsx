@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import SleepSeedLibrary from "./sleepseed-library";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Cormorant+Garamond:ital,wght@1,600&family=Patrick+Hand&family=Nunito:wght@400;600;700&family=Kalam:wght@400;700&display=swap');`;
 
@@ -2779,6 +2780,11 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </button>
             </div>
 
+            <button className="btn-ghost" style={{width:"100%",marginTop:12,padding:"12px 16px",fontSize:13,
+              display:"flex",alignItems:"center",justifyContent:"center",gap:8}}
+              onClick={()=>setStage("library")}>
+              📚 Browse Story Library
+            </button>
 
                         {/* ── About section ── */}
             <div style={{marginTop:32,paddingTop:22}}>
@@ -4183,6 +4189,19 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 )}
               </>
             )}
+          </div>
+        )}
+
+        {/* STORY LIBRARY */}
+        {stage==="library" && (
+          <div style={{width:"100%",maxWidth:"100vw",marginLeft:-16,marginRight:-16}}>
+            <div style={{position:"sticky",top:0,zIndex:200,padding:"10px 16px",
+              background:"rgba(6,11,24,.9)",backdropFilter:"blur(12px)",
+              display:"flex",alignItems:"center",gap:8}}>
+              <button className="btn-ghost" style={{fontSize:12,padding:"6px 12px"}}
+                onClick={()=>setStage("home")}>← Home</button>
+            </div>
+            <SleepSeedLibrary />
           </div>
         )}
 
