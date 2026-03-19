@@ -1378,6 +1378,7 @@ export default function SleepSeed({
   const speakTextRef     = useRef<any>(null);          // always-current speakText fn
   const ncVideoRef       = useRef<HTMLVideoElement>(null);
   const ncStreamRef      = useRef<MediaStream|null>(null);
+  const ncFileRef        = useRef<HTMLInputElement>(null);
 
   const imgReady = (url) => !!imgLoaded[strHash(url)];
 
@@ -3974,15 +3975,38 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </div>
             )}
 
-            {/* Step 3: Photo */}
+            {/* Step 3: Photo — camera or upload */}
             {ncStep===3 && (
               <div className="nc-step-card" key="s3">
-                <div className="nc-step-icon">📸</div>
-                <div className="nc-step-title">Capture this moment</div>
-                <div className="nc-step-sub">Take a quick photo for your Night Card.</div>
+                <input ref={ncFileRef} type="file" accept="image/*" style={{display:"none"}}
+                  onChange={e=>{
+                    const file = e.target.files?.[0]; if(!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      const img = new window.Image();
+                      img.onload = () => {
+                        const canvas = document.createElement("canvas");
+                        const s = Math.min(640/img.width, 640/img.height, 1);
+                        canvas.width = Math.round(img.width*s);
+                        canvas.height = Math.round(img.height*s);
+                        canvas.getContext("2d")?.drawImage(img,0,0,canvas.width,canvas.height);
+                        setNcPhoto(canvas.toDataURL("image/jpeg",0.82));
+                        ncStreamRef.current?.getTracks().forEach(t=>t.stop());
+                        ncStreamRef.current=null;
+                      };
+                      img.src = ev.target?.result as string;
+                    };
+                    reader.readAsDataURL(file);
+                    e.target.value = "";
+                  }} />
 
                 {!ncPhoto ? (
                   <>
+                    <div className="nc-step-icon">📸</div>
+                    <div className="nc-step-title">Add a photo</div>
+                    <div className="nc-step-sub">Snap a selfie right now, or upload a favourite memory from today.</div>
+
+                    {/* Camera preview */}
                     <div className="nc-camera">
                       <video ref={ncVideoRef} autoPlay playsInline muted
                         style={{display:"block"}}
@@ -3991,72 +4015,80 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                         <div className="nc-countdown" key={ncCountdown}>{ncCountdown}</div>
                       )}
                     </div>
-                    {/* Camera started via effect below */}
-                    <div style={{display:"flex",gap:8}}>
-                      <button className="btn-ghost" style={{flex:1}} onClick={()=>{
-                        ncStreamRef.current?.getTracks().forEach(t=>t.stop());
-                        ncStreamRef.current=null;
-                        setNcStep(2);
-                      }}>← Back</button>
-                      <button className="btn" style={{flex:2}} disabled={ncCountdown>0}
+                    {/* Camera started via effect */}
+
+                    {/* Two primary actions side by side */}
+                    <div style={{display:"flex",gap:8,marginBottom:8}}>
+                      <button className="btn" style={{flex:1,padding:12,fontSize:13}} disabled={ncCountdown>0}
                         onClick={()=>{
-                          // 3-second countdown then capture
                           setNcCountdown(3);
                           let c = 3;
                           const iv = setInterval(()=>{
                             c--;
                             if(c > 0) { setNcCountdown(c); }
                             else {
-                              clearInterval(iv);
-                              setNcCountdown(0);
-                              // Capture frame
+                              clearInterval(iv); setNcCountdown(0);
                               const video = ncVideoRef.current;
                               if(video && video.videoWidth) {
                                 const canvas = document.createElement("canvas");
-                                const scale = Math.min(480/video.videoWidth, 480/video.videoHeight, 1);
-                                canvas.width = Math.round(video.videoWidth * scale);
-                                canvas.height = Math.round(video.videoHeight * scale);
+                                const s = Math.min(480/video.videoWidth, 480/video.videoHeight, 1);
+                                canvas.width = Math.round(video.videoWidth*s);
+                                canvas.height = Math.round(video.videoHeight*s);
                                 const ctx = canvas.getContext("2d");
-                                ctx.translate(canvas.width, 0);
-                                ctx.scale(-1, 1); // mirror
-                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                                const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
-                                setNcPhoto(dataUrl);
+                                ctx.translate(canvas.width,0); ctx.scale(-1,1);
+                                ctx.drawImage(video,0,0,canvas.width,canvas.height);
+                                setNcPhoto(canvas.toDataURL("image/jpeg",0.82));
                                 ncStreamRef.current?.getTracks().forEach(t=>t.stop());
-                                ncStreamRef.current = null;
-                              } else {
-                                setNcStep(4); // fallback
-                              }
+                                ncStreamRef.current=null;
+                              } else { setNcStep(4); }
                             }
-                          }, 1000);
+                          },1000);
                         }}>
-                        📸 {ncCountdown > 0 ? ncCountdown : "Capture"}
+                        📸 {ncCountdown > 0 ? ncCountdown : "Take selfie"}
+                      </button>
+                      <button className="btn-ghost" style={{flex:1,padding:12,fontSize:13,
+                        borderColor:"rgba(212,160,48,.3)",color:"var(--gold2)"}}
+                        onClick={()=>ncFileRef.current?.click()}>
+                        🖼️ Upload memory
                       </button>
                     </div>
-                    <button className="btn-ghost" style={{width:"100%",marginTop:8,fontSize:11}}
-                      onClick={()=>{
+
+                    <div style={{display:"flex",gap:8}}>
+                      <button className="btn-ghost" style={{flex:1,fontSize:11}} onClick={()=>{
                         ncStreamRef.current?.getTracks().forEach(t=>t.stop());
                         ncStreamRef.current=null;
-                        setNcStep(4);
-                      }}>
-                      Skip photo →
-                    </button>
+                        setNcStep(2);
+                      }}>← Back</button>
+                      <button className="btn-ghost" style={{flex:1,fontSize:11}}
+                        onClick={()=>{
+                          ncStreamRef.current?.getTracks().forEach(t=>t.stop());
+                          ncStreamRef.current=null;
+                          setNcStep(4);
+                        }}>
+                        Skip photo →
+                      </button>
+                    </div>
                   </>
                 ) : (
                   <>
-                    <div className="nc-camera">
-                      <img src={ncPhoto} alt="Captured" />
+                    <div className="nc-step-icon">✨</div>
+                    <div className="nc-step-title">Perfect</div>
+                    <div className="nc-camera" style={{borderRadius:12,border:"2px solid rgba(212,160,48,.25)"}}>
+                      <img src={ncPhoto} alt="Tonight's memory" />
                     </div>
                     <div style={{display:"flex",gap:8}}>
                       <button className="btn-ghost" style={{flex:1}} onClick={()=>{
                         setNcPhoto(null);
-                        // Restart camera
                         navigator.mediaDevices?.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480}}})
                           .then(stream => {
                             ncStreamRef.current = stream;
                             if(ncVideoRef.current) ncVideoRef.current.srcObject = stream;
                           }).catch(()=>{});
-                      }}>🔄 Retake</button>
+                      }}>📸 Retake</button>
+                      <button className="btn-ghost" style={{flex:1}} onClick={()=>{
+                        setNcPhoto(null);
+                        ncFileRef.current?.click();
+                      }}>🖼️ Different photo</button>
                       <button className="btn" style={{flex:2}} onClick={()=>setNcStep(4)}>
                         Use this →
                       </button>
