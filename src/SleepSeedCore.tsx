@@ -2,6 +2,8 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import SleepSeedLibrary from "./sleepseed-library";
 import { buildStoryPrompt } from "./sleepseed-prompts";
 import { StoryFeedback, RereadCheck } from "./StoryFeedback";
+import { getCharacters, saveCharacter as saveCharToStorage } from "./lib/storage";
+import type { Character } from "./lib/types";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Cormorant+Garamond:ital,wght@1,600&family=Patrick+Hand&family=Nunito:wght@400;600;700&family=Kalam:wght@400;700&display=swap');`;
 
@@ -283,6 +285,21 @@ body{background:var(--night);font-family:'DM Sans',sans-serif;color:var(--cream)
   text-align:center;color:var(--dim);background:transparent;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
 .mem-tab.on{background:rgba(168,85,247,.12);color:var(--gold2)}
 .mem-tab:hover:not(.on){color:var(--cream);background:rgba(255,255,255,.05)}
+.char-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:12px}
+.char-chip{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:50px;cursor:pointer;
+  border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);transition:all .2s;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:rgba(240,237,232,.55)}
+.char-chip:hover{border-color:rgba(168,85,247,.35);color:var(--cream);background:rgba(168,85,247,.06)}
+.char-chip.on{border-color:rgba(168,85,247,.6);color:#C084FC;background:rgba(168,85,247,.12)}
+.char-chip-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0}
+.char-chip-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}
+.char-chip-add{border-style:dashed;border-color:rgba(168,85,247,.25);color:rgba(168,85,247,.6)}
+.char-chip-add:hover{border-color:rgba(168,85,247,.5);color:rgba(168,85,247,.9);background:rgba(168,85,247,.08)}
+.new-char-form{background:rgba(168,85,247,.05);border:1px solid rgba(168,85,247,.15);border-radius:14px;
+  padding:16px;margin-bottom:12px;display:flex;flex-direction:column;gap:10px;animation:fup .3s ease}
+.new-char-row{display:flex;gap:8px}
+.new-char-row .finput{flex:1}
 .nc-flow{width:100%;max-width:420px;animation:fup .5s cubic-bezier(.16,1,.3,1) both}
 .nc-step-dots{display:flex;gap:6px;justify-content:center;margin-bottom:18px}
 .nc-sdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s}
@@ -1342,6 +1359,13 @@ export default function SleepSeed({
   const [viewingNightCard, setViewingNightCard] = useState<any>(null); // Night Card detail view
   const [styleDna,         setStyleDna]         = useState<any>(null); // Style DNA for feedback
   const [showFeedback,     setShowFeedback]     = useState(false);     // StoryFeedback sheet visible
+  const [savedChars,       setSavedChars]       = useState<Character[]>([]); // user's saved characters
+  const [selectedCharId,   setSelectedCharId]   = useState<string|null>(null); // selected character chip
+  const [showNewCharForm,  setShowNewCharForm]  = useState(false);     // inline new character form
+  const [newCharName,      setNewCharName]      = useState("");
+  const [newCharPronouns,  setNewCharPronouns]  = useState<string>("they/them");
+  const [newCharAge,       setNewCharAge]       = useState("");
+  const [newCharDetail,    setNewCharDetail]    = useState("");
 
   const totalPagesRef = useRef(0);
   const fileRefs      = useRef({});
@@ -1370,6 +1394,8 @@ export default function SleepSeed({
     sGet("memories").then(s => { if(s?.items) setMemories(s.items); });
     sGet("nightcards").then(s => { if(s?.items) setNightCards(s.items); });
     sGet("style_dna").then(s => { if(s) setStyleDna(s); });
+    // Load saved characters from v2 storage
+    if(userId) { try { setSavedChars(getCharacters(userId)); } catch(_) {} }
     sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); });
     sGet("onboarded").then(s => { if(s?.v) setHasSeenOnboard(true); });
 
@@ -1389,6 +1415,47 @@ export default function SleepSeed({
     if (c.currentSituation) setStoryContext(c.currentSituation);
     if (c.weirdDetail) setStoryGuidance(c.weirdDetail);
   }, [preloadedCharacter]);
+
+  // Select a saved character and populate hero fields
+  const selectCharacter = useCallback((c: Character) => {
+    setSelectedCharId(c.id);
+    setHeroName(c.name);
+    if (c.pronouns === 'she/her') setHeroGender('girl');
+    else if (c.pronouns === 'he/him') setHeroGender('boy');
+    else setHeroGender('');
+    if (c.ageDescription) setHeroClassify(c.ageDescription);
+    if (c.currentSituation) setStoryContext(c.currentSituation);
+    if (c.weirdDetail) setStoryGuidance(c.weirdDetail);
+    if (c.personalityTags?.length) setHeroTraits(c.personalityTags);
+    setHasSeenOnboard(true);
+    sSet("onboarded",{v:true});
+    setShowNewCharForm(false);
+  }, []);
+
+  // Create and save a new character from the inline form
+  const createAndSelectNewChar = useCallback(() => {
+    if (!newCharName.trim()) return;
+    const newChar: Character = {
+      id: Math.random().toString(36).slice(2),
+      userId: userId || 'guest',
+      name: newCharName.trim(),
+      type: 'human',
+      ageDescription: newCharAge.trim(),
+      pronouns: newCharPronouns as any,
+      personalityTags: [],
+      weirdDetail: newCharDetail.trim(),
+      currentSituation: '',
+      color: ['#7C3AED','#A855F7','#C084FC','#60A5FA','#34D399','#F472B6','#FBBF24'][Math.floor(Math.random()*7)],
+      emoji: ['🌟','✨','🌙','⭐','💫','🦁','🐻','🦊'][Math.floor(Math.random()*8)],
+      storyIds: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    try { saveCharToStorage(newChar); } catch(_) {}
+    setSavedChars(prev => [newChar, ...prev]);
+    selectCharacter(newChar);
+    setNewCharName(""); setNewCharAge(""); setNewCharDetail(""); setNewCharPronouns("they/them");
+  }, [newCharName, newCharAge, newCharDetail, newCharPronouns, userId, selectCharacter]);
 
 
   useEffect(() => {
@@ -2709,51 +2776,158 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
             </div>
 
             <div className="card" style={{marginBottom:10}}>
-              <div style={{fontFamily:"'Fraunces',serif",fontSize:17,fontWeight:700,color:"var(--cream)",marginBottom:12,textAlign:"center",fontStyle:"italic"}}>
+              <div style={{fontFamily:"'Lora',serif",fontSize:17,fontWeight:700,color:"var(--cream)",marginBottom:14,textAlign:"center",fontStyle:"italic"}}>
                 ✨ Tonight's story is for…
               </div>
-              {heroName.trim().length<1 && (
-                <div style={{textAlign:"center",marginBottom:8}}>
-                  <div style={{fontSize:10,color:"rgba(168,85,247,.7)",
-                    fontStyle:"italic",fontFamily:"'Fraunces',serif",marginBottom:3}}>
-                    Start here. Type your child's name.
+
+              {/* ── Character chips ── */}
+              {savedChars.length > 0 && (
+                <div className="char-chips">
+                  {savedChars.slice(0,6).map(c => (
+                    <div key={c.id}
+                      className={`char-chip${selectedCharId===c.id?" on":""}`}
+                      onClick={()=>selectCharacter(c)}>
+                      <div className="char-chip-av" style={{background:c.color||"rgba(168,85,247,.15)"}}>
+                        {c.photo ? <img src={c.photo} alt="" style={{width:"100%",height:"100%",borderRadius:"50%",objectFit:"cover"}} /> : (c.emoji||"⭐")}
+                      </div>
+                      <span className="char-chip-name">{c.name}</span>
+                    </div>
+                  ))}
+                  <div className="char-chip char-chip-add" onClick={()=>{setShowNewCharForm(true);setSelectedCharId(null);setHeroName("");}}>
+                    + New
                   </div>
-                  <div style={{fontSize:14,color:"rgba(168,85,247,.6)"}}>↓</div>
                 </div>
               )}
-              <input className="finput hero-input" placeholder="Your child's name…"
-                value={heroName} onChange={e=>{
-                  setHeroName(e.target.value);
-                  if(!hasSeenOnboard && e.target.value.trim().length >= 1) {
-                    setHasSeenOnboard(true);
-                    sSet("onboarded",{v:true});
-                  }
-                }} maxLength={20}
-                style={{marginBottom:heroName.trim().length<2?6:10,textAlign:"center",
-                  borderColor:heroName.trim().length<2?"rgba(168,85,247,.35)":"rgba(255,255,255,.1)",
-                  transition:"border-color .3s"}} />
-              {heroName.trim().length<2 && (
-                <div style={{textAlign:"center",fontSize:11,color:"rgba(168,85,247,.85)",
-                  marginBottom:10,fontWeight:700,letterSpacing:".02em",animation:"fadeUp .4s ease"}}>
-                  ✦ Type a name to unlock your story ✦
+
+              {/* ── New character form (inline) ── */}
+              {(showNewCharForm || savedChars.length === 0) && !selectedCharId && (
+                <div className={savedChars.length > 0 ? "new-char-form" : ""}>
+                  {savedChars.length === 0 && (
+                    <div style={{textAlign:"center",marginBottom:8}}>
+                      <div style={{fontSize:10,color:"rgba(168,85,247,.7)",fontStyle:"italic",fontFamily:"'Lora',serif",marginBottom:3}}>
+                        Create your child's character
+                      </div>
+                    </div>
+                  )}
+                  <input className="finput hero-input" placeholder="Their name…"
+                    value={newCharName.length > 0 ? newCharName : heroName}
+                    onChange={e=>{ setNewCharName(e.target.value); setHeroName(e.target.value); }}
+                    maxLength={20}
+                    style={{textAlign:"center",borderColor:heroName.trim().length<2?"rgba(168,85,247,.35)":"rgba(255,255,255,.1)"}} />
+                  <div className="gender-row" style={{marginBottom:0,marginTop:8}}>
+                    {[
+                      {v:"she/her",l:"👧 She/Her",cls:"sel-girl",g:"girl"},
+                      {v:"he/him",l:"👦 He/Him",cls:"sel-boy",g:"boy"},
+                      {v:"they/them",l:"✨ They/Them",cls:"sel-any",g:""},
+                    ].map(o => (
+                      <button key={o.v} className={`gender-pill${newCharPronouns===o.v?" "+o.cls:""}`}
+                        onClick={()=>{setNewCharPronouns(o.v);setHeroGender(o.g);}}>{o.l}</button>
+                    ))}
+                  </div>
+                  {savedChars.length > 0 && (
+                    <>
+                      <input className="finput" placeholder="Age (e.g. 5 years old)"
+                        value={newCharAge} onChange={e=>setNewCharAge(e.target.value)} maxLength={30}
+                        style={{fontSize:13,marginTop:4}} />
+                      <input className="finput" placeholder="One weird detail about them (optional)"
+                        value={newCharDetail} onChange={e=>setNewCharDetail(e.target.value)} maxLength={100}
+                        style={{fontSize:13}} />
+                      <div style={{display:"flex",gap:8,marginTop:4}}>
+                        <button className="btn-ghost" style={{flex:1,fontSize:12}} onClick={()=>{setShowNewCharForm(false);setNewCharName("");setNewCharAge("");setNewCharDetail("");}}>
+                          Cancel
+                        </button>
+                        <button className="btn" style={{flex:2,padding:10,fontSize:13}} disabled={!newCharName.trim() && !heroName.trim()}
+                          onClick={createAndSelectNewChar}>
+                          Save &amp; Select
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  {savedChars.length === 0 && heroName.trim().length >= 2 && (
+                    <div style={{textAlign:"center",marginTop:6}}>
+                      <button className="btn-ghost" style={{fontSize:11,padding:"6px 14px",color:"rgba(168,85,247,.7)"}}
+                        onClick={()=>{
+                          if(!heroName.trim()) return;
+                          const nc: Character = {
+                            id: Math.random().toString(36).slice(2), userId: userId||'guest',
+                            name: heroName.trim(), type:'human', ageDescription:'',
+                            pronouns: (heroGender==='girl'?'she/her':heroGender==='boy'?'he/him':'they/them') as any,
+                            personalityTags:[], weirdDetail:'', currentSituation:'',
+                            color:['#7C3AED','#A855F7','#60A5FA','#34D399','#F472B6'][Math.floor(Math.random()*5)],
+                            emoji:['🌟','✨','🌙','⭐'][Math.floor(Math.random()*4)],
+                            storyIds:[], createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(),
+                          };
+                          try { saveCharToStorage(nc); } catch(_) {}
+                          setSavedChars(prev=>[nc,...prev]);
+                          setSelectedCharId(nc.id);
+                          setHasSeenOnboard(true); sSet("onboarded",{v:true});
+                        }}>
+                        💾 Save to my characters
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
-              <div className="gender-row" style={{marginBottom:0}}>
-                {[{v:"",l:"✨ Any",cls:"sel-any"},{v:"girl",l:"👧 Girl",cls:"sel-girl"},{v:"boy",l:"👦 Boy",cls:"sel-boy"}].map(o => (
-                  <button key={o.v} className={`gender-pill${heroGender===o.v?" "+o.cls:""}`} onClick={()=>setHeroGender(o.v)}>{o.l}</button>
-                ))}
-              </div>
+
+              {/* ── Selected character summary ── */}
+              {selectedCharId && !showNewCharForm && (
+                <div style={{textAlign:"center",marginTop:4}}>
+                  <div style={{fontFamily:"'Lora',serif",fontSize:20,fontWeight:700,color:"var(--cream)"}}>
+                    {heroName}
+                  </div>
+                  {(() => { const sc = savedChars.find(c=>c.id===selectedCharId); return sc?.ageDescription ? (
+                    <div style={{fontSize:11,color:"rgba(168,85,247,.6)",marginTop:2}}>{sc.ageDescription}</div>
+                  ) : null; })()}
+                  <button className="btn-ghost" style={{fontSize:10,padding:"4px 10px",marginTop:6}}
+                    onClick={()=>{setSelectedCharId(null);setHeroName("");setShowNewCharForm(false);}}>
+                    Change
+                  </button>
+                </div>
+              )}
             </div>
             {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
             <div className="path-row">
               <button className="path-btn quick" disabled={heroName.trim().length<2}
-                onClick={()=>{ if(heroName.trim().length<2) return; setStage("quick"); }}>
+                onClick={()=>{
+                  if(heroName.trim().length<2) return;
+                  // Auto-save new character if first time and not yet saved
+                  if(!selectedCharId && heroName.trim().length>=2) {
+                    const nc: Character = {
+                      id:Math.random().toString(36).slice(2), userId:userId||'guest',
+                      name:heroName.trim(), type:'human', ageDescription:'',
+                      pronouns:(heroGender==='girl'?'she/her':heroGender==='boy'?'he/him':'they/them') as any,
+                      personalityTags:[], weirdDetail:'', currentSituation:'',
+                      color:['#7C3AED','#A855F7','#60A5FA','#34D399','#F472B6'][Math.floor(Math.random()*5)],
+                      emoji:['🌟','✨','🌙','⭐'][Math.floor(Math.random()*4)],
+                      storyIds:[], createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(),
+                    };
+                    try { saveCharToStorage(nc); } catch(_) {}
+                    setSavedChars(prev=>[nc,...prev]); setSelectedCharId(nc.id);
+                  }
+                  setStage("quick");
+                }}>
                 <div className="path-icon">⚡</div>
                 <div className="path-title">Quick Story</div>
                 <div className="path-sub">3 questions,<br/>then generate</div>
               </button>
               <button className="path-btn build" disabled={heroName.trim().length<2}
-                onClick={()=>{ if(heroName.trim().length<2) return; setStage("builder"); }}>
+                onClick={()=>{
+                  if(heroName.trim().length<2) return;
+                  if(!selectedCharId && heroName.trim().length>=2) {
+                    const nc: Character = {
+                      id:Math.random().toString(36).slice(2), userId:userId||'guest',
+                      name:heroName.trim(), type:'human', ageDescription:'',
+                      pronouns:(heroGender==='girl'?'she/her':heroGender==='boy'?'he/him':'they/them') as any,
+                      personalityTags:[], weirdDetail:'', currentSituation:'',
+                      color:['#7C3AED','#A855F7','#60A5FA','#34D399','#F472B6'][Math.floor(Math.random()*5)],
+                      emoji:['🌟','✨','🌙','⭐'][Math.floor(Math.random()*4)],
+                      storyIds:[], createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(),
+                    };
+                    try { saveCharToStorage(nc); } catch(_) {}
+                    setSavedChars(prev=>[nc,...prev]); setSelectedCharId(nc.id);
+                  }
+                  setStage("builder");
+                }}>
                 <div className="path-icon">🎨</div>
                 <div className="path-title">Build My Story</div>
                 <div className="path-sub">Full customise,<br/>more control</div>
