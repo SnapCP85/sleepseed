@@ -2693,11 +2693,18 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 <div className="brand-name">SleepSeed</div>
                 <div className="brand-tag">personalized bedtime books</div>
               </div>
-              {(memories.length>0 || nightCards.length>0) && (
-                <button className="btn-ghost" style={{marginLeft:"auto",fontSize:12,padding:"6px 12px"}} onClick={()=>setStage("memories")}>
-                  📚 Memories
+              <div style={{marginLeft:"auto",display:"flex",gap:6}}>
+                {(memories.length>0 || nightCards.length>0) && (
+                  <button className="btn-ghost" style={{fontSize:11,padding:"6px 11px"}} onClick={()=>setStage("memories")}>
+                    📚 Memories
+                  </button>
+                )}
+                <button className="btn-ghost" style={{fontSize:11,padding:"6px 11px",
+                  borderColor:"rgba(160,120,255,.25)",color:"rgba(160,120,255,.8)"}}
+                  onClick={()=>setStage("library")}>
+                  📖 Library
                 </button>
-              )}
+              </div>
             </div>
             <div style={{height:10}} />
 
@@ -2780,11 +2787,6 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </button>
             </div>
 
-            <button className="btn-ghost" style={{width:"100%",marginTop:12,padding:"12px 16px",fontSize:13,
-              display:"flex",alignItems:"center",justifyContent:"center",gap:8}}
-              onClick={()=>setStage("library")}>
-              📚 Browse Story Library
-            </button>
 
                         {/* ── About section ── */}
             <div style={{marginTop:32,paddingTop:22}}>
