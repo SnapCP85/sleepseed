@@ -474,6 +474,43 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .ctrl-btn.read.active{background:rgba(212,160,48,.24);border-color:var(--gold2)}
 .ctrl-btn.save{background:rgba(100,130,220,.07);border-color:rgba(100,130,220,.24);color:var(--ui)}
 .ctrl-btn.fresh{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.11);color:var(--dim)}
+.ctrl-btn.dl{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.11);color:var(--dim)}
+.rd-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px}
+.rd-logo{font-family:'Fraunces',serif;font-size:15px;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:7px;cursor:pointer}
+.rd-progress{font-size:10px;font-family:'DM Mono',monospace;color:rgba(244,239,232,.32);text-align:center;padding:0 4px;flex:1}
+.rd-ctrl{display:flex;gap:7px;justify-content:center;margin-top:8px;flex-wrap:wrap}
+.rd-btn-primary{display:flex;align-items:center;gap:6px;padding:9px 18px;border-radius:50px;border:none;background:var(--amber,#E8972A);color:#1A1420;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.rd-btn-primary:hover{background:#F5B84C;transform:translateY(-1px)}
+.rd-btn-secondary{display:flex;align-items:center;gap:5px;padding:8px 13px;border-radius:50px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(244,239,232,.55);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.rd-btn-secondary:hover{border-color:rgba(255,255,255,.2);color:var(--cream)}
+.rd-btn-secondary.on{background:rgba(212,160,48,.12);border-color:rgba(212,160,48,.35);color:var(--gold2)}
+.rd-status{font-size:10px;color:rgba(76,200,144,.7);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:4px}
+.share-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(8px);animation:smBgIn .2s ease}
+@keyframes smBgIn{from{opacity:0}to{opacity:1}}
+.share-modal{background:#0D1018;border-radius:24px 24px 0 0;padding:24px 20px 36px;width:100%;max-width:500px;border-top:1px solid rgba(232,151,42,.2);animation:smIn .3s cubic-bezier(.22,1,.36,1)}
+@keyframes smIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.share-modal-title{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--cream);margin-bottom:4px;text-align:center}
+.share-modal-sub{font-size:12px;color:rgba(244,239,232,.38);text-align:center;margin-bottom:20px;font-weight:300}
+.share-option{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;cursor:pointer;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);margin-bottom:9px;transition:all .2s;width:100%}
+.share-option:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)}
+.share-option-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.share-option-info{flex:1;text-align:left}
+.share-option-h{font-size:13px;font-weight:700;color:var(--cream);margin-bottom:2px;font-family:'Nunito',sans-serif}
+.share-option-sub{font-size:11px;color:rgba(244,239,232,.38);font-weight:300}
+.share-link-row{display:flex;gap:8px;margin-top:6px;margin-bottom:12px}
+.share-link-input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;font-size:11px;color:rgba(244,239,232,.6);font-family:'DM Mono',monospace;outline:none;min-width:0}
+.share-link-copy{background:var(--amber,#E8972A);color:#1A1420;border:none;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;transition:all .2s;flex-shrink:0}
+.share-link-copy:hover{background:#F5B84C}
+.share-link-copy.copied{background:rgba(76,200,144,.2);color:rgba(76,200,144,.9);border:1px solid rgba(76,200,144,.3)}
+.share-dismiss{width:100%;padding:12px;background:transparent;border:1px solid rgba(255,255,255,.09);border-radius:12px;color:rgba(244,239,232,.4);font-size:13px;cursor:pointer;font-family:'Nunito',sans-serif;margin-top:4px;transition:all .2s}
+.share-dismiss:hover{border-color:rgba(255,255,255,.18);color:rgba(244,239,232,.7)}
+.end-parent-note{width:100%;background:rgba(232,151,42,.07);border:1px solid rgba(232,151,42,.18);border-radius:14px;padding:14px 16px;margin-top:2px}
+.end-note-label{font-size:8.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(232,151,42,.6);margin-bottom:6px;font-family:'DM Mono',monospace}
+.end-note-text{font-size:12px;color:var(--cream);line-height:1.72;font-family:'Nunito',sans-serif}
+.end-refrain-block{font-family:'Fraunces',serif;font-size:clamp(14px,3.5vw,18px);font-style:italic;color:rgba(240,204,96,.72);line-height:1.7;max-width:300px;text-align:center;padding:0 8px}
+.end-nc-cta{width:100%;padding:15px;background:var(--amber,#E8972A);color:#1A1420;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;letter-spacing:-.01em}
+.end-nc-cta:hover{background:#F5B84C;transform:translateY(-1px)}
+.end-ghost-row{display:flex;gap:8px;width:100%}
 .ctrl-btn.dl{background:rgba(100,180,255,.07);border-color:rgba(100,180,255,.28);color:rgba(140,200,255,.9)}
 .ctrl-btn.dl:hover{background:rgba(100,180,255,.15)}
 .ctrl-btn.vc-btn{background:rgba(240,100,120,.07);border-color:rgba(240,100,120,.32);color:rgba(240,140,150,.9)}
@@ -1443,6 +1480,9 @@ export default function SleepSeed({
   const [vcStage,        setVcStage]        = useState("idle"); // idle|recording|uploading|ready|error
   const [vcError,        setVcError]        = useState("");
   const [showVcModal,    setShowVcModal]    = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareLink,      setShareLink]      = useState("");
+  const [shareCopied,    setShareCopied]    = useState(false);
   const [saveToast,      setSaveToast]      = useState(false);
   const [isListening,    setIsListening]    = useState(false);
   const [hasSeenOnboard, setHasSeenOnboard] = useState(false);
@@ -1769,106 +1809,172 @@ export default function SleepSeed({
     setVcError("");
   };
 
-  // ── Share Story Card ──────────────────────────────────────────────────
-  const shareStory = async () => {
-    if(!book) return;
+  // ── Generate share link for grandma / anyone ───────────────────────────
+  const generateShareLink = () => {
+    if (!book) return "";
+    const storyData = {
+      t: book.title,
+      n: book.heroName,
+      r: book.refrain || "",
+      p: (book.pages || []).map((pg: any) => ({ t: pg.text || "" })),
+      pn: book.parentNote || "",
+      v: voiceId || selectedVoiceId || "",
+      d: new Date().toISOString().split("T")[0],
+    };
     try {
+      const encoded = btoa(encodeURIComponent(JSON.stringify(storyData)));
+      return `${window.location.origin}?s=${encoded}`;
+    } catch {
+      return window.location.origin;
+    }
+  };
+
+  // ── Open share modal ───────────────────────────────────────────────────
+  const shareStory = async () => {
+    if (!book) return;
+    const link = generateShareLink();
+    setShareLink(link);
+    setShareCopied(false);
+    setShowShareModal(true);
+  };
+
+  // ── Copy grandma link to clipboard ────────────────────────────────────
+  const copyShareLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    } catch {
+      const input = document.getElementById("share-link-input") as HTMLInputElement;
+      input?.select();
+    }
+  };
+
+  // ── Social share card (9:16 Instagram Stories format) ─────────────────
+  const shareSocialCard = async () => {
+    if (!book) return;
+    try {
+      const W = 1080; const H = 1920;
       const canvas = document.createElement("canvas");
-      const SIZE = 1080;
-      canvas.width = SIZE; canvas.height = SIZE;
+      canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
-      // Background
-      ctx.fillStyle = "#060b18";
-      ctx.fillRect(0,0,SIZE,SIZE);
+      ctx.fillStyle = "#0B0B1A";
+      ctx.fillRect(0, 0, W, H);
 
-      // Subtle star dots
-      ctx.fillStyle = "rgba(255,255,255,.4)";
-      const stars = [[120,80],[300,200],[700,100],[900,300],[200,700],[800,800],[500,50],[150,500],[920,600],[600,900]];
-      stars.forEach(([x,y]) => { ctx.beginPath(); ctx.arc(x,y,1.5,0,Math.PI*2); ctx.fill(); });
+      const glow = ctx.createRadialGradient(W/2, 0, 0, W/2, 0, 900);
+      glow.addColorStop(0, "rgba(232,151,42,.07)");
+      glow.addColorStop(1, "transparent");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, W, H);
 
-      // Gold border
-      ctx.strokeStyle = "rgba(212,160,48,.35)";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(28,28,SIZE-56,SIZE-56);
+      ctx.fillStyle = "rgba(255,255,248,.5)";
+      const starPositions = [
+        [120,200],[280,100],[580,160],[820,90],[950,280],[100,480],[750,350],
+        [400,80],[200,600],[860,500],[600,250],[300,350],[700,600],[450,430],
+        [150,750],[900,400],[500,700],[250,900],[800,750],[60,320],
+      ];
+      starPositions.forEach(([x,y]) => {
+        const r = 1 + Math.random() * 2;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+      });
 
-      // Moon
-      ctx.fillStyle = "#d4a030";
-      ctx.beginPath(); ctx.arc(SIZE/2,260,52,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle = "#0a0f28";
-      ctx.beginPath(); ctx.arc(SIZE/2-18,250,44,0,Math.PI*2); ctx.fill();
-
-      // SleepSeed label
-      ctx.fillStyle = "rgba(212,160,48,.55)";
-      ctx.font = "500 26px sans-serif";
+      ctx.fillStyle = "rgba(232,151,42,.55)";
+      ctx.font = "600 38px 'Georgia', sans-serif";
       ctx.textAlign = "center";
-      ctx.letterSpacing = "4px";
-      ctx.fillText("SLEEPSEED", SIZE/2, 370);
+      ctx.fillText("🌙  SleepSeed", W/2, 160);
 
-      // Title
-      ctx.fillStyle = "#fdf5e0";
-      ctx.font = "bold 62px Georgia, serif";
+      const cardX = 80; const cardY = 240;
+      const cardW = W - 160; const cardH = 780;
+      ctx.fillStyle = "#0E1428";
+      ctx.beginPath(); ctx.roundRect(cardX, cardY, cardW, cardH, 32); ctx.fill();
+      ctx.strokeStyle = "rgba(232,151,42,.2)";
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(cardX, cardY, cardW, cardH, 32); ctx.stroke();
+
+      ctx.fillStyle = "#C87020";
+      ctx.beginPath(); ctx.arc(W/2, cardY + 200, 80, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#0E1428";
+      ctx.beginPath(); ctx.arc(W/2 - 28, cardY + 180, 68, 0, Math.PI*2); ctx.fill();
+
+      ctx.fillStyle = "rgba(212,160,48,.5)";
+      ctx.font = "32px serif";
+      ctx.textAlign = "center";
+      ctx.fillText("✦  ★  ✦", W/2, cardY + 330);
+
+      ctx.fillStyle = "#FAE9A8";
+      ctx.font = "bold 68px Georgia, serif";
       ctx.textAlign = "center";
       const titleWords = book.title.split(" ");
-      const titleLines:string[] = [];
+      const titleLines: string[] = [];
       let line = "";
-      for(const w of titleWords) {
-        const test = line ? line+" "+w : w;
-        if(ctx.measureText(test).width > SIZE-160) { titleLines.push(line); line=w; }
+      for (const w of titleWords) {
+        const test = line ? line + " " + w : w;
+        if (ctx.measureText(test).width > cardW - 80) { titleLines.push(line); line = w; }
         else line = test;
       }
-      if(line) titleLines.push(line);
-      const titleY = titleLines.length > 2 ? 470 : 490;
-      titleLines.forEach((l,i) => ctx.fillText(l, SIZE/2, titleY + i*76));
+      if (line) titleLines.push(line);
+      const titleStartY = cardY + 400;
+      titleLines.forEach((l, i) => ctx.fillText(l, W/2, titleStartY + i * 82));
 
-      // Gold rule
-      const ruleY = titleY + titleLines.length*76 + 28;
-      const grad = ctx.createLinearGradient(SIZE/2-120,0,SIZE/2+120,0);
-      grad.addColorStop(0,"rgba(212,160,48,0)");
-      grad.addColorStop(0.5,"rgba(212,160,48,.6)");
-      grad.addColorStop(1,"rgba(212,160,48,0)");
-      ctx.fillStyle = grad;
-      ctx.fillRect(SIZE/2-120, ruleY, 240, 2);
+      ctx.fillStyle = "rgba(212,160,48,.55)";
+      ctx.font = "500 32px 'Georgia', sans-serif";
+      ctx.textAlign = "center";
+      const afterTitle = titleStartY + titleLines.length * 82 + 36;
+      ctx.fillText(`A story for ${book.heroName}`, W/2, afterTitle);
 
-      // Refrain / quote
-      if(book.refrain) {
+      if (book.refrain) {
+        const refrainY = cardY + cardH + 80;
+        ctx.fillStyle = "rgba(240,204,96,.22)";
+        ctx.font = "bold 80px Georgia, serif";
+        ctx.textAlign = "left";
+        ctx.fillText("\u201C", cardX, refrainY);
+
         ctx.fillStyle = "rgba(240,204,96,.82)";
-        ctx.font = "italic 34px Georgia, serif";
+        ctx.font = "italic 46px Georgia, serif";
         ctx.textAlign = "center";
-        const refrainY = ruleY + 52;
-        const maxW = SIZE - 200;
-        const words = `"${book.refrain}"`.split(" ");
-        const rLines:string[] = [];
+        const maxW = W - 160;
+        const reWords = book.refrain.split(" ");
+        const reLines: string[] = [];
         let rl = "";
-        for(const w of words) {
-          const t = rl ? rl+" "+w : w;
-          if(ctx.measureText(t).width > maxW) { rLines.push(rl); rl=w; }
+        for (const w of reWords) {
+          const t = rl ? rl + " " + w : w;
+          if (ctx.measureText(t).width > maxW) { reLines.push(rl); rl = w; }
           else rl = t;
         }
-        if(rl) rLines.push(rl);
-        rLines.slice(0,2).forEach((l,i) => ctx.fillText(l, SIZE/2, refrainY + i*46));
+        if (rl) reLines.push(rl);
+        reLines.slice(0, 3).forEach((l, i) => ctx.fillText(l, W/2, refrainY + 60 + i * 60));
+
+        ctx.fillStyle = "rgba(240,204,96,.22)";
+        ctx.font = "bold 80px Georgia, serif";
+        ctx.textAlign = "right";
+        ctx.fillText("\u201D", W - cardX, refrainY + 60 + reLines.slice(0, 3).length * 60 + 20);
       }
 
-      // Footer
-      ctx.fillStyle = "rgba(212,160,48,.35)";
-      ctx.font = "500 22px sans-serif";
+      const footerY = H - 260;
+      ctx.fillStyle = "rgba(232,151,42,.12)";
+      ctx.fillRect(0, footerY - 20, W, 200);
+      ctx.fillStyle = "#F4EFE8";
+      ctx.font = "600 38px 'Georgia', sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(`A story for ${book.heroName}  ·  sleepseed.app`, SIZE/2, SIZE-52);
+      ctx.fillText("Create your child's story tonight", W/2, footerY + 50);
+      ctx.fillStyle = "rgba(232,151,42,.75)";
+      ctx.font = "500 32px sans-serif";
+      ctx.fillText("sleepseed.app  \u00B7  Free to start", W/2, footerY + 105);
 
-      // Export
       canvas.toBlob(async (blob) => {
-        if(!blob) return;
-        const file = new File([blob], `${book.title.replace(/[^a-z0-9]/gi,"_")}_card.png`, {type:"image/png"});
-        if(navigator.canShare?.({files:[file]})) {
-          await navigator.share({files:[file], title:book.title, text:`A bedtime story for ${book.heroName} — made with SleepSeed`});
+        if (!blob) return;
+        const file = new File([blob], `${book.title.replace(/[^a-z0-9]/gi, "_")}_story.png`, { type: "image/png" });
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: book.title, text: `${book.heroName}'s bedtime story — made with SleepSeed` });
         } else {
           const url = URL.createObjectURL(blob);
-          const a = document.createElement("a"); a.href=url; a.download=file.name; a.click();
-          setTimeout(()=>URL.revokeObjectURL(url),2000);
+          const a = document.createElement("a"); a.href = url; a.download = file.name; a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
         }
-      },"image/png");
-    } catch(err) {
-      console.error("Share error:",err);
+      }, "image/png");
+    } catch (err) {
+      console.error("Social card error:", err);
     }
   };
 
@@ -1996,12 +2102,20 @@ export default function SleepSeed({
           doc.line(PW, 8, PW, H-8);
         }
 
-        // Page text
-        doc.setFont("times", "normal");
-        doc.setFontSize(11);
+        // Warm parchment background on story pages
+        if (isEven) {
+          doc.setFillColor(254, 248, 232);
+        } else {
+          doc.setFillColor(248, 238, 200);
+        }
+        doc.rect(X0, 0, PW, H, "F");
+
+        // Page text — improved typography
+        doc.setFont("times", "italic");
+        doc.setFontSize(12);
         doc.setTextColor(...INK);
-        const lines = doc.splitTextToSize(pg.text||"", TEXT_W);
-        doc.text(lines, X0+PAD_X, PAD_TOP);
+        const lines = doc.splitTextToSize(pg.text || "", TEXT_W);
+        doc.text(lines, X0 + PAD_X, PAD_TOP);
 
         // Refrain — show on every even-index page (right-side feel)
         const hasRefrain = book.refrain && pgIndex % 2 === 1;
@@ -2688,81 +2802,18 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
     return (
       <div className="bpage end-bg" style={{overflowY:"auto"}}>
         <div className="pinset" />
-        <div className="end-lay" style={{gap:14,paddingTop:20,paddingBottom:20}}>
+        <div className="end-lay" style={{gap:12,paddingTop:18,paddingBottom:18}}>
           <div className="end-moon">🌙</div>
           <div className="end-title">The End</div>
-          <div className="end-msg">
-            Sweet dreams, {book.heroName}.<br />
-            Tomorrow night, another adventure awaits…
-          </div>
-
+          {book.refrain && (<div className="end-refrain-block">"{book.refrain}"</div>)}
           {book.parentNote && (
-            <div style={{width:"100%",background:"rgba(212,160,48,.08)",border:"1px solid rgba(212,160,48,.2)",
-              borderRadius:14,padding:"12px 16px",marginTop:4}}>
-              <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                color:"rgba(212,160,48,.7)",marginBottom:6}}>A note for you 👋</div>
-              <div style={{fontSize:12,color:"var(--cream)",lineHeight:1.7,fontFamily:"'Nunito',sans-serif"}}>
-                {book.parentNote}
-              </div>
+            <div className="end-parent-note">
+              <div className="end-note-label">A note for you 👋</div>
+              <div className="end-note-text">{book.parentNote}</div>
             </div>
           )}
-
-          {book.nightCard ? (
-            /* Show existing Night Card inline */
-            <div style={{width:"100%",marginTop:8,background:"rgba(212,160,48,.06)",
-              border:"1px solid rgba(212,160,48,.18)",borderRadius:16,padding:"16px",textAlign:"center"}}>
-              <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
-                color:"rgba(212,160,48,.55)",marginBottom:8}}>Tonight's Night Card</div>
-              {book.nightCard.photo && (
-                <div style={{width:100,margin:"0 auto 10px",borderRadius:4,overflow:"hidden",
-                  background:"#faf8f2",padding:"4px 4px 8px",boxShadow:"0 2px 8px rgba(0,0,0,.3)"}}>
-                  <img src={book.nightCard.photo} alt="" style={{width:"100%",borderRadius:2}} />
-                </div>
-              )}
-              <div style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700,fontStyle:"italic",
-                color:"var(--gold3)",marginBottom:4}}>{book.nightCard.headline}</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontStyle:"italic",
-                color:"rgba(240,220,160,.8)",lineHeight:1.6}}>"{book.nightCard.quote}"</div>
-              {book.nightCard.memory_line && (
-                <div style={{fontFamily:"'Kalam',cursive",fontSize:11,color:"rgba(200,180,255,.7)",
-                  lineHeight:1.5,marginTop:4}}>{book.nightCard.memory_line}</div>
-              )}
-              {/* Q&A sections */}
-              {(book.nightCard.bondingA || book.nightCard.gratitude || book.nightCard.extra) && (
-                <div style={{textAlign:"left",marginTop:10,paddingTop:10,
-                  borderTop:"1px solid rgba(212,160,48,.12)",display:"flex",flexDirection:"column",gap:8}}>
-                  {book.nightCard.bondingQ && book.nightCard.bondingA && (
-                    <div>
-                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                        color:"rgba(160,120,255,.5)",marginBottom:2}}>Asked: "{book.nightCard.bondingQ}"</div>
-                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
-                        {book.nightCard.bondingA}
-                      </div>
-                    </div>
-                  )}
-                  {book.nightCard.gratitude && (
-                    <div>
-                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                        color:"rgba(212,160,48,.5)",marginBottom:2}}>Best three seconds</div>
-                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
-                        {book.nightCard.gratitude}
-                      </div>
-                    </div>
-                  )}
-                  {book.nightCard.extra && (
-                    <div>
-                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                        color:"rgba(76,200,144,.5)",marginBottom:2}}>Extra note</div>
-                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
-                        {book.nightCard.extra}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <button className="btn" style={{width:"100%",marginTop:8,fontSize:15,padding:"14px 20px"}}
+          {!book.nightCard ? (
+            <button className="end-nc-cta"
               onClick={()=>{
                 setNcStep(0); setNcBondingA(ncBondingA||""); setNcGratitude(""); setNcExtra("");
                 setNcPhoto(null); setNcCountdown(0); setNcGenerating(false);
@@ -2772,31 +2823,20 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 autoReadRef.current = false; setIsReading(false);
                 setStage("nightcard");
               }}>
-              🌙 Make Tonight's Night Card
+              🌙 Capture tonight's Night Card
             </button>
+          ) : (
+            <div style={{width:"100%",background:"rgba(212,160,48,.06)",border:"1px solid rgba(212,160,48,.18)",borderRadius:16,padding:"16px",textAlign:"center"}}>
+              <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(212,160,48,.55)",marginBottom:8,fontFamily:"'DM Mono',monospace"}}>Tonight's Night Card</div>
+              {book.nightCard.photo && (<div style={{width:100,margin:"0 auto 10px",borderRadius:4,overflow:"hidden",background:"#faf8f2",padding:"4px 4px 8px",boxShadow:"0 2px 8px rgba(0,0,0,.3)"}}><img src={book.nightCard.photo} alt="" style={{width:"100%",borderRadius:2}}/></div>)}
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700,fontStyle:"italic",color:"var(--gold3)",marginBottom:4}}>{book.nightCard.headline}</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontStyle:"italic",color:"rgba(240,220,160,.8)",lineHeight:1.6}}>"{book.nightCard.quote}"</div>
+            </div>
           )}
-
-          <div style={{display:"flex",gap:8,width:"100%",marginTop:4}}>
-            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"10px 14px"}}
-              onClick={downloadStory}>
-              📄 Download
-            </button>
-            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"10px 14px"}}
-              onClick={()=>{
-                window.speechSynthesis?.cancel();
-                if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
-                autoReadRef.current = false; setIsReading(false);
-                setStage("home");
-              }}>
-              🏠 Home
-            </button>
+          <div className="end-ghost-row">
+            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"9px 12px"}} onClick={shareStory}>✨ Send story</button>
+            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"9px 12px"}} onClick={async()=>{window.speechSynthesis?.cancel();if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}autoReadRef.current=false;setIsReading(false);setStage("home");}}>🏠 Home</button>
           </div>
-
-          <button className="btn-ghost" style={{width:"100%",marginTop:6,fontSize:12,padding:"10px 14px",
-            borderColor:"rgba(217,119,6,.3)",color:"rgba(217,119,6,.8)"}}
-            onClick={()=>setShowFeedback(true)}>
-            ⭐ How was this story?
-          </button>
         </div>
       </div>
     );
@@ -3381,238 +3421,33 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
         {/* BOOK */}
         {stage==="book" && book && (
           <div className="book-shell">
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-              <div style={{display:"flex",alignItems:"center",gap:7,cursor:"pointer"}}
-                onClick={()=>{
-                  window.speechSynthesis?.cancel();
-                  if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
-                  autoReadRef.current = false; setIsReading(false);
-                  setStage("home");
-                }}>
-                <div className="brand-gem" style={{width:30,height:30,fontSize:15,borderRadius:9}}>🌙</div>
-                <span className="brand-name" style={{fontSize:16}}>SleepSeed</span>
+            <div className="rd-nav">
+              <div className="rd-logo" onClick={() => { window.speechSynthesis?.cancel(); if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;} autoReadRef.current=false;setIsReading(false);setStage("home"); }}>
+                <div style={{width:18,height:18,borderRadius:"50%",background:"radial-gradient(circle at 38% 38%,#F5C060,#C87020)",flexShrink:0}} /> SleepSeed
               </div>
-              <div style={{display:"flex",alignItems:"center",gap:6}}>
-                {fromCache && <div style={{fontSize:10,background:"rgba(76,200,144,.12)",border:"1px solid rgba(76,200,144,.28)",borderRadius:6,padding:"3px 7px",color:"var(--green2)",fontWeight:700}}>⚡ Saved</div>}
-                {voiceId && <div style={{fontSize:10,background:"rgba(240,100,120,.12)",border:"1px solid rgba(240,100,120,.28)",borderRadius:6,padding:"3px 7px",color:"#f8a0b0",fontWeight:700}}>🎤 Your Voice</div>}
-                {isAdv&&chosenPath && <div style={{fontSize:10,background:"rgba(112,80,192,.12)",border:"1px solid rgba(112,80,192,.28)",borderRadius:6,padding:"3px 7px",color:"#c0a8ff",fontWeight:700}}>Path {chosenPath.toUpperCase()}</div>}
-                <div style={{fontSize:11,color:"var(--dim)",fontFamily:"'Kalam',cursive",fontStyle:"italic"}}>{book.heroName}'s story</div>
+              <div className="rd-progress">{isLastPage?`${book.heroName}'s story · The End`:`Page ${pageIdx} of ${totalPages-1} · ~${Math.max(1,Math.ceil((totalPages-1-pageIdx)*0.4))} min`}</div>
+              <div style={{display:"flex",gap:5,alignItems:"center"}}>
+                {fromCache && <div style={{fontSize:9,background:"rgba(76,200,144,.12)",border:"1px solid rgba(76,200,144,.28)",borderRadius:5,padding:"3px 7px",color:"var(--green2)",fontWeight:700}}>Saved</div>}
+                {voiceId && <div style={{fontSize:9,background:"rgba(240,100,120,.12)",border:"1px solid rgba(240,100,120,.28)",borderRadius:5,padding:"3px 7px",color:"#f8a0b0",fontWeight:700}}>Your Voice</div>}
               </div>
             </div>
-
-            <div className="book-3d" onClick={addSparkle}>
-              {renderPage()}
-              {sparkles.map(sp => (
-                <div key={sp.id} className="spark-ring" style={{left:sp.x,top:sp.y}}>
-                  {Array.from({length:8},(_,i) => {
-                    const angle = (i/8)*Math.PI*2;
-                    const dist  = 30+Math.random()*25;
-                    return (
-                      <div key={i} className="spark" style={{
-                        background:SPARK_COLORS[i%SPARK_COLORS.length],
-                        "--sx":`${Math.cos(angle)*dist}px`,
-                        "--sy":`${Math.sin(angle)*dist}px`,
-                        animationDelay:`${i*30}ms`,
-                        left:0,top:0,
-                      }} />
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-
+            <div className="book-3d" onClick={addSparkle}>{renderPage()}{sparkles.map(sp=>(<div key={sp.id} className="spark-ring" style={{left:sp.x,top:sp.y}}>{Array.from({length:8},(_,i)=>{const angle=(i/8)*Math.PI*2;const dist=30+Math.random()*25;return(<div key={i} className="spark" style={{background:SPARK_COLORS[i%SPARK_COLORS.length],"--sx":`${Math.cos(angle)*dist}px`,"--sy":`${Math.sin(angle)*dist}px`,animationDelay:`${i*30}ms`,left:0,top:0}}/>);})}</div>))}</div>
             <div className="book-nav" style={{marginTop:8}}>
               <button className="nav-btn" disabled={pageIdx===0} onClick={()=>goPage(-1)}>← Back</button>
-              <div className="dots">
-                {Array.from({length:totalPages}).map((_,i) => (
-                  <div key={i} className={`dot${i===pageIdx?" on":""}`}
-                    onClick={()=>{ if(i<=pageIdx||(i===choicePgIdx+1&&chosenPath)) setPageIdx(i); }} />
-                ))}
-              </div>
-              <button className="nav-btn" disabled={isLastPage||(onChoicePg&&!chosenPath)} onClick={()=>goPage(1)}>
-                {onChoicePg&&!chosenPath ? "Choose!" : "Next →"}
-              </button>
+              <div className="dots">{Array.from({length:totalPages}).map((_,i)=>(<div key={i} className={`dot${i===pageIdx?" on":""}`} onClick={()=>{if(i<=pageIdx||(i===choicePgIdx+1&&chosenPath))setPageIdx(i);}}/>))}</div>
+              <button className="nav-btn" disabled={isLastPage||(onChoicePg&&!chosenPath)} onClick={()=>goPage(1)}>{onChoicePg&&!chosenPath?"Choose!":"Next →"}</button>
             </div>
-
-            <div className="ctrl-bar">
-              <button className={`ctrl-btn read${isReading?" active":""}`}
-                onClick={()=>{ const prog=totalPages>1?pageIdx/(totalPages-1):0.5; toggleRead(pageIdx===0?`${book.title}. A bedtime story for ${book.heroName}.`:getCurrentPageText(),prog); }}>
-                {isReading ? "⏸ Pause" : (selectedVoiceId||voiceId) ? `🔊 ${(PRESET_VOICES.find(v=>v.id===selectedVoiceId)||{name:voiceId?"My Voice":"Read"}).name}` : "🔊 Read aloud"}
-              </button>
-              <div className="ctrl-btn" style={{cursor:"default",background:"rgba(76,200,144,.08)",borderColor:"rgba(76,200,144,.25)",color:"var(--green2)",fontSize:11}}>
-                ✓ Auto-saved
-              </div>
-              <button className="ctrl-btn fresh" onClick={async()=>{
-                try {
-                  const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance);
-                  await sDel(`book_${s}`);
-                } catch(_) {}
-                window.speechSynthesis?.cancel();
-                if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
-                autoReadRef.current = false;
-                setStoryContext(""); setLessonContext(""); setTodayPrompt(""); setStoryBrief1(""); setStoryBrief2(""); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(true); setBriefStep2Open(false);
-                setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
-              }}>🔄 New</button>
-              <button className="ctrl-btn dl" onClick={downloadStory}>📄 Download</button>
-              <button className="ctrl-btn" style={{background:"rgba(100,160,255,.1)",borderColor:"rgba(100,160,255,.25)",color:"#a8c8ff"}}
-                onClick={shareStory}>📤 Share</button>
-              <button className={`ctrl-btn vc-btn${(selectedVoiceId||voiceId)?" active":""}`}
-                onClick={()=>setShowVoicePicker(true)}>
-                🎤 {selectedVoiceId ? (PRESET_VOICES.find(v=>v.id===selectedVoiceId)?.name||"Voice") : voiceId ? "My Voice ✓" : "Choose Voice"}
-              </button>
+            <div className="rd-ctrl">
+              <button className={`rd-btn-secondary${isReading?" on":""}`} onClick={()=>{const prog=totalPages>1?pageIdx/(totalPages-1):0.5;toggleRead(pageIdx===0?`${book.title}. A bedtime story for ${book.heroName}.`:getCurrentPageText(),prog);}}>{isReading?"⏸ Pause":(selectedVoiceId||voiceId)?`🔊 ${(PRESET_VOICES.find(v=>v.id===selectedVoiceId)||{name:voiceId?"My Voice":"Read"}).name}`:"🔊 Read aloud"}</button>
+              <button className={`rd-btn-secondary${(selectedVoiceId||voiceId)?" on":""}`} onClick={()=>setShowVoicePicker(true)}>🎤 {selectedVoiceId?(PRESET_VOICES.find(v=>v.id===selectedVoiceId)?.name||"Voice"):voiceId?"My Voice":"Voice"}</button>
+              <button className="rd-btn-secondary" onClick={shareStory}>✨ Send story</button>
+              <button className="rd-btn-secondary" onClick={downloadStory}>📄 PDF</button>
+              <button className="rd-btn-secondary" onClick={async()=>{try{const s=makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance);await sDel(`book_${s}`);}catch(_){}window.speechSynthesis?.cancel();if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}autoReadRef.current=false;setStoryContext("");setLessonContext("");setTodayPrompt("");setStoryBrief1("");setStoryBrief2("");setRealLifeChip("");setRealLifeCtx("");setBriefStep1Open(true);setBriefStep2Open(false);setStage("home");setBook(null);setChosenPath(null);setIsReading(false);}}>🔄 New</button>
+              <div className="rd-status">✓ Auto-saved</div>
             </div>
-
-            {/* ── Voice Picker Modal ── */}
-            {showVoicePicker && (
-              <div className="vc-modal" onClick={e=>{ if(e.target===e.currentTarget) setShowVoicePicker(false); }}>
-                <div className="vc-card" style={{maxHeight:"80vh",overflowY:"auto"}}>
-                  <div className="vc-title">🎤 Choose a Voice</div>
-                  <div className="vc-sub">Who reads tonight's story?</div>
-
-                  {/* Preset voices */}
-                  <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:8}}>Narrators</div>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:14}}>
-                    {PRESET_VOICES.map(v => (
-                      <button key={v.id}
-                        style={{padding:"10px 10px",borderRadius:11,cursor:"pointer",textAlign:"left",
-                          border:`1.5px solid ${selectedVoiceId===v.id?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
-                          background:selectedVoiceId===v.id?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
-                          transition:"all .15s"}}
-                        onClick={()=>{ setSelectedVoiceId(selectedVoiceId===v.id?null:v.id); }}>
-                        <div style={{fontSize:16,marginBottom:3}}>{v.emoji}</div>
-                        <div style={{fontSize:12,fontWeight:700,color:selectedVoiceId===v.id?"var(--gold2)":"var(--cream)"}}>{v.name}</div>
-                        <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>{v.desc}</div>
-                      </button>
-                    ))}
-                  </div>
-
-                  <div style={{height:1,background:"rgba(255,255,255,.08)",marginBottom:14}} />
-
-                  {/* Clone voice option */}
-                  <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:8}}>Your Own Voice</div>
-                  <button style={{width:"100%",padding:"12px 14px",borderRadius:11,cursor:"pointer",textAlign:"left",
-                    border:`1.5px solid ${voiceId?"rgba(76,200,144,.5)":"rgba(255,255,255,.1)"}`,
-                    background:voiceId?"rgba(76,200,144,.08)":"rgba(255,255,255,.04)",marginBottom:14}}
-                    onClick={()=>{ setShowVoicePicker(false); setVcStage(voiceId?"ready":"idle"); setShowVcModal(true); }}>
-                    <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <span style={{fontSize:22}}>🎙️</span>
-                      <div>
-                        <div style={{fontSize:12,fontWeight:700,color:voiceId?"#80d8a8":"var(--cream)"}}>{voiceId?"My Voice ✓":"Record My Voice"}</div>
-                        <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>
-                          {voiceId?"Your cloned voice is active — tap to manage":"Clone your voice in 45 seconds"}
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-
-                  <div style={{display:"flex",gap:8}}>
-                    {(selectedVoiceId||voiceId) && (
-                      <button className="btn-ghost" style={{flex:1,fontSize:12,padding:10}}
-                        onClick={()=>{ setSelectedVoiceId(null); }}>
-                        🔇 No Voice
-                      </button>
-                    )}
-                    <button className="btn" style={{flex:2,padding:11,fontSize:14}}
-                      onClick={()=>setShowVoicePicker(false)}>
-                      Done ✓
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ── Voice Clone Modal ── */}
-            {showVcModal && (
-              <div className="vc-modal" onClick={e=>{ if(e.target===e.currentTarget){ cancelRecording(); setShowVcModal(false); } }}>
-                <div className="vc-card">
-                  <div className="vc-title">🎤 Use Your Voice</div>
-                  <div className="vc-sub">
-                    Read the script below into your microphone — SleepSeed will learn your voice and narrate every story. ✨
-                  </div>
-
-                  {/* Script always visible in idle, error, and recording states */}
-                  {(vcStage==="idle"||vcStage==="error"||vcStage==="recording") && (
-                    <>
-                      <div className="vc-script-label">
-                        {vcStage==="recording" ? "🔴 Recording — keep reading at a calm, warm pace:" : "Read this aloud — warmly and clearly:"}
-                      </div>
-                      <div className="vc-script" style={{opacity:vcStage==="recording"?1:1,transition:"opacity .3s"}}>
-                        Once upon a time, in a land where the stars came out to play, a little child looked up at the sky and smiled. "Good evening," said the moon. "Are you ready for tonight's adventure?" And the child, heart full of wonder, whispered: "I'm always ready." So together they set off into the most magical night imaginable, where every shadow hid a friendly surprise, and every sound was the beginning of a brand new story. The trees whispered secrets. The fireflies wrote messages in the dark. And somewhere, not too far away, something wonderful was waiting — just for them.
-                      </div>
-
-                      {vcStage==="recording" ? (
-                        <div style={{marginBottom:8}}>
-                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-                            <div style={{fontSize:11,color:"var(--dim)"}}>
-                              {vcSeconds < 15 ? "Keep going — aim for 30 seconds" : vcSeconds < 30 ? "Great! A little more…" : "✓ Ready to stop"}
-                            </div>
-                            <div style={{fontSize:22,fontFamily:"monospace",fontWeight:700,color:"var(--gold2)",letterSpacing:1}}>
-                              {String(Math.floor(vcSeconds/60)).padStart(2,"0")}:{String(vcSeconds%60).padStart(2,"0")}
-                            </div>
-                          </div>
-                          <div style={{height:4,background:"rgba(255,255,255,.08)",borderRadius:99,marginBottom:14,overflow:"hidden"}}>
-                            <div style={{height:"100%",borderRadius:99,background:"var(--gold2)",width:`${Math.min(100,(vcSeconds/60)*100)}%`,transition:"width 1s linear"}} />
-                          </div>
-                          <button className="btn" style={{marginBottom:8}} onClick={stopRecording}>
-                            ⏹ Stop &amp; Use This Recording
-                          </button>
-                          <button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={cancelRecording}>
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <div style={{fontSize:11,color:"var(--dim)",marginBottom:14,lineHeight:1.6}}>
-                            🎧 <strong style={{color:"var(--cream)"}}>Tips:</strong> Quiet room · calm bedtime pace · aim for 30–60 seconds
-                          </div>
-                          {vcError && <div style={{fontSize:11,color:"#f09080",marginBottom:10,lineHeight:1.5}}>{vcError}</div>}
-                          <button className="btn" style={{marginBottom:8}} onClick={startRecording}>
-                            🔴 Start Recording
-                          </button>
-                          {voiceId && (
-                            <button className="btn-ghost" style={{width:"100%",fontSize:12,marginBottom:8}} onClick={resetVoice}>
-                              🗑 Remove current voice
-                            </button>
-                          )}
-                          <button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={()=>setShowVcModal(false)}>
-                            Close
-                          </button>
-                        </>
-                      )}
-                    </>
-                  )}
-
-                  {vcStage==="uploading" && (
-                    <div style={{textAlign:"center",padding:"24px 0"}}>
-                      <div style={{fontSize:36,marginBottom:12}}>✨</div>
-                      <div className="vc-status">Learning your voice…</div>
-                      <div style={{fontSize:11,color:"var(--dimmer)",marginTop:6}}>This takes about 15 seconds</div>
-                    </div>
-                  )}
-
-                  {vcStage==="ready" && (
-                    <>
-                      <div style={{textAlign:"center",padding:"16px 0 12px"}}>
-                        <div style={{fontSize:40,marginBottom:8}}>🎉</div>
-                        <div className="vc-status" style={{color:"var(--green2)"}}>Your voice is ready!</div>
-                        <div style={{fontSize:11,color:"var(--dim)",marginTop:6}}>Every story will now be read in your voice.</div>
-                      </div>
-                      <div style={{display:"flex",gap:8}}>
-                        <button className="btn" style={{flex:1,padding:11,fontSize:14}} onClick={()=>setShowVcModal(false)}>
-                          Done ✓
-                        </button>
-                        <button className="btn-ghost" style={{flex:1,padding:11,fontSize:13}} onClick={()=>{ setVcStage("idle"); setVcSeconds(0); }}>
-                          Re-record
-                        </button>
-                      </div>
-                      <button className="btn-ghost" style={{width:"100%",fontSize:12,marginTop:8}} onClick={resetVoice}>
-                        🗑 Remove voice
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
+            {showVoicePicker&&(<div className="vc-modal" onClick={e=>{if(e.target===e.currentTarget)setShowVoicePicker(false);}}><div className="vc-card" style={{maxHeight:"80vh",overflowY:"auto"}}><div className="vc-title">🎤 Choose a Voice</div><div className="vc-sub">Who reads tonight's story?</div><div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:8}}>Narrators</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:14}}>{PRESET_VOICES.map(v=>(<button key={v.id} style={{padding:"10px",borderRadius:11,cursor:"pointer",textAlign:"left",border:`1.5px solid ${selectedVoiceId===v.id?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,background:selectedVoiceId===v.id?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",transition:"all .15s"}} onClick={()=>{setSelectedVoiceId(selectedVoiceId===v.id?null:v.id);}}><div style={{fontSize:16,marginBottom:3}}>{v.emoji}</div><div style={{fontSize:12,fontWeight:700,color:selectedVoiceId===v.id?"var(--gold2)":"var(--cream)"}}>{v.name}</div><div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>{v.desc}</div></button>))}</div><div style={{height:1,background:"rgba(255,255,255,.08)",marginBottom:14}}/><div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:8}}>Your Own Voice</div><button style={{width:"100%",padding:"12px 14px",borderRadius:11,cursor:"pointer",textAlign:"left",border:`1.5px solid ${voiceId?"rgba(76,200,144,.5)":"rgba(255,255,255,.1)"}`,background:voiceId?"rgba(76,200,144,.08)":"rgba(255,255,255,.04)",marginBottom:14}} onClick={()=>{setShowVoicePicker(false);setVcStage(voiceId?"ready":"idle");setShowVcModal(true);}}><div style={{display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:22}}>🎙️</span><div><div style={{fontSize:12,fontWeight:700,color:voiceId?"#80d8a8":"var(--cream)"}}>{voiceId?"My Voice ✓":"Record My Voice"}</div><div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>{voiceId?"Tap to manage":"Clone your voice in 45 seconds"}</div></div></div></button><div style={{display:"flex",gap:8}}>{(selectedVoiceId||voiceId)&&(<button className="btn-ghost" style={{flex:1,fontSize:12,padding:10}} onClick={()=>{setSelectedVoiceId(null);}}>🔇 No Voice</button>)}<button className="btn" style={{flex:2,padding:11,fontSize:14}} onClick={()=>setShowVoicePicker(false)}>Done ✓</button></div></div></div>)}
+            {showVcModal&&(<div className="vc-modal" onClick={e=>{if(e.target===e.currentTarget){cancelRecording();setShowVcModal(false);} }}><div className="vc-card"><div className="vc-title">🎤 Use Your Voice</div><div className="vc-sub">Read the script below — SleepSeed learns your voice. ✨</div>{(vcStage==="idle"||vcStage==="error"||vcStage==="recording")&&(<><div className="vc-script-label">{vcStage==="recording"?"🔴 Recording — calm, warm pace:":"Read this aloud — warmly and clearly:"}</div><div className="vc-script">Once upon a time, in a land where the stars came out to play, a little child looked up at the sky and smiled. "Good evening," said the moon. "Are you ready for tonight's adventure?" And the child, heart full of wonder, whispered: "I'm always ready." So together they set off into the most magical night imaginable, where every shadow hid a friendly surprise, and every sound was the beginning of a brand new story.</div>{vcStage==="recording"?(<div style={{marginBottom:8}}><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}><div style={{fontSize:11,color:"var(--dim)"}}>{vcSeconds<15?"Keep going — aim for 30 seconds":vcSeconds<30?"Great! A little more…":"✓ Ready to stop"}</div><div style={{fontSize:22,fontFamily:"monospace",fontWeight:700,color:"var(--gold2)",letterSpacing:1}}>{String(Math.floor(vcSeconds/60)).padStart(2,"0")}:{String(vcSeconds%60).padStart(2,"0")}</div></div><div style={{height:4,background:"rgba(255,255,255,.08)",borderRadius:99,marginBottom:14,overflow:"hidden"}}><div style={{height:"100%",borderRadius:99,background:"var(--gold2)",width:`${Math.min(100,(vcSeconds/60)*100)}%`,transition:"width 1s linear"}}/></div><button className="btn" style={{marginBottom:8}} onClick={stopRecording}>⏹ Stop &amp; Use This Recording</button><button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={cancelRecording}>Cancel</button></div>):(<><div style={{fontSize:11,color:"var(--dim)",marginBottom:14,lineHeight:1.6}}>🎧 <strong style={{color:"var(--cream)"}}>Tips:</strong> Quiet room · calm bedtime pace · 30–60 seconds</div>{vcError&&<div style={{fontSize:11,color:"#f09080",marginBottom:10,lineHeight:1.5}}>{vcError}</div>}<button className="btn" style={{marginBottom:8}} onClick={startRecording}>🔴 Start Recording</button>{voiceId&&(<button className="btn-ghost" style={{width:"100%",fontSize:12,marginBottom:8}} onClick={resetVoice}>🗑 Remove current voice</button>)}<button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={()=>setShowVcModal(false)}>Close</button></>)}</>)}{vcStage==="uploading"&&(<div style={{textAlign:"center",padding:"24px 0"}}><div style={{fontSize:36,marginBottom:12}}>✨</div><div className="vc-status">Learning your voice…</div><div style={{fontSize:11,color:"var(--dimmer)",marginTop:6}}>This takes about 15 seconds</div></div>)}{vcStage==="ready"&&(<><div style={{textAlign:"center",padding:"16px 0 12px"}}><div style={{fontSize:40,marginBottom:8}}>🎉</div><div className="vc-status" style={{color:"var(--green2)"}}>Your voice is ready!</div><div style={{fontSize:11,color:"var(--dim)",marginTop:6}}>Every story will now be narrated in your voice.</div></div><div style={{display:"flex",gap:8}}><button className="btn" style={{flex:1,padding:11,fontSize:14}} onClick={()=>setShowVcModal(false)}>Done ✓</button><button className="btn-ghost" style={{flex:1,padding:11,fontSize:13}} onClick={()=>{setVcStage("idle");setVcSeconds(0);}}>Re-record</button></div><button className="btn-ghost" style={{width:"100%",fontSize:12,marginTop:8}} onClick={resetVoice}>🗑 Remove voice</button></>)}</div></div>)}
+            {showShareModal&&(<div className="share-modal-bg" onClick={e=>{if(e.target===e.currentTarget)setShowShareModal(false);}}><div className="share-modal"><div className="share-modal-title">Share tonight's story</div><div className="share-modal-sub">Send it to anyone — they don't need an account.</div><div style={{marginBottom:4}}><div className="share-option" style={{cursor:"default"}}><div className="share-option-icon" style={{background:"rgba(232,151,42,.1)"}}>👵</div><div className="share-option-info"><div className="share-option-h">Send to Grandma (or anyone)</div><div className="share-option-sub">{(voiceId||selectedVoiceId)?"They can read and listen — no account needed":"They can read the full story — no account needed"}</div></div></div><div className="share-link-row"><input id="share-link-input" className="share-link-input" readOnly value={shareLink} onClick={e=>(e.target as HTMLInputElement).select()}/><button className={`share-link-copy${shareCopied?" copied":""}`} onClick={copyShareLink}>{shareCopied?"✓ Copied!":"Copy link"}</button></div></div><button className="share-option" onClick={()=>{setShowShareModal(false);shareSocialCard();}}><div className="share-option-icon" style={{background:"rgba(96,165,250,.08)"}}>📱</div><div className="share-option-info"><div className="share-option-h">Share to Stories</div><div className="share-option-sub">Beautiful 9:16 card for Instagram or WhatsApp</div></div><div style={{fontSize:11,color:"rgba(244,239,232,.25)"}}>›</div></button><button className="share-option" onClick={()=>{setShowShareModal(false);downloadStory();}}><div className="share-option-icon" style={{background:"rgba(76,200,144,.07)"}}>📄</div><div className="share-option-info"><div className="share-option-h">Download as PDF</div><div className="share-option-sub">A printable picture book</div></div><div style={{fontSize:11,color:"rgba(244,239,232,.25)"}}>›</div></button><button className="share-dismiss" onClick={()=>setShowShareModal(false)}>Close</button></div></div>)}
           </div>
         )}
 
