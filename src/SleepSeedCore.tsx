@@ -290,92 +290,125 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .mem-tab.on{background:rgba(212,160,48,.12);color:var(--gold2)}
 .mem-tab:hover:not(.on){color:var(--cream);background:rgba(255,255,255,.05)}
 /* ── NEW THEME — story builder screens ── */
-.nb-nav{display:flex;align-items:center;gap:10px;padding:16px 20px 14px;border-bottom:1px solid rgba(232,151,42,.08);background:rgba(6,11,24,.98);position:sticky;top:0;z-index:50;backdrop-filter:blur(16px)}
-.nb-back{background:transparent;border:none;color:rgba(244,239,232,.38);font-size:13px;cursor:pointer;font-family:var(--sans2);display:flex;align-items:center;gap:5px;transition:color .15s}
-.nb-back:hover{color:rgba(244,239,232,.75)}
+.nb-nav{display:flex;align-items:center;gap:10px;padding:16px 20px 14px;border-bottom:1px solid rgba(232,151,42,.1);background:rgba(6,11,24,.98);position:sticky;top:0;z-index:50;backdrop-filter:blur(16px)}
+.nb-back{background:transparent;border:none;color:rgba(244,239,232,.5);font-size:13px;cursor:pointer;font-family:var(--sans2);display:flex;align-items:center;gap:5px;transition:color .15s}
+.nb-back:hover{color:rgba(244,239,232,.85)}
 .nb-logo{font-family:var(--serif2);font-size:16px;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:8px;margin:0 auto}
 .nb-moon{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020);flex-shrink:0}
-.nb-body{padding:22px 20px;font-family:var(--sans2)}
-.nb-label{font-size:9px;font-family:var(--mono2);letter-spacing:2px;text-transform:uppercase;color:rgba(232,151,42,.55);margin-bottom:10px;display:flex;align-items:center;gap:7px}
-.nb-label::before{content:'';width:16px;height:1px;background:rgba(232,151,42,.35);flex-shrink:0}
-.nb-divider{height:1px;background:rgba(255,255,255,.05);margin:16px 0}
-.nb-hero-input{width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(232,151,42,.3);border-radius:14px;padding:16px 18px;font-size:20px;color:var(--cream);font-family:var(--serif2);font-style:italic;font-weight:700;outline:none;text-align:center;letter-spacing:-.02em;transition:border-color .2s}
-.nb-hero-input:focus{border-color:var(--amber);box-shadow:0 0 0 4px rgba(232,151,42,.07)}
-.nb-hero-input::placeholder{color:rgba(244,239,232,.22);font-weight:400;font-style:italic;font-size:15px}
+.nb-body{padding:22px 20px;font-family:var(--sans2);position:relative}
+.nb-body-bg{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden;background:linear-gradient(180deg,#0D1018 0%,#141830 100%)}
+.nb-body>*{position:relative;z-index:1}
+.nb-ambient{position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:420px;height:420px;border-radius:50%;pointer-events:none;z-index:0;transition:background 1.2s ease}
+.nb-star{position:absolute;border-radius:50%;background:#FFF8EC;animation:nb-tw var(--d,3s) var(--dl,0s) ease-in-out infinite}
+@keyframes nb-tw{0%,100%{opacity:.05}50%{opacity:.45}}
+.nb-label{font-size:11px;font-family:var(--mono2);letter-spacing:1.5px;text-transform:uppercase;color:rgba(232,151,42,.75);margin-bottom:11px;display:flex;align-items:center;gap:7px}
+.nb-label::before{content:'';width:16px;height:1px;background:rgba(232,151,42,.45);flex-shrink:0}
+.nb-divider{height:1px;background:rgba(255,255,255,.06);margin:18px 0}
+.nb-hero-input{width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(232,151,42,.35);border-radius:14px;padding:16px 18px;font-size:20px;color:var(--cream);font-family:var(--serif2);font-style:italic;font-weight:700;outline:none;text-align:center;letter-spacing:-.02em;transition:all .2s}
+.nb-hero-input:focus{border-color:var(--amber);box-shadow:0 0 0 4px rgba(232,151,42,.1);background:rgba(232,151,42,.06)}
+.nb-hero-input::placeholder{color:rgba(244,239,232,.28);font-weight:400;font-style:italic;font-size:15px}
 .nb-pronoun-row{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:10px}
-.nb-pronoun{padding:7px 14px;border-radius:50px;cursor:pointer;border:1px solid rgba(255,255,255,.09);color:rgba(244,239,232,.38);background:transparent;font-size:11.5px;font-weight:500;font-family:var(--sans2);transition:all .2s}
-.nb-pronoun.sel{background:rgba(232,151,42,.12);border-color:rgba(232,151,42,.38);color:var(--amber2)}
+.nb-pronoun{padding:8px 16px;border-radius:50px;cursor:pointer;border:1px solid rgba(255,255,255,.13);color:rgba(244,239,232,.6);background:rgba(255,255,255,.04);font-size:13px;font-weight:500;font-family:var(--sans2);transition:all .2s}
+.nb-pronoun:hover{border-color:rgba(255,255,255,.25);color:var(--cream);background:rgba(255,255,255,.08)}
+.nb-pronoun.sel{background:rgba(232,151,42,.15);border-color:rgba(232,151,42,.5);color:var(--amber2)}
 .nb-char-strip{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:0}
 .nb-char-chip{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:transform .15s}
-.nb-char-chip:hover{transform:translateY(-2px)}
-.nb-char-av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid rgba(232,151,42,.12);transition:all .2s;overflow:hidden}
-.nb-char-av.sel{border-color:var(--amber);box-shadow:0 0 0 3px rgba(232,151,42,.14)}
-.nb-char-av-add{background:rgba(232,151,42,.05);border:1.5px dashed rgba(232,151,42,.22)!important}
-.nb-char-nm{font-size:10px;color:rgba(244,239,232,.45);font-weight:500;font-family:var(--mono2);text-align:center;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nb-char-chip:hover{transform:translateY(-3px)}
+.nb-char-av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid rgba(232,151,42,.15);transition:all .2s;overflow:hidden}
+.nb-char-av.sel{border-color:var(--amber2);box-shadow:0 0 0 3px rgba(232,151,42,.18)}
+.nb-char-av-add{background:rgba(232,151,42,.07);border:1.5px dashed rgba(232,151,42,.3)!important}
+.nb-char-nm{font-size:10px;color:rgba(244,239,232,.55);font-weight:500;font-family:var(--mono2);text-align:center;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nb-char-nm.sel{color:var(--amber2)}
-.nb-char-detail{background:rgba(232,151,42,.05);border:1px solid rgba(232,151,42,.12);border-radius:11px;padding:10px 13px;margin-top:11px;animation:fup .3s cubic-bezier(.16,1,.3,1)}
-.nb-prefill-tag{font-size:9.5px;color:rgba(76,200,144,.75);font-family:var(--mono2);margin-top:5px}
+.nb-char-detail{background:rgba(232,151,42,.06);border:1px solid rgba(232,151,42,.16);border-radius:11px;padding:10px 13px;margin-top:11px;animation:fup .3s cubic-bezier(.16,1,.3,1)}
+.nb-prefill-tag{font-size:9.5px;color:rgba(76,200,144,.8);font-family:var(--mono2);margin-top:5px}
 .nb-cta{width:100%;padding:16px;background:var(--amber);color:#1A1420;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--sans2);transition:all .2s;letter-spacing:-.01em}
-.nb-cta:hover{background:var(--amber2);transform:translateY(-1px);box-shadow:0 8px 24px rgba(232,151,42,.25)}
+.nb-cta:hover{background:var(--amber2);transform:translateY(-1px);box-shadow:0 8px 28px rgba(232,151,42,.3)}
 .nb-cta:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
-.nb-customise{text-align:center;font-size:11.5px;color:rgba(232,151,42,.45);cursor:pointer;padding:10px 0;font-weight:500;font-family:var(--mono2);letter-spacing:.5px;transition:color .2s}
-.nb-customise:hover{color:rgba(232,151,42,.75)}
-.nb-preview{background:rgba(232,151,42,.06);border:1px solid rgba(232,151,42,.16);border-radius:12px;padding:12px 14px;margin-bottom:16px;animation:fup .35s cubic-bezier(.16,1,.3,1)}
-.nb-preview-label{font-size:8.5px;font-family:var(--mono2);color:rgba(232,151,42,.5);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
-.nb-preview-text{font-family:var(--serif2);font-size:12.5px;font-style:italic;color:rgba(244,239,232,.65);line-height:1.68}
-.nb-about-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
-.nb-about-pill{padding:10px 11px;border-radius:11px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(244,239,232,.48);font-size:12px;font-weight:500;cursor:pointer;text-align:left;font-family:var(--sans2);transition:all .2s;display:flex;align-items:center;gap:7px}
-.nb-about-pill:hover{background:rgba(255,255,255,.06)}
-.nb-about-pill.sel{background:rgba(232,151,42,.09);border-color:rgba(232,151,42,.32);color:var(--amber2)}
-.nb-mood-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:0}
-.nb-mood-pill{padding:10px 11px;border-radius:11px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(244,239,232,.48);font-size:12px;font-weight:500;cursor:pointer;text-align:left;font-family:var(--sans2);transition:all .2s;display:flex;align-items:center;gap:7px}
-.nb-mood-pill:hover{background:rgba(255,255,255,.06)}
-.nb-mood-pill.sel{background:rgba(232,151,42,.09);border-color:rgba(232,151,42,.32);color:var(--amber2)}
-.nb-textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:11px 14px;font-size:13px;color:var(--cream);font-family:var(--sans2);outline:none;resize:none;min-height:64px;line-height:1.6;transition:border-color .2s;margin-top:9px}
-.nb-textarea:focus{border-color:rgba(232,151,42,.38)}
-.nb-textarea::placeholder{color:rgba(244,239,232,.2)}
-.nb-lesson-group-label{font-size:8.5px;font-family:var(--mono2);color:rgba(244,239,232,.28);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-weight:500}
-.nb-lesson-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.nb-lesson-pill{padding:5px 12px;border-radius:50px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(244,239,232,.42);font-size:11px;font-weight:500;cursor:pointer;font-family:var(--sans2);transition:all .2s}
-.nb-lesson-pill:hover{background:rgba(255,255,255,.06)}
-.nb-lesson-pill.sel{background:rgba(232,151,42,.1);border-color:rgba(232,151,42,.3);color:var(--amber2)}
-.nb-age-row{display:flex;gap:6px}
-.nb-age-pill{flex:1;padding:9px 5px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(244,239,232,.42);font-size:11px;font-weight:600;cursor:pointer;text-align:center;font-family:var(--mono2);transition:all .2s}
-.nb-age-pill:hover{background:rgba(255,255,255,.06)}
-.nb-age-pill.sel{background:rgba(232,151,42,.1);border-color:rgba(232,151,42,.32);color:var(--amber2)}
-.nb-age-pill-sub{font-size:7.5px;font-weight:400;color:rgba(244,239,232,.28);margin-top:2px}
-.nb-age-pill.sel .nb-age-pill-sub{color:rgba(245,184,76,.55)}
-.nb-setting-chips{display:flex;gap:6px;flex-wrap:wrap}
-.nb-setting-chip{padding:6px 13px;border-radius:50px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(244,239,232,.42);font-size:11px;font-weight:500;cursor:pointer;font-family:var(--mono2);transition:all .2s}
-.nb-setting-chip:hover{background:rgba(255,255,255,.06)}
-.nb-setting-chip.sel{background:rgba(232,151,42,.1);border-color:rgba(232,151,42,.3);color:var(--amber2)}
-.nb-input-sm{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:11px;padding:11px 14px;font-size:13px;color:var(--cream);font-family:var(--sans2);outline:none;transition:border-color .2s}
-.nb-input-sm:focus{border-color:rgba(232,151,42,.38)}
-.nb-input-sm::placeholder{color:rgba(244,239,232,.2)}
-.nb-sticky-bar{background:rgba(6,11,24,.98);border-top:1px solid rgba(232,151,42,.14);padding:14px 20px;margin-top:0}
-.nb-sticky-inner{display:flex;align-items:center;gap:11px}
-.nb-sticky-av{width:36px;height:36px;border-radius:50%;background:#1E1640;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:2px solid rgba(232,151,42,.2);overflow:hidden}
+.nb-customise{text-align:center;font-size:11.5px;color:rgba(232,151,42,.5);cursor:pointer;padding:10px 0;font-weight:500;font-family:var(--mono2);letter-spacing:.5px;transition:color .2s}
+.nb-customise:hover{color:rgba(232,151,42,.8)}
+.nb-preview{background:rgba(232,151,42,.07);border:1px solid rgba(232,151,42,.2);border-radius:13px;padding:13px 15px;margin-bottom:16px;animation:fup .35s cubic-bezier(.16,1,.3,1)}
+.nb-preview-label{font-size:9px;font-family:var(--mono2);color:rgba(232,151,42,.6);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.nb-preview-text{font-family:var(--serif2);font-size:13px;font-style:italic;color:rgba(244,239,232,.8);line-height:1.72}
+.nb-about-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px}
+.nb-about-pill{padding:12px 12px;border-radius:13px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(244,239,232,.82);font-size:14px;font-weight:500;cursor:pointer;text-align:left;font-family:var(--sans2);transition:all .2s;display:flex;align-items:center;gap:8px;line-height:1.3}
+.nb-about-pill:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);transform:translateY(-1px)}
+.nb-about-pill.sel{background:rgba(232,151,42,.15);border-color:rgba(232,151,42,.5);color:var(--amber2);box-shadow:0 0 0 3px rgba(232,151,42,.08)}
+.nb-mood-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0}
+.nb-mood-pill{padding:12px 12px;border-radius:13px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(244,239,232,.82);font-size:14px;font-weight:500;cursor:pointer;text-align:left;font-family:var(--sans2);transition:all .2s;display:flex;align-items:center;gap:8px;line-height:1.3}
+.nb-mood-pill:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);transform:translateY(-1px)}
+.nb-mood-pill.sel{background:rgba(232,151,42,.15);border-color:rgba(232,151,42,.5);color:var(--amber2);box-shadow:0 0 0 3px rgba(232,151,42,.08)}
+.nb-textarea{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--cream);font-family:var(--sans2);outline:none;resize:none;min-height:68px;line-height:1.65;transition:all .2s;margin-top:9px}
+.nb-textarea:focus{border-color:rgba(232,151,42,.5);background:rgba(232,151,42,.05)}
+.nb-textarea::placeholder{color:rgba(244,239,232,.3)}
+.nb-lesson-group-label{font-size:9.5px;font-family:var(--mono2);color:rgba(244,239,232,.45);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;font-weight:600}
+.nb-lesson-pills{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.nb-lesson-pill{padding:7px 15px;border-radius:50px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(244,239,232,.78);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--sans2);transition:all .2s}
+.nb-lesson-pill:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22)}
+.nb-lesson-pill.sel{background:rgba(232,151,42,.15);border-color:rgba(232,151,42,.5);color:var(--amber2)}
+.nb-age-row{display:flex;gap:7px}
+.nb-age-pill{flex:1;padding:10px 5px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(244,239,232,.75);font-size:12px;font-weight:600;cursor:pointer;text-align:center;font-family:var(--mono2);transition:all .2s}
+.nb-age-pill:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22)}
+.nb-age-pill.sel{background:rgba(232,151,42,.15);border-color:rgba(232,151,42,.5);color:var(--amber2)}
+.nb-age-pill-sub{font-size:8px;font-weight:400;color:rgba(244,239,232,.38);margin-top:2px}
+.nb-age-pill.sel .nb-age-pill-sub{color:rgba(245,184,76,.65)}
+.nb-setting-chips{display:flex;gap:7px;flex-wrap:wrap}
+.nb-setting-chip{padding:8px 15px;border-radius:50px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(244,239,232,.72);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--mono2);transition:all .2s}
+.nb-setting-chip:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22)}
+.nb-setting-chip.sel{background:rgba(232,151,42,.15);border-color:rgba(232,151,42,.5);color:var(--amber2)}
+.nb-input-sm{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:12px 15px;font-size:14px;color:var(--cream);font-family:var(--sans2);outline:none;transition:all .2s}
+.nb-input-sm:focus{border-color:rgba(232,151,42,.5);background:rgba(232,151,42,.05)}
+.nb-input-sm::placeholder{color:rgba(244,239,232,.3)}
+/* ── Option D: sticky bar + expandable drawer ── */
+.nb-sticky-bar{background:rgba(6,11,24,.98);border-top:2px solid rgba(232,151,42,.3);padding:0 20px 0;cursor:pointer;transition:border-color .3s;position:relative;z-index:40}
+.nb-sticky-bar.has-info{border-top-color:var(--amber)}
+.nb-sticky-bar:hover .nb-sticky-handle{background:rgba(232,151,42,.3)}
+.nb-sticky-handle{width:36px;height:3px;border-radius:2px;background:rgba(255,255,255,.15);margin:10px auto 8px;transition:background .2s}
+.nb-sticky-inner{display:flex;align-items:center;gap:11px;padding-bottom:14px}
+.nb-sticky-av{width:38px;height:38px;border-radius:50%;background:#1E1640;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;border:2px solid rgba(232,151,42,.25);overflow:hidden;transition:border-color .2s}
+.nb-sticky-bar.has-info .nb-sticky-av{border-color:rgba(232,151,42,.55)}
 .nb-sticky-info{flex:1;min-width:0}
 .nb-sticky-name{font-size:13px;font-weight:600;color:var(--cream);font-family:var(--serif2)}
-.nb-sticky-sub{font-size:9.5px;color:rgba(244,239,232,.35);font-family:var(--mono2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb-sticky-sub{font-size:9.5px;color:rgba(244,239,232,.42);font-family:var(--mono2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb-sticky-hint{font-size:9px;color:rgba(232,151,42,.5);font-family:var(--mono2);margin-top:2px;display:flex;align-items:center;gap:4px}
 .nb-sticky-btn{background:var(--amber);color:#1A1420;border:none;border-radius:11px;padding:11px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans2);white-space:nowrap;flex-shrink:0;transition:all .2s}
 .nb-sticky-btn:hover{background:var(--amber2)}
-.nb-ready-label{font-size:8px;font-family:var(--mono2);color:rgba(232,151,42,.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;text-align:center}
+.nb-sticky-btn:disabled{opacity:.35;cursor:not-allowed}
+.nb-ready-label{font-size:8px;font-family:var(--mono2);color:rgba(232,151,42,.55);letter-spacing:1.5px;text-transform:uppercase;text-align:center;padding:8px 0 0}
+/* ── Drawer overlay ── */
+.nb-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;animation:nb-fade-in .2s ease;backdrop-filter:blur(6px)}
+@keyframes nb-fade-in{from{opacity:0}to{opacity:1}}
+.nb-drawer{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:540px;background:#0D1018;border-radius:24px 24px 0 0;border-top:2px solid var(--amber);padding:0 22px 40px;z-index:101;animation:nb-slide-up .3s cubic-bezier(.22,1,.36,1)}
+@keyframes nb-slide-up{from{transform:translateX(-50%) translateY(100%)}to{transform:translateX(-50%) translateY(0)}}
+.nb-drawer-handle{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.2);margin:14px auto 18px}
+.nb-drawer-title{font-family:var(--serif2);font-size:20px;font-weight:700;font-style:italic;color:var(--cream);margin-bottom:4px;line-height:1.2}
+.nb-drawer-sub{font-size:12px;color:rgba(244,239,232,.42);font-weight:300;margin-bottom:18px;line-height:1.5}
+.nb-drawer-preview{font-family:var(--serif2);font-size:14px;font-style:italic;color:rgba(244,239,232,.78);line-height:1.72;background:rgba(232,151,42,.07);border:1px solid rgba(232,151,42,.2);border-radius:13px;padding:13px 15px;margin-bottom:14px}
+.nb-drawer-rows{display:flex;flex-direction:column;gap:0;margin-bottom:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden}
+.nb-drawer-row{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+.nb-drawer-row:last-child{border-bottom:none}
+.nb-drawer-row-lbl{font-size:9px;font-family:var(--mono2);color:rgba(232,151,42,.55);width:64px;flex-shrink:0;letter-spacing:.5px;margin-top:2px;text-transform:uppercase}
+.nb-drawer-row-val{color:rgba(244,239,232,.85);font-family:var(--sans2);font-weight:500;line-height:1.5}
+.nb-drawer-disclaimer{font-size:11px;color:rgba(244,239,232,.38);font-style:italic;text-align:center;margin-bottom:14px;line-height:1.6;font-family:var(--sans2)}
+.nb-drawer-cta{width:100%;padding:16px;background:var(--amber);color:#1A1420;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--sans2);transition:all .2s}
+.nb-drawer-cta:hover{background:var(--amber2);transform:translateY(-1px);box-shadow:0 8px 28px rgba(232,151,42,.3)}
+.nb-drawer-cta:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.nb-drawer-edit{width:100%;padding:12px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:12px;color:rgba(244,239,232,.45);font-size:13px;cursor:pointer;font-family:var(--sans2);margin-top:8px;transition:all .2s}
+.nb-drawer-edit:hover{border-color:rgba(255,255,255,.2);color:rgba(244,239,232,.75)}
 .nb-gen-body{padding:22px 20px;font-family:var(--sans2);display:flex;flex-direction:column;align-items:center}
-.nb-gen-progress{height:3px;background:rgba(255,255,255,.06);border-radius:2px;margin-bottom:24px;overflow:hidden;width:100%}
+.nb-gen-progress{height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin-bottom:24px;overflow:hidden;width:100%}
 .nb-gen-fill{height:100%;background:var(--amber);border-radius:2px}
 .nb-gen-dots{display:flex;gap:6px;justify-content:center;margin-bottom:20px}
 .nb-gen-dot{height:3px;border-radius:2px;background:rgba(255,255,255,.1)}
 .nb-gen-dot.done{background:var(--amber)}
 .nb-gen-dot.active{background:rgba(232,151,42,.5)}
-.nb-gen-moon{width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020);margin:0 auto 8px;box-shadow:0 0 40px 8px rgba(232,151,42,.1)}
+.nb-gen-moon{width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020);margin:0 auto 8px;box-shadow:0 0 40px 8px rgba(232,151,42,.12)}
 .nb-gen-title{font-family:var(--serif2);font-size:20px;font-weight:700;color:var(--cream);text-align:center;margin-bottom:4px;font-style:italic}
 .nb-gen-sub{font-size:11px;color:rgba(244,239,232,.38);font-family:var(--mono2);text-align:center;margin-bottom:22px}
 .nb-bq-card{background:rgba(255,255,255,.04);border:1px solid rgba(232,151,42,.14);border-radius:16px;padding:18px;width:100%;margin-bottom:14px}
 .nb-bq-while{font-size:8.5px;font-family:var(--mono2);color:rgba(232,151,42,.48);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
 .nb-bq-q{font-family:var(--serif2);font-size:17px;font-style:italic;color:rgba(244,239,232,.82);line-height:1.5;margin-bottom:14px}
-.nb-bq-answer{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:12px 14px;font-size:14px;color:var(--cream);font-family:var(--serif2);font-style:italic;outline:none;resize:none;min-height:70px;line-height:1.6;margin-bottom:10px}
-.nb-bq-answer::placeholder{color:rgba(244,239,232,.2);font-size:12px;font-style:normal}
+.nb-bq-answer{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:11px;padding:12px 14px;font-size:14px;color:var(--cream);font-family:var(--serif2);font-style:italic;outline:none;resize:none;min-height:70px;line-height:1.6;margin-bottom:10px}
+.nb-bq-answer::placeholder{color:rgba(244,239,232,.25);font-size:12px;font-style:normal}
 .nb-bq-save{width:100%;padding:11px;background:rgba(76,200,144,.1);border:1px solid rgba(76,200,144,.2);border-radius:10px;color:rgba(76,200,144,.85);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans2);transition:all .2s}
 .nb-bq-save:hover{background:rgba(76,200,144,.16)}
 .nb-step-list{display:flex;flex-direction:column;gap:5px;width:100%;margin-top:2px}
@@ -1481,6 +1514,7 @@ export default function SleepSeed({
   const [vcError,        setVcError]        = useState("");
   const [showVcModal,    setShowVcModal]    = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showBuilderDrawer, setShowBuilderDrawer] = useState(false);
   const [shareLink,      setShareLink]      = useState("");
   const [shareCopied,    setShareCopied]    = useState(false);
   const [shareIncludeNC, setShareIncludeNC] = useState(true);
@@ -3083,6 +3117,42 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
           const hasGoodInfo = canGenerate && (storyBrief1 || storyBrief2 || storyContext || storyGuidance);
           const matchedChar = savedCharsBuilder.find((c: any) => c.name === heroName);
 
+          const glowColour = (() => {
+            const mk = {
+              "calm and cosy, drifting toward sleep": "rgba(60,100,220,.07)",
+              "warm and funny, with lots of laughs": "rgba(255,170,50,.07)",
+              "exciting and full of surprises": "rgba(232,80,30,.08)",
+              "heartfelt and emotionally true": "rgba(200,70,170,.06)",
+              "completely silly from start to finish": "rgba(220,200,40,.05)",
+              "mysterious with a satisfying ending": "rgba(80,60,220,.07)",
+            } as Record<string,string>;
+            return mk[storyBrief2] || "rgba(232,151,42,.04)";
+          })();
+
+          const drawerSummary = (() => {
+            const moodShort: Record<string,string> = {
+              "calm and cosy, drifting toward sleep": "Calm & cosy",
+              "warm and funny, with lots of laughs": "Warm & funny",
+              "exciting and full of surprises": "Exciting",
+              "heartfelt and emotionally true": "Heartfelt",
+              "completely silly from start to finish": "Completely silly",
+              "mysterious with a satisfying ending": "Mysterious",
+            };
+            const cast = [heroName, ...extraChars.filter(c=>c.name.trim()).map(c=>c.name.trim())].filter(Boolean);
+            const lessonShort = lessons.map((l: string) => l.split("—")[0].replace(/^[^a-z]+/i,"").trim().split(" ").slice(0,3).join(" ")).join(", ");
+            return {
+              mood: moodShort[storyBrief2] || (storyBrief2 ? storyBrief2 : "Any mood"),
+              about: storyBrief1 ? storyBrief1.slice(0,60) : (storyContext ? storyContext.slice(0,60) : "Open story"),
+              cast: cast.join(", ") || heroName,
+              weird: storyGuidance || ((matchedChar as any)?.weirdDetail || "None added"),
+              lesson: lessonShort || "None",
+              occasion: occasionCustom || "None",
+              age: AGES.find(a => a.value === ageGroup)?.label || ageGroup,
+              length: LENGTHS.find(l => l.value === storyLen)?.desc || storyLen,
+              style: storyStyle || "Standard",
+            };
+          })();
+
           return (
           <div className="screen" style={{padding:0,paddingBottom:0}}>
             <div className="nb-nav">
@@ -3094,6 +3164,15 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
             </div>
 
             <div className="nb-body" style={{paddingBottom:0}}>
+              <div className="nb-body-bg" />
+              <div className="nb-ambient" style={{background:`radial-gradient(ellipse,${glowColour},transparent 65%)`}} />
+              {Array.from({length:40},(_,i)=>(
+                <div key={i} className="nb-star" style={{
+                  width:`${0.4+(i%3)*0.5}px`,height:`${0.4+(i%3)*0.5}px`,
+                  left:`${(i*17.3+7)%100}%`,top:`${(i*13.7+11)%100}%`,
+                  '--d':`${3+(i%2)}s`,'--dl':`${(i*0.4)%4}s`,
+                } as any} />
+              ))}
 
               {preview && (
                 <div className="nb-preview">
@@ -3314,22 +3393,58 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               <div style={{height:90}} />
             </div>
 
-            <div className="nb-sticky-bar">
-              {hasGoodInfo && <div className="nb-ready-label">Story is ready to generate</div>}
+            <div
+              className={`nb-sticky-bar${hasGoodInfo ? " has-info" : ""}`}
+              onClick={e => {
+                if ((e.target as HTMLElement).closest(".nb-sticky-btn")) return;
+                if (canGenerate) setShowBuilderDrawer(d => !d);
+              }}>
+              {hasGoodInfo && <div className="nb-ready-label">✦ Story is ready — tap to review</div>}
+              <div className="nb-sticky-handle" />
               <div className="nb-sticky-inner">
                 <div className="nb-sticky-av">
-                  {matchedChar?.photo ? <img src={matchedChar.photo} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"50%"}} alt="" /> : <span style={{fontSize:18}}>{matchedChar?.emoji || "🌙"}</span>}
+                  {matchedChar?.photo ? <img src={matchedChar.photo} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"50%"}} alt="" /> : <span style={{fontSize:19}}>{matchedChar?.emoji || "🌙"}</span>}
                 </div>
                 <div className="nb-sticky-info">
                   <div className="nb-sticky-name">{heroName || "Your story"}</div>
                   <div className="nb-sticky-sub">{stickyLabel}</div>
+                  {hasGoodInfo && <div className="nb-sticky-hint">▲ Tap to review full summary</div>}
                 </div>
                 <button className="nb-sticky-btn" disabled={!canGenerate}
-                  onClick={() => generate({storyBrief1, storyBrief2, realLifeCtx})}>
+                  onClick={e => { e.stopPropagation(); generate({storyBrief1, storyBrief2, realLifeCtx}); }}>
                   Create →
                 </button>
               </div>
             </div>
+
+            {showBuilderDrawer && (
+              <>
+                <div className="nb-drawer-overlay" onClick={() => setShowBuilderDrawer(false)} />
+                <div className="nb-drawer">
+                  <div className="nb-drawer-handle" />
+                  <div className="nb-drawer-title">{heroName ? `${heroName}'s Story Tonight` : "Tonight's Story"}</div>
+                  <div className="nb-drawer-sub">Review your story before generating</div>
+                  {preview && <div className="nb-drawer-preview">{preview}</div>}
+                  <div className="nb-drawer-rows">
+                    <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Mood</span><span className="nb-drawer-row-val">{drawerSummary.mood}</span></div>
+                    <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">About</span><span className="nb-drawer-row-val">{drawerSummary.about}</span></div>
+                    <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Cast</span><span className="nb-drawer-row-val">{drawerSummary.cast}</span></div>
+                    {drawerSummary.weird !== "None added" && <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Detail</span><span className="nb-drawer-row-val">{drawerSummary.weird}</span></div>}
+                    {drawerSummary.lesson !== "None" && <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Lesson</span><span className="nb-drawer-row-val">{drawerSummary.lesson}</span></div>}
+                    {drawerSummary.occasion !== "None" && <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Occasion</span><span className="nb-drawer-row-val">{drawerSummary.occasion}</span></div>}
+                    <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Age</span><span className="nb-drawer-row-val">{drawerSummary.age}</span></div>
+                    <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Length</span><span className="nb-drawer-row-val">{drawerSummary.length}</span></div>
+                    <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Style</span><span className="nb-drawer-row-val">{drawerSummary.style}</span></div>
+                  </div>
+                  <div className="nb-drawer-disclaimer">Please confirm this all looks right before generating</div>
+                  <button className="nb-drawer-cta" disabled={!canGenerate}
+                    onClick={() => { setShowBuilderDrawer(false); generate({storyBrief1, storyBrief2, realLifeCtx}); }}>
+                    Create {heroName ? `${heroName}'s` : "tonight's"} story ✨
+                  </button>
+                  <button className="nb-drawer-edit" onClick={() => setShowBuilderDrawer(false)}>← Keep editing</button>
+                </div>
+              </>
+            )}
           </div>
           );
         })()}
