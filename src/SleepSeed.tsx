@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import SleepSeedLibrary from "./sleepseed-library";
 import { buildStoryPrompt } from "./sleepseed-prompts";
+import { StoryFeedback, RereadCheck } from "./StoryFeedback";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Cormorant+Garamond:ital,wght@1,600&family=Patrick+Hand&family=Nunito:wght@400;600;700&family=Kalam:wght@400;700&display=swap');`;
 
@@ -1323,6 +1324,8 @@ export default function SleepSeed() {
   const [ncRevealed,     setNcRevealed]     = useState(false);      // polaroid reveal done
   const [ncBondingSaved, setNcBondingSaved] = useState(false);      // bonding answer submitted during loading
   const [viewingNightCard, setViewingNightCard] = useState<any>(null); // Night Card detail view
+  const [styleDna,         setStyleDna]         = useState<any>(null); // Style DNA for feedback
+  const [showFeedback,     setShowFeedback]     = useState(false);     // StoryFeedback sheet visible
 
   const totalPagesRef = useRef(0);
   const fileRefs      = useRef({});
@@ -1350,6 +1353,7 @@ export default function SleepSeed() {
   useEffect(() => {
     sGet("memories").then(s => { if(s?.items) setMemories(s.items); });
     sGet("nightcards").then(s => { if(s?.items) setNightCards(s.items); });
+    sGet("style_dna").then(s => { if(s) setStyleDna(s); });
     sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); });
     sGet("onboarded").then(s => { if(s?.v) setHasSeenOnboard(true); });
 
@@ -2544,6 +2548,12 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               🏠 Home
             </button>
           </div>
+
+          <button className="btn-ghost" style={{width:"100%",marginTop:6,fontSize:12,padding:"10px 14px",
+            borderColor:"rgba(217,119,6,.3)",color:"rgba(217,119,6,.8)"}}
+            onClick={()=>setShowFeedback(true)}>
+            ⭐ How was this story?
+          </button>
         </div>
       </div>
     );
@@ -2582,6 +2592,23 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </div>
             </div>
             <div style={{height:10}} />
+
+            {/* ── Re-read check (from StoryFeedback) ── */}
+            {styleDna?.pendingRereadChecks?.[0] && (
+              <RereadCheck
+                pendingCheck={styleDna.pendingRereadChecks[0]}
+                styleDna={styleDna}
+                onAnswer={(updatedDna) => {
+                  setStyleDna(updatedDna);
+                  sSet("style_dna", updatedDna).catch(()=>{});
+                }}
+                onDismiss={() => {
+                  const updated = {...styleDna, pendingRereadChecks: (styleDna.pendingRereadChecks||[]).slice(1)};
+                  setStyleDna(updated);
+                  sSet("style_dna", updated).catch(()=>{});
+                }}
+              />
+            )}
 
             {/* ── Demo story strip ── */}
             <div onClick={()=>{ setBook({...DEMO_BOOK}); setPageIdx(0); setStage("book"); setFromCache(false); }}
@@ -4173,6 +4200,23 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
           </div>
         </div>
       )}
+
+      {/* ── Story Feedback Sheet ── */}
+      <StoryFeedback
+        storyMeta={book ? {
+          storyId: `story_${strHash(book.title+book.heroName)}`,
+          title: book.title,
+          genre: book.nightCard?.genre || (storyMood === "silly" ? "comedy" : storyMood === "exciting" || adventure ? "adventure" : storyMood === "heartfelt" ? "therapeutic" : "cosy"),
+          childName: book.heroName,
+        } : null}
+        styleDna={styleDna}
+        onFeedback={(updatedDna) => {
+          setStyleDna(updatedDna);
+          sSet("style_dna", updatedDna).catch(()=>{});
+        }}
+        onClose={() => setShowFeedback(false)}
+        visible={showFeedback}
+      />
     </>
   );
 }
