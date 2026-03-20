@@ -749,7 +749,7 @@ const CHILD_BOY  = "young boy, warm brown skin, short curly dark hair, big expre
 const illoUrl = (prompt, seed, w=480, h=220, gender="") => {
   const child = gender === "boy" ? CHILD_BOY : CHILD_GIRL;
   const full = `${prompt}. Child character: ${child}. ${ILLO_STYLE}`;
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(full)}?width=${w}&height=${h}&nologo=true&model=flux-pro&seed=${seed}&nofeed=true`;
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(full)}?width=${w}&height=${h}&nologo=true&model=flux&seed=${seed}&nofeed=true`;
 };
 
 const extractJSON = (text) => {
@@ -777,11 +777,16 @@ const _imgCache = new Map();
 const preloadImg = (url,onLoad,onErr) => {
   if(_imgCache.has(url)){
     const img=_imgCache.get(url);
-    if(img.complete&&img.naturalWidth>0) onLoad?.();
+    if(img.complete && img.naturalWidth>0){ onLoad?.(); return img; }
+    // Still loading — attach to existing element instead of dropping the callback
+    const prevLoad = img.onload;
+    const prevErr  = img.onerror;
+    img.onload  = () => { prevLoad?.(); onLoad?.(); };
+    img.onerror = () => { prevErr?.();  onErr?.();  };
     return img;
   }
   const img = new window.Image();
-  img.onload = () => onLoad?.();
+  img.onload  = () => onLoad?.();
   img.onerror = () => onErr?.();
   img.src = url;
   _imgCache.set(url,img);
@@ -854,18 +859,33 @@ const callClaude = async (messages, system="", maxTokens=4000) => {
 };
 
 /* ── Shared sub-components (defined outside main to avoid transpiler issues) ── */
-const Illo = ({url,loaded}) => (
-  <div className="illo-slot">
-    <div className="shimmer" style={{opacity:loaded?0:1,transition:"opacity .8s"}} />
-    {url && <img src={url} className="illo-img" style={{opacity:loaded?1:0}} alt="" />}
-    {!loaded && (
-      <div className="illo-fb">
-        <div className="illo-fb-e">✨</div>
-        <div className="illo-fb-t">Painting…</div>
-      </div>
-    )}
-  </div>
-);
+const Illo = ({url,loaded}) => {
+  // Local fallback state — if the preload callback was missed for any reason,
+  // the img tag's own onLoad still makes the image visible.
+  const [selfLoaded, setSelfLoaded] = React.useState(false);
+  const show = loaded || selfLoaded;
+  return (
+    <div className="illo-slot">
+      <div className="shimmer" style={{opacity:show?0:1,transition:"opacity .8s"}} />
+      {url && (
+        <img
+          src={url}
+          className="illo-img"
+          style={{opacity:show?1:0}}
+          alt=""
+          onLoad={() => setSelfLoaded(true)}
+          onError={() => setSelfLoaded(true)}  // on error show slot (shimmer hides, fb hides)
+        />
+      )}
+      {!show && (
+        <div className="illo-fb">
+          <div className="illo-fb-e">✨</div>
+          <div className="illo-fb-t">Painting…</div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 
 /* ── Dream Illustration (static animated scene, used on all pages until personal illustrations are ready) ── */
@@ -2082,10 +2102,10 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
         const allUrls = [cached.coverUrl,...pages.map(p=>p.imgUrl)];
         const dots = mk(allUrls.length,"p");
         setGen(g => ({...g,dots:[...dots]}));
-        allUrls.forEach((url,i) => preloadImg(url,
+        allUrls.forEach((url,i) => setTimeout(() => preloadImg(url,
           () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:true})); },
-          () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); }
-        ));
+          () => { dots[i]="e"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:"e"})); }
+        ), i * 800));
         setBook(cached); setPageIdx(0); setFromCache(true);
         await new Promise(r => setTimeout(r,180));
         setStage("book");
@@ -2329,11 +2349,16 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
       const dots = mk(allUrls.length,"p");
       setGen(g => ({...g,progress:80,label:"Story ready! Illustrations loading…",dots:[...dots]}));
+      // Stagger requests by 800ms each — flux-pro on the free tier rate-limits
+      // simultaneous requests, causing silent failures. Sequential loading means
+      // images appear one by one rather than all failing at once.
       allUrls.forEach((url,i) => {
-        preloadImg(url,
-          () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:true})); },
-          () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); }
-        );
+        setTimeout(() => {
+          preloadImg(url,
+            () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:true})); },
+            () => { dots[i]="e"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:"e"})); }
+          );
+        }, i * 800);
       });
 
       // ── Generate parent note ──────────────────────────────────────────
