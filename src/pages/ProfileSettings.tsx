@@ -58,12 +58,13 @@ interface Props {
   user: User;
   onBack: () => void;
   onEditCharacter: (c: Character) => void;
+  onViewCharacter: (c: Character) => void;
   onNewCharacter: () => void;
   onLogout: () => void;
   onUserUpdated: (u: Partial<User>) => void;
 }
 
-export default function ProfileSettings({ user, onBack, onEditCharacter, onNewCharacter, onLogout, onUserUpdated }: Props) {
+export default function ProfileSettings({ user, onBack, onEditCharacter, onViewCharacter, onNewCharacter, onLogout, onUserUpdated }: Props) {
   const [displayName, setDisplayName] = useState(user.displayName || '');
   const [email, setEmail] = useState(user.email || '');
   const [newPassword, setNewPassword] = useState('');
@@ -196,7 +197,7 @@ export default function ProfileSettings({ user, onBack, onEditCharacter, onNewCh
             {children.length > 0 ? (
               <div className="ps-child-list">
                 {children.map(c => (
-                  <div key={c.id} className="ps-child">
+                  <div key={c.id} className="ps-child" style={{cursor:'pointer'}} onClick={() => onViewCharacter(c)}>
                     <div className="ps-child-av" style={{ background: c.color || '#1E1640' }}>
                       {c.photo ? <img src={c.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : (c.emoji || '🧒')}
                     </div>
@@ -206,7 +207,7 @@ export default function ProfileSettings({ user, onBack, onEditCharacter, onNewCh
                         {c.ageDescription && `${c.ageDescription} · `}{c.pronouns}{c.storyIds?.length ? ` · ${c.storyIds.length} stories` : ''}
                       </div>
                     </div>
-                    <button className="ps-child-edit" onClick={() => onEditCharacter(c)}>Edit</button>
+                    <button className="ps-child-edit" onClick={e => { e.stopPropagation(); onEditCharacter(c); }}>Edit</button>
                   </div>
                 ))}
               </div>

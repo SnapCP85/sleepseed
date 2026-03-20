@@ -202,6 +202,7 @@ function AppInner() {
       user={user!}
       onBack={goDashboard}
       onEditCharacter={goEditCharacter}
+      onViewCharacter={goCharacterDetail}
       onNewCharacter={goNewCharacter}
       onLogout={() => { logout(); setView('public'); }}
       onUserUpdated={(updates) => {
