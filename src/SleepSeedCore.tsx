@@ -749,7 +749,7 @@ const CHILD_BOY  = "young boy, warm brown skin, short curly dark hair, big expre
 const illoUrl = (prompt, seed, w=480, h=220, gender="") => {
   const child = gender === "boy" ? CHILD_BOY : CHILD_GIRL;
   const full = `${prompt}. Child character: ${child}. ${ILLO_STYLE}`;
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(full)}?width=${w}&height=${h}&nologo=true&model=flux&seed=${seed}&nofeed=true`;
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(full)}?width=${w}&height=${h}&nologo=true&seed=${seed}&nofeed=true`;
 };
 
 const extractJSON = (text) => {
