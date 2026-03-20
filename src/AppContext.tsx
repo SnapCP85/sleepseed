@@ -49,6 +49,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setView('dashboard');
       }
       setAuthLoading(false);
+    }).catch(() => {
+      setAuthLoading(false);
     });
 
     // Listen for auth changes (sign in, sign out, token refresh)
