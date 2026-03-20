@@ -26,17 +26,17 @@ const CSS = `
 .rs-hero-title{font-family:var(--serif);font-size:clamp(22px,4vw,30px);color:var(--cream);line-height:1.35;margin-bottom:5px}
 .rs-n1{color:var(--amber2);font-style:italic;text-shadow:0 0 14px rgba(245,184,76,.3)}
 .rs-n2{color:var(--teal2);font-style:italic}
-.rs-hero-sub{font-size:12px;color:var(--muted);font-style:italic}
+.rs-hero-sub{font-size:12px;color:rgba(200,191,176,.65);font-style:italic}
 .rs-cap-wrap{background:rgba(10,14,28,.98);border:.5px solid rgba(255,255,255,.07);border-radius:16px;overflow:hidden;margin-bottom:14px}
 .rs-cap-top{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 0}
-.rs-cap-lbl{font-size:9px;color:var(--muted);letter-spacing:.05em;font-family:var(--mono)}
+.rs-cap-lbl{font-size:9px;color:rgba(200,191,176,.55);letter-spacing:.05em;font-family:var(--mono)}
 .rs-mic-btn{background:rgba(18,22,44,.9);border:.5px solid rgba(255,255,255,.08);border-radius:8px;padding:5px 10px;font-size:11px;color:var(--dim);display:flex;align-items:center;gap:5px;cursor:pointer;transition:all .2s}
 .rs-mic-btn:hover{border-color:rgba(232,151,42,.3);color:var(--amber2)}
 .rs-mic-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0}
 .rs-textarea{width:100%;background:transparent;border:none;outline:none;padding:8px 16px 14px;color:var(--cream);font-size:14px;font-family:var(--sans);resize:none;min-height:76px;line-height:1.7}
-.rs-textarea::placeholder{color:rgba(58,66,112,.7);font-style:italic}
+.rs-textarea::placeholder{color:rgba(200,191,176,.45);font-style:italic}
 .rs-mood-row{display:flex;align-items:center;gap:10px;padding:8px 16px 10px;border-top:.5px solid rgba(255,255,255,.04)}
-.rs-mood-lbl{font-size:10px;color:var(--muted);flex-shrink:0}
+.rs-mood-lbl{font-size:10px;color:rgba(200,191,176,.55);flex-shrink:0}
 .rs-moods{display:flex;gap:6px}
 .rs-mood{background:rgba(8,12,24,.9);border:.5px solid rgba(255,255,255,.07);border-radius:8px;padding:5px 8px;font-size:14px;cursor:pointer;transition:all .18s;line-height:1}
 .rs-mood.on{background:rgba(18,26,50,.9);border-color:var(--amber);box-shadow:0 0 10px rgba(232,151,42,.25)}
@@ -44,13 +44,13 @@ const CSS = `
 .rs-qs-section{margin-bottom:14px}
 .rs-qs-div{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .rs-qs-line{flex:1;height:.5px;background:rgba(255,255,255,.04)}
-.rs-qs-lbl{font-size:9px;color:rgba(255,255,255,.16);white-space:nowrap;font-family:var(--mono)}
+.rs-qs-lbl{font-size:9px;color:rgba(200,191,176,.45);white-space:nowrap;font-family:var(--mono)}
 .rs-qlist{display:flex;flex-direction:column;gap:5px}
 .rs-qchip{background:rgba(8,12,24,.98);border:.5px solid rgba(255,255,255,.05);border-radius:11px;padding:9px 13px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .18s,background .18s}
 .rs-qchip:hover{border-color:rgba(232,151,42,.3);background:rgba(12,16,34,.98)}
 .rs-qchip:active{background:rgba(14,20,40,.98)}
 .rs-qicon{font-size:14px;flex-shrink:0;line-height:1}
-.rs-qtext{font-size:12.5px;color:rgba(200,191,176,.75);line-height:1.4}
+.rs-qtext{font-size:12.5px;color:rgba(234,226,212,.82);line-height:1.4}
 .rs-actions{padding-top:4px}
 .rs-create-btn{width:100%;border:none;border-radius:14px;padding:15px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:7px;letter-spacing:.01em;transition:filter .2s,transform .15s;margin-bottom:10px}
 .rs-create-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}

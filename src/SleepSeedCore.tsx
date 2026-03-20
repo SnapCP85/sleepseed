@@ -2815,7 +2815,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
           {!book.nightCard ? (
             <button className="end-nc-cta"
               onClick={()=>{
-                setNcStep(0); setNcBondingA(ncBondingA||""); setNcGratitude(""); setNcExtra("");
+                setNcStep(0); setNcBondingA(ncBondingA||""); setNcGratitude(""); setNcExtra(ritualSeed||"");
                 setNcPhoto(null); setNcCountdown(0); setNcGenerating(false);
                 setNcResult(null); setNcRevealed(false);
                 window.speechSynthesis?.cancel();
