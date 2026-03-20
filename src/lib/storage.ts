@@ -20,7 +20,7 @@ export const signUp = async (email: string, password: string, displayName: strin
   });
   if (error) throw error;
   if (data.user) {
-    await supabase.from('profiles').upsert({ id: data.user.id, display_name: displayName });
+    try { await supabase.from('profiles').upsert({ id: data.user.id, display_name: displayName }); } catch(_) {}
   }
   return data.user;
 };

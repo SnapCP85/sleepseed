@@ -61,7 +61,7 @@ function ProfileNav({ view, onDashboard, onStories, onCharacters, onNightCards, 
 
 function AppInner() {
   const {
-    user, view, setView, logout,
+    user, authLoading, view, setView, logout,
     selectedCharacter, setSelectedCharacter,
     editingCharacter, setEditingCharacter,
   } = useApp();
@@ -73,6 +73,16 @@ function AppInner() {
   }, []);
 
   if (isSharedStory) return <SharedStoryViewer />;
+
+  // Wait for auth to resolve before rendering anything
+  if (authLoading) return (
+    <div style={{minHeight:'100vh',background:'#0D1018',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{textAlign:'center'}}>
+        <div style={{width:32,height:32,borderRadius:'50%',background:'radial-gradient(circle at 38% 38%,#F5C060,#C87020)',margin:'0 auto 12px'}} />
+        <div style={{fontFamily:"'Playfair Display',Georgia,serif",fontSize:16,fontWeight:700,color:'#F4EFE8'}}>SleepSeed</div>
+      </div>
+    </div>
+  );
 
   const [preloadedBook, setPreloadedBook] = useState<any>(null);
 
@@ -105,6 +115,12 @@ function AppInner() {
   );
 
   if (view === 'auth') return <Auth />;
+
+  // Guard: if any authenticated view but no user, go to auth
+  if (!user && view !== 'public') {
+    setView('auth');
+    return null;
+  }
 
   // All authenticated views get the profile nav
   const showNav = user && ['dashboard','characters','character-builder','story-library','nightcard-library','story-builder'].includes(view);

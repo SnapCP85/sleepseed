@@ -61,12 +61,12 @@ interface Props { userId: string; onBack: () => void; }
 export default function NightCardLibrary({ userId, onBack }: Props) {
   const [cards, setCards] = useState<SavedNightCard[]>([]);
   const [viewing, setViewing] = useState<SavedNightCard | null>(null);
-  useEffect(() => { setCards(getNightCards(userId)); }, [userId]);
-  const handleDelete = (e: React.MouseEvent, id: string) => {
+  useEffect(() => { getNightCards(userId).then(c => setCards(c)); }, [userId]);
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!confirm('Remove this Night Card?')) return;
-    deleteNightCard(userId, id);
-    setCards(getNightCards(userId));
+    await deleteNightCard(userId, id);
+    getNightCards(userId).then(c => setCards(c));
     if (viewing?.id === id) setViewing(null);
   };
 

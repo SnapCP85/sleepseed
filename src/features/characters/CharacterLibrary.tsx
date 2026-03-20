@@ -49,13 +49,13 @@ export default function CharacterLibrary({ onNew, onEdit, onBack, onUseInStory, 
   const [chars, setChars] = useState<Character[]>([]);
   const [stories, setStories] = useState<SavedStory[]>([]);
 
-  useEffect(() => { setChars(getCharacters(userId)); setStories(getStories(userId)); }, [userId]);
+  useEffect(() => { getCharacters(userId).then(c => setChars(c)); getStories(userId).then(s => setStories(s)); }, [userId]);
 
-  const handleDelete = (e: React.MouseEvent, charId: string) => {
+  const handleDelete = async (e: React.MouseEvent, charId: string) => {
     e.stopPropagation();
     if (!confirm('Remove this character?')) return;
-    deleteCharacter(userId, charId);
-    setChars(getCharacters(userId));
+    await deleteCharacter(userId, charId);
+    getCharacters(userId).then(c => setChars(c));
   };
   const getCharStories = (c: Character) => stories.filter(s => c.storyIds.includes(s.id) || s.characterIds?.includes(c.id));
 

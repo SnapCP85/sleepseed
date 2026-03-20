@@ -100,10 +100,10 @@ export default function CharacterBuilder({ onSaved, onCancel, initialCharacter, 
     const f = e.target.files?.[0]; if (!f) return;
     const r = new FileReader(); r.onload = ev => setPhoto(ev.target?.result as string); r.readAsDataURL(f);
   };
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) return;
     const typeEmoji = CHAR_TYPES.find(t => t.v === type)?.emoji || '✨';
-    saveCharacter({ id: initialCharacter?.id || uid(), userId, name: name.trim(), type, ageDescription: ageDesc.trim(), pronouns, personalityTags: tags, weirdDetail: weirdDetail.trim(), currentSituation: situation.trim(), photo, color, emoji: typeEmoji, storyIds: initialCharacter?.storyIds || [], createdAt: initialCharacter?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString() });
+    await saveCharacter({ id: initialCharacter?.id || uid(), userId, name: name.trim(), type, ageDescription: ageDesc.trim(), pronouns, personalityTags: tags, weirdDetail: weirdDetail.trim(), currentSituation: situation.trim(), photo, color, emoji: typeEmoji, storyIds: initialCharacter?.storyIds || [], createdAt: initialCharacter?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString() });
     onSaved();
   };
   const ct = CHAR_TYPES.find(t => t.v === type);

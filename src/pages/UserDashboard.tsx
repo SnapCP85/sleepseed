@@ -115,9 +115,17 @@ export default function UserDashboard({ onCreateStory, onViewLibrary, onViewNigh
 
   useEffect(() => {
     if (!user) return;
-    setStories(getStories(user.id).slice(0, 5));
-    setNightCards(getNightCards(user.id).slice(0, 8));
-    setCharacters(getCharacters(user.id).slice(0, 8));
+    const load = async () => {
+      const [s, nc, ch] = await Promise.all([
+        getStories(user.id),
+        getNightCards(user.id),
+        getCharacters(user.id),
+      ]);
+      setStories(s.slice(0, 5));
+      setNightCards(nc.slice(0, 8));
+      setCharacters(ch.slice(0, 8));
+    };
+    load();
   }, [user]);
 
   if (!user) return null;

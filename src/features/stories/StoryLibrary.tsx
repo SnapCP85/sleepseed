@@ -40,12 +40,12 @@ interface Props { userId: string; onBack: () => void; onReadStory: (bookData: an
 
 export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStory }: Props) {
   const [stories, setStories] = useState<SavedStory[]>([]);
-  useEffect(() => { setStories(getStories(userId)); }, [userId]);
-  const handleDelete = (e: React.MouseEvent, id: string) => {
+  useEffect(() => { getStories(userId).then(s => setStories(s)); }, [userId]);
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!confirm('Remove this story?')) return;
-    deleteStory(userId, id);
-    setStories(getStories(userId));
+    await deleteStory(userId, id);
+    getStories(userId).then(s => setStories(s));
   };
   return (
     <div className="sl">
