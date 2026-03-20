@@ -56,6 +56,7 @@ export default function Auth() {
   const { login, setView } = useApp();
   const [tab,      setTab]     = useState<'signup' | 'signin'>('signup');
   const [screen,   setScreen]  = useState<Screen>('form');
+  const [name,     setName]    = useState('');
   const [email,    setEmail]   = useState('');
   const [password, setPassword]= useState('');
   const [confirm,  setConfirm] = useState('');
@@ -64,17 +65,17 @@ export default function Auth() {
 
   const handleSignup = async () => {
     setError('');
+    if (!name.trim())               { setError('Please enter your name.'); return; }
     if (!email.trim() || !password) { setError('Please enter your email and a password.'); return; }
     if (password.length < 6)        { setError('Password must be at least 6 characters.'); return; }
     if (password !== confirm)        { setError("Passwords don't match."); return; }
     setLoading(true);
     try {
-      const sbUser = await signUp(email.trim().toLowerCase(), password, email.split('@')[0]);
+      const displayName = name.trim();
+      const sbUser = await signUp(email.trim().toLowerCase(), password, displayName);
       if (sbUser) {
-        // Supabase sends a confirmation email by default.
-        // If email confirmation is disabled in Supabase dashboard, user is logged in immediately.
         if (sbUser.email_confirmed_at || sbUser.confirmed_at) {
-          const u: User = { id: sbUser.id, email: sbUser.email ?? '', passwordHash: '', displayName: sbUser.user_metadata?.display_name ?? email.split('@')[0], createdAt: sbUser.created_at, isGuest: false };
+          const u: User = { id: sbUser.id, email: sbUser.email ?? '', passwordHash: '', displayName: sbUser.user_metadata?.display_name ?? displayName, createdAt: sbUser.created_at, isGuest: false };
           login(u);
         } else {
           setScreen('verify');
@@ -184,9 +185,15 @@ export default function Auth() {
                 <button className={`auth-tab${tab === 'signin' ? ' on' : ''}`} onClick={() => { setTab('signin'); setError(''); }}>Sign in</button>
               </div>
               {error && <div className="auth-err">{error}</div>}
+              {tab === 'signup' && (
+                <div className="auth-field">
+                  <label className="auth-label">Your name</label>
+                  <input className="auth-input" type="text" placeholder="What should we call you?" value={name} onChange={e => setName(e.target.value)} onKeyDown={onKey} autoFocus />
+                </div>
+              )}
               <div className="auth-field">
                 <label className="auth-label">Email address</label>
-                <input className="auth-input" type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={onKey} autoFocus />
+                <input className="auth-input" type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={onKey} autoFocus={tab === 'signin'} />
               </div>
               <div className="auth-field">
                 <label className="auth-label">Password</label>
