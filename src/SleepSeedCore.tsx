@@ -537,6 +537,25 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .share-link-copy.copied{background:rgba(76,200,144,.2);color:rgba(76,200,144,.9);border:1px solid rgba(76,200,144,.3)}
 .share-dismiss{width:100%;padding:12px;background:transparent;border:1px solid rgba(255,255,255,.09);border-radius:12px;color:rgba(244,239,232,.4);font-size:13px;cursor:pointer;font-family:'Nunito',sans-serif;margin-top:4px;transition:all .2s}
 .share-dismiss:hover{border-color:rgba(255,255,255,.18);color:rgba(244,239,232,.7)}
+.share-section-label{font-size:9px;font-family:'DM Mono',monospace;color:rgba(244,239,232,.3);letter-spacing:1.5px;text-transform:uppercase;margin:14px 0 8px;display:flex;align-items:center;gap:10px}
+.share-section-label::before,.share-section-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06)}
+.share-sm-row{display:flex;gap:8px;margin-bottom:4px}
+.share-sm-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:14px;cursor:pointer;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03);transition:all .2s;font-family:'Nunito',sans-serif}
+.share-sm-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16);transform:translateY(-1px)}
+.share-sm-icon{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.share-sm-label{font-size:11px;font-weight:700;color:rgba(244,239,232,.7)}
+.share-sm-fb{background:rgba(24,119,242,.15);border:1px solid rgba(24,119,242,.25)}
+.share-sm-x{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15)}
+.share-sm-ig{background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.22)}
+.share-ig-sheet{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;margin-top:6px;display:none}
+.share-ig-sheet.vis{display:block}
+.share-ig-title{font-size:12px;font-weight:700;color:rgba(244,239,232,.75);margin-bottom:5px;font-family:'Nunito',sans-serif}
+.share-ig-sub{font-size:11px;color:rgba(244,239,232,.38);line-height:1.6;margin-bottom:10px;font-weight:300}
+.share-ig-btns{display:flex;gap:8px}
+.share-ig-copy{flex:1;padding:9px;background:rgba(232,151,42,.12);border:1px solid rgba(232,151,42,.25);border-radius:10px;color:rgba(232,151,42,.85);font-size:12px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s}
+.share-ig-copy:hover{background:rgba(232,151,42,.2)}
+.share-ig-dl{flex:1;padding:9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:rgba(244,239,232,.55);font-size:12px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s}
+.share-ig-dl:hover{background:rgba(255,255,255,.1);color:rgba(244,239,232,.85)}
 .end-parent-note{width:100%;background:rgba(232,151,42,.07);border:1px solid rgba(232,151,42,.18);border-radius:14px;padding:14px 16px;margin-top:2px}
 .end-note-label{font-size:8.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(232,151,42,.6);margin-bottom:6px;font-family:'DM Mono',monospace}
 .end-note-text{font-size:12px;color:var(--cream);line-height:1.72;font-family:'Nunito',sans-serif}
@@ -2042,215 +2061,101 @@ export default function SleepSeed({
 
   // ── PDF Download ──────────────────────────────────────────────────────
   const downloadStory = async () => {
-    if(!book) return;
+    if (!book) return;
     try {
       const { jsPDF } = await import("jspdf");
-      // A4 landscape: 297 × 210 mm
-      const doc = new jsPDF({ orientation:"landscape", unit:"mm", format:"a4" });
-      const W = 297, H = 210;
+      const W = 148, H = 210;
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: [W, H] });
+      const NAVY: [number,number,number] = [11,15,36];
+      const GOLD: [number,number,number] = [212,160,48];
+      const AMBER: [number,number,number] = [232,151,42];
+      const WHITE: [number,number,number] = [255,255,255];
+      const CREAM: [number,number,number] = [254,248,232];
+      const PARCH: [number,number,number] = [253,246,232];
+      const INK: [number,number,number] = [26,16,0];
+      const INK2: [number,number,number] = [90,58,18];
+      const INK3: [number,number,number] = [160,137,106];
+      const RULE: [number,number,number] = [220,205,180];
+      const REFRAIN: [number,number,number] = [107,58,16];
+      const MX = 16, MY = 18, TW = W - MX * 2;
 
-      // Colours
-      const NAVY:  [number,number,number] = [13,  21,  53];
-      const GOLD:  [number,number,number] = [212, 160, 48];
-      const WHITE: [number,number,number] = [255, 255, 255];
-      const CREAM_BG:[number,number,number] = [253, 248, 242];
-      const INK:   [number,number,number] = [26,  20,  16];
-      const RULE:  [number,number,number] = [228, 220, 216];
-      const PG_NUM:[number,number,number] = [184, 168, 152];
-      const URL_C: [number,number,number] = [200, 189, 176];
-      const REFRAIN:[number,number,number]= [74,  56,  128];
-      const FOR_LBL:[number,number,number]= [176, 160, 144];
-
-      // Moon crescent helper (drawn with two circles)
-      const drawMoon = (cx:number, cy:number, r:number) => {
-        doc.setFillColor(...GOLD);
-        doc.circle(cx, cy, r, "F");
-        doc.setFillColor(...NAVY);
-        doc.circle(cx - r*0.35, cy - r*0.1, r*0.82, "F");
+      const hRule = (y: number) => { doc.setDrawColor(RULE[0],RULE[1],RULE[2]); doc.setLineWidth(0.25); doc.line(MX,y,W-MX,y); };
+      const drawMoon = (cx: number, cy: number, r: number) => { doc.setFillColor(...GOLD); doc.circle(cx,cy,r,"F"); doc.setFillColor(...NAVY); doc.circle(cx-r*0.38,cy-r*0.1,r*0.82,"F"); };
+      const drawStars = (count: number, seed: number) => {
+        doc.setFillColor(255,248,232);
+        const pos = [[0.15,0.08],[0.72,0.12],[0.40,0.06],[0.58,0.10],[0.85,0.07],[0.22,0.18],[0.91,0.20],[0.08,0.28],[0.65,0.22],[0.33,0.30],[0.78,0.15],[0.50,0.25]];
+        for (let i=0;i<Math.min(count,pos.length);i++) { const [px,py]=pos[(i+seed)%pos.length]; doc.circle(px*W,py*H,0.35+(i%3)*0.25,"F"); }
       };
 
-      // Thin rule line helper
-      const rule = (x:number, y:number, w:number) => {
-        doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
-        doc.line(x, y, x+w, y);
-      };
+      // COVER
+      doc.setFillColor(...NAVY); doc.rect(0,0,W,H,"F"); drawStars(10,0); drawMoon(W/2,62,11);
+      doc.setFont("times","normal"); doc.setFontSize(9); doc.setTextColor(...GOLD); doc.text("✦  ★  ✦",W/2,82,{align:"center"});
+      doc.setFont("times","bold"); doc.setFontSize(11); doc.setTextColor(212,160,48); doc.text("SleepSeed",W/2,92,{align:"center"});
+      doc.setDrawColor(...GOLD); doc.setLineWidth(0.3); doc.line(W/2-24,96,W/2+24,96);
+      doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(...INK3); doc.text("A BEDTIME STORY FOR",W/2,106,{align:"center"});
+      doc.setFont("times","bold"); doc.setFontSize(36); doc.setTextColor(...WHITE); doc.text(book.heroName,W/2,124,{align:"center"});
+      doc.setFont("times","italic"); doc.setFontSize(13); doc.setTextColor(...GOLD);
+      const titleLines = doc.splitTextToSize(book.title,TW); doc.text(titleLines,W/2,138,{align:"center"});
+      const ruleY = 138+titleLines.length*7+4;
+      doc.setDrawColor(...GOLD); doc.setLineWidth(0.2); doc.line(W/2-20,ruleY,W/2+20,ruleY);
+      const storyDate = new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+      doc.setFont("helvetica","normal"); doc.setFontSize(6.5); doc.setTextColor(...INK3); doc.text(storyDate,W/2,ruleY+9,{align:"center"});
+      doc.setFontSize(6); doc.setTextColor(60,70,100); doc.text("sleepseed.app",W/2,H-10,{align:"center"});
 
-      // ── SHEET 1: COVER ────────────────────────────────────────────────
-      // Left brand panel
-      const LP = 108; // left panel width mm
-      doc.setFillColor(...NAVY);
-      doc.rect(0, 0, LP, H, "F");
+      // STORY PAGES
+      const allPages = book.isAdventure ? [...(book.setup_pages||[]),...(book.path_a||[]),...(book.path_b||[])] : (book.pages||[]);
+      allPages.forEach((pg: any, i: number) => {
+        doc.addPage(); const isEven = i%2===1;
+        doc.setFillColor(...(isEven?PARCH:CREAM)); doc.rect(0,0,W,H,"F");
+        doc.setDrawColor(...AMBER); doc.setLineWidth(0.4); doc.line(0,0,W,0);
+        doc.setFont("helvetica","normal"); doc.setFontSize(6.5); doc.setTextColor(...INK3); doc.text(`Page ${i+1}`,MX,MY-4);
+        doc.setFont("times","italic"); doc.setFontSize(13); doc.setTextColor(...INK);
+        const lines = doc.splitTextToSize(pg.text||"",TW); doc.text(lines,MX,MY+6);
+        if (book.refrain && i%2===1) { const refrainY=H-26; hRule(refrainY-4); doc.setFont("times","italic"); doc.setFontSize(9); doc.setTextColor(...REFRAIN); const rL=doc.splitTextToSize(`"${book.refrain}"`,TW); doc.text(rL,W/2,refrainY+3,{align:"center"}); }
+        hRule(H-MY+2); doc.setFont("times","italic"); doc.setFontSize(6.5); doc.setTextColor(...INK3); doc.text(String(i+1),MX,H-MY+7);
+        doc.setFont("helvetica","normal"); doc.setFontSize(6); doc.text("sleepseed.app",W-MX,H-MY+7,{align:"right"});
+        doc.setFont("times","normal"); doc.setFontSize(8); doc.setTextColor(...GOLD); doc.text("✦",W/2,H-MY+7,{align:"center"});
+      });
 
-      // Moon centred in left panel, upper third
-      drawMoon(LP/2, 68, 8);
-
-      // SleepSeed wordmark
-      doc.setFont("times", "bold");
-      doc.setFontSize(18);
-      doc.setTextColor(...WHITE);
-      doc.text("SleepSeed", LP/2, 85, { align:"center" });
-
-      // Tagline
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      doc.setTextColor(212, 160, 48);
-      doc.text("BEDTIME STORIES", LP/2, 93, { align:"center" });
-
-      // URL at bottom of brand panel
-      doc.setFontSize(6.5);
-      doc.setTextColor(255, 255, 255, 0.18 as any);
-      doc.setTextColor(100, 100, 130);
-      doc.text("sleepseed.app", LP/2, H-12, { align:"center" });
-
-      // Right title panel
-      doc.setFillColor(...WHITE);
-      doc.rect(LP, 0, W-LP, H, "F");
-
-      const RX = LP + 24; // text left margin in right panel
-      const RW = W - LP - 48; // text width
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      doc.setTextColor(...FOR_LBL);
-      doc.text("A BEDTIME STORY FOR", RX, 62);
-
-      doc.setFont("times", "bold");
-      doc.setFontSize(34);
-      doc.setTextColor(...INK);
-      doc.text(book.heroName, RX, 80);
-
-      doc.setFont("times", "normal");
-      doc.setFontSize(15);
-      doc.setTextColor(...INK);
-      const titleLines = doc.splitTextToSize(book.title, RW);
-      doc.text(titleLines, RX, 96);
-
-      rule(RX, 96 + titleLines.length*7 + 4, RW);
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      doc.setTextColor(...FOR_LBL);
-      doc.text("Written just for tonight", RX, 96 + titleLines.length*7 + 12);
-      doc.text("sleepseed.app", RX, 96 + titleLines.length*7 + 19);
-
-      // ── STORY PAGES: 2 per sheet ──────────────────────────────────────
-      const allPages = book.isAdventure
-        ? [...(book.setup_pages||[]), ...(book.path_a||[]), ...(book.path_b||[])]
-        : (book.pages||[]);
-
-      const PW = W / 2; // each panel = 148.5mm
-      const PAD_X = 18;  // horizontal padding inside each panel
-      const PAD_TOP = 20;
-      const PAD_BOT = 18;
-      const TEXT_W = PW - PAD_X*2;
-      const TEXT_H = H - PAD_TOP - PAD_BOT - 14; // reserve footer
-
-      const drawStoryPage = (
-        pgIndex: number,    // 0-based index in allPages
-        side: "left"|"right"
-      ) => {
-        const pg = allPages[pgIndex];
-        if(!pg) return;
-        const X0 = side === "left" ? 0 : PW;
-        const isEven = pgIndex % 2 === 1; // alternate tint
-        const bgColor = isEven ? CREAM_BG : WHITE;
-
-        doc.setFillColor(...bgColor);
-        doc.rect(X0, 0, PW, H, "F");
-
-        // Divider between panels (only draw on left side to avoid double)
-        if(side === "left") {
-          doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
-          doc.line(PW, 8, PW, H-8);
-        }
-
-        // Warm parchment background on story pages
-        if (isEven) {
-          doc.setFillColor(254, 248, 232);
-        } else {
-          doc.setFillColor(248, 238, 200);
-        }
-        doc.rect(X0, 0, PW, H, "F");
-
-        // Page text — improved typography
-        doc.setFont("times", "italic");
-        doc.setFontSize(12);
-        doc.setTextColor(...INK);
-        const lines = doc.splitTextToSize(pg.text || "", TEXT_W);
-        doc.text(lines, X0 + PAD_X, PAD_TOP);
-
-        // Refrain — show on every even-index page (right-side feel)
-        const hasRefrain = book.refrain && pgIndex % 2 === 1;
-        if(hasRefrain) {
-          const refrainY = H - PAD_BOT - 14;
-          rule(X0+PAD_X, refrainY - 3, TEXT_W);
-          doc.setFont("times", "italic");
-          doc.setFontSize(9.5);
-          doc.setTextColor(...REFRAIN);
-          const rLines = doc.splitTextToSize(`"${book.refrain}"`, TEXT_W);
-          doc.text(rLines, X0+PAD_X, refrainY + 4);
-        }
-
-        // Footer rule
-        rule(X0+PAD_X, H - PAD_BOT + 1, TEXT_W);
-
-        // Page number
-        doc.setFont("times", "italic");
-        doc.setFontSize(7);
-        doc.setTextColor(...PG_NUM);
-        doc.text(String(pgIndex+1), X0+PAD_X, H - PAD_BOT + 7);
-
-        // URL
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(6);
-        doc.setTextColor(...URL_C);
-        doc.text("sleepseed.app", X0+PW-PAD_X, H - PAD_BOT + 7, { align:"right" });
-      };
-
-      // Pair pages onto sheets
-      for(let i=0; i<allPages.length; i+=2) {
-        doc.addPage();
-        drawStoryPage(i, "left");
-        drawStoryPage(i+1, "right");
+      // NIGHT CARD PAGE
+      const nc = book.nightCard;
+      if (nc) {
+        doc.addPage(); const photoH=Math.round(H*0.42);
+        doc.setFillColor(18,21,42); doc.rect(0,0,W,photoH,"F"); drawStars(8,3);
+        const ncDate = nc.date||storyDate;
+        doc.setFont("helvetica","normal"); doc.setFontSize(5.5); doc.setTextColor(200,195,220);
+        doc.setFillColor(0,0,0); doc.rect(MX,9,60,5,"F"); doc.text(`🌙  ${ncDate}`,MX+3,13);
+        if (nc.photo) { const imgW=72,imgH=64,imgX=(W-imgW)/2,imgY=(photoH-imgH)/2; try { doc.addImage(nc.photo,"JPEG",imgX,imgY,imgW,imgH,undefined,"FAST"); doc.setDrawColor(...AMBER); doc.setLineWidth(0.3); doc.rect(imgX,imgY,imgW,imgH); } catch(_) { drawMoon(W/2,photoH/2,12); } }
+        else { drawMoon(W/2,photoH/2,12); doc.setFont("times","italic"); doc.setFontSize(8); doc.setTextColor(...GOLD); doc.text(nc.heroName||book.heroName,W/2,photoH/2+20,{align:"center"}); }
+        doc.setDrawColor(...AMBER); doc.setLineWidth(0.5); doc.line(0,0,W,0);
+        doc.setDrawColor(...AMBER); doc.setLineWidth(0.4); doc.line(0,photoH,W,photoH);
+        doc.setFillColor(...PARCH); doc.rect(0,photoH,W,H-photoH,"F");
+        let y=photoH+12;
+        doc.setFont("times","bold"); doc.setFontSize(18); doc.setTextColor(...INK); doc.text(nc.heroName||book.heroName,MX,y);
+        doc.setFont("helvetica","normal"); doc.setFontSize(6.5); doc.setTextColor(...INK3); doc.text(ncDate,W-MX,y,{align:"right"});
+        y+=7;
+        if (nc.memory_line) { doc.setFillColor(...AMBER); doc.rect(MX,y,1.5,16,"F"); doc.setFont("times","italic"); doc.setFontSize(9); doc.setTextColor(...INK2); const pL=doc.splitTextToSize(`"${nc.memory_line}"`,TW-6); doc.text(pL,MX+5,y+5); y+=Math.max(16,pL.length*5)+5; }
+        const chips: {q:string;a:string;bg:[number,number,number];bdr:[number,number,number];tc:[number,number,number]}[] = [];
+        if (nc.bondingQ&&nc.bondingA) chips.push({q:nc.bondingQ,a:nc.bondingA,bg:[255,248,230],bdr:[220,190,130],tc:[90,55,10]});
+        if (nc.gratitude) chips.push({q:"Best three seconds",a:nc.gratitude,bg:[230,235,255],bdr:[160,170,220],tc:[40,50,120]});
+        if (nc.extra) chips.push({q:"Tonight I want to remember",a:nc.extra,bg:[228,248,238],bdr:[140,200,170],tc:[20,80,50]});
+        chips.forEach(chip => { if(y>H-22) return; const chipH=14; doc.setFillColor(...chip.bg); doc.setDrawColor(...chip.bdr); doc.setLineWidth(0.2); doc.rect(MX,y,TW,chipH,"FD"); doc.setFont("helvetica","bold"); doc.setFontSize(5.5); doc.setTextColor(...chip.tc); doc.text(chip.q.toUpperCase(),MX+4,y+4.5); doc.setFont("times","italic"); doc.setFontSize(8.5); const aL=doc.splitTextToSize(chip.a,TW-8); doc.text(aL[0]||chip.a,MX+4,y+10); y+=chipH+3; });
+        hRule(H-12); doc.setFont("helvetica","normal"); doc.setFontSize(6); doc.setTextColor(...INK3); doc.text("🌙  SleepSeed Night Card",MX,H-7); doc.text(book.title,W-MX,H-7,{align:"right"});
       }
 
-      // ── FINAL SHEET: The End ──────────────────────────────────────────
-      doc.addPage();
-      // Left: brand panel (matching cover)
-      doc.setFillColor(...NAVY);
-      doc.rect(0, 0, LP, H, "F");
-      drawMoon(LP/2, 68, 8);
-      doc.setFont("times", "bold");
-      doc.setFontSize(18);
-      doc.setTextColor(...WHITE);
-      doc.text("SleepSeed", LP/2, 85, { align:"center" });
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      doc.setTextColor(...GOLD);
-      doc.text("BEDTIME STORIES", LP/2, 93, { align:"center" });
-      doc.setFontSize(6.5);
-      doc.setTextColor(100, 100, 130);
-      doc.text("sleepseed.app", LP/2, H-12, { align:"center" });
+      // END PAGE
+      doc.addPage(); doc.setFillColor(...NAVY); doc.rect(0,0,W,H,"F"); drawStars(9,5); drawMoon(W/2,52,10);
+      doc.setFont("times","bold"); doc.setFontSize(32); doc.setTextColor(...WHITE); doc.text("The End.",W/2,78,{align:"center"});
+      doc.setDrawColor(...GOLD); doc.setLineWidth(0.3); doc.line(W/2-22,83,W/2+22,83);
+      doc.setFont("times","italic"); doc.setFontSize(10); doc.setTextColor(...INK3); doc.text(`Sweet dreams, ${book.heroName}.`,W/2,93,{align:"center"}); doc.text("Tomorrow night, another adventure awaits.",W/2,101,{align:"center"});
+      if (book.refrain) { doc.setFont("times","italic"); doc.setFontSize(9); doc.setTextColor(...GOLD); const eRL=doc.splitTextToSize(`"${book.refrain}"`,TW-16); doc.text(eRL,W/2,116,{align:"center"}); }
+      const mktY=H-60; doc.setFillColor(20,28,58); doc.setDrawColor(...AMBER); doc.setLineWidth(0.3); doc.rect(MX,mktY,TW,48,"FD");
+      doc.setFont("times","bold"); doc.setFontSize(10); doc.setTextColor(...GOLD); doc.text("Create your own story tonight.",W/2,mktY+10,{align:"center"});
+      doc.setFont("times","italic"); doc.setFontSize(8.5); doc.setTextColor(200,195,220); const mktL=doc.splitTextToSize("Personalised bedtime stories starring your child — written in 60 seconds. Every night a new one. Then a Night Card to keep forever.",TW-10); doc.text(mktL,W/2,mktY+18,{align:"center"});
+      doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(...GOLD); doc.text("sleepseed.app  ·  Free to start",W/2,mktY+38,{align:"center"});
 
-      // Right: The End
-      doc.setFillColor(...WHITE);
-      doc.rect(LP, 0, W-LP, H, "F");
-      doc.setFont("times", "bold");
-      doc.setFontSize(28);
-      doc.setTextColor(...INK);
-      doc.text("The End.", RX, H/2 - 8);
-      rule(RX, H/2 - 2, RW);
-      doc.setFont("times", "italic");
-      doc.setFontSize(10);
-      doc.setTextColor(...FOR_LBL);
-      doc.text(`Sweet dreams, ${book.heroName}.`, RX, H/2 + 7);
-      doc.text("Tomorrow night, another adventure awaits.", RX, H/2 + 15);
-
-      doc.save(`${book.title.replace(/[^a-z0-9]/gi,"_").toLowerCase()}.pdf`);
-    } catch(err) {
-      console.error("PDF error:", err);
-      alert("Could not generate PDF — please try again.");
-    }
+      doc.save(`${book.title.replace(/[^a-z0-9]/gi,"_").toLowerCase()}_sleepseed.pdf`);
+    } catch (err) { console.error("PDF error:",err); alert("Could not generate PDF — please try again."); }
   };
 
   const addSparkle = useCallback((e) => {
@@ -3609,7 +3514,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               <div className="share-modal-bg" onClick={e=>{if(e.target===e.currentTarget)setShowShareModal(false);}}>
                 <div className="share-modal">
                   <div className="share-modal-title">Share tonight's story</div>
-                  <div className="share-modal-sub">Send it to anyone — they don't need an account.</div>
+                  <div className="share-modal-sub">Send it to anyone — no account needed.</div>
 
                   {/* Night Card toggle */}
                   {book.nightCard && (
@@ -3630,22 +3535,19 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                         {shareIncludeNC && <span style={{color:"#1A1420",fontSize:13,fontWeight:700}}>✓</span>}
                       </div>
                       <div style={{flex:1}}>
-                        <div style={{fontSize:13,fontWeight:600,color:shareIncludeNC?"var(--cream)":"rgba(244,239,232,.5)"}}>
-                          🌙 Include tonight's Night Card
-                        </div>
-                        <div style={{fontSize:10,color:"rgba(244,239,232,.3)",marginTop:1}}>
-                          Share the bonding moment, photo, and answers alongside the story
-                        </div>
+                        <div style={{fontSize:13,fontWeight:600,color:shareIncludeNC?"var(--cream)":"rgba(244,239,232,.5)"}}>🌙 Include tonight's Night Card</div>
+                        <div style={{fontSize:10,color:"rgba(244,239,232,.3)",marginTop:1}}>Share the bonding moment, photo, and answers alongside the story</div>
                       </div>
                     </label>
                   )}
 
+                  {/* Send to anyone */}
                   <div style={{marginBottom:4}}>
                     <div className="share-option" style={{cursor:"default"}}>
                       <div className="share-option-icon" style={{background:"rgba(232,151,42,.1)"}}>👵</div>
                       <div className="share-option-info">
-                        <div className="share-option-h">Send to Grandma (or anyone)</div>
-                        <div className="share-option-sub">{(voiceId||selectedVoiceId)?"They can read and listen — no account needed":"They can read the full story — no account needed"}</div>
+                        <div className="share-option-h">Send to anyone</div>
+                        <div className="share-option-sub">{(voiceId||selectedVoiceId)?"They can read and listen in your voice — no account needed":"Share the full story — they can read it on any device"}</div>
                       </div>
                     </div>
                     <div className="share-link-row">
@@ -3653,22 +3555,51 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                       <button className={`share-link-copy${shareCopied?" copied":""}`} onClick={copyShareLink}>{shareCopied?"✓ Copied!":"Copy link"}</button>
                     </div>
                   </div>
-                  <button className="share-option" onClick={()=>{setShowShareModal(false);shareSocialCard();}}>
-                    <div className="share-option-icon" style={{background:"rgba(96,165,250,.08)"}}>📱</div>
-                    <div className="share-option-info">
-                      <div className="share-option-h">Share to Stories</div>
-                      <div className="share-option-sub">Beautiful 9:16 card for Instagram or WhatsApp</div>
+
+                  {/* Social media */}
+                  <div className="share-section-label">Social Media</div>
+                  <div className="share-sm-row">
+                    <button className="share-sm-btn" onClick={()=>{
+                      const url=encodeURIComponent(shareLink);
+                      const txt=encodeURIComponent(`${book?.heroName}'s personalised bedtime story — "${book?.title}" — made with SleepSeed ✨`);
+                      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${txt}`,"_blank","width=600,height=500");
+                    }}>
+                      <div className="share-sm-icon share-sm-fb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" fill="rgba(24,119,242,.9)"/></svg></div>
+                      <div className="share-sm-label">Facebook</div>
+                    </button>
+                    <button className="share-sm-btn" onClick={()=>{
+                      const url=encodeURIComponent(shareLink);
+                      const txt=encodeURIComponent(`${book?.heroName}'s personalised bedtime story — "${book?.title}" ✨ Made with SleepSeed`);
+                      window.open(`https://twitter.com/intent/tweet?text=${txt}&url=${url}`,"_blank","width=600,height=500");
+                    }}>
+                      <div className="share-sm-icon share-sm-x"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="rgba(255,255,255,.8)"/></svg></div>
+                      <div className="share-sm-label">X</div>
+                    </button>
+                    <button className="share-sm-btn" onClick={()=>{const el=document.getElementById("ig-sheet");if(el)el.classList.toggle("vis");}}>
+                      <div className="share-sm-icon share-sm-ig"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="rgba(225,48,108,.85)" strokeWidth="1.8"/><circle cx="12" cy="12" r="4.5" stroke="rgba(225,48,108,.85)" strokeWidth="1.8"/><circle cx="17.5" cy="6.5" r="1" fill="rgba(225,48,108,.85)"/></svg></div>
+                      <div className="share-sm-label">Instagram</div>
+                    </button>
+                  </div>
+                  <div id="ig-sheet" className="share-ig-sheet">
+                    <div className="share-ig-title">Share to Instagram</div>
+                    <div className="share-ig-sub">Instagram doesn't support direct sharing from web apps. Copy the link to paste in your caption, or download the story card image to post to Stories.</div>
+                    <div className="share-ig-btns">
+                      <button className="share-ig-copy" onClick={copyShareLink}>{shareCopied?"✓ Link copied!":"Copy link"}</button>
+                      <button className="share-ig-dl" onClick={()=>{setShowShareModal(false);shareSocialCard();}}>Download card</button>
                     </div>
-                    <div style={{fontSize:11,color:"rgba(244,239,232,.25)"}}>›</div>
-                  </button>
+                  </div>
+
+                  {/* Download PDF */}
+                  <div className="share-section-label">Save</div>
                   <button className="share-option" onClick={()=>{setShowShareModal(false);downloadStory();}}>
                     <div className="share-option-icon" style={{background:"rgba(76,200,144,.07)"}}>📄</div>
                     <div className="share-option-info">
                       <div className="share-option-h">Download as PDF</div>
-                      <div className="share-option-sub">A printable picture book</div>
+                      <div className="share-option-sub">A beautifully laid out printable book{book?.nightCard?" — includes your Night Card":""}</div>
                     </div>
                     <div style={{fontSize:11,color:"rgba(244,239,232,.25)"}}>›</div>
                   </button>
+
                   <button className="share-dismiss" onClick={()=>setShowShareModal(false)}>Close</button>
                 </div>
               </div>
