@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { User, AppView, Character } from './lib/types';
-import { supabase } from './lib/supabase';
+import { supabase, hasSupabase } from './lib/supabase';
 import { signOut as sbSignOut } from './lib/storage';
 
 interface AppCtx {
@@ -41,6 +41,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [pendingSaveCharacter,  setPendingSaveCharacter]  = useState<Partial<Character> | null>(null);
 
   useEffect(() => {
+    if (!hasSupabase) { setAuthLoading(false); return; }
+
     // Check existing session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {

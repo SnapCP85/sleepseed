@@ -1,20 +1,10 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
 const url  = import.meta.env.VITE_SUPABASE_URL  || '';
 const anon = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-let client: SupabaseClient;
-try {
-  if (url && anon && anon.startsWith('eyJ')) {
-    client = createClient(url, anon);
-  } else {
-    console.warn('Supabase key missing or invalid — running in local-only mode');
-    client = null as any;
-  }
-} catch (e) {
-  console.warn('Supabase init failed:', e);
-  client = null as any;
-}
-
-export const supabase = client;
-export const hasSupabase = !!client;
+export const supabase = createClient(
+  url || 'https://placeholder.supabase.co',
+  anon || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MDAwMDAwMDAsImV4cCI6MjAwMDAwMDAwMH0.placeholder'
+);
+export const hasSupabase = !!(url && anon);
