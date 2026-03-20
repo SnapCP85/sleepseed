@@ -67,6 +67,8 @@ function AppInner() {
   } = useApp();
 
   const [isSharedStory, setIsSharedStory] = useState(false);
+  const [preloadedBook, setPreloadedBook] = useState<any>(null);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('s')) setIsSharedStory(true);
@@ -74,7 +76,6 @@ function AppInner() {
 
   if (isSharedStory) return <SharedStoryViewer />;
 
-  // Wait for auth to resolve before rendering anything
   if (authLoading) return (
     <div style={{minHeight:'100vh',background:'#0D1018',display:'flex',alignItems:'center',justifyContent:'center'}}>
       <div style={{textAlign:'center'}}>
@@ -83,8 +84,6 @@ function AppInner() {
       </div>
     </div>
   );
-
-  const [preloadedBook, setPreloadedBook] = useState<any>(null);
 
   const goAuth = () => setView('auth');
   const goDashboard = () => setView('dashboard');
