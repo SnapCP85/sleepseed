@@ -70,6 +70,7 @@ function AppInner() {
 
   const [isSharedStory, setIsSharedStory] = useState(false);
   const [preloadedBook, setPreloadedBook] = useState<any>(null);
+  const [viewingCharacter, setViewingCharacter] = useState<Character | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -97,7 +98,6 @@ function AppInner() {
   const goCharacters = () => setView('characters');
   const goNewCharacter = () => { setEditingCharacter(null); setView('character-builder'); };
   const goEditCharacter = (c: Character) => { setEditingCharacter(c); setView('character-builder'); };
-  const [viewingCharacter, setViewingCharacter] = useState<Character | null>(null);
   const goNightCards = () => setView('nightcard-library');
   const goStoryLibrary = () => setView('story-library');
   const goCharacterDetail = (c: Character) => { setViewingCharacter(c); setView('character-detail'); };
