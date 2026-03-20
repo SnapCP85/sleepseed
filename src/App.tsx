@@ -10,6 +10,7 @@ import NightCardLibrary from './features/nightcards/NightCardLibrary';
 import SleepSeedCore from './SleepSeedCore';
 import SharedStoryViewer from './pages/SharedStoryViewer';
 import ProfileSettings from './pages/ProfileSettings';
+import CharacterDetail from './features/characters/CharacterDetail';
 import type { Character } from './lib/types';
 
 const NAV_CSS = `
@@ -96,8 +97,10 @@ function AppInner() {
   const goCharacters = () => setView('characters');
   const goNewCharacter = () => { setEditingCharacter(null); setView('character-builder'); };
   const goEditCharacter = (c: Character) => { setEditingCharacter(c); setView('character-builder'); };
+  const [viewingCharacter, setViewingCharacter] = useState<Character | null>(null);
   const goNightCards = () => setView('nightcard-library');
   const goStoryLibrary = () => setView('story-library');
+  const goCharacterDetail = (c: Character) => { setViewingCharacter(c); setView('character-detail'); };
 
   if (view === 'public' && user && !user.isGuest) {
     setView('dashboard');
@@ -125,7 +128,7 @@ function AppInner() {
   // All authenticated views get the profile nav
   const goSettings = () => setView('profile-settings');
 
-  const showNav = user && ['dashboard','characters','character-builder','story-library','nightcard-library','story-builder','profile-settings'].includes(view);
+  const showNav = user && ['dashboard','characters','character-builder','character-detail','story-library','nightcard-library','story-builder','profile-settings'].includes(view);
 
   const nav = showNav ? (
     <ProfileNav
@@ -157,7 +160,7 @@ function AppInner() {
       onBack={goDashboard}
       onNew={goNewCharacter}
       onEdit={goEditCharacter}
-      onUseInStory={char => goStoryBuilder(char)}
+      onUseInStory={char => goCharacterDetail(char)}
     /></>
   );
 
@@ -181,6 +184,17 @@ function AppInner() {
 
   if (view === 'nightcard-library') return (
     <>{nav}<NightCardLibrary userId={user!.id} onBack={goDashboard} /></>
+  );
+
+  if (view === 'character-detail' && viewingCharacter) return (
+    <>{nav}<CharacterDetail
+      character={viewingCharacter}
+      userId={user!.id}
+      onBack={goCharacters}
+      onEdit={goEditCharacter}
+      onUseInStory={char => goStoryBuilder(char)}
+      onReadStory={(bookData: any) => { setPreloadedBook(bookData); setView('story-builder'); }}
+    /></>
   );
 
   if (view === 'profile-settings') return (

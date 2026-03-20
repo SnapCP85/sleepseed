@@ -2223,9 +2223,24 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
 
   const saveMemory = useCallback(async (bookData) => {
     const occ = occasionCustom || occasion;
+    // Collect all character IDs: preloaded hero + extra chars matched to saved chars
+    const allCharIds: string[] = [];
+    if (preloadedCharacter?.id) allCharIds.push(preloadedCharacter.id);
+    if (selectedCharId) { if (!allCharIds.includes(selectedCharId)) allCharIds.push(selectedCharId); }
+    // Match extra chars by name to saved chars
+    if (userId) {
+      try {
+        const raw = localStorage.getItem(`ss2_chars_${userId}`);
+        const saved = raw ? JSON.parse(raw) : [];
+        extraChars.forEach(ec => {
+          const match = saved.find((sc: any) => sc.name === ec.name);
+          if (match && !allCharIds.includes(match.id)) allCharIds.push(match.id);
+        });
+      } catch(_) {}
+    }
     const entry = {id:uid(),title:bookData.title,heroName:bookData.heroName,
       date:new Date().toISOString().split("T")[0],occasion:occ,bookData,
-      characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
+      characterIds: allCharIds,
       refrain: bookData.refrain || ""};
     const next = [entry,...memories];
     setMemories(next);
@@ -2266,7 +2281,7 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
           id: entry.id, userId,
           heroName: entry.heroName || cardData.heroName || "",
           storyTitle: entry.storyTitle || "",
-          characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
+          characterIds: (() => { const ids: string[] = []; if(preloadedCharacter?.id) ids.push(preloadedCharacter.id); if(selectedCharId && !ids.includes(selectedCharId)) ids.push(selectedCharId); return ids; })(),
           headline: entry.headline || "",
           quote: entry.quote || cardData.bondingA || "",
           memory_line: entry.memory_line || "",
