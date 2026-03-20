@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { User, AppView, Character } from './lib/types';
-import { supabase, hasSupabase } from './lib/supabase';
+import { supabase } from './lib/supabase';
 import { signOut as sbSignOut } from './lib/storage';
 
 interface AppCtx {
@@ -12,6 +12,12 @@ interface AppCtx {
   logout: () => void;
   selectedCharacter: Character | null;
   setSelectedCharacter: (c: Character | null) => void;
+  selectedCharacters: Character[];
+  setSelectedCharacters: (cs: Character[]) => void;
+  ritualSeed: string;
+  setRitualSeed: (s: string) => void;
+  ritualMood: string;
+  setRitualMood: (m: string) => void;
   editingCharacter: Character | null;
   setEditingCharacter: (c: Character | null) => void;
   pendingSaveCharacter: Partial<Character> | null;
@@ -37,12 +43,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [authLoading,           setAuthLoading]           = useState(true);
   const [view,                  setView]                  = useState<AppView>('public');
   const [selectedCharacter,     setSelectedCharacter]     = useState<Character | null>(null);
+  const [selectedCharacters,    setSelectedCharacters]    = useState<Character[]>([]);
+  const [ritualSeed,            setRitualSeed]            = useState<string>('');
+  const [ritualMood,            setRitualMood]            = useState<string>('');
   const [editingCharacter,      setEditingCharacter]      = useState<Character | null>(null);
   const [pendingSaveCharacter,  setPendingSaveCharacter]  = useState<Partial<Character> | null>(null);
 
   useEffect(() => {
-    if (!hasSupabase) { setAuthLoading(false); return; }
-
     // Check existing session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
@@ -50,8 +57,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setUser(u);
         setView('dashboard');
       }
-      setAuthLoading(false);
-    }).catch(() => {
       setAuthLoading(false);
     });
 
@@ -89,6 +94,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     <Ctx.Provider value={{
       user, authLoading, view, setView, login, logout,
       selectedCharacter, setSelectedCharacter,
+      selectedCharacters, setSelectedCharacters,
+      ritualSeed, setRitualSeed,
+      ritualMood, setRitualMood,
       editingCharacter, setEditingCharacter,
       pendingSaveCharacter, setPendingSaveCharacter,
     }}>

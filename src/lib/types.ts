@@ -70,13 +70,13 @@ export interface SavedNightCard {
 
 // ── App view state ────────────────────────────────────────────────────────────
 export type AppView =
-  | 'public'        // public homepage
-  | 'auth'          // sign in / sign up
-  | 'dashboard'     // user homepage
-  | 'story-builder' // create a story (existing SleepSeed core)
-  | 'characters'    // character library
+  | 'public'            // public homepage
+  | 'auth'              // sign in / sign up
+  | 'dashboard'         // ritual dashboard (home)
+  | 'ritual-starter'    // tonight's story capture screen
+  | 'story-builder'     // create a story (existing SleepSeed core)
+  | 'user-profile'      // profile: characters + story library + night cards
+  | 'characters'        // character library
   | 'character-builder' // create/edit a character
-  | 'story-library' // my stories
-  | 'nightcard-library' // my night cards
-  | 'profile-settings' // profile & account settings
-  | 'character-detail'; // character detail view
+  | 'story-library'     // my stories
+  | 'nightcard-library'; // my night cards

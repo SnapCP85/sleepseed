@@ -1476,6 +1476,8 @@ interface SleepSeedCoreProps {
   isGuest?: boolean;
   preloadedCharacter?: any;
   preloadedBook?: any;
+  ritualSeed?: string;
+  ritualMood?: string;
   onCharacterSavePrompt?: (charData: any) => void;
   onStoryReady?: (storyData: any) => void;
 }
@@ -1485,6 +1487,8 @@ export default function SleepSeed({
   isGuest = false,
   preloadedCharacter,
   preloadedBook,
+  ritualSeed,
+  ritualMood,
   onCharacterSavePrompt,
   onStoryReady,
 }: SleepSeedCoreProps = {}) {
@@ -1617,6 +1621,20 @@ export default function SleepSeed({
     if (c.currentSituation) setStoryContext(c.currentSituation);
     if (c.weirdDetail) setStoryGuidance(c.weirdDetail);
   }, [preloadedCharacter]);
+
+  useEffect(() => {
+    if (ritualSeed) setStoryContext(ritualSeed);
+  }, [ritualSeed]);
+
+  useEffect(() => {
+    if (ritualMood) {
+      const moodMap: Record<string, string> = {
+        '😊': 'calm', '🥺': 'heartfelt', '😂': 'silly', '🦁': 'exciting', '😴': 'calm'
+      };
+      const mapped = moodMap[ritualMood];
+      if (mapped) setStoryMood(mapped);
+    }
+  }, [ritualMood]);
 
   // Load a preloaded book (from story library re-read)
   useEffect(() => {
