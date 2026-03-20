@@ -1,46 +1,81 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { User, AppView, Character } from './lib/types';
-import { getCurrentUser, setCurrentUser } from './lib/storage';
+import { supabase } from './lib/supabase';
+import { signOut as sbSignOut } from './lib/storage';
 
 interface AppCtx {
   user: User | null;
+  authLoading: boolean;
   view: AppView;
   setView: (v: AppView) => void;
   login: (u: User) => void;
   logout: () => void;
-  // Passed character for story builder pre-population
   selectedCharacter: Character | null;
   setSelectedCharacter: (c: Character | null) => void;
-  // Character being edited
   editingCharacter: Character | null;
   setEditingCharacter: (c: Character | null) => void;
-  // After story builder saves a character prompt
   pendingSaveCharacter: Partial<Character> | null;
   setPendingSaveCharacter: (c: Partial<Character> | null) => void;
 }
 
 const Ctx = createContext<AppCtx>({} as AppCtx);
 
+// Convert a Supabase user to the app's User shape
+const toAppUser = (sbUser: any): User => ({
+  id:           sbUser.id,
+  email:        sbUser.email ?? '',
+  passwordHash: '',                                          // not used with Supabase
+  displayName:  sbUser.user_metadata?.display_name
+                ?? sbUser.email?.split('@')[0]
+                ?? 'Guest',
+  createdAt:    sbUser.created_at,
+  isGuest:      sbUser.is_anonymous ?? false,
+});
+
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [view, setView] = useState<AppView>('public');
-  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-  const [editingCharacter, setEditingCharacter] = useState<Character | null>(null);
-  const [pendingSaveCharacter, setPendingSaveCharacter] = useState<Partial<Character> | null>(null);
+  const [user,                  setUser]                  = useState<User | null>(null);
+  const [authLoading,           setAuthLoading]           = useState(true);
+  const [view,                  setView]                  = useState<AppView>('public');
+  const [selectedCharacter,     setSelectedCharacter]     = useState<Character | null>(null);
+  const [editingCharacter,      setEditingCharacter]      = useState<Character | null>(null);
+  const [pendingSaveCharacter,  setPendingSaveCharacter]  = useState<Partial<Character> | null>(null);
 
   useEffect(() => {
-    const u = getCurrentUser();
-    if (u) { setUser(u); setView('dashboard'); }
-  }, []);
+    // Check existing session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const u = toAppUser(session.user);
+        setUser(u);
+        setView('dashboard');
+      }
+      setAuthLoading(false);
+    });
+
+    // Listen for auth changes (sign in, sign out, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const u = toAppUser(session.user);
+        setUser(u);
+        if (view === 'public' || view === 'auth') setView('dashboard');
+      } else {
+        setUser(null);
+        setView('public');
+      }
+      setAuthLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const login = (u: User) => {
-    setCurrentUser(u);
+    // Called directly after signUp/signIn — onAuthStateChange also fires
+    // but this gives instant UI update without waiting for the event
     setUser(u);
     setView('dashboard');
   };
 
-  const logout = () => {
-    setCurrentUser(null);
+  const logout = async () => {
+    await sbSignOut();
     setUser(null);
     setSelectedCharacter(null);
     setView('public');
@@ -48,7 +83,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <Ctx.Provider value={{
-      user, view, setView, login, logout,
+      user, authLoading, view, setView, login, logout,
       selectedCharacter, setSelectedCharacter,
       editingCharacter, setEditingCharacter,
       pendingSaveCharacter, setPendingSaveCharacter,

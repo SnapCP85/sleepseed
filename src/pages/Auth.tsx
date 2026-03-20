@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../AppContext';
-import { getAllUsers, saveUser, hashPassword, uid, createGuestUser } from '../lib/storage';
+import { signUp, signIn, signInAsGuest, resetPassword } from '../lib/storage';
 import type { User } from '../lib/types';
 
 const CSS = `
@@ -15,9 +15,6 @@ const CSS = `
 .auth-back:hover{color:rgba(244,239,232,.75)}
 .auth-body{flex:1;display:flex;align-items:center;justify-content:center;padding:48px 24px;position:relative;overflow:hidden}
 .auth-glow{position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:700px;height:500px;border-radius:50%;background:radial-gradient(ellipse,rgba(232,151,42,.05),transparent 65%);pointer-events:none}
-.auth-stars{position:absolute;inset:0;pointer-events:none}
-.auth-star{position:absolute;border-radius:50%;background:#FFF8E8;animation:twk var(--d,4s) var(--dl,0s) ease-in-out infinite}
-@keyframes twk{0%,100%{opacity:.05}50%{opacity:.35}}
 .auth-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:24px;padding:44px 40px;width:100%;max-width:440px;position:relative;z-index:1;animation:slideUp .5s cubic-bezier(.22,1,.36,1) both}
 @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 .auth-moon-wrap{text-align:center;margin-bottom:22px}
@@ -34,49 +31,113 @@ const CSS = `
 .auth-input:focus{border-color:rgba(232,151,42,.45);background:rgba(232,151,42,.03)}
 .auth-input::placeholder{color:rgba(244,239,232,.18);font-weight:300}
 .auth-err{background:rgba(200,80,80,.08);border:1px solid rgba(200,80,80,.2);border-radius:11px;padding:12px 16px;font-size:12.5px;color:rgba(255,180,180,.9);margin-bottom:18px;line-height:1.55}
+.auth-ok{background:rgba(80,180,120,.08);border:1px solid rgba(80,180,120,.2);border-radius:11px;padding:12px 16px;font-size:12.5px;color:rgba(150,230,180,.9);margin-bottom:18px;line-height:1.55}
 .auth-btn{width:100%;padding:15px;background:var(--amber);color:var(--ink);border:none;border-radius:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .2s;margin-top:6px}
 .auth-btn:hover{background:var(--amber2);transform:translateY(-1px);box-shadow:0 8px 28px rgba(232,151,42,.25)}
 .auth-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.auth-forgot{text-align:right;margin-top:-10px;margin-bottom:18px}
+.auth-forgot button{background:none;border:none;font-size:12px;color:rgba(244,239,232,.3);cursor:pointer;font-family:var(--sans);transition:color .15s}
+.auth-forgot button:hover{color:rgba(244,239,232,.6)}
 .auth-divider{display:flex;align-items:center;gap:14px;margin:22px 0;color:rgba(244,239,232,.18);font-size:11px;font-family:var(--mono)}
 .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06)}
 .auth-guest{width:100%;padding:14px;background:transparent;border:1px solid rgba(255,255,255,.09);border-radius:13px;color:rgba(244,239,232,.45);font-size:13px;cursor:pointer;font-family:var(--sans);transition:all .2s;display:flex;flex-direction:column;gap:3px;align-items:center}
 .auth-guest:hover{border-color:rgba(255,255,255,.18);color:rgba(244,239,232,.7)}
 .auth-guest strong{font-size:13px;font-weight:500;color:rgba(244,239,232,.6)}
 .auth-guest small{font-size:11px;color:rgba(244,239,232,.28)}
+.auth-verify{text-align:center;padding:16px 0}
+.auth-verify-icon{font-size:40px;margin-bottom:12px}
+.auth-verify-title{font-family:var(--serif);font-size:22px;color:#F4EFE8;margin-bottom:8px}
+.auth-verify-sub{font-size:13px;color:rgba(244,239,232,.45);line-height:1.65}
 `;
+
+type Screen = 'form' | 'verify' | 'reset-sent';
 
 export default function Auth() {
   const { login, setView } = useApp();
-  const [tab, setTab] = useState<'signup' | 'signin'>('signup');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [tab,      setTab]     = useState<'signup' | 'signin'>('signup');
+  const [screen,   setScreen]  = useState<Screen>('form');
+  const [email,    setEmail]   = useState('');
+  const [password, setPassword]= useState('');
+  const [confirm,  setConfirm] = useState('');
+  const [loading,  setLoading] = useState(false);
+  const [error,    setError]   = useState('');
 
-  const handleSignup = () => {
+  const handleSignup = async () => {
     setError('');
     if (!email.trim() || !password) { setError('Please enter your email and a password.'); return; }
-    if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
-    if (password !== confirm) { setError("Passwords don't match."); return; }
-    const existing = getAllUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (existing) { setError('An account with this email already exists. Try signing in.'); return; }
+    if (password.length < 6)        { setError('Password must be at least 6 characters.'); return; }
+    if (password !== confirm)        { setError("Passwords don't match."); return; }
     setLoading(true);
-    const user: User = { id: uid(), email: email.trim().toLowerCase(), passwordHash: hashPassword(password), displayName: email.split('@')[0], createdAt: new Date().toISOString() };
-    saveUser(user);
-    setTimeout(() => { setLoading(false); login(user); }, 400);
+    try {
+      const sbUser = await signUp(email.trim().toLowerCase(), password, email.split('@')[0]);
+      if (sbUser) {
+        // Supabase sends a confirmation email by default.
+        // If email confirmation is disabled in Supabase dashboard, user is logged in immediately.
+        if (sbUser.email_confirmed_at || sbUser.confirmed_at) {
+          const u: User = { id: sbUser.id, email: sbUser.email ?? '', passwordHash: '', displayName: sbUser.user_metadata?.display_name ?? email.split('@')[0], createdAt: sbUser.created_at, isGuest: false };
+          login(u);
+        } else {
+          setScreen('verify');
+        }
+      }
+    } catch (e: any) {
+      setError(e.message ?? 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSignin = () => {
+  const handleSignin = async () => {
     setError('');
     if (!email.trim() || !password) { setError('Please enter your email and password.'); return; }
-    const user = getAllUsers().find(u => u.email.toLowerCase() === email.trim().toLowerCase());
-    if (!user || user.passwordHash !== hashPassword(password)) { setError('Email or password is incorrect.'); return; }
     setLoading(true);
-    setTimeout(() => { setLoading(false); login(user); }, 300);
+    try {
+      const sbUser = await signIn(email.trim().toLowerCase(), password);
+      if (sbUser) {
+        const u: User = { id: sbUser.id, email: sbUser.email ?? '', passwordHash: '', displayName: sbUser.user_metadata?.display_name ?? sbUser.email?.split('@')[0] ?? 'User', createdAt: sbUser.created_at, isGuest: false };
+        login(u);
+      }
+    } catch (e: any) {
+      const msg = e.message ?? '';
+      if (msg.includes('Invalid login')) setError('Email or password is incorrect.');
+      else if (msg.includes('Email not confirmed')) setError('Please check your email and click the confirmation link first.');
+      else setError(msg || 'Sign in failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const onKey = (e: React.KeyboardEvent) => e.key === 'Enter' && (tab === 'signup' ? handleSignup() : handleSignin());
+  const handleForgot = async () => {
+    if (!email.trim()) { setError('Enter your email address above first.'); return; }
+    setLoading(true);
+    try {
+      await resetPassword(email.trim().toLowerCase());
+      setScreen('reset-sent');
+    } catch (e: any) {
+      setError(e.message ?? 'Could not send reset email.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGuest = async () => {
+    setLoading(true);
+    try {
+      const sbUser = await signInAsGuest();
+      if (sbUser) {
+        const u: User = { id: sbUser.id, email: '', passwordHash: '', displayName: 'Guest', createdAt: sbUser.created_at, isGuest: true };
+        login(u);
+      }
+    } catch (e: any) {
+      setError(e.message ?? 'Could not start guest session.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') tab === 'signup' ? handleSignup() : handleSignin();
+  };
 
   return (
     <div className="auth-page">
@@ -91,39 +152,67 @@ export default function Auth() {
         <div className="auth-glow" />
         <div className="auth-card">
           <div className="auth-moon-wrap"><div className="auth-moon" /></div>
-          <div className="auth-headline">
-            {tab === 'signup' ? <>Tonight's story <em>awaits.</em></> : <>Welcome <em>back.</em></>}
-          </div>
-          <div className="auth-sub">
-            {tab === 'signup' ? 'Create your free account and build your first story in 60 seconds.' : 'Sign in to your stories, characters, and Night Cards.'}
-          </div>
-          <div className="auth-tabs">
-            <button className={`auth-tab${tab === 'signup' ? ' on' : ''}`} onClick={() => { setTab('signup'); setError(''); }}>Create account</button>
-            <button className={`auth-tab${tab === 'signin' ? ' on' : ''}`} onClick={() => { setTab('signin'); setError(''); }}>Sign in</button>
-          </div>
-          {error && <div className="auth-err">{error}</div>}
-          <div className="auth-field">
-            <label className="auth-label">Email address</label>
-            <input className="auth-input" type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={onKey} autoFocus />
-          </div>
-          <div className="auth-field">
-            <label className="auth-label">Password</label>
-            <input className="auth-input" type="password" placeholder={tab === 'signup' ? 'At least 6 characters' : 'Your password'} value={password} onChange={e => setPassword(e.target.value)} onKeyDown={onKey} />
-          </div>
-          {tab === 'signup' && (
-            <div className="auth-field">
-              <label className="auth-label">Confirm password</label>
-              <input className="auth-input" type="password" placeholder="Same password again" value={confirm} onChange={e => setConfirm(e.target.value)} onKeyDown={onKey} />
+
+          {screen === 'verify' && (
+            <div className="auth-verify">
+              <div className="auth-verify-icon">✉️</div>
+              <div className="auth-verify-title">Check your email</div>
+              <div className="auth-verify-sub">We sent a confirmation link to <strong style={{color:'#F4EFE8'}}>{email}</strong>.<br/>Click the link in that email to activate your account, then come back and sign in.</div>
+              <button className="auth-btn" style={{marginTop:24}} onClick={() => { setScreen('form'); setTab('signin'); }}>Back to sign in</button>
             </div>
           )}
-          <button className="auth-btn" disabled={loading} onClick={tab === 'signup' ? handleSignup : handleSignin}>
-            {loading ? '…' : tab === 'signup' ? 'Create free account' : 'Sign in'}
-          </button>
-          <div className="auth-divider">or</div>
-          <button className="auth-guest" onClick={() => login(createGuestUser())}>
-            <strong>Continue as guest</strong>
-            <small>Try the story builder — no account needed</small>
-          </button>
+
+          {screen === 'reset-sent' && (
+            <div className="auth-verify">
+              <div className="auth-verify-icon">🔑</div>
+              <div className="auth-verify-title">Reset email sent</div>
+              <div className="auth-verify-sub">Check your inbox at <strong style={{color:'#F4EFE8'}}>{email}</strong> for a password reset link.</div>
+              <button className="auth-btn" style={{marginTop:24}} onClick={() => { setScreen('form'); setError(''); }}>Back to sign in</button>
+            </div>
+          )}
+
+          {screen === 'form' && (
+            <>
+              <div className="auth-headline">
+                {tab === 'signup' ? <>Tonight's story <em>awaits.</em></> : <>Welcome <em>back.</em></>}
+              </div>
+              <div className="auth-sub">
+                {tab === 'signup' ? 'Create your free account and build your first story in 60 seconds.' : 'Sign in to your stories, characters, and Night Cards.'}
+              </div>
+              <div className="auth-tabs">
+                <button className={`auth-tab${tab === 'signup' ? ' on' : ''}`} onClick={() => { setTab('signup'); setError(''); }}>Create account</button>
+                <button className={`auth-tab${tab === 'signin' ? ' on' : ''}`} onClick={() => { setTab('signin'); setError(''); }}>Sign in</button>
+              </div>
+              {error && <div className="auth-err">{error}</div>}
+              <div className="auth-field">
+                <label className="auth-label">Email address</label>
+                <input className="auth-input" type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={onKey} autoFocus />
+              </div>
+              <div className="auth-field">
+                <label className="auth-label">Password</label>
+                <input className="auth-input" type="password" placeholder={tab === 'signup' ? 'At least 6 characters' : 'Your password'} value={password} onChange={e => setPassword(e.target.value)} onKeyDown={onKey} />
+              </div>
+              {tab === 'signin' && (
+                <div className="auth-forgot">
+                  <button type="button" onClick={handleForgot}>Forgot password?</button>
+                </div>
+              )}
+              {tab === 'signup' && (
+                <div className="auth-field">
+                  <label className="auth-label">Confirm password</label>
+                  <input className="auth-input" type="password" placeholder="Same password again" value={confirm} onChange={e => setConfirm(e.target.value)} onKeyDown={onKey} />
+                </div>
+              )}
+              <button className="auth-btn" disabled={loading} onClick={tab === 'signup' ? handleSignup : handleSignin}>
+                {loading ? '…' : tab === 'signup' ? 'Create free account' : 'Sign in'}
+              </button>
+              <div className="auth-divider">or</div>
+              <button className="auth-guest" disabled={loading} onClick={handleGuest}>
+                <strong>Continue as guest</strong>
+                <small>Try the story builder — no account needed</small>
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
