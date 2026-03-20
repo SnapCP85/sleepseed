@@ -35,6 +35,30 @@ export const signOut = async () => {
   await supabase.auth.signOut();
 };
 
+export const updateUserProfile = async (userId: string, data: { display_name?: string }) => {
+  const { error } = await supabase.from('profiles').upsert({ id: userId, ...data });
+  if (error) console.error('updateUserProfile:', error);
+  // Also update Supabase auth metadata
+  if (data.display_name) {
+    await supabase.auth.updateUser({ data: { display_name: data.display_name } });
+  }
+};
+
+export const updateUserEmail = async (newEmail: string) => {
+  const { error } = await supabase.auth.updateUser({ email: newEmail });
+  if (error) throw error;
+};
+
+export const updateUserPassword = async (newPassword: string) => {
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw error;
+};
+
+export const deleteUserAccount = async () => {
+  // Sign out — actual account deletion requires server-side admin
+  await supabase.auth.signOut();
+};
+
 export const resetPassword = async (email: string) => {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${window.location.origin}/reset-password`,

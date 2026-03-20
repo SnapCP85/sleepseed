@@ -9,6 +9,7 @@ import StoryLibrary from './features/stories/StoryLibrary';
 import NightCardLibrary from './features/nightcards/NightCardLibrary';
 import SleepSeedCore from './SleepSeedCore';
 import SharedStoryViewer from './pages/SharedStoryViewer';
+import ProfileSettings from './pages/ProfileSettings';
 import type { Character } from './lib/types';
 
 const NAV_CSS = `
@@ -28,15 +29,15 @@ const NAV_CSS = `
 @media(max-width:600px){.pnav{padding:0 12px;height:48px}.pnav-link{padding:5px 9px;font-size:11px}.pnav-cta{padding:6px 13px;font-size:11px}.pnav-brand{display:none}}
 `;
 
-function ProfileNav({ view, onDashboard, onStories, onCharacters, onNightCards, onCreateStory, userName, onLogout }: {
+function ProfileNav({ view, onDashboard, onStories, onCharacters, onNightCards, onCreateStory, onSettings, userName }: {
   view: string;
   onDashboard: () => void;
   onStories: () => void;
   onCharacters: () => void;
   onNightCards: () => void;
   onCreateStory: () => void;
+  onSettings: () => void;
   userName: string;
-  onLogout: () => void;
 }) {
   return (
     <>
@@ -53,7 +54,7 @@ function ProfileNav({ view, onDashboard, onStories, onCharacters, onNightCards, 
           <button className={`pnav-link${view==='nightcard-library'?' on':''}`} onClick={onNightCards}>Night Cards</button>
         </div>
         <button className="pnav-cta" onClick={onCreateStory}>✨ Make a Story</button>
-        <button className="pnav-user" onClick={onLogout}>{userName || 'Account'}</button>
+        <button className={`pnav-user${view==='profile-settings'?' on':''}`} onClick={onSettings} style={view==='profile-settings'?{color:'rgba(232,151,42,.85)'}:{}}>⚙ {userName || 'Account'}</button>
       </nav>
     </>
   );
@@ -61,7 +62,7 @@ function ProfileNav({ view, onDashboard, onStories, onCharacters, onNightCards, 
 
 function AppInner() {
   const {
-    user, authLoading, view, setView, logout,
+    user, authLoading, view, setView, login, logout,
     selectedCharacter, setSelectedCharacter,
     editingCharacter, setEditingCharacter,
   } = useApp();
@@ -122,7 +123,9 @@ function AppInner() {
   }
 
   // All authenticated views get the profile nav
-  const showNav = user && ['dashboard','characters','character-builder','story-library','nightcard-library','story-builder'].includes(view);
+  const goSettings = () => setView('profile-settings');
+
+  const showNav = user && ['dashboard','characters','character-builder','story-library','nightcard-library','story-builder','profile-settings'].includes(view);
 
   const nav = showNav ? (
     <ProfileNav
@@ -132,8 +135,8 @@ function AppInner() {
       onCharacters={goCharacters}
       onNightCards={goNightCards}
       onCreateStory={() => goStoryBuilder()}
+      onSettings={goSettings}
       userName={user?.displayName || (user?.isGuest ? 'Guest' : '')}
-      onLogout={() => { logout(); setView('public'); }}
     />
   ) : null;
 
@@ -178,6 +181,21 @@ function AppInner() {
 
   if (view === 'nightcard-library') return (
     <>{nav}<NightCardLibrary userId={user!.id} onBack={goDashboard} /></>
+  );
+
+  if (view === 'profile-settings') return (
+    <>{nav}<ProfileSettings
+      user={user!}
+      onBack={goDashboard}
+      onEditCharacter={goEditCharacter}
+      onNewCharacter={goNewCharacter}
+      onLogout={() => { logout(); setView('public'); }}
+      onUserUpdated={(updates) => {
+        // Update the user in context — AppContext.login re-sets the user
+        const updated = { ...user!, ...updates };
+        login(updated);
+      }}
+    /></>
   );
 
   if (view === 'story-builder') {

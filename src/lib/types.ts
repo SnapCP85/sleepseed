@@ -77,4 +77,5 @@ export type AppView =
   | 'characters'    // character library
   | 'character-builder' // create/edit a character
   | 'story-library' // my stories
-  | 'nightcard-library'; // my night cards
+  | 'nightcard-library' // my night cards
+  | 'profile-settings'; // profile & account settings
