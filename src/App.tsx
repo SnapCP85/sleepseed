@@ -11,6 +11,54 @@ import SleepSeedCore from './SleepSeedCore';
 import SharedStoryViewer from './pages/SharedStoryViewer';
 import type { Character } from './lib/types';
 
+const NAV_CSS = `
+.pnav{display:flex;align-items:center;gap:0;padding:0 5%;height:52px;background:rgba(13,16,24,.98);border-bottom:1px solid rgba(232,151,42,.1);position:sticky;top:0;z-index:999;backdrop-filter:blur(16px);font-family:'Plus Jakarta Sans',system-ui,sans-serif;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.pnav::-webkit-scrollbar{display:none}
+.pnav-logo{display:flex;align-items:center;gap:7px;cursor:pointer;flex-shrink:0;margin-right:8px;padding-right:14px;border-right:1px solid rgba(255,255,255,.07)}
+.pnav-moon{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020);flex-shrink:0}
+.pnav-brand{font-family:'Playfair Display',Georgia,serif;font-size:14px;font-weight:700;color:#F4EFE8}
+.pnav-links{display:flex;align-items:center;gap:2px;flex:1;min-width:0}
+.pnav-link{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:500;color:rgba(244,239,232,.4);cursor:pointer;transition:all .15s;white-space:nowrap;border:none;background:transparent}
+.pnav-link:hover{color:rgba(244,239,232,.75);background:rgba(255,255,255,.05)}
+.pnav-link.on{color:rgba(232,151,42,.85);background:rgba(232,151,42,.08)}
+.pnav-cta{padding:7px 16px;border-radius:50px;font-size:12px;font-weight:700;color:#1A1420;background:#E8972A;cursor:pointer;transition:all .15s;white-space:nowrap;border:none;flex-shrink:0;margin-left:auto}
+.pnav-cta:hover{background:#F5B84C;transform:translateY(-1px)}
+.pnav-user{font-size:10px;color:rgba(244,239,232,.25);cursor:pointer;padding:4px 10px;border-radius:6px;transition:color .15s;flex-shrink:0;border:none;background:transparent;white-space:nowrap;margin-left:6px}
+.pnav-user:hover{color:rgba(244,239,232,.55)}
+@media(max-width:600px){.pnav{padding:0 12px;height:48px}.pnav-link{padding:5px 9px;font-size:11px}.pnav-cta{padding:6px 13px;font-size:11px}.pnav-brand{display:none}}
+`;
+
+function ProfileNav({ view, onDashboard, onStories, onCharacters, onNightCards, onCreateStory, userName, onLogout }: {
+  view: string;
+  onDashboard: () => void;
+  onStories: () => void;
+  onCharacters: () => void;
+  onNightCards: () => void;
+  onCreateStory: () => void;
+  userName: string;
+  onLogout: () => void;
+}) {
+  return (
+    <>
+      <style>{NAV_CSS}</style>
+      <nav className="pnav">
+        <div className="pnav-logo" onClick={onDashboard}>
+          <div className="pnav-moon" />
+          <div className="pnav-brand">SleepSeed</div>
+        </div>
+        <div className="pnav-links">
+          <button className={`pnav-link${view==='dashboard'?' on':''}`} onClick={onDashboard}>Home</button>
+          <button className={`pnav-link${view==='story-library'?' on':''}`} onClick={onStories}>Stories</button>
+          <button className={`pnav-link${view==='characters'||view==='character-builder'?' on':''}`} onClick={onCharacters}>Characters</button>
+          <button className={`pnav-link${view==='nightcard-library'?' on':''}`} onClick={onNightCards}>Night Cards</button>
+        </div>
+        <button className="pnav-cta" onClick={onCreateStory}>✨ Make a Story</button>
+        <button className="pnav-user" onClick={onLogout}>{userName || 'Account'}</button>
+      </nav>
+    </>
+  );
+}
+
 function AppInner() {
   const {
     user, view, setView, logout,
@@ -18,14 +66,12 @@ function AppInner() {
     editingCharacter, setEditingCharacter,
   } = useApp();
 
-  // Check for shared story link on mount
   const [isSharedStory, setIsSharedStory] = useState(false);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('s')) setIsSharedStory(true);
   }, []);
 
-  // Shared story viewer — no auth required
   if (isSharedStory) return <SharedStoryViewer />;
 
   const [preloadedBook, setPreloadedBook] = useState<any>(null);
@@ -43,7 +89,6 @@ function AppInner() {
   const goNightCards = () => setView('nightcard-library');
   const goStoryLibrary = () => setView('story-library');
 
-  // Fix 6: If user is signed in and lands on public homepage, go to dashboard
   if (view === 'public' && user && !user.isGuest) {
     setView('dashboard');
     return null;
@@ -61,86 +106,69 @@ function AppInner() {
 
   if (view === 'auth') return <Auth />;
 
+  // All authenticated views get the profile nav
+  const showNav = user && ['dashboard','characters','character-builder','story-library','nightcard-library','story-builder'].includes(view);
+
+  const nav = showNav ? (
+    <ProfileNav
+      view={view}
+      onDashboard={goDashboard}
+      onStories={goStoryLibrary}
+      onCharacters={goCharacters}
+      onNightCards={goNightCards}
+      onCreateStory={() => goStoryBuilder()}
+      userName={user?.displayName || (user?.isGuest ? 'Guest' : '')}
+      onLogout={() => { logout(); setView('public'); }}
+    />
+  ) : null;
+
   if (view === 'dashboard') return (
-    <UserDashboard
+    <>{nav}<UserDashboard
       onCreateStory={() => goStoryBuilder()}
       onViewLibrary={goStoryLibrary}
       onViewNightCards={goNightCards}
       onViewCharacters={goCharacters}
       onNewCharacter={goNewCharacter}
       onSignUp={goAuth}
-    />
+    /></>
   );
 
   if (view === 'characters') return (
-    <CharacterLibrary
+    <>{nav}<CharacterLibrary
       userId={user!.id}
       onBack={goDashboard}
       onNew={goNewCharacter}
       onEdit={goEditCharacter}
       onUseInStory={char => goStoryBuilder(char)}
-    />
+    /></>
   );
 
   if (view === 'character-builder') return (
-    <CharacterBuilder
+    <>{nav}<CharacterBuilder
       userId={user!.id}
       initialCharacter={editingCharacter}
       onSaved={() => { setEditingCharacter(null); setView('characters'); }}
       onCancel={() => { setEditingCharacter(null); setView('characters'); }}
-    />
+    /></>
   );
 
   if (view === 'story-library') return (
-    <StoryLibrary
+    <>{nav}<StoryLibrary
       userId={user!.id}
       onBack={goDashboard}
       onReadStory={(bookData: any) => { setPreloadedBook(bookData); setView('story-builder'); }}
       onCreateStory={() => goStoryBuilder()}
-    />
+    /></>
   );
 
   if (view === 'nightcard-library') return (
-    <NightCardLibrary userId={user!.id} onBack={goDashboard} />
+    <>{nav}<NightCardLibrary userId={user!.id} onBack={goDashboard} /></>
   );
 
   if (view === 'story-builder') {
     return (
       <div style={{ position: 'relative' }}>
-        <div style={{
-          position: 'sticky', top: 0, zIndex: 999,
-          background: 'rgba(13,16,24,.97)', backdropFilter: 'blur(16px)',
-          borderBottom: '1px solid rgba(232,151,42,.1)',
-          display: 'flex', alignItems: 'center', gap: 14, padding: '0 6%', height: 64,
-        }}>
-          <button onClick={goDashboard} style={{
-            background: 'transparent', border: 'none', color: 'rgba(244,239,232,.4)',
-            fontSize: 13, cursor: 'pointer', fontFamily: "'Plus Jakarta Sans',system-ui,sans-serif",
-            display: 'flex', alignItems: 'center', gap: 6, transition: 'color .15s', padding: 0,
-          }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'rgba(244,239,232,.75)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(244,239,232,.4)')}>
-            ← Back
-          </button>
-          <div style={{
-            fontFamily: "'Playfair Display',Georgia,serif", fontSize: 16, fontWeight: 700,
-            color: '#F4EFE8', display: 'flex', alignItems: 'center', gap: 8,
-          }}>
-            <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'radial-gradient(circle at 38% 38%,#F5C060,#C87020)', flexShrink: 0 }} />
-            SleepSeed
-          </div>
-          {user?.isGuest && (
-            <div style={{
-              marginLeft: 'auto', background: 'rgba(232,151,42,.08)',
-              border: '1px solid rgba(232,151,42,.2)', borderRadius: 50,
-              padding: '7px 18px', fontSize: 12, color: 'rgba(232,151,42,.75)',
-              cursor: 'pointer', fontFamily: "'Plus Jakarta Sans',system-ui,sans-serif",
-              fontWeight: 500, transition: 'all .2s',
-            }} onClick={goAuth}>
-              Save your stories — create free account
-            </div>
-          )}
-        </div>
+        {nav}
         <SleepSeedCore
           userId={user?.id}
           isGuest={user?.isGuest}
