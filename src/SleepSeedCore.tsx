@@ -1623,7 +1623,16 @@ export default function SleepSeed({
   }, [preloadedCharacter]);
 
   useEffect(() => {
-    if (ritualSeed) setStoryContext(ritualSeed);
+    if (ritualSeed) {
+      setStoryContext(ritualSeed);
+      // Skip home screen — go straight to builder
+      if (preloadedCharacter?.name) {
+        setHeroName(preloadedCharacter.name);
+        setStage("builder");
+      } else if (heroName.trim().length >= 2) {
+        setStage("builder");
+      }
+    }
   }, [ritualSeed]);
 
   useEffect(() => {
