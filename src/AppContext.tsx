@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { User, AppView, Character } from './lib/types';
+import type { User, AppView, Character, BuilderChoices } from './lib/types';
 import { supabase } from './lib/supabase';
 import { signOut as sbSignOut } from './lib/storage';
 
@@ -18,6 +18,8 @@ interface AppCtx {
   setRitualSeed: (s: string) => void;
   ritualMood: string;
   setRitualMood: (m: string) => void;
+  builderChoices: BuilderChoices | null;
+  setBuilderChoices: (c: BuilderChoices | null) => void;
   editingCharacter: Character | null;
   setEditingCharacter: (c: Character | null) => void;
   pendingSaveCharacter: Partial<Character> | null;
@@ -46,6 +48,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [selectedCharacters,    setSelectedCharacters]    = useState<Character[]>([]);
   const [ritualSeed,            setRitualSeed]            = useState<string>('');
   const [ritualMood,            setRitualMood]            = useState<string>('');
+  const [builderChoices,        setBuilderChoices]        = useState<BuilderChoices | null>(null);
   const [editingCharacter,      setEditingCharacter]      = useState<Character | null>(null);
   const [pendingSaveCharacter,  setPendingSaveCharacter]  = useState<Partial<Character> | null>(null);
 
@@ -97,6 +100,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       selectedCharacters, setSelectedCharacters,
       ritualSeed, setRitualSeed,
       ritualMood, setRitualMood,
+      builderChoices, setBuilderChoices,
       editingCharacter, setEditingCharacter,
       pendingSaveCharacter, setPendingSaveCharacter,
     }}>

@@ -5,6 +5,8 @@ import Auth from './pages/Auth';
 import UserDashboard from './pages/UserDashboard';
 import UserProfile from './pages/UserProfile';
 import RitualStarter from './pages/RitualStarter';
+import StoryHandoff from './pages/StoryHandoff';
+import StoryBuilderPage from './pages/StoryBuilderPage';
 import CharacterBuilder from './features/characters/CharacterBuilder';
 import CharacterLibrary from './features/characters/CharacterLibrary';
 import StoryLibrary from './features/stories/StoryLibrary';
@@ -19,6 +21,7 @@ function AppInner() {
     selectedCharacter, setSelectedCharacter,
     selectedCharacters,
     ritualSeed, ritualMood,
+    builderChoices,
     editingCharacter, setEditingCharacter,
   } = useApp();
 
@@ -63,6 +66,10 @@ function AppInner() {
   );
 
   if (view === 'ritual-starter') return <RitualStarter />;
+
+  if (view === 'story-handoff') return <StoryHandoff />;
+
+  if (view === 'story-configure') return <StoryBuilderPage />;
 
   if (view === 'user-profile') return <UserProfile />;
 
@@ -141,6 +148,7 @@ function AppInner() {
           preloadedCharacter={selectedCharacters.length > 0 ? selectedCharacters[0] : selectedCharacter}
           ritualSeed={ritualSeed}
           ritualMood={ritualMood}
+          builderChoices={builderChoices}
           onCharacterSavePrompt={() => {}}
           onStoryReady={() => {}}
         />

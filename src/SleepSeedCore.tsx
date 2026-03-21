@@ -1478,6 +1478,7 @@ interface SleepSeedCoreProps {
   preloadedBook?: any;
   ritualSeed?: string;
   ritualMood?: string;
+  builderChoices?: any;
   onCharacterSavePrompt?: (charData: any) => void;
   onStoryReady?: (storyData: any) => void;
 }
@@ -1489,6 +1490,7 @@ export default function SleepSeed({
   preloadedBook,
   ritualSeed,
   ritualMood,
+  builderChoices,
   onCharacterSavePrompt,
   onStoryReady,
 }: SleepSeedCoreProps = {}) {
@@ -1644,6 +1646,60 @@ export default function SleepSeed({
       if (mapped) setStoryMood(mapped);
     }
   }, [ritualMood]);
+
+  // Auto-generate from StoryBuilderPage choices — skips home/builder stages
+  const builderFiredRef = useRef(false);
+  useEffect(() => {
+    if (!builderChoices) { builderFiredRef.current = false; return; }
+    if (builderFiredRef.current) return; // prevent double-fire
+    // Wait for heroName to be populated from preloadedCharacter
+    const name = heroName.trim() || preloadedCharacter?.name || "";
+    if (!name) return;
+    builderFiredRef.current = true;
+    if (name && !heroName.trim()) setHeroName(name);
+
+    // Map vibe to storyBrief2 (feel string) and storyMood
+    const vibeToFeel: Record<string,string> = {
+      'warm-funny': 'warm and funny, with lots of laughs',
+      'calm-cosy': 'calm and cosy, drifting toward sleep',
+      'exciting': 'exciting and full of surprises',
+      'heartfelt': 'heartfelt and emotionally true',
+      'silly': 'completely silly from start to finish',
+      'mysterious': 'mysterious with a satisfying ending',
+    };
+    const vibeToMood: Record<string,string> = {
+      'warm-funny': 'silly',
+      'calm-cosy': 'calm',
+      'exciting': 'exciting',
+      'heartfelt': 'heartfelt',
+      'silly': 'silly',
+      'mysterious': '',
+    };
+
+    const bc = builderChoices;
+    const overrides: any = {
+      ageGroup:        bc.level || undefined,
+      storyLen:        bc.length || undefined,
+      storyBrief1:     bc.brief || undefined,
+      storyBrief2:     vibeToFeel[bc.vibe] || bc.vibe || undefined,
+      storyContext:    bc.brief || undefined,
+      storyMood:       vibeToMood[bc.vibe] || undefined,
+      storyPace:       bc.pace || undefined,
+      storyStyle:      bc.style || undefined,
+      adventure:       bc.style === 'adventure',
+      lessons:         bc.lessons?.length ? bc.lessons : undefined,
+      occasion:        bc.occasion || undefined,
+      occasionCustom:  bc.occasionCustom || undefined,
+      extraChars:      bc.chars?.length ? bc.chars.map((c: any) => ({
+        id: uid(), type: c.type || "friend", name: c.name || "", photo: null,
+        classify: "", gender: "", note: c.note || "",
+      })) : undefined,
+    };
+
+    // Go straight to generating
+    setStage("generating");
+    generate(overrides);
+  }, [builderChoices, heroName]);
 
   // Load a preloaded book (from story library re-read)
   useEffect(() => {

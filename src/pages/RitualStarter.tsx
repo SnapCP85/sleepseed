@@ -395,7 +395,7 @@ export default function RitualStarter() {
     setRitualSeed(seed);
     setRitualMood(mood);
     if (primary) setSelectedCharacter(primary);
-    setView('story-builder');
+    setView('story-handoff');
   }
 
   return (
