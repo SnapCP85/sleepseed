@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import SleepSeedLibrary from "./sleepseed-library";
 import { buildStoryPrompt } from "./sleepseed-prompts";
 import { StoryFeedback, RereadCheck } from "./StoryFeedback";
-import { getCharacters, saveCharacter as saveCharToStorage } from "./lib/storage";
+import { getCharacters, saveCharacter as saveCharToStorage, saveStory as saveStoryToSupabase, saveNightCard as saveNightCardToSupabase } from "./lib/storage";
 import type { Character } from "./lib/types";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Kalam:wght@400;700&display=swap');`;
@@ -2340,6 +2340,8 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
           occasion: occ, bookData
         };
         localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
+        // Also save to Supabase
+        try { await saveStoryToSupabase(v2Entry); } catch(_) {}
       } catch(_) {}
     }
   },[memories,occasion,occasionCustom,userId,preloadedCharacter]);
@@ -2377,6 +2379,8 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
           date: entry.date
         };
         localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
+        // Also save to Supabase
+        try { await saveNightCardToSupabase(v2Entry); } catch(_) {}
       } catch(_) {}
     }
     return entry;
