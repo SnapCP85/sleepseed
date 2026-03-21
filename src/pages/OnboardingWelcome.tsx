@@ -22,8 +22,8 @@ const CSS = `
 .ow-eyebrow{font-size:9px;letter-spacing:.1em;color:rgba(232,151,42,.65);font-weight:600;text-transform:uppercase;font-family:var(--mono);margin-bottom:14px;animation:rise .6s ease-out .1s both}
 .ow-title{font-family:var(--serif);font-size:clamp(26px,5vw,36px);color:var(--cream);line-height:1.28;margin-bottom:18px;font-weight:700;letter-spacing:-.02em;animation:rise .6s ease-out .25s both}
 .ow-title em{font-style:italic;color:var(--amber2)}
-.ow-body{font-size:14px;color:rgba(244,239,232,.46);line-height:1.85;margin-bottom:20px;animation:rise .6s ease-out .4s both;font-weight:300}
-.ow-body strong{color:rgba(244,239,232,.78);font-weight:500}
+.ow-body{font-size:14px;color:rgba(244,239,232,.75);line-height:1.85;margin-bottom:20px;animation:rise .6s ease-out .4s both;font-weight:300}
+.ow-body strong{color:rgba(244,239,232,.92);font-weight:500}
 .ow-card{background:rgba(232,151,42,.05);border:.5px solid rgba(232,151,42,.18);border-radius:16px;padding:14px 18px;margin-bottom:24px;animation:rise .6s ease-out .55s both}
 .ow-card-text{font-family:var(--serif);font-size:14px;color:rgba(244,239,232,.68);font-style:italic;line-height:1.75}
 .ow-card-text em{color:var(--amber2);font-style:italic}

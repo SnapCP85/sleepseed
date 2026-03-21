@@ -84,12 +84,12 @@ const CSS = `
 .nc0-moon-sh{position:absolute;width:44px;height:44px;border-radius:50%;background:#030712;top:-6px;left:-9px}
 .nc0-title{font-family:var(--serif);font-size:clamp(19px,4vw,24px);color:var(--cream);font-weight:700;margin-bottom:7px;line-height:1.35}
 .nc0-title em{color:var(--amber2);font-style:italic}
-.nc0-sub{font-size:12px;color:rgba(244,239,232,.38);line-height:1.65;max-width:320px;margin:0 auto;font-weight:300}
+.nc0-sub{font-size:12px;color:rgba(244,239,232,.72);line-height:1.65;max-width:320px;margin:0 auto;font-weight:300}
 .nc0-input-card{background:rgba(10,14,28,.98);border:.5px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden;margin-bottom:14px}
 .nc0-input-lbl{padding:10px 14px 0;font-size:8px;color:var(--muted);font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase}
 .nc0-textarea{width:100%;background:transparent;border:none;outline:none;padding:8px 14px 14px;color:var(--cream);font-size:13.5px;font-family:var(--sans);resize:none;line-height:1.75;min-height:88px}
-.nc0-textarea::placeholder{color:#2A3050;font-style:italic;font-size:12.5px;line-height:1.7}
-.nc0-sec-lbl{font-size:8.5px;letter-spacing:.07em;color:rgba(255,255,255,.2);font-weight:600;text-transform:uppercase;font-family:var(--mono);margin-bottom:9px}
+.nc0-textarea::placeholder{color:rgba(200,191,176,.45);font-style:italic;font-size:12.5px;line-height:1.7}
+.nc0-sec-lbl{font-size:8.5px;letter-spacing:.07em;color:rgba(255,255,255,.45);font-weight:600;text-transform:uppercase;font-family:var(--mono);margin-bottom:9px}
 .nc0-moods{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .nc0-mood{border-radius:20px;padding:6px 12px;font-size:11px;cursor:pointer;transition:all .18s;border:.5px solid rgba(255,255,255,.07);background:rgba(8,12,24,.9);color:#5A6280;display:flex;align-items:center;gap:5px;font-family:var(--sans)}
 .nc0-mood.on{border-color:var(--amber);background:rgba(232,151,42,.1);color:var(--amber2)}
@@ -303,10 +303,30 @@ export default function OnboardingNightCard() {
               </div>
             ) : (
               <>
-                <button className="nc0-photo-btn" onClick={() => fileRef.current?.click()}>
-                  📷 take a photo of this moment
+                <button className="nc0-photo-btn" onClick={() => {
+                  // Try camera first on mobile
+                  const inp = document.createElement('input');
+                  inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'user';
+                  inp.onchange = (e: any) => {
+                    const f = e.target?.files?.[0]; if (!f) return;
+                    const r = new FileReader(); r.onload = ev => {
+                      const img = new Image(); img.onload = () => {
+                        const c = document.createElement('canvas');
+                        const s = Math.min(640/img.width,640/img.height,1);
+                        c.width = Math.round(img.width*s); c.height = Math.round(img.height*s);
+                        c.getContext('2d')?.drawImage(img,0,0,c.width,c.height);
+                        setPhoto(c.toDataURL('image/jpeg',0.82));
+                      }; img.src = ev.target?.result as string;
+                    }; r.readAsDataURL(f);
+                  };
+                  inp.click();
+                }}>
+                  📸 Take a selfie
                 </button>
-                <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={handlePhotoInput} />
+                <button className="nc0-photo-btn" style={{marginTop:6,background:'rgba(255,255,255,.03)'}} onClick={() => fileRef.current?.click()}>
+                  🖼️ Upload a photo from today
+                </button>
+                <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoInput} />
                 <button className="nc0-photo-skip" onClick={() => {}}>skip photo →</button>
               </>
             )}

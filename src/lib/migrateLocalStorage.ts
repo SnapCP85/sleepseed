@@ -12,7 +12,7 @@
 import { saveStory, saveNightCard, getStories, getNightCards } from './storage';
 import type { SavedStory, SavedNightCard } from './types';
 
-const MIGRATION_KEY = 'ss_migrated_to_supabase_v1';
+const MIGRATION_KEY = 'ss_migrated_to_supabase_v2';
 
 function uid() {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -57,19 +57,19 @@ function readLocalStories(userId: string): SavedStory[] {
   // SleepSeedCore internal key: ss9_memories → { items: [...] }
   try {
     const raw = localStorage.getItem('ss9_memories');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      add(parsed?.items || [], 'ss9_memories');
-    }
+    if (raw) { const parsed = JSON.parse(raw); add(parsed?.items || [], 'ss9_memories'); }
   } catch (e) { console.warn('[migration] Could not read ss9_memories:', e); }
+
+  // Per-user scoped key: ss9_u_{userId}_memories → { items: [...] }
+  try {
+    const raw = localStorage.getItem(`ss9_u_${userId}_memories`);
+    if (raw) { const parsed = JSON.parse(raw); add(parsed?.items || [], `ss9_u_${userId}_memories`); }
+  } catch (e) { console.warn('[migration] Could not read ss9_u_ memories:', e); }
 
   // v2 mirror key: ss2_stories_<userId>
   try {
     const raw = localStorage.getItem(`ss2_stories_${userId}`);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      add(Array.isArray(parsed) ? parsed : [], `ss2_stories_${userId}`);
-    }
+    if (raw) { const parsed = JSON.parse(raw); add(Array.isArray(parsed) ? parsed : [], `ss2_stories_${userId}`); }
   } catch (e) { console.warn(`[migration] Could not read ss2_stories_${userId}:`, e); }
 
   return results;
@@ -112,19 +112,19 @@ function readLocalNightCards(userId: string): SavedNightCard[] {
   // SleepSeedCore internal key: ss9_nightcards → { items: [...] }
   try {
     const raw = localStorage.getItem('ss9_nightcards');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      add(parsed?.items || [], 'ss9_nightcards');
-    }
+    if (raw) { const parsed = JSON.parse(raw); add(parsed?.items || [], 'ss9_nightcards'); }
   } catch (e) { console.warn('[migration] Could not read ss9_nightcards:', e); }
+
+  // Per-user scoped key: ss9_u_{userId}_nightcards → { items: [...] }
+  try {
+    const raw = localStorage.getItem(`ss9_u_${userId}_nightcards`);
+    if (raw) { const parsed = JSON.parse(raw); add(parsed?.items || [], `ss9_u_${userId}_nightcards`); }
+  } catch (e) { console.warn('[migration] Could not read ss9_u_ nightcards:', e); }
 
   // v2 mirror key: ss2_nightcards_<userId>
   try {
     const raw = localStorage.getItem(`ss2_nightcards_${userId}`);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      add(Array.isArray(parsed) ? parsed : [], `ss2_nightcards_${userId}`);
-    }
+    if (raw) { const parsed = JSON.parse(raw); add(Array.isArray(parsed) ? parsed : [], `ss2_nightcards_${userId}`); }
   } catch (e) { console.warn(`[migration] Could not read ss2_nightcards_${userId}:`, e); }
 
   return results;
@@ -146,6 +146,8 @@ export async function migrateLocalStorageToSupabase(userId: string): Promise<{
   const hasAnyLocal =
     localStorage.getItem('ss9_memories') ||
     localStorage.getItem('ss9_nightcards') ||
+    localStorage.getItem(`ss9_u_${userId}_memories`) ||
+    localStorage.getItem(`ss9_u_${userId}_nightcards`) ||
     localStorage.getItem(`ss2_stories_${userId}`) ||
     localStorage.getItem(`ss2_nightcards_${userId}`);
 

@@ -75,15 +75,23 @@ function AppInner() {
 
   if (view === 'auth') return <Auth />;
 
-  // Onboarding views
+  // Onboarding views — persist across tab switches
+  const isOnboardingView = ['onboarding-welcome','onboarding-tour','onboarding-night0'].includes(view);
+  if (isOnboardingView && user) {
+    try { localStorage.setItem(`ss_onboarding_step_${user.id}`, view); } catch {}
+  }
   if (view === 'onboarding-welcome') return <OnboardingWelcome />;
   if (view === 'onboarding-tour')    return <OnboardingTour />;
   if (view === 'onboarding-night0')  return <OnboardingNightCard />;
 
   if (view === 'dashboard') {
     if (user && !user.isGuest && !onboardingDone) {
-      // Mark onboarding complete so user sees the dashboard on subsequent visits
-      // (the onboarding pages themselves will mark the flag on completion)
+      // Check if user was mid-onboarding and restore their step
+      const savedStep = localStorage.getItem(`ss_onboarding_step_${user.id}`);
+      if (savedStep && ['onboarding-welcome','onboarding-tour','onboarding-night0'].includes(savedStep)) {
+        setView(savedStep as any);
+        return null;
+      }
       return <OnboardingWelcome />;
     }
     return <UserDashboard onSignUp={goAuth} />;

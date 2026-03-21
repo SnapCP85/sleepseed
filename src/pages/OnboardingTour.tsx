@@ -25,8 +25,8 @@ const CSS = `
 .ot-label{font-size:8.5px;letter-spacing:.08em;color:rgba(232,151,42,.65);font-weight:600;text-transform:uppercase;font-family:var(--mono);margin-bottom:8px}
 .ot-title{font-family:var(--serif);font-size:clamp(20px,4vw,26px);color:var(--cream);line-height:1.32;margin-bottom:6px;font-weight:700}
 .ot-title em{font-style:italic;color:var(--amber2)}
-.ot-body{font-size:13px;color:rgba(244,239,232,.42);line-height:1.78;margin-bottom:18px;font-weight:300}
-.ot-body strong{color:rgba(244,239,232,.72);font-weight:500}
+.ot-body{font-size:13px;color:rgba(244,239,232,.75);line-height:1.78;margin-bottom:18px;font-weight:300}
+.ot-body strong{color:rgba(244,239,232,.92);font-weight:600}
 
 /* mockup containers */
 .ot-mock{background:rgba(255,255,255,.018);border:1px solid rgba(255,255,255,.05);border-radius:16px;padding:14px;margin-bottom:16px;position:relative}
