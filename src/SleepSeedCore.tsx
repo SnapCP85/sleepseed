@@ -2715,7 +2715,15 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       sSet(bKey,bookData).catch(()=>{});
 
       // ── Auto-save story to library ────────────────────────────────────
-      try { await saveMemory(bookData); console.log("[SleepSeed] Story saved to library"); } catch(e) { console.error("[SleepSeed] saveMemory failed:", e); }
+      try {
+        await saveMemory(bookData);
+        console.log("[SleepSeed] Story saved to library");
+        // Verify it was actually saved
+        if (userId) {
+          const verify = JSON.parse(localStorage.getItem(`ss2_stories_${userId}`) || "[]");
+          console.log("[SleepSeed] Verification: ss2_stories has", verify.length, "stories. Latest:", verify[0]?.title);
+        }
+      } catch(e) { console.error("[SleepSeed] saveMemory failed:", e); }
 
     } catch(e) {
       console.error("SleepSeed error:",e);

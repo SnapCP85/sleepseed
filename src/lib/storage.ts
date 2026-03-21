@@ -172,8 +172,8 @@ const lsSetStories = (userId: string, stories: SavedStory[]) => {
 };
 
 export const getStories = async (userId: string): Promise<SavedStory[]> => {
-  // Always return from localStorage (reliable)
   const local = lsGetStories(userId);
+  console.log("[storage] getStories for userId:", userId, "localStorage key:", LS_STORIES(userId), "found:", local.length);
   // Best-effort: try Supabase too and merge any missing
   try {
     const { data } = await supabase.from('stories').select('*').eq('user_id', userId).order('date', { ascending: false });
