@@ -393,8 +393,8 @@ export default function UserDashboard({onSignUp}:{onSignUp:()=>void}){
     import('../lib/storage').then(({getCharacters,getNightCards,getStories})=>{
       Promise.all([getCharacters(user.id),getNightCards(user.id),getStories(user.id)]).then(([chars,cards,stories])=>{
         setCharacters(chars);setAllCards(cards);setStoryCount(stories.length);
-        // Only auto-select family characters (isFamily === true)
-        const familyChars=chars.filter(c=>c.isFamily===true);
+        // Auto-select family characters (isFamily or human type as default)
+        const familyChars=chars.filter(c=>c.isFamily===true||(c.isFamily===undefined&&c.type==='human'));
         if(familyChars.length>0){setSelectedCharacters([familyChars[0]]);setWeekViewId(familyChars[0].id);}
         else if(chars.length>0){setSelectedCharacters([chars[0]]);setWeekViewId(chars[0].id);}
         setLoading(false);
@@ -402,8 +402,9 @@ export default function UserDashboard({onSignUp}:{onSignUp:()=>void}){
     });
   },[user]); // eslint-disable-line
 
-  // Only family characters appear in the ritual dashboard tab row
-  const familyChars=useMemo(()=>characters.filter(c=>c.isFamily===true),[characters]);
+  // Family characters appear in the ritual dashboard tab row
+  // Treat human-type characters as family by default when isFamily isn't explicitly set
+  const familyChars=useMemo(()=>characters.filter(c=>c.isFamily===true||(c.isFamily===undefined&&c.type==='human')),[characters]);
 
   const primary=selectedCharacters[0]??null;
   const secondary=selectedCharacters[1]??null;
