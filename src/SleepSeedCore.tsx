@@ -2329,6 +2329,7 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     setMemories(next);
     await sSet("memories",{items:next});
     // Also mirror to v2 user-scoped storage so UserDashboard can read it
+    console.log("[SleepSeed] saveMemory userId:", userId, "entry.title:", entry.title);
     if (userId) {
       try {
         const v2Key = `ss2_stories_${userId}`;
@@ -2340,9 +2341,11 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
           occasion: occ, bookData
         };
         localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
-        // Also save to Supabase
-        try { await saveStoryToSupabase(v2Entry); } catch(_) {}
-      } catch(_) {}
+        console.log("[SleepSeed] Saved to localStorage key:", v2Key, "total:", existing.length + 1);
+        try { await saveStoryToSupabase(v2Entry); console.log("[SleepSeed] Saved to Supabase"); } catch(e) { console.error("[SleepSeed] Supabase save failed:", e); }
+      } catch(e) { console.error("[SleepSeed] localStorage save failed:", e); }
+    } else {
+      console.warn("[SleepSeed] No userId — story only saved to ss9 memories");
     }
   },[memories,occasion,occasionCustom,userId,preloadedCharacter]);
 
@@ -2703,7 +2706,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       sSet(bKey,bookData).catch(()=>{});
 
       // ── Auto-save story to library ────────────────────────────────────
-      try { await saveMemory(bookData); } catch(_) {}
+      try { await saveMemory(bookData); console.log("[SleepSeed] Story saved to library"); } catch(e) { console.error("[SleepSeed] saveMemory failed:", e); }
 
     } catch(e) {
       console.error("SleepSeed error:",e);
