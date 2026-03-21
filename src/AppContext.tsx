@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import type { User, AppView, Character, BuilderChoices } from './lib/types';
 import { supabase } from './lib/supabase';
 import { signOut as sbSignOut } from './lib/storage';
+import { migrateLocalStorageToSupabase } from './lib/migrateLocalStorage';
 
 interface AppCtx {
   user: User | null;
@@ -59,6 +60,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const u = toAppUser(session.user);
         setUser(u);
         setView('dashboard');
+        // Run one-time migration for real (non-guest) users
+        if (!session.user.is_anonymous) {
+          migrateLocalStorageToSupabase(session.user.id).catch(e =>
+            console.warn('[AppContext] Migration error:', e)
+          );
+        }
       }
       setAuthLoading(false);
     });
@@ -69,6 +76,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const u = toAppUser(session.user);
         setUser(u);
         if (view === 'public' || view === 'auth') setView('dashboard');
+        // Run one-time migration for real (non-guest) users
+        if (!session.user.is_anonymous) {
+          migrateLocalStorageToSupabase(session.user.id).catch(e =>
+            console.warn('[AppContext] Migration error:', e)
+          );
+        }
       } else {
         setUser(null);
         setView('public');

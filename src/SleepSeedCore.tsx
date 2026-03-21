@@ -2,10 +2,9 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import SleepSeedLibrary from "./sleepseed-library";
 import { buildStoryPrompt } from "./sleepseed-prompts";
 import { StoryFeedback, RereadCheck } from "./StoryFeedback";
-import { getCharacters, saveCharacter as saveCharToStorage, saveStory as saveStoryToSupabase, saveNightCard as saveNightCardToSupabase } from "./lib/storage";
-import type { Character } from "./lib/types";
+import { saveStory as dbSaveStory, saveNightCard as dbSaveNightCard } from "./lib/storage";
 
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Kalam:wght@400;700&display=swap');`;
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Cormorant+Garamond:ital,wght@1,600&family=Patrick+Hand&family=Nunito:wght@400;600;700&family=Kalam:wght@400;700&display=swap');`;
 
 const CSS = `
 ${FONTS}
@@ -14,10 +13,6 @@ ${FONTS}
   --night:#060b18;--gold:#d4a030;--gold2:#f0cc60;--gold3:#fae9a8;
   --cream:#fdf5e0;--parch:#f5e8c0;--ink:#261600;--ink2:#5a380a;--ink3:#8a5a1a;
   --ui:#c4d0f0;--dim:#6070a0;--dimmer:#3a4878;--green2:#4cc890;
-  --amber:#E8972A;--amber2:#F5B84C;--amber-glow:rgba(232,151,42,.15);
-  --serif2:'Playfair Display',Georgia,serif;
-  --sans2:'Plus Jakarta Sans',system-ui,sans-serif;
-  --mono2:'DM Mono',monospace;
 }
 body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);min-height:100vh;overflow-x:hidden}
 .stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
@@ -153,7 +148,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
   border:1.5px solid rgba(255,255,255,.11);color:var(--dim);background:rgba(255,255,255,.04);
   font-family:'Nunito',sans-serif;transition:all .18s;display:flex;align-items:center;gap:5px;line-height:1.2}
 .occ-pill:hover{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.08)}
-.occ-pill.on{background:rgba(212,160,48,.13);border-color:var(--gold2);color:var(--gold2)}
+.occ-pill.on{background:rgba(240,180,50,.13);border-color:var(--gold2);color:var(--gold2)}
 .les-pills{display:flex;gap:7px;flex-wrap:wrap}
 .les-pill{padding:8px 13px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;
   border:1.5px solid rgba(255,255,255,.11);color:var(--dim);background:rgba(255,255,255,.04);
@@ -242,7 +237,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .story-txt-col::-webkit-scrollbar{width:3px}
 .story-txt-col::-webkit-scrollbar-thumb{background:rgba(90,56,10,.15);border-radius:99px}
 .s-pgnum{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:7px;flex-shrink:0}
-.s-text{font-family:'Fraunces',Georgia,serif;font-size:clamp(14px,3vw,16px);color:var(--ink);line-height:1.72;flex:1;min-height:0;overflow-y:auto}
+.s-text{font-family:'Patrick Hand',cursive;font-size:clamp(18px,3.8vw,20px);color:var(--ink);line-height:1.75;flex:1;min-height:0;overflow-y:auto}
 .s-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;flex-shrink:0}
 .orn{font-size:9px;color:rgba(90,56,10,.28);letter-spacing:4px}
 .orn-num{font-family:'Kalam',cursive;font-size:15px;color:rgba(90,56,10,.22)}
@@ -289,154 +284,6 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
   text-align:center;color:var(--dim);background:transparent;border:none;font-family:'Nunito',sans-serif;transition:all .2s}
 .mem-tab.on{background:rgba(212,160,48,.12);color:var(--gold2)}
 .mem-tab:hover:not(.on){color:var(--cream);background:rgba(255,255,255,.05)}
-/* ── NEW THEME — story builder screens ── */
-.nb-nav{display:flex;align-items:center;gap:10px;padding:16px 20px 14px;border-bottom:1px solid rgba(232,151,42,.1);background:rgba(6,11,24,.98);position:sticky;top:0;z-index:50;backdrop-filter:blur(16px)}
-.nb-back{background:transparent;border:none;color:rgba(244,239,232,.5);font-size:13px;cursor:pointer;font-family:var(--sans2);display:flex;align-items:center;gap:5px;transition:color .15s}
-.nb-back:hover{color:rgba(244,239,232,.85)}
-.nb-logo{font-family:var(--serif2);font-size:16px;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:8px;margin:0 auto}
-.nb-moon{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020);flex-shrink:0}
-.nb-body{padding:22px 20px;font-family:var(--sans2);position:relative}
-.nb-body-bg{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden;background:linear-gradient(180deg,#0D1018 0%,#141830 100%)}
-.nb-body>*{position:relative;z-index:1}
-.nb-ambient{position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:420px;height:420px;border-radius:50%;pointer-events:none;z-index:0;transition:background 1.2s ease}
-.nb-star{position:absolute;border-radius:50%;background:#FFF8EC;animation:nb-tw var(--d,3s) var(--dl,0s) ease-in-out infinite}
-@keyframes nb-tw{0%,100%{opacity:.05}50%{opacity:.45}}
-.nb-label{font-size:11px;font-family:var(--mono2);letter-spacing:1.5px;text-transform:uppercase;color:rgba(232,151,42,.75);margin-bottom:11px;display:flex;align-items:center;gap:7px}
-.nb-label::before{content:'';width:16px;height:1px;background:rgba(232,151,42,.45);flex-shrink:0}
-.nb-divider{height:1px;background:rgba(255,255,255,.06);margin:18px 0}
-.nb-hero-input{width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(232,151,42,.35);border-radius:14px;padding:16px 18px;font-size:20px;color:var(--cream);font-family:var(--serif2);font-style:italic;font-weight:700;outline:none;text-align:center;letter-spacing:-.02em;transition:all .2s}
-.nb-hero-input:focus{border-color:var(--amber);box-shadow:0 0 0 4px rgba(232,151,42,.1);background:rgba(232,151,42,.06)}
-.nb-hero-input::placeholder{color:rgba(244,239,232,.28);font-weight:400;font-style:italic;font-size:15px}
-.nb-pronoun-row{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:10px}
-.nb-pronoun{padding:8px 16px;border-radius:50px;cursor:pointer;border:1px solid rgba(255,255,255,.13);color:rgba(244,239,232,.6);background:rgba(255,255,255,.04);font-size:13px;font-weight:500;font-family:var(--sans2);transition:all .2s}
-.nb-pronoun:hover{border-color:rgba(255,255,255,.25);color:var(--cream);background:rgba(255,255,255,.08)}
-.nb-pronoun.sel{background:rgba(232,151,42,.15);border-color:rgba(232,151,42,.5);color:var(--amber2)}
-.nb-char-strip{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:0}
-.nb-char-chip{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:transform .15s}
-.nb-char-chip:hover{transform:translateY(-3px)}
-.nb-char-av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid rgba(232,151,42,.15);transition:all .2s;overflow:hidden}
-.nb-char-av.sel{border-color:var(--amber2);box-shadow:0 0 0 3px rgba(232,151,42,.18)}
-.nb-char-av-add{background:rgba(232,151,42,.07);border:1.5px dashed rgba(232,151,42,.3)!important}
-.nb-char-nm{font-size:10px;color:rgba(244,239,232,.55);font-weight:500;font-family:var(--mono2);text-align:center;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nb-char-nm.sel{color:var(--amber2)}
-.nb-char-detail{background:rgba(232,151,42,.06);border:1px solid rgba(232,151,42,.16);border-radius:11px;padding:10px 13px;margin-top:11px;animation:fup .3s cubic-bezier(.16,1,.3,1)}
-.nb-prefill-tag{font-size:9.5px;color:rgba(76,200,144,.8);font-family:var(--mono2);margin-top:5px}
-.nb-cta{width:100%;padding:16px;background:var(--amber);color:#1A1420;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--sans2);transition:all .2s;letter-spacing:-.01em}
-.nb-cta:hover{background:var(--amber2);transform:translateY(-1px);box-shadow:0 8px 28px rgba(232,151,42,.3)}
-.nb-cta:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
-.nb-customise{text-align:center;font-size:11.5px;color:rgba(232,151,42,.5);cursor:pointer;padding:10px 0;font-weight:500;font-family:var(--mono2);letter-spacing:.5px;transition:color .2s}
-.nb-customise:hover{color:rgba(232,151,42,.8)}
-.nb-preview{background:rgba(232,151,42,.07);border:1px solid rgba(232,151,42,.2);border-radius:13px;padding:13px 15px;margin-bottom:16px;animation:fup .35s cubic-bezier(.16,1,.3,1)}
-.nb-preview-label{font-size:9px;font-family:var(--mono2);color:rgba(232,151,42,.6);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
-.nb-preview-text{font-family:var(--serif2);font-size:13px;font-style:italic;color:rgba(244,239,232,.8);line-height:1.72}
-.nb-about-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px}
-.nb-about-pill{padding:12px 12px;border-radius:13px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(244,239,232,.82);font-size:14px;font-weight:500;cursor:pointer;text-align:left;font-family:var(--sans2);transition:all .2s;display:flex;align-items:center;gap:8px;line-height:1.3}
-.nb-about-pill:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);transform:translateY(-1px)}
-.nb-about-pill.sel{background:rgba(232,151,42,.15);border-color:rgba(232,151,42,.5);color:var(--amber2);box-shadow:0 0 0 3px rgba(232,151,42,.08)}
-.nb-mood-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0}
-.nb-mood-pill{padding:12px 12px;border-radius:13px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(244,239,232,.82);font-size:14px;font-weight:500;cursor:pointer;text-align:left;font-family:var(--sans2);transition:all .2s;display:flex;align-items:center;gap:8px;line-height:1.3}
-.nb-mood-pill:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);transform:translateY(-1px)}
-.nb-mood-pill.sel{background:rgba(232,151,42,.15);border-color:rgba(232,151,42,.5);color:var(--amber2);box-shadow:0 0 0 3px rgba(232,151,42,.08)}
-.nb-textarea{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--cream);font-family:var(--sans2);outline:none;resize:none;min-height:68px;line-height:1.65;transition:all .2s;margin-top:9px}
-.nb-textarea:focus{border-color:rgba(232,151,42,.5);background:rgba(232,151,42,.05)}
-.nb-textarea::placeholder{color:rgba(244,239,232,.3)}
-.nb-lesson-group-label{font-size:9.5px;font-family:var(--mono2);color:rgba(244,239,232,.45);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;font-weight:600}
-.nb-lesson-pills{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
-.nb-lesson-pill{padding:7px 15px;border-radius:50px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(244,239,232,.78);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--sans2);transition:all .2s}
-.nb-lesson-pill:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22)}
-.nb-lesson-pill.sel{background:rgba(232,151,42,.15);border-color:rgba(232,151,42,.5);color:var(--amber2)}
-.nb-age-row{display:flex;gap:7px}
-.nb-age-pill{flex:1;padding:10px 5px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(244,239,232,.75);font-size:12px;font-weight:600;cursor:pointer;text-align:center;font-family:var(--mono2);transition:all .2s}
-.nb-age-pill:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22)}
-.nb-age-pill.sel{background:rgba(232,151,42,.15);border-color:rgba(232,151,42,.5);color:var(--amber2)}
-.nb-age-pill-sub{font-size:8px;font-weight:400;color:rgba(244,239,232,.38);margin-top:2px}
-.nb-age-pill.sel .nb-age-pill-sub{color:rgba(245,184,76,.65)}
-.nb-setting-chips{display:flex;gap:7px;flex-wrap:wrap}
-.nb-setting-chip{padding:8px 15px;border-radius:50px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(244,239,232,.72);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--mono2);transition:all .2s}
-.nb-setting-chip:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22)}
-.nb-setting-chip.sel{background:rgba(232,151,42,.15);border-color:rgba(232,151,42,.5);color:var(--amber2)}
-.nb-input-sm{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:12px 15px;font-size:14px;color:var(--cream);font-family:var(--sans2);outline:none;transition:all .2s}
-.nb-input-sm:focus{border-color:rgba(232,151,42,.5);background:rgba(232,151,42,.05)}
-.nb-input-sm::placeholder{color:rgba(244,239,232,.3)}
-/* ── Option D: sticky bar + expandable drawer ── */
-.nb-sticky-bar{background:rgba(6,11,24,.98);border-top:2px solid rgba(232,151,42,.3);padding:0 20px 0;cursor:pointer;transition:border-color .3s;position:relative;z-index:40}
-.nb-sticky-bar.has-info{border-top-color:var(--amber)}
-.nb-sticky-bar:hover .nb-sticky-handle{background:rgba(232,151,42,.3)}
-.nb-sticky-handle{width:36px;height:3px;border-radius:2px;background:rgba(255,255,255,.15);margin:10px auto 8px;transition:background .2s}
-.nb-sticky-inner{display:flex;align-items:center;gap:11px;padding-bottom:14px}
-.nb-sticky-av{width:38px;height:38px;border-radius:50%;background:#1E1640;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;border:2px solid rgba(232,151,42,.25);overflow:hidden;transition:border-color .2s}
-.nb-sticky-bar.has-info .nb-sticky-av{border-color:rgba(232,151,42,.55)}
-.nb-sticky-info{flex:1;min-width:0}
-.nb-sticky-name{font-size:13px;font-weight:600;color:var(--cream);font-family:var(--serif2)}
-.nb-sticky-sub{font-size:9.5px;color:rgba(244,239,232,.42);font-family:var(--mono2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nb-sticky-hint{font-size:9px;color:rgba(232,151,42,.5);font-family:var(--mono2);margin-top:2px;display:flex;align-items:center;gap:4px}
-.nb-sticky-btn{background:var(--amber);color:#1A1420;border:none;border-radius:11px;padding:11px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans2);white-space:nowrap;flex-shrink:0;transition:all .2s}
-.nb-sticky-btn:hover{background:var(--amber2)}
-.nb-sticky-btn:disabled{opacity:.35;cursor:not-allowed}
-.nb-ready-label{font-size:8px;font-family:var(--mono2);color:rgba(232,151,42,.55);letter-spacing:1.5px;text-transform:uppercase;text-align:center;padding:8px 0 0}
-/* ── Drawer overlay ── */
-.nb-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;animation:nb-fade-in .2s ease;backdrop-filter:blur(6px)}
-@keyframes nb-fade-in{from{opacity:0}to{opacity:1}}
-.nb-drawer{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:540px;background:#0D1018;border-radius:24px 24px 0 0;border-top:2px solid var(--amber);padding:0 22px 40px;z-index:101;animation:nb-slide-up .3s cubic-bezier(.22,1,.36,1)}
-@keyframes nb-slide-up{from{transform:translateX(-50%) translateY(100%)}to{transform:translateX(-50%) translateY(0)}}
-.nb-drawer-handle{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.2);margin:14px auto 18px}
-.nb-drawer-title{font-family:var(--serif2);font-size:20px;font-weight:700;font-style:italic;color:var(--cream);margin-bottom:4px;line-height:1.2}
-.nb-drawer-sub{font-size:12px;color:rgba(244,239,232,.42);font-weight:300;margin-bottom:18px;line-height:1.5}
-.nb-drawer-preview{font-family:var(--serif2);font-size:14px;font-style:italic;color:rgba(244,239,232,.78);line-height:1.72;background:rgba(232,151,42,.07);border:1px solid rgba(232,151,42,.2);border-radius:13px;padding:13px 15px;margin-bottom:14px}
-.nb-drawer-rows{display:flex;flex-direction:column;gap:0;margin-bottom:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden}
-.nb-drawer-row{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
-.nb-drawer-row:last-child{border-bottom:none}
-.nb-drawer-row-lbl{font-size:9px;font-family:var(--mono2);color:rgba(232,151,42,.55);width:64px;flex-shrink:0;letter-spacing:.5px;margin-top:2px;text-transform:uppercase}
-.nb-drawer-row-val{color:rgba(244,239,232,.85);font-family:var(--sans2);font-weight:500;line-height:1.5}
-.nb-drawer-disclaimer{font-size:11px;color:rgba(244,239,232,.38);font-style:italic;text-align:center;margin-bottom:14px;line-height:1.6;font-family:var(--sans2)}
-.nb-drawer-cta{width:100%;padding:16px;background:var(--amber);color:#1A1420;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--sans2);transition:all .2s}
-.nb-drawer-cta:hover{background:var(--amber2);transform:translateY(-1px);box-shadow:0 8px 28px rgba(232,151,42,.3)}
-.nb-drawer-cta:disabled{opacity:.35;cursor:not-allowed;transform:none}
-.nb-drawer-edit{width:100%;padding:12px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:12px;color:rgba(244,239,232,.45);font-size:13px;cursor:pointer;font-family:var(--sans2);margin-top:8px;transition:all .2s}
-.nb-drawer-edit:hover{border-color:rgba(255,255,255,.2);color:rgba(244,239,232,.75)}
-.nb-gen-body{padding:22px 20px;font-family:var(--sans2);display:flex;flex-direction:column;align-items:center}
-.nb-gen-progress{height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin-bottom:24px;overflow:hidden;width:100%}
-.nb-gen-fill{height:100%;background:var(--amber);border-radius:2px}
-.nb-gen-dots{display:flex;gap:6px;justify-content:center;margin-bottom:20px}
-.nb-gen-dot{height:3px;border-radius:2px;background:rgba(255,255,255,.1)}
-.nb-gen-dot.done{background:var(--amber)}
-.nb-gen-dot.active{background:rgba(232,151,42,.5)}
-.nb-gen-moon{width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020);margin:0 auto 8px;box-shadow:0 0 40px 8px rgba(232,151,42,.12)}
-.nb-gen-title{font-family:var(--serif2);font-size:20px;font-weight:700;color:var(--cream);text-align:center;margin-bottom:4px;font-style:italic}
-.nb-gen-sub{font-size:11px;color:rgba(244,239,232,.38);font-family:var(--mono2);text-align:center;margin-bottom:22px}
-.nb-bq-card{background:rgba(255,255,255,.04);border:1px solid rgba(232,151,42,.14);border-radius:16px;padding:18px;width:100%;margin-bottom:14px}
-.nb-bq-while{font-size:8.5px;font-family:var(--mono2);color:rgba(232,151,42,.48);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
-.nb-bq-q{font-family:var(--serif2);font-size:17px;font-style:italic;color:rgba(244,239,232,.82);line-height:1.5;margin-bottom:14px}
-.nb-bq-answer{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:11px;padding:12px 14px;font-size:14px;color:var(--cream);font-family:var(--serif2);font-style:italic;outline:none;resize:none;min-height:70px;line-height:1.6;margin-bottom:10px}
-.nb-bq-answer::placeholder{color:rgba(244,239,232,.25);font-size:12px;font-style:normal}
-.nb-bq-save{width:100%;padding:11px;background:rgba(76,200,144,.1);border:1px solid rgba(76,200,144,.2);border-radius:10px;color:rgba(76,200,144,.85);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans2);transition:all .2s}
-.nb-bq-save:hover{background:rgba(76,200,144,.16)}
-.nb-step-list{display:flex;flex-direction:column;gap:5px;width:100%;margin-top:2px}
-.nb-step-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;font-size:12px;font-family:var(--sans2)}
-.nb-step-item.done{background:rgba(76,200,144,.05);border:1px solid rgba(76,200,144,.12);color:rgba(76,200,144,.8)}
-.nb-step-item.active{background:rgba(232,151,42,.06);border:1px solid rgba(232,151,42,.14);color:rgba(232,151,42,.85);font-weight:600}
-.nb-step-item.pending{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);color:rgba(244,239,232,.28)}
-.nb-step-icon{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.nb-step-icon.done{background:rgba(76,200,144,.18)}
-.nb-step-icon.active{background:rgba(232,151,42,.14)}
-.nb-step-icon.pending{background:rgba(255,255,255,.04)}
-.nb-step-pulse{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:nb-pulse 1s ease-in-out infinite}
-@keyframes nb-pulse{0%,100%{opacity:.5;transform:scale(.7)}50%{opacity:1;transform:scale(1.2)}}
-.char-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:12px}
-.char-chip{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:50px;cursor:pointer;
-  border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);transition:all .2s;
-  font-family:'Nunito',sans-serif;font-size:13px;font-weight:500;color:rgba(240,237,232,.55)}
-.char-chip:hover{border-color:rgba(212,160,48,.35);color:var(--cream);background:rgba(212,160,48,.06)}
-.char-chip.on{border-color:var(--gold2);color:var(--gold2);background:rgba(212,160,48,.14)}
-.char-chip-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:14px;flex-shrink:0}
-.char-chip-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}
-.char-chip-add{border-style:dashed;border-color:rgba(212,160,48,.25);color:rgba(212,160,48,.6)}
-.char-chip-add:hover{border-color:rgba(212,160,48,.5);color:rgba(212,160,48,.9);background:rgba(212,160,48,.08)}
-.new-char-form{background:rgba(212,160,48,.05);border:1px solid rgba(212,160,48,.15);border-radius:14px;
-  padding:16px;margin-bottom:12px;display:flex;flex-direction:column;gap:10px;animation:fup .3s ease}
-.new-char-row{display:flex;gap:8px}
-.new-char-row .finput{flex:1}
 .nc-flow{width:100%;max-width:420px;animation:fup .5s cubic-bezier(.16,1,.3,1) both}
 .nc-step-dots{display:flex;gap:6px;justify-content:center;margin-bottom:18px}
 .nc-sdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s}
@@ -507,62 +354,6 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .ctrl-btn.read.active{background:rgba(212,160,48,.24);border-color:var(--gold2)}
 .ctrl-btn.save{background:rgba(100,130,220,.07);border-color:rgba(100,130,220,.24);color:var(--ui)}
 .ctrl-btn.fresh{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.11);color:var(--dim)}
-.ctrl-btn.dl{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.11);color:var(--dim)}
-.rd-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px}
-.rd-logo{font-family:'Fraunces',serif;font-size:15px;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:7px;cursor:pointer}
-.rd-progress{font-size:10px;font-family:'DM Mono',monospace;color:rgba(244,239,232,.32);text-align:center;padding:0 4px;flex:1}
-.rd-ctrl{display:flex;gap:7px;justify-content:center;margin-top:8px;flex-wrap:wrap}
-.rd-btn-primary{display:flex;align-items:center;gap:6px;padding:9px 18px;border-radius:50px;border:none;background:var(--amber,#E8972A);color:#1A1420;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
-.rd-btn-primary:hover{background:#F5B84C;transform:translateY(-1px)}
-.rd-btn-secondary{display:flex;align-items:center;gap:5px;padding:8px 13px;border-radius:50px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(244,239,232,.55);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
-.rd-btn-secondary:hover{border-color:rgba(255,255,255,.2);color:var(--cream)}
-.rd-btn-secondary.on{background:rgba(212,160,48,.12);border-color:rgba(212,160,48,.35);color:var(--gold2)}
-.rd-status{font-size:10px;color:rgba(76,200,144,.7);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:4px}
-.share-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(8px);animation:smBgIn .2s ease}
-@keyframes smBgIn{from{opacity:0}to{opacity:1}}
-.share-modal{background:#0D1018;border-radius:24px 24px 0 0;padding:24px 20px 36px;width:100%;max-width:500px;border-top:1px solid rgba(232,151,42,.2);animation:smIn .3s cubic-bezier(.22,1,.36,1)}
-@keyframes smIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.share-modal-title{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--cream);margin-bottom:4px;text-align:center}
-.share-modal-sub{font-size:12px;color:rgba(244,239,232,.38);text-align:center;margin-bottom:20px;font-weight:300}
-.share-option{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;cursor:pointer;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);margin-bottom:9px;transition:all .2s;width:100%}
-.share-option:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)}
-.share-option-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.share-option-info{flex:1;text-align:left}
-.share-option-h{font-size:13px;font-weight:700;color:var(--cream);margin-bottom:2px;font-family:'Nunito',sans-serif}
-.share-option-sub{font-size:11px;color:rgba(244,239,232,.38);font-weight:300}
-.share-link-row{display:flex;gap:8px;margin-top:6px;margin-bottom:12px}
-.share-link-input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;font-size:11px;color:rgba(244,239,232,.6);font-family:'DM Mono',monospace;outline:none;min-width:0}
-.share-link-copy{background:var(--amber,#E8972A);color:#1A1420;border:none;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;transition:all .2s;flex-shrink:0}
-.share-link-copy:hover{background:#F5B84C}
-.share-link-copy.copied{background:rgba(76,200,144,.2);color:rgba(76,200,144,.9);border:1px solid rgba(76,200,144,.3)}
-.share-dismiss{width:100%;padding:12px;background:transparent;border:1px solid rgba(255,255,255,.09);border-radius:12px;color:rgba(244,239,232,.4);font-size:13px;cursor:pointer;font-family:'Nunito',sans-serif;margin-top:4px;transition:all .2s}
-.share-dismiss:hover{border-color:rgba(255,255,255,.18);color:rgba(244,239,232,.7)}
-.share-section-label{font-size:9px;font-family:'DM Mono',monospace;color:rgba(244,239,232,.3);letter-spacing:1.5px;text-transform:uppercase;margin:14px 0 8px;display:flex;align-items:center;gap:10px}
-.share-section-label::before,.share-section-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06)}
-.share-sm-row{display:flex;gap:8px;margin-bottom:4px}
-.share-sm-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:14px;cursor:pointer;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03);transition:all .2s;font-family:'Nunito',sans-serif}
-.share-sm-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16);transform:translateY(-1px)}
-.share-sm-icon{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.share-sm-label{font-size:11px;font-weight:700;color:rgba(244,239,232,.7)}
-.share-sm-fb{background:rgba(24,119,242,.15);border:1px solid rgba(24,119,242,.25)}
-.share-sm-x{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15)}
-.share-sm-ig{background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.22)}
-.share-ig-sheet{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;margin-top:6px;display:none}
-.share-ig-sheet.vis{display:block}
-.share-ig-title{font-size:12px;font-weight:700;color:rgba(244,239,232,.75);margin-bottom:5px;font-family:'Nunito',sans-serif}
-.share-ig-sub{font-size:11px;color:rgba(244,239,232,.38);line-height:1.6;margin-bottom:10px;font-weight:300}
-.share-ig-btns{display:flex;gap:8px}
-.share-ig-copy{flex:1;padding:9px;background:rgba(232,151,42,.12);border:1px solid rgba(232,151,42,.25);border-radius:10px;color:rgba(232,151,42,.85);font-size:12px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s}
-.share-ig-copy:hover{background:rgba(232,151,42,.2)}
-.share-ig-dl{flex:1;padding:9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:rgba(244,239,232,.55);font-size:12px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s}
-.share-ig-dl:hover{background:rgba(255,255,255,.1);color:rgba(244,239,232,.85)}
-.end-parent-note{width:100%;background:rgba(232,151,42,.07);border:1px solid rgba(232,151,42,.18);border-radius:14px;padding:14px 16px;margin-top:2px}
-.end-note-label{font-size:8.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(232,151,42,.6);margin-bottom:6px;font-family:'DM Mono',monospace}
-.end-note-text{font-size:12px;color:var(--cream);line-height:1.72;font-family:'Nunito',sans-serif}
-.end-refrain-block{font-family:'Fraunces',serif;font-size:clamp(14px,3.5vw,18px);font-style:italic;color:rgba(240,204,96,.72);line-height:1.7;max-width:300px;text-align:center;padding:0 8px}
-.end-nc-cta{width:100%;padding:15px;background:var(--amber,#E8972A);color:#1A1420;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;letter-spacing:-.01em}
-.end-nc-cta:hover{background:#F5B84C;transform:translateY(-1px)}
-.end-ghost-row{display:flex;gap:8px;width:100%}
 .ctrl-btn.dl{background:rgba(100,180,255,.07);border-color:rgba(100,180,255,.28);color:rgba(140,200,255,.9)}
 .ctrl-btn.dl:hover{background:rgba(100,180,255,.15)}
 .ctrl-btn.vc-btn{background:rgba(240,100,120,.07);border-color:rgba(240,100,120,.32);color:rgba(240,140,150,.9)}
@@ -882,8 +673,7 @@ TONE: Intelligent, funny, and emotionally honest. Not condescending. The best mo
 
 BEDTIME GUARD: No matter how sophisticated the structure, this is still a bedtime story. The emotional complexity earns its place only if it resolves completely and lands in warmth and sleep. A 9-year-old reading this at 9pm should feel satisfied, seen, and sleepy — not stimulated or unsettled.`},
 ];
-const CHAR_ICONS = {hero:"⭐",friend:"👫",sibling:"👶",parent:"🧑‍🍼",pet:"🐾",toy:"🧸"} as Record<string,string>;
-const FUN_ICONS = ["🧒","👧","👦","🧒🏽","👧🏾","👦🏻","🐶","🐱","🐰","🐻","🦁","🐸","🦊","🐧","🦄","🐲","🧸","🤖","👸","🤴","🧙","🧚","🦸","🌟","✨","💫"];
+const CHAR_ICONS = {hero:"⭐",friend:"👫",sibling:"👶",parent:"🧑‍🍼",pet:"🐾",toy:"🧸"};
 const BONDING_QUESTIONS = [
   "If you could be any animal for one day, what would you be?",
   "What's the silliest dream you can remember?",
@@ -952,9 +742,34 @@ const compressImage = (file) => new Promise((res,rej) => {
   r.readAsDataURL(file);
 });
 
-const illoUrl = (prompt,seed,w=400,h=200) => {
-  const style = "children's picture book illustration, soft watercolor, gouache, warm pastel, cozy bedtime, no text";
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(`${prompt}, ${style}`)}?width=${w}&height=${h}&nologo=true&model=turbo&seed=${seed}&nofeed=true`;
+const ILLO_STYLE = "Micha Archer style picture book illustration. Vibrant layered folk-art textures, bold patterned fabrics, rich warm earthy palette, glowing soft light, collage-like painterly depth, whimsical and heartfelt, award-winning children's book quality. Fill the full image area. No text, no borders, no watermarks.";
+
+const CHILD_GIRL = "young girl, warm brown skin, curly dark hair in soft ponytail with colorful ribbon, big expressive eyes, gentle smile, cozy patterned nightgown";
+const CHILD_BOY  = "young boy, warm brown skin, short curly dark hair, big expressive eyes, gentle smile, cozy striped pyjamas";
+
+// Model fallback chain — best quality first. If a model returns a server error
+// (500/503), the next model is tried automatically.
+const ILLO_MODELS = ["flux-pro", "flux", "turbo"];
+
+const _illoBaseUrl = (prompt, seed, w, h, model) =>
+  `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${w}&height=${h}&nologo=true&model=${model}&seed=${seed}&nofeed=true`;
+
+const illoUrl = (prompt, seed, w=480, h=220, gender="") => {
+  const child = gender === "boy" ? CHILD_BOY : CHILD_GIRL;
+  const full  = `${prompt}. Child character: ${child}. ${ILLO_STYLE}`;
+  // Return the best-model URL; fallback happens in preloadImgWithFallback below
+  return _illoBaseUrl(full, seed, w, h, ILLO_MODELS[0]);
+};
+
+// Store the resolved full prompt per URL so fallback can rebuild with next model
+const _illoPromptCache = new Map<string, {prompt:string,seed:number,w:number,h:number}>();
+
+const illoUrlTracked = (prompt, seed, w=480, h=220, gender="") => {
+  const child = gender === "boy" ? CHILD_BOY : CHILD_GIRL;
+  const full  = `${prompt}. Child character: ${child}. ${ILLO_STYLE}`;
+  const url   = _illoBaseUrl(full, seed, w, h, ILLO_MODELS[0]);
+  _illoPromptCache.set(url, {prompt:full, seed, w, h});
+  return url;
 };
 
 const extractJSON = (text) => {
@@ -979,18 +794,49 @@ const sDel = async (k) => { try { localStorage.removeItem(S_PFX+k); } catch {} }
 
 /* ── Preload cache ── */
 const _imgCache = new Map();
-const preloadImg = (url,onLoad,onErr) => {
-  if(_imgCache.has(url)){
-    const img=_imgCache.get(url);
-    if(img.complete&&img.naturalWidth>0) onLoad?.();
+const preloadImg = (url, onLoad, onErr) => {
+  // Resolve which model fallback to try
+  const meta = _illoPromptCache.get(url);
+
+  const tryModel = (modelIdx: number, currentUrl: string) => {
+    if(_imgCache.has(currentUrl)){
+      const img=_imgCache.get(currentUrl);
+      if(img.complete && img.naturalWidth>0){ onLoad?.(currentUrl); return img; }
+      const prevLoad = img.onload;
+      const prevErr  = img.onerror;
+      img.onload  = () => { prevLoad?.(); onLoad?.(currentUrl); };
+      img.onerror = () => {
+        prevErr?.();
+        // Try next model in chain
+        if(meta && modelIdx + 1 < ILLO_MODELS.length){
+          const nextUrl = _illoBaseUrl(meta.prompt, meta.seed, meta.w, meta.h, ILLO_MODELS[modelIdx+1]);
+          _illoPromptCache.set(nextUrl, meta);
+          tryModel(modelIdx+1, nextUrl);
+        } else {
+          onErr?.(currentUrl);
+        }
+      };
+      return img;
+    }
+
+    const img = new window.Image();
+    img.onload  = () => { onLoad?.(currentUrl); };
+    img.onerror = () => {
+      if(meta && modelIdx + 1 < ILLO_MODELS.length){
+        const nextUrl = _illoBaseUrl(meta.prompt, meta.seed, meta.w, meta.h, ILLO_MODELS[modelIdx+1]);
+        _illoPromptCache.set(nextUrl, meta);
+        tryModel(modelIdx+1, nextUrl);
+      } else {
+        onErr?.(currentUrl);
+      }
+    };
+    img.src = currentUrl;
+    _imgCache.set(currentUrl, img);
     return img;
-  }
-  const img = new window.Image();
-  img.onload = () => onLoad?.();
-  img.onerror = () => onErr?.();
-  img.src = url;
-  _imgCache.set(url,img);
-  return img;
+  };
+
+  const startModelIdx = meta ? 0 : 0;
+  return tryModel(startModelIdx, url);
 };
 
 
@@ -1059,18 +905,52 @@ const callClaude = async (messages, system="", maxTokens=4000) => {
 };
 
 /* ── Shared sub-components (defined outside main to avoid transpiler issues) ── */
-const Illo = ({url,loaded}) => (
-  <div className="illo-slot">
-    <div className="shimmer" style={{opacity:loaded?0:1,transition:"opacity .8s"}} />
-    {url && <img src={url} className="illo-img" style={{opacity:loaded?1:0}} alt="" />}
-    {!loaded && (
-      <div className="illo-fb">
-        <div className="illo-fb-e">✨</div>
-        <div className="illo-fb-t">Painting…</div>
-      </div>
-    )}
-  </div>
-);
+const Illo = ({url,loaded}) => {
+  const [resolvedSrc, setResolvedSrc] = React.useState(url);
+  const [selfLoaded,  setSelfLoaded]  = React.useState(false);
+
+  React.useEffect(() => {
+    if(!url) return;
+    setSelfLoaded(false);
+    setResolvedSrc(url);
+    // Check if a fallback model already resolved a different URL for this slot
+    const cached = _imgCache.get(url);
+    if(cached && cached.complete && cached.naturalWidth > 0 && cached.src !== url){
+      setResolvedSrc(cached.src);
+    }
+  }, [url]);
+
+  const show = loaded || selfLoaded;
+  return (
+    <div className="illo-slot">
+      <div className="shimmer" style={{opacity:show?0:1,transition:"opacity .8s"}} />
+      {resolvedSrc && (
+        <img
+          src={resolvedSrc}
+          className="illo-img"
+          style={{opacity:show?1:0}}
+          alt=""
+          onLoad={() => setSelfLoaded(true)}
+          onError={(e) => {
+            // If primary src fails, check if preloadImg resolved a fallback
+            const cached = _imgCache.get(url);
+            if(cached && cached.src !== resolvedSrc){
+              setResolvedSrc(cached.src);
+            } else {
+              setSelfLoaded(true); // give up gracefully — hide spinner
+            }
+          }}
+        />
+      )}
+      {!show && (
+        <div className="illo-fb">
+          <div className="illo-fb-e">✨</div>
+          <div className="illo-fb-t">Painting…</div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 
 /* ── Dream Illustration (static animated scene, used on all pages until personal illustrations are ready) ── */
@@ -1475,10 +1355,9 @@ interface SleepSeedCoreProps {
   userId?: string;
   isGuest?: boolean;
   preloadedCharacter?: any;
-  preloadedBook?: any;
   ritualSeed?: string;
   ritualMood?: string;
-  builderChoices?: any;
+  builderChoices?: import('./lib/types').BuilderChoices | null;
   onCharacterSavePrompt?: (charData: any) => void;
   onStoryReady?: (storyData: any) => void;
 }
@@ -1487,7 +1366,6 @@ export default function SleepSeed({
   userId,
   isGuest = false,
   preloadedCharacter,
-  preloadedBook,
   ritualSeed,
   ritualMood,
   builderChoices,
@@ -1541,11 +1419,6 @@ export default function SleepSeed({
   const [vcStage,        setVcStage]        = useState("idle"); // idle|recording|uploading|ready|error
   const [vcError,        setVcError]        = useState("");
   const [showVcModal,    setShowVcModal]    = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [showBuilderDrawer, setShowBuilderDrawer] = useState(false);
-  const [shareLink,      setShareLink]      = useState("");
-  const [shareCopied,    setShareCopied]    = useState(false);
-  const [shareIncludeNC, setShareIncludeNC] = useState(true);
   const [saveToast,      setSaveToast]      = useState(false);
   const [isListening,    setIsListening]    = useState(false);
   const [hasSeenOnboard, setHasSeenOnboard] = useState(false);
@@ -1566,13 +1439,6 @@ export default function SleepSeed({
   const [viewingNightCard, setViewingNightCard] = useState<any>(null); // Night Card detail view
   const [styleDna,         setStyleDna]         = useState<any>(null); // Style DNA for feedback
   const [showFeedback,     setShowFeedback]     = useState(false);     // StoryFeedback sheet visible
-  const [savedChars,       setSavedChars]       = useState<Character[]>([]); // user's saved characters
-  const [selectedCharId,   setSelectedCharId]   = useState<string|null>(null); // selected character chip
-  const [showNewCharForm,  setShowNewCharForm]  = useState(false);     // inline new character form
-  const [newCharName,      setNewCharName]      = useState("");
-  const [newCharPronouns,  setNewCharPronouns]  = useState<string>("they/them");
-  const [newCharAge,       setNewCharAge]       = useState("");
-  const [newCharDetail,    setNewCharDetail]    = useState("");
 
   const totalPagesRef = useRef(0);
   const fileRefs      = useRef({});
@@ -1585,7 +1451,6 @@ export default function SleepSeed({
   const speakTextRef     = useRef<any>(null);          // always-current speakText fn
   const ncVideoRef       = useRef<HTMLVideoElement>(null);
   const ncStreamRef      = useRef<MediaStream|null>(null);
-  const ncFileRef        = useRef<HTMLInputElement>(null);
 
   const imgReady = (url) => !!imgLoaded[strHash(url)];
 
@@ -1602,8 +1467,6 @@ export default function SleepSeed({
     sGet("memories").then(s => { if(s?.items) setMemories(s.items); });
     sGet("nightcards").then(s => { if(s?.items) setNightCards(s.items); });
     sGet("style_dna").then(s => { if(s) setStyleDna(s); });
-    // Load saved characters from v2 storage
-    if(userId) { try { setSavedChars(getCharacters(userId)); } catch(_) {} }
     sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); });
     sGet("onboarded").then(s => { if(s?.v) setHasSeenOnboard(true); });
 
@@ -1624,17 +1487,9 @@ export default function SleepSeed({
     if (c.weirdDetail) setStoryGuidance(c.weirdDetail);
   }, [preloadedCharacter]);
 
+  // Pre-populate ritual seed and mood from the ritual starter screen
   useEffect(() => {
-    if (ritualSeed) {
-      setStoryContext(ritualSeed);
-      // Skip home screen — go straight to builder
-      if (preloadedCharacter?.name) {
-        setHeroName(preloadedCharacter.name);
-        setStage("builder");
-      } else if (heroName.trim().length >= 2) {
-        setStage("builder");
-      }
-    }
+    if (ritualSeed) setStoryContext(ritualSeed);
   }, [ritualSeed]);
 
   useEffect(() => {
@@ -1647,110 +1502,61 @@ export default function SleepSeed({
     }
   }, [ritualMood]);
 
-  // Auto-generate from StoryBuilderPage choices — skips home/builder stages
-  const builderFiredRef = useRef(false);
+  // ── Auto-generate from StoryBuilderPage choices ──────────────────────────────
+  // Fires once heroName is populated (from preloadedCharacter effect) AND
+  // builderChoices are present — then calls generate() with all mapped overrides.
+  const hasAutoGenRef = useRef(false);
+
   useEffect(() => {
-    if (!builderChoices) { builderFiredRef.current = false; return; }
-    if (builderFiredRef.current) return; // prevent double-fire
-    // Wait for heroName to be populated from preloadedCharacter
-    const name = heroName.trim() || preloadedCharacter?.name || "";
-    if (!name) return;
-    builderFiredRef.current = true;
-    if (name && !heroName.trim()) setHeroName(name);
+    if (!builderChoices || !heroName.trim() || hasAutoGenRef.current) return;
+    hasAutoGenRef.current = true;
 
-    // Map vibe to storyBrief2 (feel string) and storyMood
-    const vibeToFeel: Record<string,string> = {
-      'warm-funny': 'warm and funny, with lots of laughs',
-      'calm-cosy': 'calm and cosy, drifting toward sleep',
-      'exciting': 'exciting and full of surprises',
-      'heartfelt': 'heartfelt and emotionally true',
-      'silly': 'completely silly from start to finish',
-      'mysterious': 'mysterious with a satisfying ending',
-    };
-    const vibeToMood: Record<string,string> = {
-      'warm-funny': 'silly',
-      'calm-cosy': 'calm',
-      'exciting': 'exciting',
-      'heartfelt': 'heartfelt',
-      'silly': 'silly',
-      'mysterious': '',
+    const vibeToFeel: Record<string, string> = {
+      'warm-funny':  'warm and funny, with lots of laughs',
+      'calm-cosy':   'calm and cosy, drifting toward sleep',
+      'exciting':    'exciting and full of surprises',
+      'heartfelt':   'heartfelt and emotionally true',
+      'silly':       'completely silly from start to finish',
+      'mysterious':  'mysterious with a satisfying ending',
     };
 
-    const bc = builderChoices;
-    const overrides: any = {
-      ageGroup:        bc.level || undefined,
-      storyLen:        bc.length || undefined,
-      storyBrief1:     bc.brief || undefined,
-      storyBrief2:     vibeToFeel[bc.vibe] || bc.vibe || undefined,
-      storyContext:    bc.brief || undefined,
-      storyMood:       vibeToMood[bc.vibe] || undefined,
-      storyPace:       bc.pace || undefined,
-      storyStyle:      bc.style || undefined,
-      adventure:       bc.style === 'adventure',
-      lessons:         bc.lessons?.length ? bc.lessons : undefined,
-      occasion:        bc.occasion || undefined,
-      occasionCustom:  bc.occasionCustom || undefined,
-      extraChars:      bc.chars?.length ? bc.chars.map((c: any) => ({
-        id: uid(), type: c.type || "friend", name: c.name || "", photo: null,
-        classify: "", gender: "", note: c.note || "",
-      })) : undefined,
+    const vibeToAction: Record<string, string> = {
+      'warm-funny':  'about to go on a warm and funny adventure',
+      'calm-cosy':   'about to discover something magical and cosy',
+      'exciting':    'about to go on a completely made-up adventure',
+      'heartfelt':   'on a journey that fills the heart',
+      'silly':       'on a silly quest with friends',
+      'mysterious':  'about to discover something magical and mysterious',
     };
 
-    // Go straight to generating
-    setStage("generating");
-    generate(overrides);
-  }, [builderChoices, heroName]);
+    const feel   = vibeToFeel[builderChoices.vibe]   || builderChoices.vibe;
+    const action = vibeToAction[builderChoices.vibe]  || 'going on an adventure';
 
-  // Load a preloaded book (from story library re-read)
-  useEffect(() => {
-    if (!preloadedBook) return;
-    setBook(preloadedBook);
-    setPageIdx(0);
-    setChosenPath(null);
-    setFromCache(true);
-    setStage("book");
-  }, [preloadedBook]);
+    const isRitual   = builderChoices.path === 'ritual';
+    const storyCtx   = isRitual ? (ritualSeed || '') : '';
+    const brief1     = isRitual ? '' : (builderChoices.brief.trim() || action);
+    const isAdventure = builderChoices.style === 'adventure';
 
-  // Select a saved character and populate hero fields
-  const selectCharacter = useCallback((c: Character) => {
-    setSelectedCharId(c.id);
-    setHeroName(c.name);
-    if (c.pronouns === 'she/her') setHeroGender('girl');
-    else if (c.pronouns === 'he/him') setHeroGender('boy');
-    else setHeroGender('');
-    if (c.ageDescription) setHeroClassify(c.ageDescription);
-    if (c.currentSituation) setStoryContext(c.currentSituation);
-    if (c.weirdDetail) setStoryGuidance(c.weirdDetail);
-    if (c.personalityTags?.length) setHeroTraits(c.personalityTags);
-    setHasSeenOnboard(true);
-    sSet("onboarded",{v:true});
-    setShowNewCharForm(false);
-  }, []);
-
-  // Create and save a new character from the inline form
-  const createAndSelectNewChar = useCallback(() => {
-    if (!newCharName.trim()) return;
-    const newChar: Character = {
-      id: Math.random().toString(36).slice(2),
-      userId: userId || 'guest',
-      name: newCharName.trim(),
-      type: 'human',
-      ageDescription: newCharAge.trim(),
-      pronouns: newCharPronouns as any,
-      personalityTags: [],
-      weirdDetail: newCharDetail.trim(),
-      currentSituation: '',
-      color: ['#7C3AED','#A855F7','#C084FC','#60A5FA','#34D399','#F472B6','#FBBF24'][Math.floor(Math.random()*7)],
-      emoji: ['🌟','✨','🌙','⭐','💫','🦁','🐻','🦊'][Math.floor(Math.random()*8)],
-      storyIds: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    try { saveCharToStorage(newChar); } catch(_) {}
-    setSavedChars(prev => [newChar, ...prev]);
-    selectCharacter(newChar);
-    setNewCharName(""); setNewCharAge(""); setNewCharDetail(""); setNewCharPronouns("they/them");
-  }, [newCharName, newCharAge, newCharDetail, newCharPronouns, userId, selectCharacter]);
+    generate({
+      ageGroup:       builderChoices.level    || 'age5',
+      storyLen:       builderChoices.length   || 'standard',
+      storyBrief1:    brief1,
+      storyBrief2:    feel,
+      storyContext:   storyCtx,
+      storyGuidance:  '',
+      realLifeCtx:    '',
+      lessonContext:  '',
+      storyMood:      feel,
+      storyPace:      builderChoices.pace  || 'normal',
+      storyStyle:     builderChoices.style || 'standard',
+      adventure:      isAdventure,
+      extraChars:     builderChoices.chars  || [],
+      lessons:        builderChoices.lessons || [],
+      occasion:       builderChoices.occasion || '',
+      occasionCustom: builderChoices.occasionCustom || '',
+      heroTraits:     [],
+    });
+  }, [builderChoices, heroName]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   useEffect(() => {
@@ -1959,286 +1765,312 @@ export default function SleepSeed({
     setVcError("");
   };
 
-  // ── Generate share link for grandma / anyone ───────────────────────────
-  const generateShareLink = (includeNC = true) => {
-    if (!book) return "";
-    const storyData: any = {
-      t: book.title,
-      n: book.heroName,
-      r: book.refrain || "",
-      p: (book.pages || []).map((pg: any) => ({ t: pg.text || "" })),
-      pn: book.parentNote || "",
-      v: voiceId || selectedVoiceId || "",
-      d: new Date().toISOString().split("T")[0],
-    };
-    if (includeNC && book.nightCard) {
-      storyData.nc = {
-        h: book.nightCard.headline || "",
-        q: book.nightCard.quote || "",
-        m: book.nightCard.memory_line || "",
-        e: book.nightCard.emoji || "",
-        ph: book.nightCard.photo || "",
-        ba: book.nightCard.bondingA || "",
-        bq: book.nightCard.bondingQ || "",
-        gr: book.nightCard.gratitude || "",
-        ex: book.nightCard.extra || "",
-      };
-    }
-    try {
-      const encoded = btoa(encodeURIComponent(JSON.stringify(storyData)));
-      return `${window.location.origin}?s=${encoded}`;
-    } catch {
-      return window.location.origin;
-    }
-  };
-
-  // ── Open share modal ───────────────────────────────────────────────────
+  // ── Share Story Card ──────────────────────────────────────────────────
   const shareStory = async () => {
-    if (!book) return;
-    setShareIncludeNC(!!book.nightCard);
-    const link = generateShareLink(!!book.nightCard);
-    setShareLink(link);
-    setShareCopied(false);
-    setShowShareModal(true);
-  };
-
-  // ── Copy grandma link to clipboard ────────────────────────────────────
-  const copyShareLink = async () => {
+    if(!book) return;
     try {
-      await navigator.clipboard.writeText(shareLink);
-      setShareCopied(true);
-      setTimeout(() => setShareCopied(false), 2500);
-    } catch {
-      const input = document.getElementById("share-link-input") as HTMLInputElement;
-      input?.select();
-    }
-  };
-
-  // ── Social share card (9:16 Instagram Stories format) ─────────────────
-  const shareSocialCard = async () => {
-    if (!book) return;
-    try {
-      const W = 1080; const H = 1920;
       const canvas = document.createElement("canvas");
-      canvas.width = W; canvas.height = H;
+      const SIZE = 1080;
+      canvas.width = SIZE; canvas.height = SIZE;
       const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
-      ctx.fillStyle = "#0B0B1A";
-      ctx.fillRect(0, 0, W, H);
+      // Background
+      ctx.fillStyle = "#060b18";
+      ctx.fillRect(0,0,SIZE,SIZE);
 
-      const glow = ctx.createRadialGradient(W/2, 0, 0, W/2, 0, 900);
-      glow.addColorStop(0, "rgba(232,151,42,.07)");
-      glow.addColorStop(1, "transparent");
-      ctx.fillStyle = glow;
-      ctx.fillRect(0, 0, W, H);
+      // Subtle star dots
+      ctx.fillStyle = "rgba(255,255,255,.4)";
+      const stars = [[120,80],[300,200],[700,100],[900,300],[200,700],[800,800],[500,50],[150,500],[920,600],[600,900]];
+      stars.forEach(([x,y]) => { ctx.beginPath(); ctx.arc(x,y,1.5,0,Math.PI*2); ctx.fill(); });
 
-      ctx.fillStyle = "rgba(255,255,248,.5)";
-      const starPositions = [
-        [120,200],[280,100],[580,160],[820,90],[950,280],[100,480],[750,350],
-        [400,80],[200,600],[860,500],[600,250],[300,350],[700,600],[450,430],
-        [150,750],[900,400],[500,700],[250,900],[800,750],[60,320],
-      ];
-      starPositions.forEach(([x,y]) => {
-        const r = 1 + Math.random() * 2;
-        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
-      });
+      // Gold border
+      ctx.strokeStyle = "rgba(212,160,48,.35)";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(28,28,SIZE-56,SIZE-56);
 
-      ctx.fillStyle = "rgba(232,151,42,.55)";
-      ctx.font = "600 38px 'Georgia', sans-serif";
+      // Moon
+      ctx.fillStyle = "#d4a030";
+      ctx.beginPath(); ctx.arc(SIZE/2,260,52,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#0a0f28";
+      ctx.beginPath(); ctx.arc(SIZE/2-18,250,44,0,Math.PI*2); ctx.fill();
+
+      // SleepSeed label
+      ctx.fillStyle = "rgba(212,160,48,.55)";
+      ctx.font = "500 26px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("🌙  SleepSeed", W/2, 160);
+      ctx.letterSpacing = "4px";
+      ctx.fillText("SLEEPSEED", SIZE/2, 370);
 
-      const cardX = 80; const cardY = 240;
-      const cardW = W - 160; const cardH = 780;
-      ctx.fillStyle = "#0E1428";
-      ctx.beginPath(); ctx.roundRect(cardX, cardY, cardW, cardH, 32); ctx.fill();
-      ctx.strokeStyle = "rgba(232,151,42,.2)";
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.roundRect(cardX, cardY, cardW, cardH, 32); ctx.stroke();
-
-      ctx.fillStyle = "#C87020";
-      ctx.beginPath(); ctx.arc(W/2, cardY + 200, 80, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = "#0E1428";
-      ctx.beginPath(); ctx.arc(W/2 - 28, cardY + 180, 68, 0, Math.PI*2); ctx.fill();
-
-      ctx.fillStyle = "rgba(212,160,48,.5)";
-      ctx.font = "32px serif";
-      ctx.textAlign = "center";
-      ctx.fillText("✦  ★  ✦", W/2, cardY + 330);
-
-      ctx.fillStyle = "#FAE9A8";
-      ctx.font = "bold 68px Georgia, serif";
+      // Title
+      ctx.fillStyle = "#fdf5e0";
+      ctx.font = "bold 62px Georgia, serif";
       ctx.textAlign = "center";
       const titleWords = book.title.split(" ");
-      const titleLines: string[] = [];
+      const titleLines:string[] = [];
       let line = "";
-      for (const w of titleWords) {
-        const test = line ? line + " " + w : w;
-        if (ctx.measureText(test).width > cardW - 80) { titleLines.push(line); line = w; }
+      for(const w of titleWords) {
+        const test = line ? line+" "+w : w;
+        if(ctx.measureText(test).width > SIZE-160) { titleLines.push(line); line=w; }
         else line = test;
       }
-      if (line) titleLines.push(line);
-      const titleStartY = cardY + 400;
-      titleLines.forEach((l, i) => ctx.fillText(l, W/2, titleStartY + i * 82));
+      if(line) titleLines.push(line);
+      const titleY = titleLines.length > 2 ? 470 : 490;
+      titleLines.forEach((l,i) => ctx.fillText(l, SIZE/2, titleY + i*76));
 
-      ctx.fillStyle = "rgba(212,160,48,.55)";
-      ctx.font = "500 32px 'Georgia', sans-serif";
-      ctx.textAlign = "center";
-      const afterTitle = titleStartY + titleLines.length * 82 + 36;
-      ctx.fillText(`A story for ${book.heroName}`, W/2, afterTitle);
+      // Gold rule
+      const ruleY = titleY + titleLines.length*76 + 28;
+      const grad = ctx.createLinearGradient(SIZE/2-120,0,SIZE/2+120,0);
+      grad.addColorStop(0,"rgba(212,160,48,0)");
+      grad.addColorStop(0.5,"rgba(212,160,48,.6)");
+      grad.addColorStop(1,"rgba(212,160,48,0)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(SIZE/2-120, ruleY, 240, 2);
 
-      if (book.refrain) {
-        const refrainY = cardY + cardH + 80;
-        ctx.fillStyle = "rgba(240,204,96,.22)";
-        ctx.font = "bold 80px Georgia, serif";
-        ctx.textAlign = "left";
-        ctx.fillText("\u201C", cardX, refrainY);
-
+      // Refrain / quote
+      if(book.refrain) {
         ctx.fillStyle = "rgba(240,204,96,.82)";
-        ctx.font = "italic 46px Georgia, serif";
+        ctx.font = "italic 34px Georgia, serif";
         ctx.textAlign = "center";
-        const maxW = W - 160;
-        const reWords = book.refrain.split(" ");
-        const reLines: string[] = [];
+        const refrainY = ruleY + 52;
+        const maxW = SIZE - 200;
+        const words = `"${book.refrain}"`.split(" ");
+        const rLines:string[] = [];
         let rl = "";
-        for (const w of reWords) {
-          const t = rl ? rl + " " + w : w;
-          if (ctx.measureText(t).width > maxW) { reLines.push(rl); rl = w; }
+        for(const w of words) {
+          const t = rl ? rl+" "+w : w;
+          if(ctx.measureText(t).width > maxW) { rLines.push(rl); rl=w; }
           else rl = t;
         }
-        if (rl) reLines.push(rl);
-        reLines.slice(0, 3).forEach((l, i) => ctx.fillText(l, W/2, refrainY + 60 + i * 60));
-
-        ctx.fillStyle = "rgba(240,204,96,.22)";
-        ctx.font = "bold 80px Georgia, serif";
-        ctx.textAlign = "right";
-        ctx.fillText("\u201D", W - cardX, refrainY + 60 + reLines.slice(0, 3).length * 60 + 20);
+        if(rl) rLines.push(rl);
+        rLines.slice(0,2).forEach((l,i) => ctx.fillText(l, SIZE/2, refrainY + i*46));
       }
 
-      const footerY = H - 260;
-      ctx.fillStyle = "rgba(232,151,42,.12)";
-      ctx.fillRect(0, footerY - 20, W, 200);
-      ctx.fillStyle = "#F4EFE8";
-      ctx.font = "600 38px 'Georgia', sans-serif";
+      // Footer
+      ctx.fillStyle = "rgba(212,160,48,.35)";
+      ctx.font = "500 22px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("Create your child's story tonight", W/2, footerY + 50);
-      ctx.fillStyle = "rgba(232,151,42,.75)";
-      ctx.font = "500 32px sans-serif";
-      ctx.fillText("sleepseed.app  \u00B7  Free to start", W/2, footerY + 105);
+      ctx.fillText(`A story for ${book.heroName}  ·  sleepseed.app`, SIZE/2, SIZE-52);
 
+      // Export
       canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        const file = new File([blob], `${book.title.replace(/[^a-z0-9]/gi, "_")}_story.png`, { type: "image/png" });
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file], title: book.title, text: `${book.heroName}'s bedtime story — made with SleepSeed` });
+        if(!blob) return;
+        const file = new File([blob], `${book.title.replace(/[^a-z0-9]/gi,"_")}_card.png`, {type:"image/png"});
+        if(navigator.canShare?.({files:[file]})) {
+          await navigator.share({files:[file], title:book.title, text:`A bedtime story for ${book.heroName} — made with SleepSeed`});
         } else {
           const url = URL.createObjectURL(blob);
-          const a = document.createElement("a"); a.href = url; a.download = file.name; a.click();
-          setTimeout(() => URL.revokeObjectURL(url), 2000);
+          const a = document.createElement("a"); a.href=url; a.download=file.name; a.click();
+          setTimeout(()=>URL.revokeObjectURL(url),2000);
         }
-      }, "image/png");
-    } catch (err) {
-      console.error("Social card error:", err);
+      },"image/png");
+    } catch(err) {
+      console.error("Share error:",err);
     }
   };
 
   // ── PDF Download ──────────────────────────────────────────────────────
   const downloadStory = async () => {
-    if (!book) return;
+    if(!book) return;
     try {
       const { jsPDF } = await import("jspdf");
-      const W = 148, H = 210;
-      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: [W, H] });
-      const NAVY: [number,number,number] = [11,15,36];
-      const GOLD: [number,number,number] = [212,160,48];
-      const AMBER: [number,number,number] = [232,151,42];
-      const WHITE: [number,number,number] = [255,255,255];
-      const CREAM: [number,number,number] = [254,248,232];
-      const PARCH: [number,number,number] = [253,246,232];
-      const INK: [number,number,number] = [26,16,0];
-      const INK2: [number,number,number] = [90,58,18];
-      const INK3: [number,number,number] = [160,137,106];
-      const RULE: [number,number,number] = [220,205,180];
-      const REFRAIN: [number,number,number] = [107,58,16];
-      const MX = 16, MY = 18, TW = W - MX * 2;
+      // A4 landscape: 297 × 210 mm
+      const doc = new jsPDF({ orientation:"landscape", unit:"mm", format:"a4" });
+      const W = 297, H = 210;
 
-      const hRule = (y: number) => { doc.setDrawColor(RULE[0],RULE[1],RULE[2]); doc.setLineWidth(0.25); doc.line(MX,y,W-MX,y); };
-      const drawMoon = (cx: number, cy: number, r: number) => { doc.setFillColor(...GOLD); doc.circle(cx,cy,r,"F"); doc.setFillColor(...NAVY); doc.circle(cx-r*0.38,cy-r*0.1,r*0.82,"F"); };
-      const drawStars = (count: number, seed: number) => {
-        doc.setFillColor(255,248,232);
-        const pos = [[0.15,0.08],[0.72,0.12],[0.40,0.06],[0.58,0.10],[0.85,0.07],[0.22,0.18],[0.91,0.20],[0.08,0.28],[0.65,0.22],[0.33,0.30],[0.78,0.15],[0.50,0.25]];
-        for (let i=0;i<Math.min(count,pos.length);i++) { const [px,py]=pos[(i+seed)%pos.length]; doc.circle(px*W,py*H,0.35+(i%3)*0.25,"F"); }
+      // Colours
+      const NAVY:  [number,number,number] = [13,  21,  53];
+      const GOLD:  [number,number,number] = [212, 160, 48];
+      const WHITE: [number,number,number] = [255, 255, 255];
+      const CREAM_BG:[number,number,number] = [253, 248, 242];
+      const INK:   [number,number,number] = [26,  20,  16];
+      const RULE:  [number,number,number] = [228, 220, 216];
+      const PG_NUM:[number,number,number] = [184, 168, 152];
+      const URL_C: [number,number,number] = [200, 189, 176];
+      const REFRAIN:[number,number,number]= [74,  56,  128];
+      const FOR_LBL:[number,number,number]= [176, 160, 144];
+
+      // Moon crescent helper (drawn with two circles)
+      const drawMoon = (cx:number, cy:number, r:number) => {
+        doc.setFillColor(...GOLD);
+        doc.circle(cx, cy, r, "F");
+        doc.setFillColor(...NAVY);
+        doc.circle(cx - r*0.35, cy - r*0.1, r*0.82, "F");
       };
 
-      // COVER
-      doc.setFillColor(...NAVY); doc.rect(0,0,W,H,"F"); drawStars(10,0); drawMoon(W/2,62,11);
-      doc.setFont("times","normal"); doc.setFontSize(9); doc.setTextColor(...GOLD); doc.text("✦  ★  ✦",W/2,82,{align:"center"});
-      doc.setFont("times","bold"); doc.setFontSize(11); doc.setTextColor(212,160,48); doc.text("SleepSeed",W/2,92,{align:"center"});
-      doc.setDrawColor(...GOLD); doc.setLineWidth(0.3); doc.line(W/2-24,96,W/2+24,96);
-      doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(...INK3); doc.text("A BEDTIME STORY FOR",W/2,106,{align:"center"});
-      doc.setFont("times","bold"); doc.setFontSize(36); doc.setTextColor(...WHITE); doc.text(book.heroName,W/2,124,{align:"center"});
-      doc.setFont("times","italic"); doc.setFontSize(13); doc.setTextColor(...GOLD);
-      const titleLines = doc.splitTextToSize(book.title,TW); doc.text(titleLines,W/2,138,{align:"center"});
-      const ruleY = 138+titleLines.length*7+4;
-      doc.setDrawColor(...GOLD); doc.setLineWidth(0.2); doc.line(W/2-20,ruleY,W/2+20,ruleY);
-      const storyDate = new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
-      doc.setFont("helvetica","normal"); doc.setFontSize(6.5); doc.setTextColor(...INK3); doc.text(storyDate,W/2,ruleY+9,{align:"center"});
-      doc.setFontSize(6); doc.setTextColor(60,70,100); doc.text("sleepseed.app",W/2,H-10,{align:"center"});
+      // Thin rule line helper
+      const rule = (x:number, y:number, w:number) => {
+        doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
+        doc.line(x, y, x+w, y);
+      };
 
-      // STORY PAGES
-      const allPages = book.isAdventure ? [...(book.setup_pages||[]),...(book.path_a||[]),...(book.path_b||[])] : (book.pages||[]);
-      allPages.forEach((pg: any, i: number) => {
-        doc.addPage(); const isEven = i%2===1;
-        doc.setFillColor(...(isEven?PARCH:CREAM)); doc.rect(0,0,W,H,"F");
-        doc.setDrawColor(...AMBER); doc.setLineWidth(0.4); doc.line(0,0,W,0);
-        doc.setFont("helvetica","normal"); doc.setFontSize(6.5); doc.setTextColor(...INK3); doc.text(`Page ${i+1}`,MX,MY-4);
-        doc.setFont("times","italic"); doc.setFontSize(13); doc.setTextColor(...INK);
-        const lines = doc.splitTextToSize(pg.text||"",TW); doc.text(lines,MX,MY+6);
-        if (book.refrain && i%2===1) { const refrainY=H-26; hRule(refrainY-4); doc.setFont("times","italic"); doc.setFontSize(9); doc.setTextColor(...REFRAIN); const rL=doc.splitTextToSize(`"${book.refrain}"`,TW); doc.text(rL,W/2,refrainY+3,{align:"center"}); }
-        hRule(H-MY+2); doc.setFont("times","italic"); doc.setFontSize(6.5); doc.setTextColor(...INK3); doc.text(String(i+1),MX,H-MY+7);
-        doc.setFont("helvetica","normal"); doc.setFontSize(6); doc.text("sleepseed.app",W-MX,H-MY+7,{align:"right"});
-        doc.setFont("times","normal"); doc.setFontSize(8); doc.setTextColor(...GOLD); doc.text("✦",W/2,H-MY+7,{align:"center"});
-      });
+      // ── SHEET 1: COVER ────────────────────────────────────────────────
+      // Left brand panel
+      const LP = 108; // left panel width mm
+      doc.setFillColor(...NAVY);
+      doc.rect(0, 0, LP, H, "F");
 
-      // NIGHT CARD PAGE
-      const nc = book.nightCard;
-      if (nc) {
-        doc.addPage(); const photoH=Math.round(H*0.42);
-        doc.setFillColor(18,21,42); doc.rect(0,0,W,photoH,"F"); drawStars(8,3);
-        const ncDate = nc.date||storyDate;
-        doc.setFont("helvetica","normal"); doc.setFontSize(5.5); doc.setTextColor(200,195,220);
-        doc.setFillColor(0,0,0); doc.rect(MX,9,60,5,"F"); doc.text(`🌙  ${ncDate}`,MX+3,13);
-        if (nc.photo) { const imgW=72,imgH=64,imgX=(W-imgW)/2,imgY=(photoH-imgH)/2; try { doc.addImage(nc.photo,"JPEG",imgX,imgY,imgW,imgH,undefined,"FAST"); doc.setDrawColor(...AMBER); doc.setLineWidth(0.3); doc.rect(imgX,imgY,imgW,imgH); } catch(_) { drawMoon(W/2,photoH/2,12); } }
-        else { drawMoon(W/2,photoH/2,12); doc.setFont("times","italic"); doc.setFontSize(8); doc.setTextColor(...GOLD); doc.text(nc.heroName||book.heroName,W/2,photoH/2+20,{align:"center"}); }
-        doc.setDrawColor(...AMBER); doc.setLineWidth(0.5); doc.line(0,0,W,0);
-        doc.setDrawColor(...AMBER); doc.setLineWidth(0.4); doc.line(0,photoH,W,photoH);
-        doc.setFillColor(...PARCH); doc.rect(0,photoH,W,H-photoH,"F");
-        let y=photoH+12;
-        doc.setFont("times","bold"); doc.setFontSize(18); doc.setTextColor(...INK); doc.text(nc.heroName||book.heroName,MX,y);
-        doc.setFont("helvetica","normal"); doc.setFontSize(6.5); doc.setTextColor(...INK3); doc.text(ncDate,W-MX,y,{align:"right"});
-        y+=7;
-        if (nc.memory_line) { doc.setFillColor(...AMBER); doc.rect(MX,y,1.5,16,"F"); doc.setFont("times","italic"); doc.setFontSize(9); doc.setTextColor(...INK2); const pL=doc.splitTextToSize(`"${nc.memory_line}"`,TW-6); doc.text(pL,MX+5,y+5); y+=Math.max(16,pL.length*5)+5; }
-        const chips: {q:string;a:string;bg:[number,number,number];bdr:[number,number,number];tc:[number,number,number]}[] = [];
-        if (nc.bondingQ&&nc.bondingA) chips.push({q:nc.bondingQ,a:nc.bondingA,bg:[255,248,230],bdr:[220,190,130],tc:[90,55,10]});
-        if (nc.gratitude) chips.push({q:"Best three seconds",a:nc.gratitude,bg:[230,235,255],bdr:[160,170,220],tc:[40,50,120]});
-        if (nc.extra) chips.push({q:"Tonight I want to remember",a:nc.extra,bg:[228,248,238],bdr:[140,200,170],tc:[20,80,50]});
-        chips.forEach(chip => { if(y>H-22) return; const chipH=14; doc.setFillColor(...chip.bg); doc.setDrawColor(...chip.bdr); doc.setLineWidth(0.2); doc.rect(MX,y,TW,chipH,"FD"); doc.setFont("helvetica","bold"); doc.setFontSize(5.5); doc.setTextColor(...chip.tc); doc.text(chip.q.toUpperCase(),MX+4,y+4.5); doc.setFont("times","italic"); doc.setFontSize(8.5); const aL=doc.splitTextToSize(chip.a,TW-8); doc.text(aL[0]||chip.a,MX+4,y+10); y+=chipH+3; });
-        hRule(H-12); doc.setFont("helvetica","normal"); doc.setFontSize(6); doc.setTextColor(...INK3); doc.text("🌙  SleepSeed Night Card",MX,H-7); doc.text(book.title,W-MX,H-7,{align:"right"});
+      // Moon centred in left panel, upper third
+      drawMoon(LP/2, 68, 8);
+
+      // SleepSeed wordmark
+      doc.setFont("times", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(...WHITE);
+      doc.text("SleepSeed", LP/2, 85, { align:"center" });
+
+      // Tagline
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(212, 160, 48);
+      doc.text("BEDTIME STORIES", LP/2, 93, { align:"center" });
+
+      // URL at bottom of brand panel
+      doc.setFontSize(6.5);
+      doc.setTextColor(255, 255, 255, 0.18 as any);
+      doc.setTextColor(100, 100, 130);
+      doc.text("sleepseed.app", LP/2, H-12, { align:"center" });
+
+      // Right title panel
+      doc.setFillColor(...WHITE);
+      doc.rect(LP, 0, W-LP, H, "F");
+
+      const RX = LP + 24; // text left margin in right panel
+      const RW = W - LP - 48; // text width
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...FOR_LBL);
+      doc.text("A BEDTIME STORY FOR", RX, 62);
+
+      doc.setFont("times", "bold");
+      doc.setFontSize(34);
+      doc.setTextColor(...INK);
+      doc.text(book.heroName, RX, 80);
+
+      doc.setFont("times", "normal");
+      doc.setFontSize(15);
+      doc.setTextColor(...INK);
+      const titleLines = doc.splitTextToSize(book.title, RW);
+      doc.text(titleLines, RX, 96);
+
+      rule(RX, 96 + titleLines.length*7 + 4, RW);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...FOR_LBL);
+      doc.text("Written just for tonight", RX, 96 + titleLines.length*7 + 12);
+      doc.text("sleepseed.app", RX, 96 + titleLines.length*7 + 19);
+
+      // ── STORY PAGES: 2 per sheet ──────────────────────────────────────
+      const allPages = book.isAdventure
+        ? [...(book.setup_pages||[]), ...(book.path_a||[]), ...(book.path_b||[])]
+        : (book.pages||[]);
+
+      const PW = W / 2; // each panel = 148.5mm
+      const PAD_X = 18;  // horizontal padding inside each panel
+      const PAD_TOP = 20;
+      const PAD_BOT = 18;
+      const TEXT_W = PW - PAD_X*2;
+      const TEXT_H = H - PAD_TOP - PAD_BOT - 14; // reserve footer
+
+      const drawStoryPage = (
+        pgIndex: number,    // 0-based index in allPages
+        side: "left"|"right"
+      ) => {
+        const pg = allPages[pgIndex];
+        if(!pg) return;
+        const X0 = side === "left" ? 0 : PW;
+        const isEven = pgIndex % 2 === 1; // alternate tint
+        const bgColor = isEven ? CREAM_BG : WHITE;
+
+        doc.setFillColor(...bgColor);
+        doc.rect(X0, 0, PW, H, "F");
+
+        // Divider between panels (only draw on left side to avoid double)
+        if(side === "left") {
+          doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
+          doc.line(PW, 8, PW, H-8);
+        }
+
+        // Page text
+        doc.setFont("times", "normal");
+        doc.setFontSize(11);
+        doc.setTextColor(...INK);
+        const lines = doc.splitTextToSize(pg.text||"", TEXT_W);
+        doc.text(lines, X0+PAD_X, PAD_TOP);
+
+        // Refrain — show on every even-index page (right-side feel)
+        const hasRefrain = book.refrain && pgIndex % 2 === 1;
+        if(hasRefrain) {
+          const refrainY = H - PAD_BOT - 14;
+          rule(X0+PAD_X, refrainY - 3, TEXT_W);
+          doc.setFont("times", "italic");
+          doc.setFontSize(9.5);
+          doc.setTextColor(...REFRAIN);
+          const rLines = doc.splitTextToSize(`"${book.refrain}"`, TEXT_W);
+          doc.text(rLines, X0+PAD_X, refrainY + 4);
+        }
+
+        // Footer rule
+        rule(X0+PAD_X, H - PAD_BOT + 1, TEXT_W);
+
+        // Page number
+        doc.setFont("times", "italic");
+        doc.setFontSize(7);
+        doc.setTextColor(...PG_NUM);
+        doc.text(String(pgIndex+1), X0+PAD_X, H - PAD_BOT + 7);
+
+        // URL
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6);
+        doc.setTextColor(...URL_C);
+        doc.text("sleepseed.app", X0+PW-PAD_X, H - PAD_BOT + 7, { align:"right" });
+      };
+
+      // Pair pages onto sheets
+      for(let i=0; i<allPages.length; i+=2) {
+        doc.addPage();
+        drawStoryPage(i, "left");
+        drawStoryPage(i+1, "right");
       }
 
-      // END PAGE
-      doc.addPage(); doc.setFillColor(...NAVY); doc.rect(0,0,W,H,"F"); drawStars(9,5); drawMoon(W/2,52,10);
-      doc.setFont("times","bold"); doc.setFontSize(32); doc.setTextColor(...WHITE); doc.text("The End.",W/2,78,{align:"center"});
-      doc.setDrawColor(...GOLD); doc.setLineWidth(0.3); doc.line(W/2-22,83,W/2+22,83);
-      doc.setFont("times","italic"); doc.setFontSize(10); doc.setTextColor(...INK3); doc.text(`Sweet dreams, ${book.heroName}.`,W/2,93,{align:"center"}); doc.text("Tomorrow night, another adventure awaits.",W/2,101,{align:"center"});
-      if (book.refrain) { doc.setFont("times","italic"); doc.setFontSize(9); doc.setTextColor(...GOLD); const eRL=doc.splitTextToSize(`"${book.refrain}"`,TW-16); doc.text(eRL,W/2,116,{align:"center"}); }
-      const mktY=H-60; doc.setFillColor(20,28,58); doc.setDrawColor(...AMBER); doc.setLineWidth(0.3); doc.rect(MX,mktY,TW,48,"FD");
-      doc.setFont("times","bold"); doc.setFontSize(10); doc.setTextColor(...GOLD); doc.text("Create your own story tonight.",W/2,mktY+10,{align:"center"});
-      doc.setFont("times","italic"); doc.setFontSize(8.5); doc.setTextColor(200,195,220); const mktL=doc.splitTextToSize("Personalised bedtime stories starring your child — written in 60 seconds. Every night a new one. Then a Night Card to keep forever.",TW-10); doc.text(mktL,W/2,mktY+18,{align:"center"});
-      doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(...GOLD); doc.text("sleepseed.app  ·  Free to start",W/2,mktY+38,{align:"center"});
+      // ── FINAL SHEET: The End ──────────────────────────────────────────
+      doc.addPage();
+      // Left: brand panel (matching cover)
+      doc.setFillColor(...NAVY);
+      doc.rect(0, 0, LP, H, "F");
+      drawMoon(LP/2, 68, 8);
+      doc.setFont("times", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(...WHITE);
+      doc.text("SleepSeed", LP/2, 85, { align:"center" });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(...GOLD);
+      doc.text("BEDTIME STORIES", LP/2, 93, { align:"center" });
+      doc.setFontSize(6.5);
+      doc.setTextColor(100, 100, 130);
+      doc.text("sleepseed.app", LP/2, H-12, { align:"center" });
 
-      doc.save(`${book.title.replace(/[^a-z0-9]/gi,"_").toLowerCase()}_sleepseed.pdf`);
-    } catch (err) { console.error("PDF error:",err); alert("Could not generate PDF — please try again."); }
+      // Right: The End
+      doc.setFillColor(...WHITE);
+      doc.rect(LP, 0, W-LP, H, "F");
+      doc.setFont("times", "bold");
+      doc.setFontSize(28);
+      doc.setTextColor(...INK);
+      doc.text("The End.", RX, H/2 - 8);
+      rule(RX, H/2 - 2, RW);
+      doc.setFont("times", "italic");
+      doc.setFontSize(10);
+      doc.setTextColor(...FOR_LBL);
+      doc.text(`Sweet dreams, ${book.heroName}.`, RX, H/2 + 7);
+      doc.text("Tomorrow night, another adventure awaits.", RX, H/2 + 15);
+
+      doc.save(`${book.title.replace(/[^a-z0-9]/gi,"_").toLowerCase()}.pdf`);
+    } catch(err) {
+      console.error("PDF error:", err);
+      alert("Could not generate PDF — please try again.");
+    }
   };
 
   const addSparkle = useCallback((e) => {
@@ -2306,30 +2138,14 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
 
   const saveMemory = useCallback(async (bookData) => {
     const occ = occasionCustom || occasion;
-    // Collect all character IDs: preloaded hero + extra chars matched to saved chars
-    const allCharIds: string[] = [];
-    if (preloadedCharacter?.id) allCharIds.push(preloadedCharacter.id);
-    if (selectedCharId) { if (!allCharIds.includes(selectedCharId)) allCharIds.push(selectedCharId); }
-    // Match extra chars by name to saved chars
-    if (userId) {
-      try {
-        const raw = localStorage.getItem(`ss2_chars_${userId}`);
-        const saved = raw ? JSON.parse(raw) : [];
-        extraChars.forEach(ec => {
-          const match = saved.find((sc: any) => sc.name === ec.name);
-          if (match && !allCharIds.includes(match.id)) allCharIds.push(match.id);
-        });
-      } catch(_) {}
-    }
     const entry = {id:uid(),title:bookData.title,heroName:bookData.heroName,
       date:new Date().toISOString().split("T")[0],occasion:occ,bookData,
-      characterIds: allCharIds,
+      characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
       refrain: bookData.refrain || ""};
     const next = [entry,...memories];
     setMemories(next);
     await sSet("memories",{items:next});
     // Also mirror to v2 user-scoped storage so UserDashboard can read it
-    console.log("[SleepSeed] saveMemory userId:", userId, "entry.title:", entry.title);
     if (userId) {
       try {
         const v2Key = `ss2_stories_${userId}`;
@@ -2341,13 +2157,16 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
           occasion: occ, bookData
         };
         localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
-        console.log("[SleepSeed] Saved to localStorage key:", v2Key, "total:", existing.length + 1);
-        try { await saveStoryToSupabase(v2Entry); console.log("[SleepSeed] Saved to Supabase"); } catch(e) { console.error("[SleepSeed] Supabase save failed:", e); }
-      } catch(e) { console.error("[SleepSeed] localStorage save failed:", e); }
-    } else {
-      console.warn("[SleepSeed] No userId — story only saved to ss9 memories");
+        // ── Save to Supabase so dashboard reads it ──
+        await dbSaveStory({
+          id: entry.id, userId, title: entry.title,
+          heroName: entry.heroName, characterIds: entry.characterIds,
+          refrain: entry.refrain, date: entry.date,
+          occasion: occ, bookData
+        });
+      } catch(e) { console.error('SleepSeedCore dbSaveStory:', e); }
     }
-  },[memories,occasion,occasionCustom,userId,preloadedCharacter,selectedCharId,extraChars]);
+  },[memories,occasion,occasionCustom,userId,preloadedCharacter]);
 
   const deleteMemory = useCallback(async (id) => {
     const next = memories.filter(m => m.id!==id);
@@ -2363,40 +2182,46 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     // Mirror to v2 user-scoped storage
     if (userId) {
       try {
-        // Link to the most recent story
-        const recentStories = JSON.parse(localStorage.getItem(`ss2_stories_${userId}`) || "[]");
-        const latestStory = recentStories[0];
-
         const v2Key = `ss2_nightcards_${userId}`;
         const existing = JSON.parse(localStorage.getItem(v2Key) || "[]");
-        const allCharIds: string[] = [];
-        if (preloadedCharacter?.id) allCharIds.push(preloadedCharacter.id);
-        if (selectedCharId && !allCharIds.includes(selectedCharId)) allCharIds.push(selectedCharId);
-
         const v2Entry = {
           id: entry.id, userId,
-          heroName: entry.heroName || cardData.heroName || book?.heroName || "",
-          storyId: latestStory?.id || "",
-          storyTitle: entry.storyTitle || cardData.storyTitle || book?.title || "",
-          characterIds: allCharIds,
-          headline: entry.headline || cardData.headline || "",
-          quote: entry.quote || cardData.quote || "",
-          memory_line: entry.memory_line || cardData.memory_line || "",
-          bondingQuestion: entry.bondingQ || entry.bondingQuestion || cardData.bondingQ || "",
-          bondingAnswer: entry.bondingA || entry.bondingAnswer || cardData.bondingA || "",
-          gratitude: entry.gratitude || cardData.gratitude || "",
-          extra: entry.extra || cardData.extra || "",
-          photo: entry.photo || cardData.photo || null,
-          emoji: entry.emoji || cardData.emoji || "🌙",
+          heroName: entry.heroName || cardData.heroName || "",
+          storyTitle: entry.storyTitle || "",
+          characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
+          headline: entry.headline || "",
+          quote: entry.quote || cardData.bondingA || "",
+          memory_line: entry.memory_line || "",
+          bondingQuestion: entry.bondingQ || "",
+          bondingAnswer: entry.bondingA || "",
+          gratitude: entry.gratitudeA || "",
+          extra: entry.extraA || "",
+          photo: entry.photo || null,
+          emoji: entry.emoji || "🌙",
           date: entry.date
         };
         localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
-        console.log("[SleepSeed] Night Card saved to localStorage, charIds:", allCharIds);
-        try { await saveNightCardToSupabase(v2Entry); } catch(_) {}
-      } catch(e) { console.error("[SleepSeed] Night Card save failed:", e); }
+        // ── Save to Supabase so dashboard reads it ──
+        await dbSaveNightCard({
+          id: entry.id, userId,
+          heroName: entry.heroName || cardData.heroName || "",
+          storyTitle: entry.storyTitle || entry.storyTitle || "",
+          characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
+          headline: entry.headline || "",
+          quote: entry.quote || cardData.bondingA || "",
+          memory_line: entry.memory_line || undefined,
+          bondingQuestion: entry.bondingQ || undefined,
+          bondingAnswer: entry.bondingA || undefined,
+          gratitude: entry.gratitudeA || undefined,
+          extra: entry.extraA || undefined,
+          photo: entry.photo || undefined,
+          emoji: entry.emoji || "🌙",
+          date: entry.date,
+        });
+      } catch(e) { console.error('SleepSeedCore dbSaveNightCard:', e); }
     }
     return entry;
-  },[nightCards,userId,preloadedCharacter,selectedCharId,book]);
+  },[nightCards,userId,preloadedCharacter]);
 
   const deleteNightCard = useCallback(async (id) => {
     const next = nightCards.filter(c => c.id!==id);
@@ -2443,10 +2268,10 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
         const allUrls = [cached.coverUrl,...pages.map(p=>p.imgUrl)];
         const dots = mk(allUrls.length,"p");
         setGen(g => ({...g,dots:[...dots]}));
-        allUrls.forEach((url,i) => preloadImg(url,
+        allUrls.forEach((url,i) => setTimeout(() => preloadImg(url,
           () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:true})); },
-          () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); }
-        ));
+          () => { dots[i]="e"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:"e"})); }
+        ), i * 800));
         setBook(cached); setPageIdx(0); setFromCache(true);
         await new Promise(r => setTimeout(r,180));
         setStage("book");
@@ -2621,11 +2446,11 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
 
       // ── JSON output schema (app needs structured pages) ─────────────────
       const pgSchema = (n) => Array.from({length:n},()=>(
-        '{"text":"[page text]","illustration_prompt":"[warm playful scene under 20 words]"}'
+        '{"text":"[page text]","illustration_prompt":"[15-20 words: vivid scene, setting and action, no character names, Micha Archer folk-art paintable]"}'
       )).join(",");
 
-      const simpleSchema = `{"title":"3-6 word title","cover_prompt":"wide warm magical scene, all characters visible","pages":[${pgSchema(totalN)}],"refrain":"4-8 word refrain from the story"}`;
-      const advSchema = `{"title":"3-6 word title","cover_prompt":"wide warm magical scene, all characters visible","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"exciting choice question for ${name}","option_a_label":"4-7 words","option_b_label":"4-7 words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}],"refrain":"4-8 word refrain from the story"}`;
+      const simpleSchema = `{"title":"3-6 word title","cover_prompt":"[15-20 words: wide magical bedtime scene establishing the story world, cozy glowing folk-art atmosphere]","pages":[${pgSchema(totalN)}],"refrain":"4-8 word refrain from the story"}`;
+      const advSchema = `{"title":"3-6 word title","cover_prompt":"[15-20 words: wide magical bedtime scene establishing the story world, cozy glowing folk-art atmosphere]","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"exciting choice question for ${name}","option_a_label":"4-7 words","option_b_label":"4-7 words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}],"refrain":"4-8 word refrain from the story"}`;
 
       // ── Assemble final prompt with characters + age + JSON output ───────
       const storyPrompt = `${promptUser}
@@ -2661,13 +2486,14 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
       setGen(g => ({...g,stepIdx:2,progress:65,label:"Painting the illustrations…"}));
 
-      const coverUrl = illoUrl(`${story.cover_prompt}, characters: ${charVisual}`,seed,520,220);
+      const g = heroGender || "girl";
+      const coverUrl = illoUrlTracked(story.cover_prompt, seed, 640, 280, g);
       let bookData, allUrls;
 
       if(resolvedAdv && story.setup_pages){
-        const sU = story.setup_pages.map((p,i) => illoUrl(`${p.illustration_prompt}, ${charVisual}`,seed+i+1,400,190));
-        const aU = story.path_a.map((p,i) => illoUrl(`${p.illustration_prompt}, ${charVisual}`,seed+100+i,400,190));
-        const bU = story.path_b.map((p,i) => illoUrl(`${p.illustration_prompt}, ${charVisual}`,seed+200+i,400,190));
+        const sU = story.setup_pages.map((p,i) => illoUrlTracked(p.illustration_prompt, seed+i+1, 480, 220, g));
+        const aU = story.path_a.map((p,i) => illoUrlTracked(p.illustration_prompt, seed+100+i, 480, 220, g));
+        const bU = story.path_b.map((p,i) => illoUrlTracked(p.illustration_prompt, seed+200+i, 480, 220, g));
         allUrls = [coverUrl,...sU,...aU,...bU];
         bookData = {
           title:story.title,heroName:name,coverUrl,allChars,isAdventure:true,
@@ -2678,7 +2504,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
           path_b:story.path_b.map((p,i) => ({text:p.text,imgUrl:bU[i]})),
         };
       } else {
-        const pU = story.pages.map((p,i) => illoUrl(`${p.illustration_prompt}, ${charVisual}`,seed+i+1,400,190));
+        const pU = story.pages.map((p,i) => illoUrlTracked(p.illustration_prompt, seed+i+1, 480, 220, g));
         allUrls = [coverUrl,...pU];
         bookData = {
           title:story.title,heroName:name,coverUrl,allChars,
@@ -2689,11 +2515,16 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
       const dots = mk(allUrls.length,"p");
       setGen(g => ({...g,progress:80,label:"Story ready! Illustrations loading…",dots:[...dots]}));
+      // Stagger requests by 800ms each — flux-pro on the free tier rate-limits
+      // simultaneous requests, causing silent failures. Sequential loading means
+      // images appear one by one rather than all failing at once.
       allUrls.forEach((url,i) => {
-        preloadImg(url,
-          () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:true})); },
-          () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); }
-        );
+        setTimeout(() => {
+          preloadImg(url,
+            (_resolvedUrl) => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:true})); },
+            (_resolvedUrl) => { dots[i]="e"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:"e"})); }
+          );
+        }, i * 800);
       });
 
       // ── Generate parent note ──────────────────────────────────────────
@@ -2715,15 +2546,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       sSet(bKey,bookData).catch(()=>{});
 
       // ── Auto-save story to library ────────────────────────────────────
-      try {
-        await saveMemory(bookData);
-        console.log("[SleepSeed] Story saved to library");
-        // Verify it was actually saved
-        if (userId) {
-          const verify = JSON.parse(localStorage.getItem(`ss2_stories_${userId}`) || "[]");
-          console.log("[SleepSeed] Verification: ss2_stories has", verify.length, "stories. Latest:", verify[0]?.title);
-        }
-      } catch(e) { console.error("[SleepSeed] saveMemory failed:", e); }
+      try { await saveMemory(bookData); } catch(_) {}
 
     } catch(e) {
       console.error("SleepSeed error:",e);
@@ -2783,7 +2606,10 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       <div className="pinset" />
       <div className="story-lay">
         <div className="story-illo">
-          <DreamIllo />
+          {pg?.imgUrl
+            ? <Illo url={pg.imgUrl} loaded={imgReady(pg.imgUrl)} />
+            : <DreamIllo />
+          }
         </div>
         <div className="story-txt-col">
           <div className="s-pgnum">Page {pgNum}</div>
@@ -2807,7 +2633,10 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
         <div className="pinset" style={{borderColor:"rgba(212,160,48,.15)"}} />
         <div className="cover-lay">
           <div className="cover-art">
-            <DreamIllo />
+            {book.coverUrl
+              ? <Illo url={book.coverUrl} loaded={imgReady(book.coverUrl)} />
+              : <DreamIllo />
+            }
           </div>
           <div className="cover-bot">
             <div className="c-stars">✦ ★ ✦</div>
@@ -2891,20 +2720,83 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
     return (
       <div className="bpage end-bg" style={{overflowY:"auto"}}>
         <div className="pinset" />
-        <div className="end-lay" style={{gap:12,paddingTop:18,paddingBottom:18}}>
+        <div className="end-lay" style={{gap:14,paddingTop:20,paddingBottom:20}}>
           <div className="end-moon">🌙</div>
           <div className="end-title">The End</div>
-          {book.refrain && (<div className="end-refrain-block">"{book.refrain}"</div>)}
+          <div className="end-msg">
+            Sweet dreams, {book.heroName}.<br />
+            Tomorrow night, another adventure awaits…
+          </div>
+
           {book.parentNote && (
-            <div className="end-parent-note">
-              <div className="end-note-label">A note for you 👋</div>
-              <div className="end-note-text">{book.parentNote}</div>
+            <div style={{width:"100%",background:"rgba(212,160,48,.08)",border:"1px solid rgba(212,160,48,.2)",
+              borderRadius:14,padding:"12px 16px",marginTop:4}}>
+              <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
+                color:"rgba(212,160,48,.7)",marginBottom:6}}>A note for you 👋</div>
+              <div style={{fontSize:12,color:"var(--cream)",lineHeight:1.7,fontFamily:"'Nunito',sans-serif"}}>
+                {book.parentNote}
+              </div>
             </div>
           )}
-          {!book.nightCard ? (
-            <button className="end-nc-cta"
+
+          {book.nightCard ? (
+            /* Show existing Night Card inline */
+            <div style={{width:"100%",marginTop:8,background:"rgba(212,160,48,.06)",
+              border:"1px solid rgba(212,160,48,.18)",borderRadius:16,padding:"16px",textAlign:"center"}}>
+              <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
+                color:"rgba(212,160,48,.55)",marginBottom:8}}>Tonight's Night Card</div>
+              {book.nightCard.photo && (
+                <div style={{width:100,margin:"0 auto 10px",borderRadius:4,overflow:"hidden",
+                  background:"#faf8f2",padding:"4px 4px 8px",boxShadow:"0 2px 8px rgba(0,0,0,.3)"}}>
+                  <img src={book.nightCard.photo} alt="" style={{width:"100%",borderRadius:2}} />
+                </div>
+              )}
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700,fontStyle:"italic",
+                color:"var(--gold3)",marginBottom:4}}>{book.nightCard.headline}</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontStyle:"italic",
+                color:"rgba(240,220,160,.8)",lineHeight:1.6}}>"{book.nightCard.quote}"</div>
+              {book.nightCard.memory_line && (
+                <div style={{fontFamily:"'Kalam',cursive",fontSize:11,color:"rgba(200,180,255,.7)",
+                  lineHeight:1.5,marginTop:4}}>{book.nightCard.memory_line}</div>
+              )}
+              {/* Q&A sections */}
+              {(book.nightCard.bondingA || book.nightCard.gratitude || book.nightCard.extra) && (
+                <div style={{textAlign:"left",marginTop:10,paddingTop:10,
+                  borderTop:"1px solid rgba(212,160,48,.12)",display:"flex",flexDirection:"column",gap:8}}>
+                  {book.nightCard.bondingQ && book.nightCard.bondingA && (
+                    <div>
+                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
+                        color:"rgba(160,120,255,.5)",marginBottom:2}}>Asked: "{book.nightCard.bondingQ}"</div>
+                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
+                        {book.nightCard.bondingA}
+                      </div>
+                    </div>
+                  )}
+                  {book.nightCard.gratitude && (
+                    <div>
+                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
+                        color:"rgba(212,160,48,.5)",marginBottom:2}}>Best three seconds</div>
+                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
+                        {book.nightCard.gratitude}
+                      </div>
+                    </div>
+                  )}
+                  {book.nightCard.extra && (
+                    <div>
+                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
+                        color:"rgba(76,200,144,.5)",marginBottom:2}}>Extra note</div>
+                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
+                        {book.nightCard.extra}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <button className="btn" style={{width:"100%",marginTop:8,fontSize:15,padding:"14px 20px"}}
               onClick={()=>{
-                setNcStep(0); setNcBondingA(ncBondingA||""); setNcGratitude(""); setNcExtra(ritualSeed||"");
+                setNcStep(0); setNcBondingA(ncBondingA||""); setNcGratitude(""); setNcExtra("");
                 setNcPhoto(null); setNcCountdown(0); setNcGenerating(false);
                 setNcResult(null); setNcRevealed(false);
                 window.speechSynthesis?.cancel();
@@ -2912,20 +2804,31 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 autoReadRef.current = false; setIsReading(false);
                 setStage("nightcard");
               }}>
-              🌙 Capture tonight's Night Card
+              🌙 Make Tonight's Night Card
             </button>
-          ) : (
-            <div style={{width:"100%",background:"rgba(212,160,48,.06)",border:"1px solid rgba(212,160,48,.18)",borderRadius:16,padding:"16px",textAlign:"center"}}>
-              <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(212,160,48,.55)",marginBottom:8,fontFamily:"'DM Mono',monospace"}}>Tonight's Night Card</div>
-              {book.nightCard.photo && (<div style={{width:100,margin:"0 auto 10px",borderRadius:4,overflow:"hidden",background:"#faf8f2",padding:"4px 4px 8px",boxShadow:"0 2px 8px rgba(0,0,0,.3)"}}><img src={book.nightCard.photo} alt="" style={{width:"100%",borderRadius:2}}/></div>)}
-              <div style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700,fontStyle:"italic",color:"var(--gold3)",marginBottom:4}}>{book.nightCard.headline}</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontStyle:"italic",color:"rgba(240,220,160,.8)",lineHeight:1.6}}>"{book.nightCard.quote}"</div>
-            </div>
           )}
-          <div className="end-ghost-row">
-            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"9px 12px"}} onClick={shareStory}>✨ Send story</button>
-            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"9px 12px"}} onClick={async()=>{window.speechSynthesis?.cancel();if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}autoReadRef.current=false;setIsReading(false);setStage("home");}}>🏠 Home</button>
+
+          <div style={{display:"flex",gap:8,width:"100%",marginTop:4}}>
+            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"10px 14px"}}
+              onClick={downloadStory}>
+              📄 Download
+            </button>
+            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"10px 14px"}}
+              onClick={()=>{
+                window.speechSynthesis?.cancel();
+                if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
+                autoReadRef.current = false; setIsReading(false);
+                setStage("home");
+              }}>
+              🏠 Home
+            </button>
           </div>
+
+          <button className="btn-ghost" style={{width:"100%",marginTop:6,fontSize:12,padding:"10px 14px",
+            borderColor:"rgba(217,119,6,.3)",color:"rgba(217,119,6,.8)"}}
+            onClick={()=>setShowFeedback(true)}>
+            ⭐ How was this story?
+          </button>
         </div>
       </div>
     );
@@ -2944,636 +2847,820 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       <div className="app">
 
         {/* HOME */}
-        {stage==="home" && (() => {
-          const savedCharsHome: any[] = (() => {
-            try {
-              if (!userId) return [];
-              const raw = localStorage.getItem(`ss2_chars_${userId}`);
-              return raw ? JSON.parse(raw) : [];
-            } catch { return []; }
-          })();
+        {stage==="home" && (
+          <div className="screen">
+            <div className="brand-row">
+              <div className="brand-gem">🌙</div>
+              <div>
+                <div className="brand-name">SleepSeed</div>
+                <div className="brand-tag">personalized bedtime books</div>
+              </div>
+              <div style={{marginLeft:"auto",display:"flex",gap:6}}>
+                <button className="btn-ghost" style={{fontSize:11,padding:"6px 11px"}} onClick={()=>setStage("memories")}>
+                  📚 Memories
+                </button>
+                <button className="btn-ghost" style={{fontSize:11,padding:"6px 11px",
+                  borderColor:"rgba(160,120,255,.25)",color:"rgba(160,120,255,.8)"}}
+                  onClick={()=>setStage("library")}>
+                  📖 Library
+                </button>
+              </div>
+            </div>
+            <div style={{height:10}} />
 
-          return (
-          <div className="screen" style={{padding:0}}>
-            {/* Nav */}
-            <div className="nb-nav">
-              <div className="nb-logo">
-                <div className="nb-moon" />
-                SleepSeed
+            {/* ── Re-read check (from StoryFeedback) ── */}
+            {styleDna?.pendingRereadChecks?.[0] && (
+              <RereadCheck
+                pendingCheck={styleDna.pendingRereadChecks[0]}
+                styleDna={styleDna}
+                onAnswer={(updatedDna) => {
+                  setStyleDna(updatedDna);
+                  sSet("style_dna", updatedDna).catch(()=>{});
+                }}
+                onDismiss={() => {
+                  const updated = {...styleDna, pendingRereadChecks: (styleDna.pendingRereadChecks||[]).slice(1)};
+                  setStyleDna(updated);
+                  sSet("style_dna", updated).catch(()=>{});
+                }}
+              />
+            )}
+
+            {/* ── Demo story strip ── */}
+            <div onClick={()=>{ setBook({...DEMO_BOOK}); setPageIdx(0); setStage("book"); setFromCache(false); }}
+              style={{borderRadius:14,overflow:"hidden",
+                border:"1.5px solid rgba(212,160,48,.5)",
+                boxShadow:"0 0 0 3px rgba(212,160,48,.06)",
+                cursor:"pointer",marginBottom:18,transition:"transform .15s",
+                background:"rgba(13,21,53,.95)"}}
+              onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
+              onMouseLeave={e=>(e.currentTarget.style.transform="none")}>
+              <div style={{padding:"11px 14px",display:"flex",alignItems:"center",gap:11}}>
+                <div style={{fontSize:26,flexShrink:0}}>🌙</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
+                    color:"rgba(212,160,48,.7)",marginBottom:3}}>Example story</div>
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:13,fontWeight:700,
+                    color:"var(--cream)",lineHeight:1.3,marginBottom:2}}>The Stone in Her Pocket</div>
+                  <div style={{fontSize:9,color:"rgba(140,100,220,.9)",fontWeight:700}}>Tap to read →</div>
+                </div>
+              </div>
+              <div style={{background:"rgba(212,160,48,.05)",padding:"8px 14px",
+                borderTop:"1px solid rgba(212,160,48,.12)",
+                fontFamily:"'Fraunces',serif",fontSize:11,fontStyle:"italic",
+                color:"rgba(240,210,130,.85)",lineHeight:1.6}}>
+                "Adina yawned the kind of yawn that means everything is okay now."
               </div>
             </div>
 
-            <div className="nb-body">
-              {/* Re-read check */}
-              {styleDna?.pendingRereadChecks?.[0] && (
-                <RereadCheck
-                  pendingCheck={styleDna.pendingRereadChecks[0]}
-                  styleDna={styleDna}
-                  onAnswer={(updatedDna) => { setStyleDna(updatedDna); sSet("style_dna", updatedDna).catch(()=>{}); }}
-                  onDismiss={() => { const updated={...styleDna,pendingRereadChecks:(styleDna.pendingRereadChecks||[]).slice(1)}; setStyleDna(updated); sSet("style_dna",updated).catch(()=>{}); }}
-                />
-              )}
-
-              {/* Hero — name input */}
-              <div style={{textAlign:"center",marginBottom:22}}>
-                <div style={{fontSize:9,fontFamily:"var(--mono2)",color:"rgba(232,151,42,.5)",letterSpacing:"2px",textTransform:"uppercase",marginBottom:10}}>
-                  Tonight's story is for
+            <div className="card" style={{marginBottom:10}}>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:17,fontWeight:700,color:"var(--cream)",marginBottom:12,textAlign:"center",fontStyle:"italic"}}>
+                ✨ Tonight's story is for…
+              </div>
+              {heroName.trim().length<1 && (
+                <div style={{textAlign:"center",marginBottom:8}}>
+                  <div style={{fontSize:10,color:"rgba(212,160,48,.7)",
+                    fontStyle:"italic",fontFamily:"'Fraunces',serif",marginBottom:3}}>
+                    Start here. Type your child's name.
+                  </div>
+                  <div style={{fontSize:14,color:"rgba(212,160,48,.6)"}}>↓</div>
                 </div>
-                <input
-                  className="nb-hero-input"
-                  placeholder="Your child's name…"
-                  value={heroName}
-                  maxLength={20}
-                  onChange={e => {
-                    setHeroName(e.target.value);
-                    if (!hasSeenOnboard && e.target.value.trim().length >= 1) {
-                      setHasSeenOnboard(true);
-                      sSet("onboarded",{v:true});
-                    }
-                  }}
-                />
-                <div className="nb-pronoun-row">
-                  {[{v:"",l:"Any"},{v:"girl",l:"She / her"},{v:"boy",l:"He / him"}].map(o => (
-                    <button key={o.v} className={`nb-pronoun${heroGender===o.v?" sel":""}`}
-                      onClick={() => setHeroGender(o.v)}>{o.l}</button>
-                  ))}
+              )}
+              <input className="finput hero-input" placeholder="Your child's name…"
+                value={heroName} onChange={e=>{
+                  setHeroName(e.target.value);
+                  if(!hasSeenOnboard && e.target.value.trim().length >= 1) {
+                    setHasSeenOnboard(true);
+                    sSet("onboarded",{v:true});
+                  }
+                }} maxLength={20}
+                style={{marginBottom:heroName.trim().length<2?6:10,textAlign:"center",
+                  borderColor:heroName.trim().length<2?"rgba(212,160,48,.35)":"rgba(255,255,255,.1)",
+                  transition:"border-color .3s"}} />
+              {heroName.trim().length<2 && (
+                <div style={{textAlign:"center",fontSize:11,color:"rgba(212,160,48,.85)",
+                  marginBottom:10,fontWeight:700,letterSpacing:".02em",animation:"fadeUp .4s ease"}}>
+                  ✦ Type a name to unlock your story ✦
+                </div>
+              )}
+              <div className="gender-row" style={{marginBottom:0}}>
+                {[{v:"",l:"✨ Any",cls:"sel-any"},{v:"girl",l:"👧 Girl",cls:"sel-girl"},{v:"boy",l:"👦 Boy",cls:"sel-boy"}].map(o => (
+                  <button key={o.v} className={`gender-pill${heroGender===o.v?" "+o.cls:""}`} onClick={()=>setHeroGender(o.v)}>{o.l}</button>
+                ))}
+              </div>
+            </div>
+            {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
+            <div className="path-row">
+              <button className="path-btn quick" disabled={heroName.trim().length<2}
+                onClick={()=>{ if(heroName.trim().length<2) return; setStage("quick"); }}>
+                <div className="path-icon">⚡</div>
+                <div className="path-title">Quick Story</div>
+                <div className="path-sub">3 questions,<br/>then generate</div>
+              </button>
+              <button className="path-btn build" disabled={heroName.trim().length<2}
+                onClick={()=>{ if(heroName.trim().length<2) return; setStage("builder"); }}>
+                <div className="path-icon">🎨</div>
+                <div className="path-title">Build My Story</div>
+                <div className="path-sub">Full customise,<br/>more control</div>
+              </button>
+            </div>
+
+
+                        {/* ── About section ── */}
+            <div style={{marginTop:32,paddingTop:22}}>
+
+              {/* Divider 5 — centred stack */}
+              <div style={{textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:4,marginBottom:16}}>
+                <span style={{fontSize:16,filter:"opacity(.55)"}}>🌙</span>
+                <span style={{fontSize:8.5,fontWeight:700,letterSpacing:".13em",textTransform:"uppercase",color:"rgba(212,160,48,.5)"}}>About SleepSeed</span>
+                <div style={{width:26,height:1,background:"rgba(212,160,48,.3)",marginTop:1}} />
+              </div>
+
+              {/* Headline */}
+              <div style={{textAlign:"center",marginBottom:14}}>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:600,
+                  color:"var(--gold2)",marginBottom:8,fontStyle:"italic",lineHeight:1.15,
+                  letterSpacing:".01em"}}>
+                  Bedtime, but better.
+                </div>
+                <div style={{width:36,height:2,background:"linear-gradient(90deg,transparent,rgba(212,160,48,.55),transparent)",
+                  margin:"0 auto 12px"}} />
+                <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
+                  color:"rgba(212,160,48,.78)",lineHeight:1.85,maxWidth:300,margin:"0 auto",padding:"0 4px"}}>
+                  A bedtime story written{" "}
+                  <span style={{color:"var(--gold2)",fontStyle:"italic"}}>just for your child, in seconds</span>
+                  {" "}— about their day, their feelings, or the wildest adventure their imagination can dream up.{" "}
+                  Every night. Always different. Always theirs.
                 </div>
               </div>
 
-              {/* Saved characters */}
-              {savedCharsHome.length > 0 && (
-                <>
-                  <div className="nb-divider" />
-                  <div style={{marginBottom:18}}>
-                    <div className="nb-label">Saved characters</div>
-                    <div className="nb-char-strip">
-                      {savedCharsHome.slice(0, 6).map((c: any) => (
-                        <div key={c.id} className="nb-char-chip"
-                          onClick={() => {
-                            setHeroName(c.name);
-                            if (c.pronouns === "she/her") setHeroGender("girl");
-                            else if (c.pronouns === "he/him") setHeroGender("boy");
-                            else setHeroGender("");
-                            if (c.currentSituation) setStoryContext(c.currentSituation);
-                            if (c.weirdDetail) setStoryGuidance(c.weirdDetail);
-                          }}>
-                          <div className={`nb-char-av${heroName===c.name?" sel":""}`} style={{background:c.color||"#1E1640"}}>
-                            {c.photo
-                              ? <img src={c.photo} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"50%"}} alt="" />
-                              : <span style={{fontSize:18}}>{c.emoji||"🧒"}</span>}
-                          </div>
-                          <div className={`nb-char-nm${heroName===c.name?" sel":""}`}>{c.name}</div>
-                        </div>
-                      ))}
-                      <div className="nb-char-chip" onClick={() => { /* navigate to characters — TODO */ }}>
-                        <div className="nb-char-av nb-char-av-add">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d="M8 3v10M3 8h10" stroke="rgba(232,151,42,.55)" strokeWidth="1.8" strokeLinecap="round"/>
-                          </svg>
-                        </div>
-                        <div className="nb-char-nm">New</div>
+              {/* Three compact cards */}
+              <div style={{display:"flex",gap:6,marginBottom:16}}>
+                {[
+                  {icon:"🌟", title:"Their world", body:"Real life or pure fantasy", accent:"rgba(212,160,48,.15)", border:"rgba(212,160,48,.2)"},
+                  {icon:"💛", title:"Real bonding", body:"Connection every night",    accent:"rgba(76,200,144,.1)",  border:"rgba(76,200,144,.2)"},
+                  {icon:"📄", title:"Keep forever", body:"A real printed book",       accent:"rgba(160,120,255,.1)", border:"rgba(160,120,255,.2)"},
+                ].map(({icon,title,body,accent,border}) => (
+                  <div key={title} style={{flex:1,background:accent,border:`1px solid ${border}`,
+                    borderRadius:11,padding:"10px 8px",textAlign:"center"}}>
+                    <div style={{fontSize:18,marginBottom:5}}>{icon}</div>
+                    <div style={{fontSize:10,fontWeight:700,color:"var(--cream)",marginBottom:3,lineHeight:1.3}}>{title}</div>
+                    <div style={{fontSize:9,color:"rgba(190,200,240,.6)",lineHeight:1.4}}>{body}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Quote */}
+              <div style={{padding:"14px 16px",
+                background:"linear-gradient(135deg,rgba(212,160,48,.07),rgba(180,130,30,.03))",
+                border:"1px solid rgba(212,160,48,.2)",borderRadius:13,marginBottom:14}}>
+                <div style={{fontSize:26,color:"rgba(212,160,48,.22)",fontFamily:"Georgia,serif",
+                  lineHeight:1,marginBottom:5,fontWeight:700}}>"</div>
+                <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
+                  color:"var(--gold3)",lineHeight:1.85,textAlign:"center"}}>
+                  Children don't remember the nights they fell asleep quickly.
+                  They remember the nights someone made something just for them.
+                </div>
+                <div style={{fontSize:26,color:"rgba(212,160,48,.22)",fontFamily:"Georgia,serif",
+                  lineHeight:1,marginTop:4,fontWeight:700,textAlign:"right"}}>"</div>
+              </div>
+
+              <div style={{textAlign:"center",paddingBottom:6}}>
+                <div style={{fontSize:9,color:"rgba(212,160,48,.4)",letterSpacing:".12em",textTransform:"uppercase",fontWeight:700}}>
+                  Made with love · sleepseed.app
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+        {/* QUICK STORY */}
+        {stage==="quick" && (
+          <div className="screen">
+            <div className="brand-row">
+              <button className="btn-ghost" style={{fontSize:12,padding:"6px 12px",marginRight:8}} onClick={()=>setStage("home")}>← Back</button>
+              <div className="brand-gem">⚡</div>
+              <div>
+                <div className="brand-name" style={{fontSize:16}}>Quick Story</div>
+                <div className="brand-tag">for {heroName}</div>
+              </div>
+            </div>
+            <div style={{height:10}} />
+            <div className="card" style={{marginBottom:10}}>
+              <div style={{display:"flex",flexDirection:"column",gap:18}}>
+
+                {/* Age */}
+                <div>
+                  <div className="section-label" style={{marginBottom:8}}>🎓 How old is {heroName}?</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
+                    {AGES.map(a => (
+                      <button key={a.value}
+                        style={{padding:"10px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",
+                          border:`1.5px solid ${ageGroup===a.value?"rgba(100,160,255,.7)":"rgba(255,255,255,.1)"}`,
+                          background:ageGroup===a.value?"rgba(100,160,255,.13)":"rgba(255,255,255,.04)",
+                          transition:"all .2s"}}
+                        onClick={()=>setAgeGroup(a.value)}>
+                        <div style={{fontSize:13,fontWeight:700,color:ageGroup===a.value?"#a8c8ff":"var(--cream)"}}>{a.label}</div>
+                        <div style={{fontSize:9,color:"var(--dimmer)",marginTop:2,textTransform:"uppercase",letterSpacing:".06em"}}>{a.grade}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="divider" />
+
+                {/* Story Length */}
+                <div>
+                  <div className="section-label" style={{marginBottom:8}}>📖 Story Length</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                    {LENGTHS.map(l => (
+                      <button key={l.value}
+                        style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",borderRadius:11,cursor:"pointer",
+                          border:`1.5px solid ${storyLen===l.value?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
+                          background:storyLen===l.value?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
+                          transition:"all .2s"}}
+                        onClick={()=>setStoryLen(l.value)}>
+                        <span style={{fontSize:13,fontWeight:700,color:storyLen===l.value?"var(--gold2)":"var(--cream)"}}>{l.label}</span>
+                        <span style={{fontSize:11,color:"var(--dimmer)"}}>{l.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="divider" />
+
+                {/* Open prompt */}
+                <div>
+                  <div className="section-label" style={{marginBottom:8}}>
+                    ✏️ Make it yours <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:9}}>(optional)</span>
+                  </div>
+                  <div style={{display:"flex",gap:6,marginBottom:9}}>
+                    {["Who","What","Where"].map(w => (
+                      <div key={w} style={{padding:"3px 9px",borderRadius:99,fontSize:9,fontWeight:700,letterSpacing:".04em",
+                        border:"1px solid rgba(255,255,255,.12)",color:"rgba(190,200,240,.6)",background:"rgba(255,255,255,.04)"}}>
+                        {w}
                       </div>
-                    </div>
-                    {heroName.trim().length >= 2 && savedCharsHome.find((c: any) => c.name === heroName) && (() => {
-                      const matched = savedCharsHome.find((c: any) => c.name === heroName);
-                      return matched ? (
-                        <div className="nb-char-detail">
-                          <div style={{fontSize:9.5,fontFamily:"var(--mono2)",color:"rgba(232,151,42,.55)",marginBottom:4}}>
-                            {matched.name}{matched.ageDescription ? ` · ${matched.ageDescription}` : ""}{matched.pronouns ? ` · ${matched.pronouns}` : ""}
-                          </div>
-                          {matched.weirdDetail && (
-                            <div style={{fontFamily:"var(--serif2)",fontSize:11.5,fontStyle:"italic",color:"rgba(244,239,232,.58)",lineHeight:1.62}}>
-                              "{matched.weirdDetail}"
-                            </div>
-                          )}
-                          <div className="nb-prefill-tag">✓ Fields pre-filled from saved profile</div>
-                        </div>
-                      ) : null;
-                    })()}
+                    ))}
                   </div>
-                </>
-              )}
-
-              {error && <div className="err-box" style={{marginBottom:10}}>⚠️ {error}</div>}
-
-              <div className="nb-divider" />
-
-              {/* Single CTA */}
-              <div style={{paddingTop:4,paddingBottom:6}}>
-                <button
-                  className="nb-cta"
-                  disabled={heroName.trim().length < 2}
-                  onClick={() => { if (heroName.trim().length < 2) return; setStage("builder"); }}>
-                  Build tonight's story →
-                </button>
-                <div className="nb-customise" onClick={() => setStage("library")} style={{opacity: heroName.trim().length < 2 ? 0.3 : 1}}>
-                  Or browse the story library ↓
-                </div>
-              </div>
-
-              {/* Demo strip */}
-              <div className="nb-divider" />
-              <div
-                onClick={() => { setBook({...DEMO_BOOK}); setPageIdx(0); setStage("book"); setFromCache(false); }}
-                style={{borderRadius:14,overflow:"hidden",border:"1px solid rgba(212,160,48,.2)",cursor:"pointer",transition:"transform .15s",background:"rgba(13,21,53,.7)"}}
-                onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
-                onMouseLeave={e=>(e.currentTarget.style.transform="none")}>
-                <div style={{padding:"11px 14px",display:"flex",alignItems:"center",gap:11}}>
-                  <div style={{fontSize:22,flexShrink:0}}>🌙</div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(232,151,42,.6)",marginBottom:3,fontFamily:"var(--mono2)"}}>Example story — tap to read</div>
-                    <div style={{fontFamily:"var(--serif2)",fontSize:13,fontWeight:700,color:"var(--cream)",lineHeight:1.3}}>The Stone in Her Pocket</div>
+                  <div style={{position:"relative"}}>
+                    <textarea className="ftarea"
+                      style={{fontSize:12,border:"1.5px solid rgba(255,255,255,.2)",background:"rgba(255,255,255,.07)",
+                        minHeight:78,paddingRight:40,"--placeholder-color":"rgba(175,185,225,.7)" as any}}
+                      placeholder={`e.g. '${heroName} and her dog Biscuit find a dragon who is scared of the dark' or 'something funny happens at bedtime involving a very grumpy sock'…`}
+                      value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)} maxLength={300} />
+                    <button
+                      onClick={startListening}
+                      title="Hold to speak"
+                      style={{position:"absolute",right:8,bottom:8,width:28,height:28,borderRadius:"50%",
+                        border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.4)"}`,
+                        background:isListening?"rgba(240,80,80,.15)":"rgba(212,160,48,.08)",
+                        color:isListening?"#f08080":"rgba(212,160,48,.8)",
+                        fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+                        transition:"all .2s",flexShrink:0}}>
+                      {isListening ? "⏹" : "🎤"}
+                    </button>
                   </div>
-                  <div style={{fontSize:11,color:"rgba(232,151,42,.5)"}}>›</div>
+                  <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
+                    {isListening
+                      ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
+                      : <span>Tap 🎤 to speak · For more control, use <span style={{color:"rgba(160,120,255,.85)",fontWeight:700}}>Build My Story →</span></span>
+                    }
+                  </div>
                 </div>
-                <div style={{background:"rgba(232,151,42,.04)",padding:"8px 14px",borderTop:"1px solid rgba(232,151,42,.1)",fontFamily:"var(--serif2)",fontSize:11,fontStyle:"italic",color:"rgba(240,210,130,.75)",lineHeight:1.6}}>
-                  "Adina yawned the kind of yawn that means everything is okay now."
-                </div>
-              </div>
 
+              </div>
+            </div>
+
+            {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
+            <button className="btn" style={{marginBottom:10}} onClick={()=>{
+              generate({extraChars:[], occasion:"", occasionCustom:"", lessons:[], adventure:false, storyMood:"", storyPace:"normal", storyStyle:"standard", heroTraits:[]});
+            }}>
+              ✨ Make {heroName}'s story!
+            </button>
+            <div style={{textAlign:"center",fontSize:12,color:"var(--dimmer)",cursor:"pointer"}}
+              onClick={()=>setStage("builder")}>
+              Want more control? → Build My Story
             </div>
           </div>
-          );
-        })()}
-
-        {/* QUICK STORY — redirects to builder */}
-        {stage==="quick" && (() => { setStage("builder"); return null; })()}
-
+        )}
         {/* BUILDER */}
-        {stage==="builder" && (() => {
-          const savedCharsBuilder: any[] = (() => {
-            try {
-              if (!userId) return [];
-              const raw = localStorage.getItem(`ss2_chars_${userId}`);
-              return raw ? JSON.parse(raw) : [];
-            } catch { return []; }
-          })();
-
-          const buildPreview = () => {
-            if (!heroName.trim()) return "";
-            const matched = savedCharsBuilder.find((c: any) => c.name === heroName);
-            const moodMap: Record<string,string> = {
-              "calm and cosy, drifting toward sleep": "calm",
-              "warm and funny, with lots of laughs": "warm & funny",
-              "exciting and full of surprises": "exciting",
-              "heartfelt and emotionally true": "heartfelt",
-              "completely silly from start to finish": "silly",
-              "mysterious with a satisfying ending": "mysterious",
-            };
-            const moodLabel = moodMap[storyBrief2] || (storyBrief2 ? storyBrief2.slice(0,20) : "");
-            const brief = storyBrief1 || storyContext;
-            const detail = matched?.weirdDetail || storyGuidance;
-            const charNames = extraChars.filter(c => c.name.trim()).map(c => c.name.trim());
-            let line = `A${moodLabel ? ` ${moodLabel}` : ""} story about ${heroName}`;
-            if (detail) line += ` — the ${heroName} who ${detail.toLowerCase().replace(/^[^a-z]/,"")}`;
-            if (brief && !detail) line += `. ${brief}`;
-            if (charNames.length) line += `. Featuring ${charNames.join(" and ")}.`;
-            else line += ".";
-            return line;
-          };
-
-          const preview = buildPreview();
-
-          const stickyLabel = (() => {
-            const parts: string[] = [];
-            if (storyBrief2) {
-              const short: Record<string,string> = {
-                "calm and cosy, drifting toward sleep":"Calm",
-                "warm and funny, with lots of laughs":"Funny",
-                "exciting and full of surprises":"Exciting",
-                "heartfelt and emotionally true":"Heartfelt",
-                "completely silly from start to finish":"Silly",
-                "mysterious with a satisfying ending":"Mystery",
-              };
-              parts.push(short[storyBrief2] || "Story");
-            }
-            if (storyBrief1) parts.push(storyBrief1.slice(0,24)+(storyBrief1.length>24?"…":""));
-            const charNames = extraChars.filter(c=>c.name.trim()).map(c=>c.name);
-            if (charNames.length) parts.push(`with ${charNames.join(", ")}`);
-            return parts.length ? parts.join(" · ") : "Set up your story above";
-          })();
-
-          const canGenerate = heroName.trim().length >= 2;
-          const hasGoodInfo = canGenerate && (storyBrief1 || storyBrief2 || storyContext || storyGuidance);
-          const matchedChar = savedCharsBuilder.find((c: any) => c.name === heroName);
-
-          const glowColour = (() => {
-            const mk = {
-              "calm and cosy, drifting toward sleep": "rgba(60,100,220,.07)",
-              "warm and funny, with lots of laughs": "rgba(255,170,50,.07)",
-              "exciting and full of surprises": "rgba(232,80,30,.08)",
-              "heartfelt and emotionally true": "rgba(200,70,170,.06)",
-              "completely silly from start to finish": "rgba(220,200,40,.05)",
-              "mysterious with a satisfying ending": "rgba(80,60,220,.07)",
-            } as Record<string,string>;
-            return mk[storyBrief2] || "rgba(232,151,42,.04)";
-          })();
-
-          const drawerSummary = (() => {
-            const moodShort: Record<string,string> = {
-              "calm and cosy, drifting toward sleep": "Calm & cosy",
-              "warm and funny, with lots of laughs": "Warm & funny",
-              "exciting and full of surprises": "Exciting",
-              "heartfelt and emotionally true": "Heartfelt",
-              "completely silly from start to finish": "Completely silly",
-              "mysterious with a satisfying ending": "Mysterious",
-            };
-            const cast = [heroName, ...extraChars.filter(c=>c.name.trim()).map(c=>c.name.trim())].filter(Boolean);
-            const lessonShort = lessons.map((l: string) => l.split("—")[0].replace(/^[^a-z]+/i,"").trim().split(" ").slice(0,3).join(" ")).join(", ");
-            return {
-              mood: moodShort[storyBrief2] || (storyBrief2 ? storyBrief2 : "Any mood"),
-              about: storyBrief1 ? storyBrief1.slice(0,60) : (storyContext ? storyContext.slice(0,60) : "Open story"),
-              cast: cast.join(", ") || heroName,
-              weird: storyGuidance || ((matchedChar as any)?.weirdDetail || "None added"),
-              lesson: lessonShort || "None",
-              occasion: occasionCustom || "None",
-              age: AGES.find(a => a.value === ageGroup)?.label || ageGroup,
-              length: LENGTHS.find(l => l.value === storyLen)?.desc || storyLen,
-              style: storyStyle || "Standard",
-            };
-          })();
-
-          return (
-          <div className="screen" style={{padding:0,paddingBottom:0}}>
-            <div className="nb-nav">
-              <button className="nb-back" onClick={() => setStage("home")}>← Back</button>
-              <div className="nb-logo" style={{transform:"translateX(-20px)"}}>
-                <div className="nb-moon" />
-                {heroName ? `${heroName}'s Story` : "Story Builder"}
+        {stage==="builder" && (
+          <div className="screen">
+            <div className="brand-row">
+              <button className="btn-ghost" style={{fontSize:12,padding:"6px 12px",marginRight:8}} onClick={()=>setStage("home")}>← Back</button>
+              <div className="brand-gem">🌙</div>
+              <div>
+                <div className="brand-name" style={{fontSize:16}}>{heroName}'s Story</div>
+                <div className="brand-tag">Build your adventure</div>
               </div>
             </div>
+            <div style={{height:10}} />
 
-            <div className="nb-body" style={{paddingBottom:0}}>
-              <div className="nb-body-bg" />
-              <div className="nb-ambient" style={{background:`radial-gradient(ellipse,${glowColour},transparent 65%)`}} />
-              {Array.from({length:40},(_,i)=>(
-                <div key={i} className="nb-star" style={{
-                  width:`${0.4+(i%3)*0.5}px`,height:`${0.4+(i%3)*0.5}px`,
-                  left:`${(i*17.3+7)%100}%`,top:`${(i*13.7+11)%100}%`,
-                  '--d':`${3+(i%2)}s`,'--dl':`${(i*0.4)%4}s`,
-                } as any} />
-              ))}
+            <div className="card" style={{marginBottom:10}}>
+              <div style={{display:"flex",flexDirection:"column",gap:14}}>
 
-              {preview && (
-                <div className="nb-preview">
-                  <div className="nb-preview-label">Story preview</div>
-                  <div className="nb-preview-text">{preview}</div>
-                </div>
-              )}
-
-              <div style={{marginBottom:16}}>
-                <div className="nb-label">What's tonight about?</div>
-                <div className="nb-about-grid">
-                  {[
-                    {v:"going through something real from today", l:"Something real", e:"💛"},
-                    {v:"about to go on a completely made-up adventure", l:"Made-up adventure", e:"🗺️"},
-                    {v:"feeling a big emotion tonight", l:"Big feelings", e:"🌊"},
-                    {v:"on a silly quest with friends", l:"Silly quest", e:"🤪"},
-                  ].map(o => (
-                    <button key={o.v} className={`nb-about-pill${storyBrief1===o.v?" sel":""}`}
-                      onClick={() => setStoryBrief1(o.v)}>
-                      <span style={{fontSize:15,width:20,textAlign:"center"}}>{o.e}</span>{o.l}
-                    </button>
-                  ))}
-                </div>
-                <textarea className="nb-textarea"
-                  placeholder={`Or describe in your own words… e.g. "${heroName} is nervous about swimming tomorrow"`}
-                  value={storyBrief1.startsWith("about")||storyBrief1.startsWith("on ")||storyBrief1.startsWith("feeling")||storyBrief1.startsWith("going")?"":(storyBrief1||"")}
-                  onChange={e => setStoryBrief1(e.target.value)} rows={2} />
-              </div>
-
-              <div className="nb-divider" />
-
-              <div style={{marginBottom:16}}>
-                <div className="nb-label">The story should feel…</div>
-                <div className="nb-mood-grid">
-                  {[
-                    {v:"calm and cosy, drifting toward sleep", l:"Calm & cosy", e:"🌙"},
-                    {v:"warm and funny, with lots of laughs", l:"Warm & funny", e:"😄"},
-                    {v:"exciting and full of surprises", l:"Exciting", e:"⚡"},
-                    {v:"heartfelt and emotionally true", l:"Heartfelt", e:"💛"},
-                    {v:"completely silly from start to finish", l:"Completely silly", e:"🤪"},
-                    {v:"mysterious with a satisfying ending", l:"Mysterious", e:"🔍"},
-                  ].map(o => (
-                    <button key={o.v} className={`nb-mood-pill${storyBrief2===o.v?" sel":""}`}
-                      onClick={() => setStoryBrief2(o.v)}>
-                      <span style={{fontSize:15,width:20,textAlign:"center"}}>{o.e}</span>{o.l}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="nb-divider" />
-
-              <div style={{marginBottom:16}}>
-                <div className="nb-label">Who else is in the story?</div>
-
-                {/* Saved characters as toggleable chips */}
-                {savedCharsBuilder.filter((c: any) => c.name !== heroName).length > 0 && (
-                  <div className="nb-char-strip" style={{marginBottom:10}}>
-                    {savedCharsBuilder.filter((c: any) => c.name !== heroName).slice(0,5).map((c: any) => {
-                      const isIn = extraChars.some(ec => ec.name === c.name);
-                      return (
-                        <div key={c.id} className="nb-char-chip"
-                          onClick={() => {
-                            if (isIn) setExtraChars(cs => cs.filter(ec => ec.name !== c.name));
-                            else if (extraChars.length < 4) setExtraChars(cs => [...cs, {id:uid(), type:"friend", name:c.name, photo:c.photo||null, classify:"", gender:c.pronouns||"", note:c.weirdDetail||""}]);
-                          }}>
-                          <div className={`nb-char-av${isIn?" sel":""}`} style={{background:c.color||"#1E1640"}}>
-                            {c.photo ? <img src={c.photo} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"50%"}} alt=""/> : <span style={{fontSize:18}}>{c.emoji||"🧒"}</span>}
-                          </div>
-                          <div className={`nb-char-nm${isIn?" sel":""}`}>{c.name}</div>
-                        </div>
-                      );
-                    })}
+                {/* ── Story Brief Builder ── */}
+                <div>
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:700,color:"var(--cream)",marginBottom:4}}>
+                    What's tonight's story about?
                   </div>
-                )}
+                  <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:10}}>Two steps build your brief — or just type anything</div>
 
-                {/* Inline-added characters (editable rows) */}
-                {extraChars.filter(c => !savedCharsBuilder.some((sc: any) => sc.name === c.name)).length > 0 && (
-                  <div className="char-simple-list" style={{marginBottom:10}}>
-                    {extraChars.filter(c => !savedCharsBuilder.some((sc: any) => sc.name === c.name)).map(c => (
-                      <div key={c.id}>
-                        <div className="char-simple-row">
-                          <div className="char-photo" style={{width:38,height:38,fontSize:18,borderRadius:10,flexShrink:0,cursor:"pointer"}} onClick={()=>pickPhoto(c.id)}>
-                            {c.photo ? <img src={c.photo.preview} alt={c.name} /> : <span>{(c as any).emoji || CHAR_ICONS[c.type]||"👫"}</span>}
+                  {/* Live preview */}
+                  {(storyBrief1||storyBrief2) && (
+                    <div style={{background:"rgba(212,160,48,.07)",border:"1px solid rgba(212,160,48,.2)",borderRadius:10,padding:"10px 13px",fontSize:12,lineHeight:1.7,marginBottom:10,color:"var(--cream)"}}>
+                      {storyBrief1 && <span style={{color:"var(--gold2)",fontWeight:700}}>{heroName} is {storyBrief1}.</span>}
+                      {storyBrief1 && storyBrief2 && " "}
+                      {storyBrief2 && <span>The story should feel <span style={{color:"var(--gold2)",fontWeight:700}}>{storyBrief2}</span>.</span>}
+                    </div>
+                  )}
+
+                  {/* Step 1 */}
+                  <div style={{border:"1px solid rgba(255,255,255,.1)",borderRadius:10,overflow:"hidden",marginBottom:6}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 12px",cursor:"pointer",background:"rgba(255,255,255,.03)"}}
+                      onClick={()=>setBriefStep1Open(o=>!o)}>
+                      <div style={{width:18,height:18,borderRadius:"50%",background:storyBrief1?"rgba(76,200,144,.2)":"rgba(100,160,255,.2)",color:storyBrief1?"#80d8a8":"#a8c8ff",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>1</div>
+                      <div style={{fontSize:11,fontWeight:700,color:"var(--dim)",flex:1}}>Tonight, {heroName} is…</div>
+                      {storyBrief1 && <div style={{fontSize:10,color:"#a8c8ff",maxWidth:150,textAlign:"right",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{storyBrief1}</div>}
+                    </div>
+                    {briefStep1Open && (
+                      <div style={{padding:"10px 12px",borderTop:"1px solid rgba(255,255,255,.07)"}}>
+                        <div style={{fontSize:9,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:5}}>Real life</div>
+                        <div className="guidance-chips" style={{marginBottom:realLifeChip?6:8}}>
+                          {[
+                            {l:"something real today",    v:"going through something real from today",   p:`What happened? e.g. '${heroName} had a falling out with her best friend' or 'he tried really hard at something and didn't quite get there'…`},
+                            {l:"feeling something big",   v:"feeling a big emotion tonight",             p:`What's ${heroName} feeling? e.g. 'she's been really anxious about something' or 'he's upset but not sure why'…`},
+                            {l:"a tricky situation",      v:"dealing with a tricky situation",           p:`What's the situation? e.g. 'there's been tension with a sibling all day' or 'she said something she wishes she hadn't'…`},
+                            {l:"celebrating something",   v:"celebrating something that happened",       p:`What happened? e.g. 'she got the main part in the school play' or 'he finally learned to ride his bike today'…`},
+                          ].map(o => (
+                            <button key={o.v} className={`guidance-chip${storyBrief1===o.v?" on":""}`}
+                              onClick={()=>{ setStoryBrief1(o.v); setRealLifeChip(o.p); setRealLifeCtx(""); }}>
+                              {o.l}
+                            </button>
+                          ))}
+                        </div>
+                        {realLifeChip && (
+                          <div style={{marginBottom:8,animation:"fadeUp .2s ease"}}>
+                            <div style={{fontSize:10,color:"rgba(76,200,144,.8)",marginBottom:4,fontWeight:700}}>
+                              Tell us more <span style={{fontWeight:400,color:"var(--dimmer)"}}>— optional, but makes the story much more personal</span>
+                            </div>
+                            <div style={{position:"relative"}}>
+                              <textarea className="ftarea" rows={2} style={{minHeight:52,fontSize:12,paddingRight:38}}
+                                placeholder={realLifeChip}
+                                value={realLifeCtx}
+                                onChange={e=>setRealLifeCtx(e.target.value)}
+                                maxLength={200} />
+                              <button onClick={()=>{
+                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
+                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
+                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
+                                rec.onstart=()=>setIsListening(true);
+                                rec.onend=()=>setIsListening(false);
+                                rec.onerror=()=>setIsListening(false);
+                                rec.onresult=(e)=>{ const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" "); setRealLifeCtx(g=>g?g+' '+t:t); setIsListening(false); };
+                                rec.start();
+                              }}
+                              title="Tap to speak"
+                              style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
+                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
+                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
+                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
+                                fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+                                transition:"all .2s",flexShrink:0}}>
+                              {isListening ? "⏹" : "🎤"}
+                            </button>
+                            </div>
+                            <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
+                              {isListening
+                                ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
+                                : <span>Tap 🎤 to speak</span>
+                              }
+                            </div>
+                            <button style={{fontSize:10,color:"var(--dimmer)",background:"none",border:"none",cursor:"pointer",padding:"2px 0",textDecoration:"underline"}}
+                              onClick={()=>{ setBriefStep1Open(false); setBriefStep2Open(true); }}>
+                              {realLifeCtx.trim() ? "Done — continue to step 2 →" : "Skip — continue to step 2 →"}
+                            </button>
+                          </div>
+                        )}
+                        <div style={{fontSize:9,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:5}}>Fun &amp; fantasy</div>
+                        <div className="guidance-chips" style={{marginBottom:8}}>
+                          {[
+                            {l:"a made-up adventure",     v:"about to go on a completely made-up adventure"},
+                            {l:"discovering magic",       v:"about to discover something magical"},
+                            {l:"a silly quest",           v:"on a silly quest with friends"},
+                            {l:"a funny world",           v:"in a world where everything goes hilariously wrong"},
+                          ].map(o => (
+                            <button key={o.v}
+                              style={{padding:"4px 10px",borderRadius:99,fontSize:11,fontWeight:700,cursor:"pointer",
+                                border:`1px solid ${storyBrief1===o.v?"rgba(240,180,50,.6)":"rgba(240,180,50,.25)"}`,
+                                background:storyBrief1===o.v?"rgba(240,180,50,.12)":"transparent",
+                                color:storyBrief1===o.v?"#f0cc60":"rgba(240,200,80,.85)",fontFamily:"'Nunito',sans-serif",
+                                transition:"all .15s"}}
+                              onClick={()=>{ setStoryBrief1(o.v); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(false); setBriefStep2Open(true); }}>
+                              {o.l}
+                            </button>
+                          ))}
+                        </div>
+                        <div style={{borderTop:"1px dashed rgba(255,255,255,.12)",margin:"10px 0 10px",paddingTop:10}}>
+                          <div style={{fontSize:11,fontWeight:700,color:"var(--cream)",marginBottom:5}}>
+                            ✏️ Or just write anything you want
+                          </div>
+                          <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginBottom:7,lineHeight:1.5}}>
+                            Skip the chips entirely — describe the story in your own words
+                          </div>
+                          <div style={{position:"relative"}}>
+                            <textarea className="ftarea" rows={3} style={{minHeight:68,fontSize:12,border:"1.5px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.07)",paddingRight:40}}
+                              placeholder="e.g. 'Lily is nervous about starting at her new school next week' or 'a dragon who is scared of fire goes on a quest to find someone who can help' or 'something silly and funny involving bedtime and a talking sock'…"
+                              value={storyBrief1.startsWith("about")||storyBrief1.startsWith("on ")||storyBrief1.startsWith("in ")||storyBrief1.startsWith("going")||storyBrief1.startsWith("feeling")||storyBrief1.startsWith("dealing")||storyBrief1.startsWith("celebrating")? "":(storyBrief1||"")}
+                              onChange={e=>{ setStoryBrief1(e.target.value); }} />
+                            <button onClick={()=>{
+                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
+                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
+                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
+                                rec.onstart=()=>setIsListening(true);
+                                rec.onend=()=>setIsListening(false);
+                                rec.onerror=()=>setIsListening(false);
+                                rec.onresult=(e)=>{
+                                  const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" ");
+                                  setStoryBrief1(g=>(g&&!["about","on ","in ","going","feeling","dealing","celebrating"].some(p=>g.startsWith(p))?g+" ":"")+t);
+                                  setIsListening(false);
+                                };
+                                rec.start();
+                              }}
+                              title="Tap to speak"
+                              style={{position:"absolute",right:8,bottom:8,width:28,height:28,borderRadius:"50%",
+                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.4)"}`,
+                                background:isListening?"rgba(240,80,80,.15)":"rgba(212,160,48,.08)",
+                                color:isListening?"#f08080":"rgba(212,160,48,.8)",
+                                fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+                                transition:"all .2s"}}>
+                              {isListening ? "⏹" : "🎤"}
+                            </button>
+                          </div>
+                          <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
+                            {isListening
+                              ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
+                              : <span>Tap 🎤 to speak</span>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Step 2 */}
+                  <div style={{border:"1px solid rgba(255,255,255,.1)",borderRadius:10,overflow:"hidden"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 12px",cursor:"pointer",background:"rgba(255,255,255,.03)"}}
+                      onClick={()=>setBriefStep2Open(o=>!o)}>
+                      <div style={{width:18,height:18,borderRadius:"50%",background:storyBrief2?"rgba(76,200,144,.2)":"rgba(100,160,255,.2)",color:storyBrief2?"#80d8a8":"#a8c8ff",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>2</div>
+                      <div style={{fontSize:11,fontWeight:700,color:"var(--dim)",flex:1}}>The story should feel…</div>
+                      {storyBrief2 && <div style={{fontSize:10,color:"#a8c8ff",maxWidth:150,textAlign:"right",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{storyBrief2}</div>}
+                    </div>
+                    {briefStep2Open && (
+                      <div style={{padding:"10px 12px",borderTop:"1px solid rgba(255,255,255,.07)"}}>
+                        <div className="guidance-chips" style={{marginBottom:8}}>
+                          {[
+                            {l:"😂 Warm & funny",     v:"warm and funny, with lots of laughs"},
+                            {l:"🌙 Calm & cosy",      v:"calm and cosy, drifting toward sleep"},
+                            {l:"⚡ Exciting",          v:"exciting and full of surprises"},
+                            {l:"💛 Heartfelt",        v:"heartfelt and emotionally true"},
+                            {l:"🤪 Completely silly", v:"completely silly from start to finish"},
+                            {l:"🔍 Mysterious",       v:"mysterious with a satisfying ending"},
+                          ].map(o => (
+                            <button key={o.v} className={`guidance-chip${storyBrief2===o.v?" on":""}`}
+                              onClick={()=>{ setStoryBrief2(o.v); setBriefStep2Open(false); }}>
+                              {o.l}
+                            </button>
+                          ))}
+                        </div>
+                        <div style={{fontSize:9,color:"var(--dimmer)",marginBottom:4}}>or describe it yourself:</div>
+                        <div style={{position:"relative"}}>
+                          <textarea className="ftarea" rows={1} style={{minHeight:38,fontSize:12,paddingRight:38}}
+                            placeholder="e.g. gentle and slow, action-packed, the funniest story ever told…"
+                            value={["warm and funny, with lots of laughs","calm and cosy, drifting toward sleep","exciting and full of surprises","heartfelt and emotionally true","completely silly from start to finish","mysterious with a satisfying ending"].includes(storyBrief2)?"":storyBrief2}
+                            onChange={e=>setStoryBrief2(e.target.value)} />
+                          <button onClick={()=>{
+                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
+                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
+                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
+                                rec.onstart=()=>setIsListening(true);
+                                rec.onend=()=>setIsListening(false);
+                                rec.onerror=()=>setIsListening(false);
+                                rec.onresult=(e)=>{ const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" "); setStoryBrief2(g=>g?g+' '+t:t); setIsListening(false); };
+                                rec.start();
+                              }}
+                              title="Tap to speak"
+                              style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
+                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
+                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
+                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
+                                fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+                                transition:"all .2s",flexShrink:0}}>
+                              {isListening ? "⏹" : "🎤"}
+                            </button>
+                        </div>
+                        <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
+                          {isListening
+                            ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
+                            : <span>Tap 🎤 to speak</span>
+                          }
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="divider" />
+
+                {/* ── Characters ── */}
+                <div>
+                  <div className="section-label" style={{marginBottom:8}}>👥 Who's in the story with {heroName}?</div>
+                  {extraChars.length<4 && (
+                    <div style={{marginBottom:extraChars.length?10:0}}>
+                      <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+                        {CHAR_TYPES.map(t => (
+                          <button key={t.value} className="char-add-pill"
+                            onClick={()=>setExtraChars(cs=>[...cs,{...newChar(),type:t.value}])}>
+                            <span className="char-add-pill-icon">{t.icon}</span>
+                            <span>+ {t.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {extraChars.length>0 && (
+                    <div className="char-simple-list">
+                      {extraChars.map(c => (
+                        <div className="char-simple-row" key={c.id}>
+                          <div className="char-photo" style={{width:34,height:34,fontSize:16,borderRadius:8,flexShrink:0}} onClick={()=>pickPhoto(c.id)}>
+                            {c.photo ? <img src={c.photo.preview} alt={c.name} /> : <span>{CHAR_ICONS[c.type]||"👫"}</span>}
                           </div>
                           <div style={{display:"flex",flexDirection:"column",gap:4,flex:1}}>
-                            <input className="char-name-in" placeholder="Character name…"
-                              value={c.name} maxLength={16} onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
-                            <input className="char-name-in" placeholder={`Tell me about ${c.name||"them"}…`}
-                              value={c.note||""} maxLength={80} style={{fontSize:10,opacity:.85}}
+                            <input className="char-name-in"
+                              placeholder={`${CHAR_TYPES.find(t=>t.value===c.type)?.label||"Friend"}'s name…`}
+                              value={c.name} maxLength={16}
+                              onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
+                            <input className="char-name-in"
+                              placeholder={`Tell me about ${c.name||"them"}… e.g. 'best friend she argued with' or 'funny little brother'`}
+                              value={c.note||""} maxLength={80}
+                              style={{fontSize:10,opacity:.85}}
                               onChange={e=>updateExtraChar(c.id,{note:e.target.value})} />
                           </div>
                           <button className="btn-danger" style={{flexShrink:0,alignSelf:"flex-start"}} onClick={()=>removeExtraChar(c.id)}>✕</button>
                         </div>
-                        {!c.photo && (
-                          <div style={{display:"flex",gap:4,flexWrap:"wrap",padding:"6px 0 4px",marginLeft:48}}>
-                            {FUN_ICONS.slice(0,14).map(e => (
-                              <div key={e} onClick={()=>updateExtraChar(c.id,{emoji:e} as any)}
-                                style={{width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",
-                                  fontSize:15,cursor:"pointer",transition:"all .15s",
-                                  border:(c as any).emoji===e?"1.5px solid rgba(212,160,48,.5)":"1px solid rgba(255,255,255,.06)",
-                                  background:(c as any).emoji===e?"rgba(212,160,48,.1)":"rgba(255,255,255,.03)"}}>
-                                {e}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-                {/* Add character button — always shown if under limit */}
-                {extraChars.length < 4 && (
-                  <div style={{display:"flex",gap:7,flexWrap:"wrap",marginTop:extraChars.length > 0 || savedCharsBuilder.filter((c: any) => c.name !== heroName).length > 0 ? 0 : 4}}>
-                    {CHAR_TYPES.map(t => (
-                      <button key={t.value} className="char-add-pill"
-                        onClick={()=>setExtraChars(cs=>[...cs,{id:uid(),type:t.value,name:"",photo:null,classify:"",gender:"",note:""}])}>
-                        <span className="char-add-pill-icon">{t.icon}</span><span>+ {t.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                <div className="divider" />
 
-              <div className="nb-divider" />
-
-              <div style={{marginBottom:16}}>
-                <div className="nb-label">Sneak in a lesson? <span style={{color:"rgba(244,239,232,.25)",fontSize:"8px",fontStyle:"italic",textTransform:"none",letterSpacing:0,marginLeft:4}}>optional</span></div>
+                {/* ── Lessons ── */}
                 <div>
-                  <div className="nb-lesson-group-label">Emotional</div>
-                  <div className="nb-lesson-pills">
-                    {LESSONS_EMOTIONAL.map(l => (
-                      <button key={l.value} className={`nb-lesson-pill${lessons.includes(l.value)?" sel":""}`}
+                  <div className="section-label" style={{marginBottom:8}}>💛 Sneak in a lesson? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
+                  <div className="les-pills">
+                    {[...LESSONS_CHARACTER,...LESSONS_EMOTIONAL].map(l => (
+                      <button key={l.value} className={`les-pill${lessons.includes(l.value)?" on":""}`}
                         onClick={()=>setLessons(ls=>ls.includes(l.value)?ls.filter(x=>x!==l.value):[...ls,l.value])}>
-                        {l.label.replace(/^[^ ]+ /,"")}
+                        {l.label}
                       </button>
                     ))}
                   </div>
+                  {lessons.length>0 && (
+                    <div style={{marginTop:8}}>
+                      <div style={{fontSize:10,color:"rgba(190,200,240,.65)",marginBottom:4}}>
+                        What's {heroName} experiencing? <span style={{opacity:.7}}>(makes it feel real, not preachy)</span>
+                      </div>
+                      <div style={{position:"relative"}}>
+                        <textarea className="ftarea" rows={1} style={{minHeight:40,fontSize:12,paddingRight:38}}
+                          placeholder={`e.g. '${heroName} has been scared about swimming lessons tomorrow' or 'gets very frustrated when things don't go her way'…`}
+                          value={lessonContext} onChange={e=>setLessonContext(e.target.value)} maxLength={200} />
+                        <button onClick={()=>{
+                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
+                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
+                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
+                                rec.onstart=()=>setIsListening(true);
+                                rec.onend=()=>setIsListening(false);
+                                rec.onerror=()=>setIsListening(false);
+                                rec.onresult=(e)=>{ const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" "); setLessonContext(g=>g?g+' '+t:t); setIsListening(false); };
+                                rec.start();
+                              }}
+                              title="Tap to speak"
+                              style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
+                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
+                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
+                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
+                                fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+                                transition:"all .2s",flexShrink:0}}>
+                              {isListening ? "⏹" : "🎤"}
+                            </button>
+                      </div>
+                      <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
+                        {isListening
+                          ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
+                          : <span>Tap 🎤 to speak</span>
+                        }
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div style={{marginTop:8}}>
-                  <div className="nb-lesson-group-label">Character</div>
-                  <div className="nb-lesson-pills">
-                    {LESSONS_CHARACTER.map(l => (
-                      <button key={l.value} className={`nb-lesson-pill${lessons.includes(l.value)?" sel":""}`}
-                        onClick={()=>setLessons(ls=>ls.includes(l.value)?ls.filter(x=>x!==l.value):[...ls,l.value])}>
-                        {l.label.replace(/^[^ ]+ /,"")}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {lessons.length > 0 && (
-                  <textarea className="nb-textarea"
-                    placeholder={`What's ${heroName} experiencing?`}
-                    value={lessonContext} onChange={e=>setLessonContext(e.target.value)}
-                    maxLength={200} rows={2} style={{marginTop:8}} />
-                )}
-              </div>
 
-              <div className="nb-divider" />
+                <div className="divider" />
 
-              <div style={{marginBottom:16}}>
-                <div className="nb-label">Settings</div>
-                <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                  <div>
-                    <div style={{fontSize:8.5,fontFamily:"var(--mono2)",color:"rgba(244,239,232,.28)",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px"}}>Reading Level</div>
-                    <div className="nb-age-row">
+                {/* ── Settings ── */}
+                <div>
+                  <div className="section-label" style={{marginBottom:8}}>📖 Story settings</div>
+                  <div style={{marginBottom:8}}>
+                    <div style={{fontSize:10,color:"rgba(190,200,240,.65)",marginBottom:5}}>Age group</div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
                       {AGES.map(a => (
-                        <button key={a.value} className={`nb-age-pill${ageGroup===a.value?" sel":""}`}
+                        <button key={a.value}
+                          style={{padding:"9px 10px",borderRadius:11,cursor:"pointer",textAlign:"center",
+                            border:`1.5px solid ${ageGroup===a.value?"rgba(100,160,255,.7)":"rgba(255,255,255,.1)"}`,
+                            background:ageGroup===a.value?"rgba(100,160,255,.13)":"rgba(255,255,255,.04)",
+                            transition:"all .2s"}}
                           onClick={()=>setAgeGroup(a.value)}>
-                          <div>{a.label}</div><div className="nb-age-pill-sub">{a.grade}</div>
+                          <div style={{fontSize:12,fontWeight:700,color:ageGroup===a.value?"#a8c8ff":"var(--cream)"}}>{a.label}</div>
+                          <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1,textTransform:"uppercase",letterSpacing:".05em"}}>{a.grade}</div>
                         </button>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <div style={{fontSize:8.5,fontFamily:"var(--mono2)",color:"rgba(244,239,232,.28)",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px"}}>Length</div>
-                    <div className="nb-setting-chips">
+                    <div style={{fontSize:10,color:"rgba(190,200,240,.65)",marginBottom:5}}>Story length</div>
+                    <div style={{display:"flex",flexDirection:"column",gap:5}}>
                       {LENGTHS.map(l => (
-                        <button key={l.value} className={`nb-setting-chip${storyLen===l.value?" sel":""}`}
-                          onClick={()=>setStoryLen(l.value)}>{l.label} · {l.desc}</button>
+                        <button key={l.value}
+                          style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 13px",borderRadius:11,cursor:"pointer",textAlign:"left",
+                            border:`1.5px solid ${storyLen===l.value?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
+                            background:storyLen===l.value?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
+                            transition:"all .2s"}}
+                          onClick={()=>setStoryLen(l.value)}>
+                          <span style={{fontSize:12,fontWeight:700,color:storyLen===l.value?"var(--gold2)":"var(--cream)"}}>{l.label}</span>
+                          <span style={{fontSize:10,color:"var(--dimmer)"}}>{l.desc}</span>
+                        </button>
                       ))}
                     </div>
                   </div>
-                  <div>
-                    <div style={{fontSize:8.5,fontFamily:"var(--mono2)",color:"rgba(244,239,232,.28)",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px"}}>Style</div>
-                    <div className="nb-setting-chips">
-                      {[{v:"standard",l:"Standard"},{v:"rhyming",l:"Rhyming"},{v:"mystery",l:"Mystery"}].map(o => (
-                        <button key={o.v} className={`nb-setting-chip${storyStyle===o.v?" sel":""}`}
-                          onClick={()=>setStoryStyle(o.v)}>{o.l}</button>
-                      ))}
+                </div>
+
+                <div className="divider" />
+
+                {/* ── More options ── */}
+                <div>
+                  <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
+                    background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:12,
+                    padding:"10px 14px",cursor:"pointer"}}
+                    onClick={()=>setMoreOpen(o=>!o)}>
+                    <div style={{textAlign:"left"}}>
+                      <div style={{fontSize:12,fontWeight:700,color:"var(--cream)"}}>✨ More options</div>
+                      <div style={{fontSize:10,fontWeight:400,color:"var(--dimmer)",marginTop:2}}>Special night · pace · style · {heroName}'s personality</div>
                     </div>
-                  </div>
-                  <div style={{marginTop:4}}>
-                    <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer",padding:"10px 12px",
-                      borderRadius:11,border:`1px solid ${storyStyle==="adventure"?"rgba(232,151,42,.32)":"rgba(255,255,255,.08)"}`,
-                      background:storyStyle==="adventure"?"rgba(232,151,42,.09)":"rgba(255,255,255,.03)",transition:"all .2s"}}
-                      onClick={()=>setStoryStyle(storyStyle==="adventure"?"standard":"adventure")}>
-                      <div style={{width:18,height:18,borderRadius:4,border:`1.5px solid ${storyStyle==="adventure"?"var(--amber)":"rgba(255,255,255,.2)"}`,
-                        background:storyStyle==="adventure"?"var(--amber)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",
-                        flexShrink:0,marginTop:1,transition:"all .2s"}}>
-                        {storyStyle==="adventure" && <span style={{color:"#1A1420",fontSize:12,fontWeight:700}}>✓</span>}
-                      </div>
+                    <span style={{fontSize:12,color:"var(--dim)",transition:"transform .25s",transform:moreOpen?"rotate(180deg)":"none"}}>▼</span>
+                  </button>
+
+                  {moreOpen && (
+                    <div style={{display:"flex",flexDirection:"column",gap:14,marginTop:14}}>
+
                       <div>
-                        <div style={{fontSize:12,fontWeight:600,color:storyStyle==="adventure"?"var(--amber2)":"rgba(244,239,232,.55)",
-                          fontFamily:"var(--sans2)",marginBottom:2}}>🔀 Choose-Your-Path</div>
-                        <div style={{fontSize:10,color:"rgba(244,239,232,.3)",fontFamily:"var(--sans2)",lineHeight:1.5}}>
-                          Your child gets to choose options within the story — two paths, both end in sleep.
+                        <div className="section-label" style={{marginBottom:6}}>🎉 Is tonight a special night? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"rgba(190,200,240,.65)",fontSize:10}}>(optional)</span></div>
+                        <input className="finput" style={{fontSize:13}}
+                          placeholder="e.g. Birthday, 1st day of school tomorrow, lost a tooth, new baby…"
+                          value={occasionCustom} onChange={e=>setOccasionCustom(e.target.value)} maxLength={120} />
+                      </div>
+
+                      <div className="divider" />
+
+                      <div>
+                        <div className="section-label" style={{marginBottom:8}}>💤 Narration pace</div>
+                        <div className="les-pills">
+                          {[{v:"normal",l:"Normal"},{v:"sleepy",l:"😴 Extra sleepy"},{v:"snappy",l:"⚡ Quick & snappy"}].map(o => (
+                            <button key={o.v} className={`les-pill${storyPace===o.v?" on":""}`}
+                              onClick={()=>setStoryPace(o.v)}>{o.l}
+                            </button>
+                          ))}
                         </div>
                       </div>
-                    </label>
-                  </div>
+
+                      <div className="divider" />
+
+                      <div>
+                        <div className="section-label" style={{marginBottom:8}}>📚 Story style</div>
+                        <div className="les-pills">
+                          {[{v:"standard",l:"Standard"},{v:"rhyming",l:"🎵 Rhyming"},{v:"adventure",l:"🔀 Choose-your-adventure"},{v:"mystery",l:"🔍 Mystery"}].map(o => (
+                            <button key={o.v} className={`les-pill${storyStyle===o.v?" on":""}`}
+                              onClick={()=>setStoryStyle(o.v)}>{o.l}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="divider" />
+
+                      <div>
+                        <div className="section-label" style={{marginBottom:8}}>✨ {heroName} is… <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
+                        <div className="les-pills">
+                          {["Brave","Silly","Curious","Kind","Adventurous","Shy","Clever","Caring"].map(t => (
+                            <button key={t} className={`les-pill${heroTraits.includes(t)?" on":""}`}
+                              onClick={()=>setHeroTraits(ts=>ts.includes(t)?ts.filter(x=>x!==t):[...ts,t])}>
+                              {t}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                    </div>
+                  )}
                 </div>
-              </div>
 
-              <div className="nb-divider" />
-
-              <div style={{marginBottom:16}}>
-                <div className="nb-label">Special occasion? <span style={{color:"rgba(244,239,232,.25)",fontSize:"8px",fontStyle:"italic",textTransform:"none",letterSpacing:0,marginLeft:4}}>optional</span></div>
-                <input className="nb-input-sm" placeholder="e.g. Birthday, first day, lost a tooth…"
-                  value={occasionCustom} onChange={e=>setOccasionCustom(e.target.value)} maxLength={120} />
-              </div>
-
-              <div style={{marginBottom:16}}>
-                <div className="nb-label">One interesting, quirky, or special detail about {heroName || "them"} <span style={{color:"rgba(244,239,232,.25)",fontSize:"8px",fontStyle:"italic",textTransform:"none",letterSpacing:0,marginLeft:4}}>optional but powerful</span></div>
-                <textarea className="nb-textarea"
-                  placeholder={`Something that makes ${heroName||"them"} uniquely themselves… e.g. "keeps a list of every dog she's met in order of how much they understood her"`}
-                  value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)}
-                  maxLength={200} rows={2} />
-              </div>
-
-              {error && <div className="err-box" style={{marginBottom:10}}>⚠️ {error}</div>}
-              <div style={{height:90}} />
-            </div>
-
-            <div
-              className={`nb-sticky-bar${hasGoodInfo ? " has-info" : ""}`}
-              onClick={e => {
-                if ((e.target as HTMLElement).closest(".nb-sticky-btn")) return;
-                if (canGenerate) setShowBuilderDrawer(d => !d);
-              }}>
-              {hasGoodInfo && <div className="nb-ready-label">✦ Story is ready — tap to review</div>}
-              <div className="nb-sticky-handle" />
-              <div className="nb-sticky-inner">
-                <div className="nb-sticky-av">
-                  {matchedChar?.photo ? <img src={matchedChar.photo} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"50%"}} alt="" /> : <span style={{fontSize:19}}>{matchedChar?.emoji || "🌙"}</span>}
-                </div>
-                <div className="nb-sticky-info">
-                  <div className="nb-sticky-name">{heroName || "Your story"}</div>
-                  <div className="nb-sticky-sub">{stickyLabel}</div>
-                  {hasGoodInfo && <div className="nb-sticky-hint">▲ Tap to review full summary</div>}
-                </div>
-                <button className="nb-sticky-btn" disabled={!canGenerate}
-                  onClick={e => { e.stopPropagation(); generate({storyBrief1, storyBrief2, realLifeCtx}); }}>
-                  Create →
-                </button>
               </div>
             </div>
 
-            {showBuilderDrawer && (
-              <>
-                <div className="nb-drawer-overlay" onClick={() => setShowBuilderDrawer(false)} />
-                <div className="nb-drawer">
-                  <div className="nb-drawer-handle" />
-                  <div className="nb-drawer-title">{heroName ? `${heroName}'s Story Tonight` : "Tonight's Story"}</div>
-                  <div className="nb-drawer-sub">Review your story before generating</div>
-                  {preview && <div className="nb-drawer-preview">{preview}</div>}
-                  <div className="nb-drawer-rows">
-                    <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Mood</span><span className="nb-drawer-row-val">{drawerSummary.mood}</span></div>
-                    <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">About</span><span className="nb-drawer-row-val">{drawerSummary.about}</span></div>
-                    <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Cast</span><span className="nb-drawer-row-val">{drawerSummary.cast}</span></div>
-                    {drawerSummary.weird !== "None added" && <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Detail</span><span className="nb-drawer-row-val">{drawerSummary.weird}</span></div>}
-                    {drawerSummary.lesson !== "None" && <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Lesson</span><span className="nb-drawer-row-val">{drawerSummary.lesson}</span></div>}
-                    {drawerSummary.occasion !== "None" && <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Occasion</span><span className="nb-drawer-row-val">{drawerSummary.occasion}</span></div>}
-                    <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Age</span><span className="nb-drawer-row-val">{drawerSummary.age}</span></div>
-                    <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Length</span><span className="nb-drawer-row-val">{drawerSummary.length}</span></div>
-                    <div className="nb-drawer-row"><span className="nb-drawer-row-lbl">Style</span><span className="nb-drawer-row-val">{drawerSummary.style}</span></div>
-                  </div>
-                  <div className="nb-drawer-disclaimer">Please confirm this all looks right before generating</div>
-                  <button className="nb-drawer-cta" disabled={!canGenerate}
-                    onClick={() => { setShowBuilderDrawer(false); generate({storyBrief1, storyBrief2, realLifeCtx}); }}>
-                    Create {heroName ? `${heroName}'s` : "tonight's"} story ✨
-                  </button>
-                  <button className="nb-drawer-edit" onClick={() => setShowBuilderDrawer(false)}>← Keep editing</button>
-                </div>
-              </>
-            )}
+            {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
+            <button className="btn" style={{marginBottom:16}} onClick={()=>generate({storyBrief1,storyBrief2,realLifeCtx})}>
+              ✨ Make {heroName}'s story!
+            </button>
           </div>
-          );
-        })()}
-
+        )}
+        {/* GENERATING */}
         {/* GENERATING */}
         {stage==="generating" && (
-          <div className="screen" style={{maxWidth:420,padding:0}}>
-            <div className="nb-nav">
-              <div className="nb-logo"><div className="nb-moon" />SleepSeed</div>
-            </div>
-            <div className="nb-gen-body">
-              <div className="nb-gen-progress">
-                <div className="nb-gen-fill" style={{width:`${gen.progress}%`,transition:"width .5s ease"}} />
+          <div className="screen" style={{maxWidth:420}}>
+            <div className="card gen-wrap">
+              <div className="gen-orb" />
+              <div className="gen-title">{gen.label||"Writing the story…"}</div>
+              <div className="gen-sub">
+                A one-of-a-kind picture book for{" "}
+                <strong style={{color:"var(--gold2)"}}>{heroName}</strong>
+                {adventure && <span style={{display:"block",fontSize:12,color:"var(--gold)",marginTop:3}}>🔀 Choose-Your-Adventure mode</span>}
               </div>
-              <div className="nb-gen-dots">
-                {[0,1,2,3].map(i => (
-                  <div key={i} className={`nb-gen-dot${i<gen.stepIdx?" done":i===gen.stepIdx?" active":""}`}
-                    style={{width: i===gen.stepIdx ? 22 : i<gen.stepIdx ? 18 : 14}} />
-                ))}
+              <div className="pbar">
+                <div className="pfill" style={{width:`${gen.progress}%`}} />
               </div>
-              <div className="nb-gen-moon" />
-              <div className="nb-gen-title">Writing {heroName}'s story…</div>
-              <div className="nb-gen-sub">
-                A one-of-a-kind bedtime story.{adventure && " Choose-Your-Adventure mode."}<br/>About no one else on earth.
-              </div>
+              <div className="plabel" style={{marginBottom:12}}>{gen.progress}%</div>
 
+              {/* Bonding question card — visible during writing step */}
               {gen.stepIdx <= 2 && ncBondingQ && (
-                <div className="nb-bq-card">
-                  <div className="nb-bq-while">While you wait — ask {heroName}:</div>
-                  <div className="nb-bq-q">"{ncBondingQ}"</div>
+                <div style={{background:"rgba(160,120,255,.06)",border:"1px solid rgba(160,120,255,.18)",
+                  borderRadius:14,padding:"13px 15px",marginBottom:12}}>
+                  <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
+                    color:"rgba(160,120,255,.55)",marginBottom:6}}>While you wait…</div>
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
+                    color:"rgba(210,200,245,.88)",lineHeight:1.75,marginBottom:10}}>
+                    Snuggle in close and ask{" "}
+                    <span style={{color:"var(--gold2)",fontWeight:700}}>{heroName}</span>:{" "}
+                    <span style={{color:"#c0a8ff"}}>"{ncBondingQ}"</span>
+                  </div>
                   {ncBondingSaved ? (
-                    <div style={{background:"rgba(76,200,144,.08)",border:"1px solid rgba(76,200,144,.18)",borderRadius:10,padding:"10px 13px"}}>
-                      <div style={{fontSize:8.5,fontFamily:"var(--mono2)",color:"rgba(76,200,144,.6)",marginBottom:4,textTransform:"uppercase",letterSpacing:"1px"}}>✓ Saved for Night Card</div>
-                      <div style={{fontFamily:"var(--serif2)",fontSize:13,fontStyle:"italic",color:"var(--cream)",lineHeight:1.6}}>"{ncBondingA}"</div>
+                    <div style={{background:"rgba(76,200,144,.08)",border:"1px solid rgba(76,200,144,.2)",
+                      borderRadius:10,padding:"10px 12px"}}>
+                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
+                        color:"rgba(76,200,144,.6)",marginBottom:4}}>✓ Saved for Night Card</div>
+                      <div style={{fontFamily:"'Kalam',cursive",fontSize:13,color:"var(--cream)",lineHeight:1.6}}>
+                        "{ncBondingA}"
+                      </div>
                     </div>
                   ) : (
                     <>
-                      <textarea className="nb-bq-answer"
-                        placeholder={`What did ${heroName} say?\nTheir answer gets saved to tonight's Night Card…`}
-                        value={ncBondingA} onChange={e => setNcBondingA(e.target.value)} rows={3} />
-                      <button className="nb-bq-save" disabled={!ncBondingA.trim()}
-                        onClick={() => { if (ncBondingA.trim()) setNcBondingSaved(true); }}>
-                        {ncBondingA.trim() ? "Save for tonight's Night Card ✓" : "Type their answer above…"}
+                      <textarea
+                        className="ftarea"
+                        placeholder={`What did ${heroName} say?`}
+                        value={ncBondingA}
+                        onChange={e=>setNcBondingA(e.target.value)}
+                        style={{minHeight:48,fontSize:13,background:"rgba(255,255,255,.04)",
+                          border:"1px solid rgba(160,120,255,.15)",borderRadius:10,
+                          padding:"10px 12px",color:"var(--cream)",
+                          fontFamily:"'Kalam',cursive",lineHeight:1.6,resize:"none",marginBottom:8}}
+                      />
+                      <button
+                        className="btn-ghost"
+                        disabled={!ncBondingA.trim()}
+                        style={{width:"100%",fontSize:12,padding:"8px 12px",
+                          ...(ncBondingA.trim() ? {borderColor:"rgba(76,200,144,.4)",color:"#80d8a8",background:"rgba(76,200,144,.06)"} : {})}}
+                        onClick={()=>{ if(ncBondingA.trim()) setNcBondingSaved(true); }}>
+                        {ncBondingA.trim() ? "✓ Save answer for Night Card" : "Type an answer above"}
                       </button>
                     </>
                   )}
                 </div>
               )}
 
-              <div className="nb-step-list">
-                {["Setting the scene…","Writing the story…","Painting illustrations…","Book is ready!"].map((s,i) => {
-                  const state = i < gen.stepIdx ? "done" : i === gen.stepIdx ? "active" : "pending";
-                  return (
-                    <div key={i} className={`nb-step-item ${state}`}>
-                      <div className={`nb-step-icon ${state}`}>
-                        {state === "done" ? (
-                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#34D399" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        ) : state === "active" ? (
-                          <div className="nb-step-pulse" />
-                        ) : null}
-                      </div>
-                      <span>{state === "done" ? "✓ " : ""}{s}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {gen.dots.length > 0 && (
-                <div style={{display:"flex",gap:5,flexWrap:"wrap",justifyContent:"center",marginTop:10}}>
+              {gen.dots.length>0 && (
+                <div style={{display:"flex",gap:5,flexWrap:"wrap",justifyContent:"center",marginBottom:10}}>
                   {gen.dots.map((s,i) => (
                     <div key={i} className={`img-dot ${s==="p"?"busy":"done"}`}>{s==="d"?"✓":"…"}</div>
                   ))}
                 </div>
               )}
+              <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                {["Setting the scene…","Writing the story…","Painting illustrations…","Book is ready!"].map((s,i) => (
+                  <div key={i} className={`pstep ${i===gen.stepIdx?"active":i<gen.stepIdx?"done":""}`}>
+                    <div className="pstep-dot" />
+                    <span>{i<gen.stepIdx?"✓ ":""}{s}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -3590,7 +3677,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </div>
               <button className="btn" style={{marginBottom:10}} onClick={()=>{
                 setError("");
-                setStage(lastErrStage||"builder");
+                setStage(lastErrStage||"quick");
               }}>
                 ✨ Try again
               </button>
@@ -3606,123 +3693,235 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
         {/* BOOK */}
         {stage==="book" && book && (
           <div className="book-shell">
-            <div className="rd-nav">
-              <div className="rd-logo" onClick={() => { window.speechSynthesis?.cancel(); if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;} autoReadRef.current=false;setIsReading(false);setStage("home"); }}>
-                <div style={{width:18,height:18,borderRadius:"50%",background:"radial-gradient(circle at 38% 38%,#F5C060,#C87020)",flexShrink:0}} /> SleepSeed
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+              <div style={{display:"flex",alignItems:"center",gap:7,cursor:"pointer"}}
+                onClick={()=>{
+                  window.speechSynthesis?.cancel();
+                  if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
+                  autoReadRef.current = false; setIsReading(false);
+                  setStage("home");
+                }}>
+                <div className="brand-gem" style={{width:30,height:30,fontSize:15,borderRadius:9}}>🌙</div>
+                <span className="brand-name" style={{fontSize:16}}>SleepSeed</span>
               </div>
-              <div className="rd-progress">{isLastPage?`${book.heroName}'s story · The End`:`Page ${pageIdx} of ${totalPages-1} · ~${Math.max(1,Math.ceil((totalPages-1-pageIdx)*0.4))} min`}</div>
-              <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                {fromCache && <div style={{fontSize:9,background:"rgba(76,200,144,.12)",border:"1px solid rgba(76,200,144,.28)",borderRadius:5,padding:"3px 7px",color:"var(--green2)",fontWeight:700}}>Saved</div>}
-                {voiceId && <div style={{fontSize:9,background:"rgba(240,100,120,.12)",border:"1px solid rgba(240,100,120,.28)",borderRadius:5,padding:"3px 7px",color:"#f8a0b0",fontWeight:700}}>Your Voice</div>}
+              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                {fromCache && <div style={{fontSize:10,background:"rgba(76,200,144,.12)",border:"1px solid rgba(76,200,144,.28)",borderRadius:6,padding:"3px 7px",color:"var(--green2)",fontWeight:700}}>⚡ Saved</div>}
+                {voiceId && <div style={{fontSize:10,background:"rgba(240,100,120,.12)",border:"1px solid rgba(240,100,120,.28)",borderRadius:6,padding:"3px 7px",color:"#f8a0b0",fontWeight:700}}>🎤 Your Voice</div>}
+                {isAdv&&chosenPath && <div style={{fontSize:10,background:"rgba(112,80,192,.12)",border:"1px solid rgba(112,80,192,.28)",borderRadius:6,padding:"3px 7px",color:"#c0a8ff",fontWeight:700}}>Path {chosenPath.toUpperCase()}</div>}
+                <div style={{fontSize:11,color:"var(--dim)",fontFamily:"'Kalam',cursive",fontStyle:"italic"}}>{book.heroName}'s story</div>
               </div>
             </div>
-            <div className="book-3d" onClick={addSparkle}>{renderPage()}{sparkles.map(sp=>(<div key={sp.id} className="spark-ring" style={{left:sp.x,top:sp.y}}>{Array.from({length:8},(_,i)=>{const angle=(i/8)*Math.PI*2;const dist=30+Math.random()*25;return(<div key={i} className="spark" style={{background:SPARK_COLORS[i%SPARK_COLORS.length],"--sx":`${Math.cos(angle)*dist}px`,"--sy":`${Math.sin(angle)*dist}px`,animationDelay:`${i*30}ms`,left:0,top:0}}/>);})}</div>))}</div>
+
+            <div className="book-3d" onClick={addSparkle}>
+              {renderPage()}
+              {sparkles.map(sp => (
+                <div key={sp.id} className="spark-ring" style={{left:sp.x,top:sp.y}}>
+                  {Array.from({length:8},(_,i) => {
+                    const angle = (i/8)*Math.PI*2;
+                    const dist  = 30+Math.random()*25;
+                    return (
+                      <div key={i} className="spark" style={{
+                        background:SPARK_COLORS[i%SPARK_COLORS.length],
+                        "--sx":`${Math.cos(angle)*dist}px`,
+                        "--sy":`${Math.sin(angle)*dist}px`,
+                        animationDelay:`${i*30}ms`,
+                        left:0,top:0,
+                      }} />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+
             <div className="book-nav" style={{marginTop:8}}>
               <button className="nav-btn" disabled={pageIdx===0} onClick={()=>goPage(-1)}>← Back</button>
-              <div className="dots">{Array.from({length:totalPages}).map((_,i)=>(<div key={i} className={`dot${i===pageIdx?" on":""}`} onClick={()=>{if(i<=pageIdx||(i===choicePgIdx+1&&chosenPath))setPageIdx(i);}}/>))}</div>
-              <button className="nav-btn" disabled={isLastPage||(onChoicePg&&!chosenPath)} onClick={()=>goPage(1)}>{onChoicePg&&!chosenPath?"Choose!":"Next →"}</button>
+              <div className="dots">
+                {Array.from({length:totalPages}).map((_,i) => (
+                  <div key={i} className={`dot${i===pageIdx?" on":""}`}
+                    onClick={()=>{ if(i<=pageIdx||(i===choicePgIdx+1&&chosenPath)) setPageIdx(i); }} />
+                ))}
+              </div>
+              <button className="nav-btn" disabled={isLastPage||(onChoicePg&&!chosenPath)} onClick={()=>goPage(1)}>
+                {onChoicePg&&!chosenPath ? "Choose!" : "Next →"}
+              </button>
             </div>
-            <div className="rd-ctrl">
-              <button className={`rd-btn-secondary${isReading?" on":""}`} onClick={()=>{const prog=totalPages>1?pageIdx/(totalPages-1):0.5;toggleRead(pageIdx===0?`${book.title}. A bedtime story for ${book.heroName}.`:getCurrentPageText(),prog);}}>{isReading?"⏸ Pause":(selectedVoiceId||voiceId)?`🔊 ${(PRESET_VOICES.find(v=>v.id===selectedVoiceId)||{name:voiceId?"My Voice":"Read"}).name}`:"🔊 Read aloud"}</button>
-              <button className={`rd-btn-secondary${(selectedVoiceId||voiceId)?" on":""}`} onClick={()=>setShowVoicePicker(true)}>🎤 {selectedVoiceId?(PRESET_VOICES.find(v=>v.id===selectedVoiceId)?.name||"Voice"):voiceId?"My Voice":"Voice"}</button>
-              <button className="rd-btn-secondary" onClick={shareStory}>✨ Send story</button>
-              <button className="rd-btn-secondary" onClick={downloadStory}>📄 PDF</button>
-              <button className="rd-btn-secondary" onClick={async()=>{try{const s=makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance);await sDel(`book_${s}`);}catch(_){}window.speechSynthesis?.cancel();if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}autoReadRef.current=false;setStoryContext("");setLessonContext("");setTodayPrompt("");setStoryBrief1("");setStoryBrief2("");setRealLifeChip("");setRealLifeCtx("");setBriefStep1Open(true);setBriefStep2Open(false);setStage("home");setBook(null);setChosenPath(null);setIsReading(false);}}>🔄 New</button>
-              <div className="rd-status">✓ Auto-saved</div>
+
+            <div className="ctrl-bar">
+              <button className={`ctrl-btn read${isReading?" active":""}`}
+                onClick={()=>{ const prog=totalPages>1?pageIdx/(totalPages-1):0.5; toggleRead(pageIdx===0?`${book.title}. A bedtime story for ${book.heroName}.`:getCurrentPageText(),prog); }}>
+                {isReading ? "⏸ Pause" : (selectedVoiceId||voiceId) ? `🔊 ${(PRESET_VOICES.find(v=>v.id===selectedVoiceId)||{name:voiceId?"My Voice":"Read"}).name}` : "🔊 Read aloud"}
+              </button>
+              <div className="ctrl-btn" style={{cursor:"default",background:"rgba(76,200,144,.08)",borderColor:"rgba(76,200,144,.25)",color:"var(--green2)",fontSize:11}}>
+                ✓ Auto-saved
+              </div>
+              <button className="ctrl-btn fresh" onClick={async()=>{
+                try {
+                  const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance);
+                  await sDel(`book_${s}`);
+                } catch(_) {}
+                window.speechSynthesis?.cancel();
+                if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
+                autoReadRef.current = false;
+                setStoryContext(""); setLessonContext(""); setTodayPrompt(""); setStoryBrief1(""); setStoryBrief2(""); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(true); setBriefStep2Open(false);
+                setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
+              }}>🔄 New</button>
+              <button className="ctrl-btn dl" onClick={downloadStory}>📄 Download</button>
+              <button className="ctrl-btn" style={{background:"rgba(100,160,255,.1)",borderColor:"rgba(100,160,255,.25)",color:"#a8c8ff"}}
+                onClick={shareStory}>📤 Share</button>
+              <button className={`ctrl-btn vc-btn${(selectedVoiceId||voiceId)?" active":""}`}
+                onClick={()=>setShowVoicePicker(true)}>
+                🎤 {selectedVoiceId ? (PRESET_VOICES.find(v=>v.id===selectedVoiceId)?.name||"Voice") : voiceId ? "My Voice ✓" : "Choose Voice"}
+              </button>
             </div>
-            {showVoicePicker&&(<div className="vc-modal" onClick={e=>{if(e.target===e.currentTarget)setShowVoicePicker(false);}}><div className="vc-card" style={{maxHeight:"80vh",overflowY:"auto"}}><div className="vc-title">🎤 Choose a Voice</div><div className="vc-sub">Who reads tonight's story?</div><div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:8}}>Narrators</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:14}}>{PRESET_VOICES.map(v=>(<button key={v.id} style={{padding:"10px",borderRadius:11,cursor:"pointer",textAlign:"left",border:`1.5px solid ${selectedVoiceId===v.id?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,background:selectedVoiceId===v.id?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",transition:"all .15s"}} onClick={()=>{setSelectedVoiceId(selectedVoiceId===v.id?null:v.id);}}><div style={{fontSize:16,marginBottom:3}}>{v.emoji}</div><div style={{fontSize:12,fontWeight:700,color:selectedVoiceId===v.id?"var(--gold2)":"var(--cream)"}}>{v.name}</div><div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>{v.desc}</div></button>))}</div><div style={{height:1,background:"rgba(255,255,255,.08)",marginBottom:14}}/><div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:8}}>Your Own Voice</div><button style={{width:"100%",padding:"12px 14px",borderRadius:11,cursor:"pointer",textAlign:"left",border:`1.5px solid ${voiceId?"rgba(76,200,144,.5)":"rgba(255,255,255,.1)"}`,background:voiceId?"rgba(76,200,144,.08)":"rgba(255,255,255,.04)",marginBottom:14}} onClick={()=>{setShowVoicePicker(false);setVcStage(voiceId?"ready":"idle");setShowVcModal(true);}}><div style={{display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:22}}>🎙️</span><div><div style={{fontSize:12,fontWeight:700,color:voiceId?"#80d8a8":"var(--cream)"}}>{voiceId?"My Voice ✓":"Record My Voice"}</div><div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>{voiceId?"Tap to manage":"Clone your voice in 45 seconds"}</div></div></div></button><div style={{display:"flex",gap:8}}>{(selectedVoiceId||voiceId)&&(<button className="btn-ghost" style={{flex:1,fontSize:12,padding:10}} onClick={()=>{setSelectedVoiceId(null);}}>🔇 No Voice</button>)}<button className="btn" style={{flex:2,padding:11,fontSize:14}} onClick={()=>setShowVoicePicker(false)}>Done ✓</button></div></div></div>)}
-            {showVcModal&&(<div className="vc-modal" onClick={e=>{if(e.target===e.currentTarget){cancelRecording();setShowVcModal(false);} }}><div className="vc-card"><div className="vc-title">🎤 Use Your Voice</div><div className="vc-sub">Read the script below — SleepSeed learns your voice. ✨</div>{(vcStage==="idle"||vcStage==="error"||vcStage==="recording")&&(<><div className="vc-script-label">{vcStage==="recording"?"🔴 Recording — calm, warm pace:":"Read this aloud — warmly and clearly:"}</div><div className="vc-script">Once upon a time, in a land where the stars came out to play, a little child looked up at the sky and smiled. "Good evening," said the moon. "Are you ready for tonight's adventure?" And the child, heart full of wonder, whispered: "I'm always ready." So together they set off into the most magical night imaginable, where every shadow hid a friendly surprise, and every sound was the beginning of a brand new story.</div>{vcStage==="recording"?(<div style={{marginBottom:8}}><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}><div style={{fontSize:11,color:"var(--dim)"}}>{vcSeconds<15?"Keep going — aim for 30 seconds":vcSeconds<30?"Great! A little more…":"✓ Ready to stop"}</div><div style={{fontSize:22,fontFamily:"monospace",fontWeight:700,color:"var(--gold2)",letterSpacing:1}}>{String(Math.floor(vcSeconds/60)).padStart(2,"0")}:{String(vcSeconds%60).padStart(2,"0")}</div></div><div style={{height:4,background:"rgba(255,255,255,.08)",borderRadius:99,marginBottom:14,overflow:"hidden"}}><div style={{height:"100%",borderRadius:99,background:"var(--gold2)",width:`${Math.min(100,(vcSeconds/60)*100)}%`,transition:"width 1s linear"}}/></div><button className="btn" style={{marginBottom:8}} onClick={stopRecording}>⏹ Stop &amp; Use This Recording</button><button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={cancelRecording}>Cancel</button></div>):(<><div style={{fontSize:11,color:"var(--dim)",marginBottom:14,lineHeight:1.6}}>🎧 <strong style={{color:"var(--cream)"}}>Tips:</strong> Quiet room · calm bedtime pace · 30–60 seconds</div>{vcError&&<div style={{fontSize:11,color:"#f09080",marginBottom:10,lineHeight:1.5}}>{vcError}</div>}<button className="btn" style={{marginBottom:8}} onClick={startRecording}>🔴 Start Recording</button>{voiceId&&(<button className="btn-ghost" style={{width:"100%",fontSize:12,marginBottom:8}} onClick={resetVoice}>🗑 Remove current voice</button>)}<button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={()=>setShowVcModal(false)}>Close</button></>)}</>)}{vcStage==="uploading"&&(<div style={{textAlign:"center",padding:"24px 0"}}><div style={{fontSize:36,marginBottom:12}}>✨</div><div className="vc-status">Learning your voice…</div><div style={{fontSize:11,color:"var(--dimmer)",marginTop:6}}>This takes about 15 seconds</div></div>)}{vcStage==="ready"&&(<><div style={{textAlign:"center",padding:"16px 0 12px"}}><div style={{fontSize:40,marginBottom:8}}>🎉</div><div className="vc-status" style={{color:"var(--green2)"}}>Your voice is ready!</div><div style={{fontSize:11,color:"var(--dim)",marginTop:6}}>Every story will now be narrated in your voice.</div></div><div style={{display:"flex",gap:8}}><button className="btn" style={{flex:1,padding:11,fontSize:14}} onClick={()=>setShowVcModal(false)}>Done ✓</button><button className="btn-ghost" style={{flex:1,padding:11,fontSize:13}} onClick={()=>{setVcStage("idle");setVcSeconds(0);}}>Re-record</button></div><button className="btn-ghost" style={{width:"100%",fontSize:12,marginTop:8}} onClick={resetVoice}>🗑 Remove voice</button></>)}</div></div>)}
-            {showShareModal&&(
-              <div className="share-modal-bg" onClick={e=>{if(e.target===e.currentTarget)setShowShareModal(false);}}>
-                <div className="share-modal">
-                  <div className="share-modal-title">Share tonight's story</div>
-                  <div className="share-modal-sub">Send it to anyone — no account needed.</div>
 
-                  {/* Night Card toggle */}
-                  {book.nightCard && (
-                    <label style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",marginBottom:14,
-                      borderRadius:12,cursor:"pointer",transition:"all .2s",
-                      border:`1px solid ${shareIncludeNC?"rgba(232,151,42,.3)":"rgba(255,255,255,.08)"}`,
-                      background:shareIncludeNC?"rgba(232,151,42,.06)":"rgba(255,255,255,.02)"}}
-                      onClick={()=>{
-                        const next = !shareIncludeNC;
-                        setShareIncludeNC(next);
-                        setShareLink(generateShareLink(next));
-                        setShareCopied(false);
-                      }}>
-                      <div style={{width:20,height:20,borderRadius:5,flexShrink:0,
-                        border:`1.5px solid ${shareIncludeNC?"var(--amber,#E8972A)":"rgba(255,255,255,.2)"}`,
-                        background:shareIncludeNC?"var(--amber,#E8972A)":"transparent",
-                        display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s"}}>
-                        {shareIncludeNC && <span style={{color:"#1A1420",fontSize:13,fontWeight:700}}>✓</span>}
-                      </div>
-                      <div style={{flex:1}}>
-                        <div style={{fontSize:13,fontWeight:600,color:shareIncludeNC?"var(--cream)":"rgba(244,239,232,.5)"}}>🌙 Include tonight's Night Card</div>
-                        <div style={{fontSize:10,color:"rgba(244,239,232,.3)",marginTop:1}}>Share the bonding moment, photo, and answers alongside the story</div>
-                      </div>
-                    </label>
-                  )}
+            {/* ── Voice Picker Modal ── */}
+            {showVoicePicker && (
+              <div className="vc-modal" onClick={e=>{ if(e.target===e.currentTarget) setShowVoicePicker(false); }}>
+                <div className="vc-card" style={{maxHeight:"80vh",overflowY:"auto"}}>
+                  <div className="vc-title">🎤 Choose a Voice</div>
+                  <div className="vc-sub">Who reads tonight's story?</div>
 
-                  {/* Send to anyone */}
-                  <div style={{marginBottom:4}}>
-                    <div className="share-option" style={{cursor:"default"}}>
-                      <div className="share-option-icon" style={{background:"rgba(232,151,42,.1)"}}>👵</div>
-                      <div className="share-option-info">
-                        <div className="share-option-h">Send to anyone</div>
-                        <div className="share-option-sub">{(voiceId||selectedVoiceId)?"They can read and listen in your voice — no account needed":"Share the full story — they can read it on any device"}</div>
-                      </div>
-                    </div>
-                    <div className="share-link-row">
-                      <input id="share-link-input" className="share-link-input" readOnly value={shareLink} onClick={e=>(e.target as HTMLInputElement).select()}/>
-                      <button className={`share-link-copy${shareCopied?" copied":""}`} onClick={copyShareLink}>{shareCopied?"✓ Copied!":"Copy link"}</button>
-                    </div>
+                  {/* Preset voices */}
+                  <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:8}}>Narrators</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:14}}>
+                    {PRESET_VOICES.map(v => (
+                      <button key={v.id}
+                        style={{padding:"10px 10px",borderRadius:11,cursor:"pointer",textAlign:"left",
+                          border:`1.5px solid ${selectedVoiceId===v.id?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
+                          background:selectedVoiceId===v.id?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
+                          transition:"all .15s"}}
+                        onClick={()=>{ setSelectedVoiceId(selectedVoiceId===v.id?null:v.id); }}>
+                        <div style={{fontSize:16,marginBottom:3}}>{v.emoji}</div>
+                        <div style={{fontSize:12,fontWeight:700,color:selectedVoiceId===v.id?"var(--gold2)":"var(--cream)"}}>{v.name}</div>
+                        <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>{v.desc}</div>
+                      </button>
+                    ))}
                   </div>
 
-                  {/* Social media */}
-                  <div className="share-section-label">Social Media</div>
-                  <div className="share-sm-row">
-                    <button className="share-sm-btn" onClick={()=>{
-                      const url=encodeURIComponent(shareLink);
-                      const txt=encodeURIComponent(`${book?.heroName}'s personalised bedtime story — "${book?.title}" — made with SleepSeed ✨`);
-                      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${txt}`,"_blank","width=600,height=500");
-                    }}>
-                      <div className="share-sm-icon share-sm-fb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" fill="rgba(24,119,242,.9)"/></svg></div>
-                      <div className="share-sm-label">Facebook</div>
-                    </button>
-                    <button className="share-sm-btn" onClick={()=>{
-                      const url=encodeURIComponent(shareLink);
-                      const txt=encodeURIComponent(`${book?.heroName}'s personalised bedtime story — "${book?.title}" ✨ Made with SleepSeed`);
-                      window.open(`https://twitter.com/intent/tweet?text=${txt}&url=${url}`,"_blank","width=600,height=500");
-                    }}>
-                      <div className="share-sm-icon share-sm-x"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="rgba(255,255,255,.8)"/></svg></div>
-                      <div className="share-sm-label">X</div>
-                    </button>
-                    <button className="share-sm-btn" onClick={()=>{const el=document.getElementById("ig-sheet");if(el)el.classList.toggle("vis");}}>
-                      <div className="share-sm-icon share-sm-ig"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="rgba(225,48,108,.85)" strokeWidth="1.8"/><circle cx="12" cy="12" r="4.5" stroke="rgba(225,48,108,.85)" strokeWidth="1.8"/><circle cx="17.5" cy="6.5" r="1" fill="rgba(225,48,108,.85)"/></svg></div>
-                      <div className="share-sm-label">Instagram</div>
-                    </button>
-                  </div>
-                  <div id="ig-sheet" className="share-ig-sheet">
-                    <div className="share-ig-title">Share to Instagram</div>
-                    <div className="share-ig-sub">Instagram doesn't support direct sharing from web apps. Copy the link to paste in your caption, or download the story card image to post to Stories.</div>
-                    <div className="share-ig-btns">
-                      <button className="share-ig-copy" onClick={copyShareLink}>{shareCopied?"✓ Link copied!":"Copy link"}</button>
-                      <button className="share-ig-dl" onClick={()=>{setShowShareModal(false);shareSocialCard();}}>Download card</button>
-                    </div>
-                  </div>
+                  <div style={{height:1,background:"rgba(255,255,255,.08)",marginBottom:14}} />
 
-                  {/* Download PDF */}
-                  <div className="share-section-label">Save</div>
-                  <button className="share-option" onClick={()=>{setShowShareModal(false);downloadStory();}}>
-                    <div className="share-option-icon" style={{background:"rgba(76,200,144,.07)"}}>📄</div>
-                    <div className="share-option-info">
-                      <div className="share-option-h">Download as PDF</div>
-                      <div className="share-option-sub">A beautifully laid out printable book{book?.nightCard?" — includes your Night Card":""}</div>
+                  {/* Clone voice option */}
+                  <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:8}}>Your Own Voice</div>
+                  <button style={{width:"100%",padding:"12px 14px",borderRadius:11,cursor:"pointer",textAlign:"left",
+                    border:`1.5px solid ${voiceId?"rgba(76,200,144,.5)":"rgba(255,255,255,.1)"}`,
+                    background:voiceId?"rgba(76,200,144,.08)":"rgba(255,255,255,.04)",marginBottom:14}}
+                    onClick={()=>{ setShowVoicePicker(false); setVcStage(voiceId?"ready":"idle"); setShowVcModal(true); }}>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <span style={{fontSize:22}}>🎙️</span>
+                      <div>
+                        <div style={{fontSize:12,fontWeight:700,color:voiceId?"#80d8a8":"var(--cream)"}}>{voiceId?"My Voice ✓":"Record My Voice"}</div>
+                        <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>
+                          {voiceId?"Your cloned voice is active — tap to manage":"Clone your voice in 45 seconds"}
+                        </div>
+                      </div>
                     </div>
-                    <div style={{fontSize:11,color:"rgba(244,239,232,.25)"}}>›</div>
                   </button>
 
-                  <button className="share-dismiss" onClick={()=>setShowShareModal(false)}>Close</button>
+                  <div style={{display:"flex",gap:8}}>
+                    {(selectedVoiceId||voiceId) && (
+                      <button className="btn-ghost" style={{flex:1,fontSize:12,padding:10}}
+                        onClick={()=>{ setSelectedVoiceId(null); }}>
+                        🔇 No Voice
+                      </button>
+                    )}
+                    <button className="btn" style={{flex:2,padding:11,fontSize:14}}
+                      onClick={()=>setShowVoicePicker(false)}>
+                      Done ✓
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── Voice Clone Modal ── */}
+            {showVcModal && (
+              <div className="vc-modal" onClick={e=>{ if(e.target===e.currentTarget){ cancelRecording(); setShowVcModal(false); } }}>
+                <div className="vc-card">
+                  <div className="vc-title">🎤 Use Your Voice</div>
+                  <div className="vc-sub">
+                    Read the script below into your microphone — SleepSeed will learn your voice and narrate every story. ✨
+                  </div>
+
+                  {/* Script always visible in idle, error, and recording states */}
+                  {(vcStage==="idle"||vcStage==="error"||vcStage==="recording") && (
+                    <>
+                      <div className="vc-script-label">
+                        {vcStage==="recording" ? "🔴 Recording — keep reading at a calm, warm pace:" : "Read this aloud — warmly and clearly:"}
+                      </div>
+                      <div className="vc-script" style={{opacity:vcStage==="recording"?1:1,transition:"opacity .3s"}}>
+                        Once upon a time, in a land where the stars came out to play, a little child looked up at the sky and smiled. "Good evening," said the moon. "Are you ready for tonight's adventure?" And the child, heart full of wonder, whispered: "I'm always ready." So together they set off into the most magical night imaginable, where every shadow hid a friendly surprise, and every sound was the beginning of a brand new story. The trees whispered secrets. The fireflies wrote messages in the dark. And somewhere, not too far away, something wonderful was waiting — just for them.
+                      </div>
+
+                      {vcStage==="recording" ? (
+                        <div style={{marginBottom:8}}>
+                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                            <div style={{fontSize:11,color:"var(--dim)"}}>
+                              {vcSeconds < 15 ? "Keep going — aim for 30 seconds" : vcSeconds < 30 ? "Great! A little more…" : "✓ Ready to stop"}
+                            </div>
+                            <div style={{fontSize:22,fontFamily:"monospace",fontWeight:700,color:"var(--gold2)",letterSpacing:1}}>
+                              {String(Math.floor(vcSeconds/60)).padStart(2,"0")}:{String(vcSeconds%60).padStart(2,"0")}
+                            </div>
+                          </div>
+                          <div style={{height:4,background:"rgba(255,255,255,.08)",borderRadius:99,marginBottom:14,overflow:"hidden"}}>
+                            <div style={{height:"100%",borderRadius:99,background:"var(--gold2)",width:`${Math.min(100,(vcSeconds/60)*100)}%`,transition:"width 1s linear"}} />
+                          </div>
+                          <button className="btn" style={{marginBottom:8}} onClick={stopRecording}>
+                            ⏹ Stop &amp; Use This Recording
+                          </button>
+                          <button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={cancelRecording}>
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{fontSize:11,color:"var(--dim)",marginBottom:14,lineHeight:1.6}}>
+                            🎧 <strong style={{color:"var(--cream)"}}>Tips:</strong> Quiet room · calm bedtime pace · aim for 30–60 seconds
+                          </div>
+                          {vcError && <div style={{fontSize:11,color:"#f09080",marginBottom:10,lineHeight:1.5}}>{vcError}</div>}
+                          <button className="btn" style={{marginBottom:8}} onClick={startRecording}>
+                            🔴 Start Recording
+                          </button>
+                          {voiceId && (
+                            <button className="btn-ghost" style={{width:"100%",fontSize:12,marginBottom:8}} onClick={resetVoice}>
+                              🗑 Remove current voice
+                            </button>
+                          )}
+                          <button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={()=>setShowVcModal(false)}>
+                            Close
+                          </button>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  {vcStage==="uploading" && (
+                    <div style={{textAlign:"center",padding:"24px 0"}}>
+                      <div style={{fontSize:36,marginBottom:12}}>✨</div>
+                      <div className="vc-status">Learning your voice…</div>
+                      <div style={{fontSize:11,color:"var(--dimmer)",marginTop:6}}>This takes about 15 seconds</div>
+                    </div>
+                  )}
+
+                  {vcStage==="ready" && (
+                    <>
+                      <div style={{textAlign:"center",padding:"16px 0 12px"}}>
+                        <div style={{fontSize:40,marginBottom:8}}>🎉</div>
+                        <div className="vc-status" style={{color:"var(--green2)"}}>Your voice is ready!</div>
+                        <div style={{fontSize:11,color:"var(--dim)",marginTop:6}}>Every story will now be read in your voice.</div>
+                      </div>
+                      <div style={{display:"flex",gap:8}}>
+                        <button className="btn" style={{flex:1,padding:11,fontSize:14}} onClick={()=>setShowVcModal(false)}>
+                          Done ✓
+                        </button>
+                        <button className="btn-ghost" style={{flex:1,padding:11,fontSize:13}} onClick={()=>{ setVcStage("idle"); setVcSeconds(0); }}>
+                          Re-record
+                        </button>
+                      </div>
+                      <button className="btn-ghost" style={{width:"100%",fontSize:12,marginTop:8}} onClick={resetVoice}>
+                        🗑 Remove voice
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -3805,38 +4004,15 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </div>
             )}
 
-            {/* Step 3: Photo — camera or upload */}
+            {/* Step 3: Photo */}
             {ncStep===3 && (
               <div className="nc-step-card" key="s3">
-                <input ref={ncFileRef} type="file" accept="image/*" style={{display:"none"}}
-                  onChange={e=>{
-                    const file = e.target.files?.[0]; if(!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                      const img = new window.Image();
-                      img.onload = () => {
-                        const canvas = document.createElement("canvas");
-                        const s = Math.min(640/img.width, 640/img.height, 1);
-                        canvas.width = Math.round(img.width*s);
-                        canvas.height = Math.round(img.height*s);
-                        canvas.getContext("2d")?.drawImage(img,0,0,canvas.width,canvas.height);
-                        setNcPhoto(canvas.toDataURL("image/jpeg",0.82));
-                        ncStreamRef.current?.getTracks().forEach(t=>t.stop());
-                        ncStreamRef.current=null;
-                      };
-                      img.src = ev.target?.result as string;
-                    };
-                    reader.readAsDataURL(file);
-                    e.target.value = "";
-                  }} />
+                <div className="nc-step-icon">📸</div>
+                <div className="nc-step-title">Capture this moment</div>
+                <div className="nc-step-sub">Take a quick photo for your Night Card.</div>
 
                 {!ncPhoto ? (
                   <>
-                    <div className="nc-step-icon">📸</div>
-                    <div className="nc-step-title">Add a photo</div>
-                    <div className="nc-step-sub">Snap a selfie right now, or upload a favourite memory from today.</div>
-
-                    {/* Camera preview */}
                     <div className="nc-camera">
                       <video ref={ncVideoRef} autoPlay playsInline muted
                         style={{display:"block"}}
@@ -3845,80 +4021,72 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                         <div className="nc-countdown" key={ncCountdown}>{ncCountdown}</div>
                       )}
                     </div>
-                    {/* Camera started via effect */}
-
-                    {/* Two primary actions side by side */}
-                    <div style={{display:"flex",gap:8,marginBottom:8}}>
-                      <button className="btn" style={{flex:1,padding:12,fontSize:13}} disabled={ncCountdown>0}
+                    {/* Camera started via effect below */}
+                    <div style={{display:"flex",gap:8}}>
+                      <button className="btn-ghost" style={{flex:1}} onClick={()=>{
+                        ncStreamRef.current?.getTracks().forEach(t=>t.stop());
+                        ncStreamRef.current=null;
+                        setNcStep(2);
+                      }}>← Back</button>
+                      <button className="btn" style={{flex:2}} disabled={ncCountdown>0}
                         onClick={()=>{
+                          // 3-second countdown then capture
                           setNcCountdown(3);
                           let c = 3;
                           const iv = setInterval(()=>{
                             c--;
                             if(c > 0) { setNcCountdown(c); }
                             else {
-                              clearInterval(iv); setNcCountdown(0);
+                              clearInterval(iv);
+                              setNcCountdown(0);
+                              // Capture frame
                               const video = ncVideoRef.current;
                               if(video && video.videoWidth) {
                                 const canvas = document.createElement("canvas");
-                                const s = Math.min(480/video.videoWidth, 480/video.videoHeight, 1);
-                                canvas.width = Math.round(video.videoWidth*s);
-                                canvas.height = Math.round(video.videoHeight*s);
+                                const scale = Math.min(480/video.videoWidth, 480/video.videoHeight, 1);
+                                canvas.width = Math.round(video.videoWidth * scale);
+                                canvas.height = Math.round(video.videoHeight * scale);
                                 const ctx = canvas.getContext("2d");
-                                ctx.translate(canvas.width,0); ctx.scale(-1,1);
-                                ctx.drawImage(video,0,0,canvas.width,canvas.height);
-                                setNcPhoto(canvas.toDataURL("image/jpeg",0.82));
+                                ctx.translate(canvas.width, 0);
+                                ctx.scale(-1, 1); // mirror
+                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+                                setNcPhoto(dataUrl);
                                 ncStreamRef.current?.getTracks().forEach(t=>t.stop());
-                                ncStreamRef.current=null;
-                              } else { setNcStep(4); }
+                                ncStreamRef.current = null;
+                              } else {
+                                setNcStep(4); // fallback
+                              }
                             }
-                          },1000);
+                          }, 1000);
                         }}>
-                        📸 {ncCountdown > 0 ? ncCountdown : "Take selfie"}
-                      </button>
-                      <button className="btn-ghost" style={{flex:1,padding:12,fontSize:13,
-                        borderColor:"rgba(212,160,48,.3)",color:"var(--gold2)"}}
-                        onClick={()=>ncFileRef.current?.click()}>
-                        🖼️ Upload memory
+                        📸 {ncCountdown > 0 ? ncCountdown : "Capture"}
                       </button>
                     </div>
-
-                    <div style={{display:"flex",gap:8}}>
-                      <button className="btn-ghost" style={{flex:1,fontSize:11}} onClick={()=>{
+                    <button className="btn-ghost" style={{width:"100%",marginTop:8,fontSize:11}}
+                      onClick={()=>{
                         ncStreamRef.current?.getTracks().forEach(t=>t.stop());
                         ncStreamRef.current=null;
-                        setNcStep(2);
-                      }}>← Back</button>
-                      <button className="btn-ghost" style={{flex:1,fontSize:11}}
-                        onClick={()=>{
-                          ncStreamRef.current?.getTracks().forEach(t=>t.stop());
-                          ncStreamRef.current=null;
-                          setNcStep(4);
-                        }}>
-                        Skip photo →
-                      </button>
-                    </div>
+                        setNcStep(4);
+                      }}>
+                      Skip photo →
+                    </button>
                   </>
                 ) : (
                   <>
-                    <div className="nc-step-icon">✨</div>
-                    <div className="nc-step-title">Perfect</div>
-                    <div className="nc-camera" style={{borderRadius:12,border:"2px solid rgba(212,160,48,.25)"}}>
-                      <img src={ncPhoto} alt="Tonight's memory" />
+                    <div className="nc-camera">
+                      <img src={ncPhoto} alt="Captured" />
                     </div>
                     <div style={{display:"flex",gap:8}}>
                       <button className="btn-ghost" style={{flex:1}} onClick={()=>{
                         setNcPhoto(null);
+                        // Restart camera
                         navigator.mediaDevices?.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480}}})
                           .then(stream => {
                             ncStreamRef.current = stream;
                             if(ncVideoRef.current) ncVideoRef.current.srcObject = stream;
                           }).catch(()=>{});
-                      }}>📸 Retake</button>
-                      <button className="btn-ghost" style={{flex:1}} onClick={()=>{
-                        setNcPhoto(null);
-                        ncFileRef.current?.click();
-                      }}>🖼️ Different photo</button>
+                      }}>🔄 Retake</button>
                       <button className="btn" style={{flex:2}} onClick={()=>setNcStep(4)}>
                         Use this →
                       </button>
@@ -4089,7 +4257,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                     {memories.map(m => (
                       <div key={m.id}
                         style={{borderRadius:13,overflow:"hidden",
-                          border:`1px solid ${m.occasion?"rgba(212,160,48,.25)":"rgba(160,120,255,.2)"}`,
+                          border:`1px solid ${m.occasion?"rgba(240,180,50,.25)":"rgba(160,120,255,.2)"}`,
                           cursor:"pointer",transition:"transform .15s"}}
                         onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
                         onMouseLeave={e=>(e.currentTarget.style.transform="none")}
