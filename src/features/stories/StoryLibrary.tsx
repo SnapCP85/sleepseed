@@ -40,7 +40,13 @@ interface Props { userId: string; onBack: () => void; onReadStory: (bookData: an
 
 export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStory }: Props) {
   const [stories, setStories] = useState<SavedStory[]>([]);
+  const [filter, setFilter] = useState('all');
   useEffect(() => { getStories(userId).then(s => setStories(s)); }, [userId]);
+
+  // Extract unique character names from stories for filter chips
+  const heroNames = [...new Set(stories.map(s => s.heroName).filter(Boolean))];
+  const filtered = filter === 'all' ? stories : stories.filter(s => s.heroName === filter);
+
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!confirm('Remove this story?')) return;
@@ -58,7 +64,21 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
         </div>
       </nav>
       <div className="sl-inner">
-        {stories.length === 0 ? (
+        {heroNames.length > 1 && (
+          <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:16}}>
+            <div onClick={()=>setFilter('all')} style={{padding:'5px 14px',borderRadius:50,fontSize:11,fontWeight:600,cursor:'pointer',
+              border:`1px solid ${filter==='all'?'rgba(232,151,42,.5)':'rgba(255,255,255,.1)'}`,
+              background:filter==='all'?'rgba(232,151,42,.1)':'rgba(255,255,255,.03)',
+              color:filter==='all'?'#F5B84C':'rgba(244,239,232,.45)',transition:'all .15s'}}>All</div>
+            {heroNames.map(n => (
+              <div key={n} onClick={()=>setFilter(filter===n?'all':n)} style={{padding:'5px 14px',borderRadius:50,fontSize:11,fontWeight:600,cursor:'pointer',
+                border:`1px solid ${filter===n?'rgba(232,151,42,.5)':'rgba(255,255,255,.1)'}`,
+                background:filter===n?'rgba(232,151,42,.1)':'rgba(255,255,255,.03)',
+                color:filter===n?'#F5B84C':'rgba(244,239,232,.45)',transition:'all .15s'}}>{n}</div>
+            ))}
+          </div>
+        )}
+        {filtered.length === 0 && stories.length === 0 ? (
           <div className="sl-empty">
             <div className="sl-empty-moon" />
             <div className="sl-empty-h">Your library is empty.</div>
@@ -67,7 +87,7 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
           </div>
         ) : (
           <div className="sl-grid">
-            {stories.map(s => (
+            {filtered.map(s => (
               <div key={s.id} className="sl-card" onClick={() => onReadStory(s.bookData)}>
                 <div className="sl-card-header">
                   <div className="sl-card-icon">{s.occasion ? '🎉' : '🌙'}</div>

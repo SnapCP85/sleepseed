@@ -2347,7 +2347,7 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     } else {
       console.warn("[SleepSeed] No userId — story only saved to ss9 memories");
     }
-  },[memories,occasion,occasionCustom,userId,preloadedCharacter]);
+  },[memories,occasion,occasionCustom,userId,preloadedCharacter,selectedCharId,extraChars]);
 
   const deleteMemory = useCallback(async (id) => {
     const next = memories.filter(m => m.id!==id);
@@ -2363,31 +2363,40 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     // Mirror to v2 user-scoped storage
     if (userId) {
       try {
+        // Link to the most recent story
+        const recentStories = JSON.parse(localStorage.getItem(`ss2_stories_${userId}`) || "[]");
+        const latestStory = recentStories[0];
+
         const v2Key = `ss2_nightcards_${userId}`;
         const existing = JSON.parse(localStorage.getItem(v2Key) || "[]");
+        const allCharIds: string[] = [];
+        if (preloadedCharacter?.id) allCharIds.push(preloadedCharacter.id);
+        if (selectedCharId && !allCharIds.includes(selectedCharId)) allCharIds.push(selectedCharId);
+
         const v2Entry = {
           id: entry.id, userId,
-          heroName: entry.heroName || cardData.heroName || "",
-          storyTitle: entry.storyTitle || "",
-          characterIds: (() => { const ids: string[] = []; if(preloadedCharacter?.id) ids.push(preloadedCharacter.id); if(selectedCharId && !ids.includes(selectedCharId)) ids.push(selectedCharId); return ids; })(),
-          headline: entry.headline || "",
-          quote: entry.quote || cardData.bondingA || "",
-          memory_line: entry.memory_line || "",
-          bondingQuestion: entry.bondingQ || "",
-          bondingAnswer: entry.bondingA || "",
-          gratitude: entry.gratitudeA || "",
-          extra: entry.extraA || "",
-          photo: entry.photo || null,
-          emoji: entry.emoji || "🌙",
+          heroName: entry.heroName || cardData.heroName || book?.heroName || "",
+          storyId: latestStory?.id || "",
+          storyTitle: entry.storyTitle || cardData.storyTitle || book?.title || "",
+          characterIds: allCharIds,
+          headline: entry.headline || cardData.headline || "",
+          quote: entry.quote || cardData.quote || "",
+          memory_line: entry.memory_line || cardData.memory_line || "",
+          bondingQuestion: entry.bondingQ || entry.bondingQuestion || cardData.bondingQ || "",
+          bondingAnswer: entry.bondingA || entry.bondingAnswer || cardData.bondingA || "",
+          gratitude: entry.gratitude || cardData.gratitude || "",
+          extra: entry.extra || cardData.extra || "",
+          photo: entry.photo || cardData.photo || null,
+          emoji: entry.emoji || cardData.emoji || "🌙",
           date: entry.date
         };
         localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
-        // Also save to Supabase
+        console.log("[SleepSeed] Night Card saved to localStorage, charIds:", allCharIds);
         try { await saveNightCardToSupabase(v2Entry); } catch(_) {}
-      } catch(_) {}
+      } catch(e) { console.error("[SleepSeed] Night Card save failed:", e); }
     }
     return entry;
-  },[nightCards,userId,preloadedCharacter]);
+  },[nightCards,userId,preloadedCharacter,selectedCharId,book]);
 
   const deleteNightCard = useCallback(async (id) => {
     const next = nightCards.filter(c => c.id!==id);

@@ -61,7 +61,11 @@ interface Props { userId: string; onBack: () => void; }
 export default function NightCardLibrary({ userId, onBack }: Props) {
   const [cards, setCards] = useState<SavedNightCard[]>([]);
   const [viewing, setViewing] = useState<SavedNightCard | null>(null);
+  const [filter, setFilter] = useState('all');
   useEffect(() => { getNightCards(userId).then(c => setCards(c)); }, [userId]);
+
+  const heroNames = [...new Set(cards.map(c => c.heroName).filter(Boolean))];
+  const filtered = filter === 'all' ? cards : cards.filter(c => c.heroName === filter);
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!confirm('Remove this Night Card?')) return;
@@ -86,7 +90,21 @@ export default function NightCardLibrary({ userId, onBack }: Props) {
             Every story creates a Night Card — a keepsake of what your child said, felt, and was on that specific night.
           </div>
         )}
-        {cards.length === 0 ? (
+        {heroNames.length > 1 && (
+          <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:16}}>
+            <div onClick={()=>setFilter('all')} style={{padding:'5px 14px',borderRadius:50,fontSize:11,fontWeight:600,cursor:'pointer',
+              border:`1px solid ${filter==='all'?'rgba(232,151,42,.5)':'rgba(255,255,255,.1)'}`,
+              background:filter==='all'?'rgba(232,151,42,.1)':'rgba(255,255,255,.03)',
+              color:filter==='all'?'#F5B84C':'rgba(244,239,232,.45)',transition:'all .15s'}}>All</div>
+            {heroNames.map(n => (
+              <div key={n} onClick={()=>setFilter(filter===n?'all':n)} style={{padding:'5px 14px',borderRadius:50,fontSize:11,fontWeight:600,cursor:'pointer',
+                border:`1px solid ${filter===n?'rgba(232,151,42,.5)':'rgba(255,255,255,.1)'}`,
+                background:filter===n?'rgba(232,151,42,.1)':'rgba(255,255,255,.03)',
+                color:filter===n?'#F5B84C':'rgba(244,239,232,.45)',transition:'all .15s'}}>{n}</div>
+            ))}
+          </div>
+        )}
+        {filtered.length === 0 && cards.length === 0 ? (
           <div className="ncl-empty">
             <div className="ncl-empty-moon" />
             <div className="ncl-empty-h">No Night Cards yet.</div>
@@ -96,7 +114,7 @@ export default function NightCardLibrary({ userId, onBack }: Props) {
           </div>
         ) : (
           <div className="ncl-cork">
-            {cards.map((nc, i) => {
+            {filtered.map((nc, i) => {
               const sz = SIZES[i % SIZES.length];
               const rot = ROTS[i % ROTS.length];
               return (
