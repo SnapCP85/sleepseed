@@ -9,7 +9,8 @@ export interface User {
 }
 
 // ── Character ─────────────────────────────────────────────────────────────────
-export type CharacterType = 'human' | 'animal' | 'creature' | 'stuffy' | 'other';
+export type CharacterType = 'human' | 'animal' | 'creature' | 'stuffy' | 'other' | 'parent';
+export type ParentRole = 'mom' | 'dad' | 'grandma' | 'grandpa';
 export type Pronoun = 'she/her' | 'he/him' | 'they/them' | 'it/its' | 'other';
 
 export type PersonalityTag =
@@ -22,17 +23,19 @@ export interface Character {
   userId: string;
   name: string;
   type: CharacterType;
-  ageDescription: string;       // "5 years old" | "a fluffy orange cat" | etc.
+  ageDescription: string;
   pronouns: Pronoun;
   personalityTags: PersonalityTag[];
-  weirdDetail: string;          // The one specific detail that makes them alive
-  currentSituation: string;     // What's going on in their life right now (optional)
-  photo?: string;               // base64 data URL (optional)
-  color: string;                // fallback avatar colour
-  emoji: string;                // fallback avatar emoji
-  storyIds: string[];           // IDs of stories they appear in
+  weirdDetail: string;
+  currentSituation: string;
+  photo?: string;
+  color: string;
+  emoji: string;
+  storyIds: string[];
   createdAt: string;
   updatedAt: string;
+  isFamily?: boolean;      // true = parent's child, appears in ritual dashboard
+  parentRole?: ParentRole; // only set when type === 'parent'
 }
 
 // ── Story (saved) ─────────────────────────────────────────────────────────────
@@ -66,6 +69,8 @@ export interface SavedNightCard {
   photo?: string;
   emoji?: string;
   date: string;
+  isOrigin?: boolean;   // the Night 0 / "where it began" card
+  whisper?: string;     // the closing whisper line
 }
 
 // ── Builder choices (passed from StoryBuilderPage → SleepSeedCore) ───────────
@@ -85,15 +90,18 @@ export interface BuilderChoices {
 
 // ── App view state ────────────────────────────────────────────────────────────
 export type AppView =
-  | 'public'            // public homepage
-  | 'auth'              // sign in / sign up
-  | 'dashboard'         // ritual dashboard (home)
-  | 'ritual-starter'    // tonight's story capture screen
-  | 'story-handoff'     // ritual seed shown, choose ritual vs free path
-  | 'story-configure'   // new story builder UI (ritual + free)
-  | 'story-builder'     // SleepSeedCore (generates + reads story)
-  | 'user-profile'      // profile: characters + story library + night cards
-  | 'characters'        // character library
-  | 'character-builder' // create/edit a character
-  | 'story-library'     // my stories
-  | 'nightcard-library'; // my night cards
+  | 'public'              // public homepage
+  | 'auth'                // sign in / sign up
+  | 'onboarding-welcome'  // full-screen welcome (first visit only)
+  | 'onboarding-tour'     // four-beat feature tour
+  | 'onboarding-night0'   // Night 0 card creation
+  | 'dashboard'           // ritual dashboard (home)
+  | 'ritual-starter'      // tonight's story capture screen
+  | 'story-handoff'       // ritual seed shown, choose ritual vs free path
+  | 'story-configure'     // new story builder UI (ritual + free)
+  | 'story-builder'       // SleepSeedCore (generates + reads story)
+  | 'user-profile'        // profile: characters + story library + night cards
+  | 'characters'          // character library
+  | 'character-builder'   // create/edit a character
+  | 'story-library'       // my stories
+  | 'nightcard-library';  // my night cards

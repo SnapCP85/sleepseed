@@ -9,8 +9,8 @@ const CSS = `
 .sl{min-height:100vh;background:var(--night);font-family:var(--sans);color:#F4EFE8;-webkit-font-smoothing:antialiased}
 .sl-nav{display:flex;align-items:center;justify-content:space-between;padding:0 6%;height:64px;border-bottom:1px solid rgba(232,151,42,.1);background:rgba(13,16,24,.97);position:sticky;top:0;z-index:10;backdrop-filter:blur(16px)}
 .sl-nav-left{display:flex;align-items:center;gap:14px}
-.sl-back{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.14);color:rgba(244,239,232,.7);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:6px;transition:all .15s;padding:8px 16px;border-radius:50px}
-.sl-back:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);color:#F4EFE8}
+.sl-back{background:transparent;border:none;color:rgba(244,239,232,.4);font-size:13px;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:6px;transition:color .15s}
+.sl-back:hover{color:rgba(244,239,232,.75)}
 .sl-title{font-family:var(--serif);font-size:18px;font-weight:700;color:#F4EFE8}
 .sl-count{font-size:10px;color:rgba(244,239,232,.25);font-family:var(--mono);background:rgba(255,255,255,.04);padding:3px 9px;border-radius:50px;border:1px solid rgba(255,255,255,.06)}
 .sl-inner{max-width:680px;margin:0 auto;padding:32px 24px}
@@ -40,18 +40,12 @@ interface Props { userId: string; onBack: () => void; onReadStory: (bookData: an
 
 export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStory }: Props) {
   const [stories, setStories] = useState<SavedStory[]>([]);
-  const [filter, setFilter] = useState('all');
-  useEffect(() => { getStories(userId).then(s => setStories(s)); }, [userId]);
-
-  // Extract unique character names from stories for filter chips
-  const heroNames = [...new Set(stories.map(s => s.heroName).filter(Boolean))];
-  const filtered = filter === 'all' ? stories : stories.filter(s => s.heroName === filter);
-
+  useEffect(() => { getStories(userId).then(setStories); }, [userId]);
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!confirm('Remove this story?')) return;
     await deleteStory(userId, id);
-    getStories(userId).then(s => setStories(s));
+    getStories(userId).then(setStories);
   };
   return (
     <div className="sl">
@@ -64,21 +58,7 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
         </div>
       </nav>
       <div className="sl-inner">
-        {heroNames.length > 1 && (
-          <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:16}}>
-            <div onClick={()=>setFilter('all')} style={{padding:'5px 14px',borderRadius:50,fontSize:11,fontWeight:600,cursor:'pointer',
-              border:`1px solid ${filter==='all'?'rgba(232,151,42,.5)':'rgba(255,255,255,.1)'}`,
-              background:filter==='all'?'rgba(232,151,42,.1)':'rgba(255,255,255,.03)',
-              color:filter==='all'?'#F5B84C':'rgba(244,239,232,.45)',transition:'all .15s'}}>All</div>
-            {heroNames.map(n => (
-              <div key={n} onClick={()=>setFilter(filter===n?'all':n)} style={{padding:'5px 14px',borderRadius:50,fontSize:11,fontWeight:600,cursor:'pointer',
-                border:`1px solid ${filter===n?'rgba(232,151,42,.5)':'rgba(255,255,255,.1)'}`,
-                background:filter===n?'rgba(232,151,42,.1)':'rgba(255,255,255,.03)',
-                color:filter===n?'#F5B84C':'rgba(244,239,232,.45)',transition:'all .15s'}}>{n}</div>
-            ))}
-          </div>
-        )}
-        {filtered.length === 0 && stories.length === 0 ? (
+        {stories.length === 0 ? (
           <div className="sl-empty">
             <div className="sl-empty-moon" />
             <div className="sl-empty-h">Your library is empty.</div>
@@ -87,7 +67,7 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
           </div>
         ) : (
           <div className="sl-grid">
-            {filtered.map(s => (
+            {stories.map(s => (
               <div key={s.id} className="sl-card" onClick={() => onReadStory(s.bookData)}>
                 <div className="sl-card-header">
                   <div className="sl-card-icon">{s.occasion ? '🎉' : '🌙'}</div>

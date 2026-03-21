@@ -9,8 +9,8 @@ const CSS = `
 .ncl{min-height:100vh;background:var(--night);font-family:var(--sans);color:#F4EFE8;-webkit-font-smoothing:antialiased}
 .ncl-nav{display:flex;align-items:center;justify-content:space-between;padding:0 6%;height:64px;border-bottom:1px solid rgba(232,151,42,.1);background:rgba(13,16,24,.97);position:sticky;top:0;z-index:10;backdrop-filter:blur(16px)}
 .ncl-nav-left{display:flex;align-items:center;gap:14px}
-.ncl-back{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.14);color:rgba(244,239,232,.7);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:6px;transition:all .15s;padding:8px 16px;border-radius:50px}
-.ncl-back:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);color:#F4EFE8}
+.ncl-back{background:transparent;border:none;color:rgba(244,239,232,.4);font-size:13px;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:6px;transition:color .15s}
+.ncl-back:hover{color:rgba(244,239,232,.75)}
 .ncl-title{font-family:var(--serif);font-size:18px;font-weight:700;color:#F4EFE8}
 .ncl-count{font-size:10px;color:rgba(244,239,232,.25);font-family:var(--mono);background:rgba(255,255,255,.04);padding:3px 9px;border-radius:50px;border:1px solid rgba(255,255,255,.06)}
 .ncl-inner{max-width:920px;margin:0 auto;padding:36px 24px}
@@ -33,6 +33,7 @@ const CSS = `
 .ncl-pol-name{font-family:Georgia,serif;font-size:11px;color:#3A2600;font-style:italic;line-height:1.4;font-weight:700}
 .ncl-pol-date{font-family:var(--mono);font-size:7.5px;color:rgba(58,40,0,.38);margin-top:2px}
 .ncl-pol-snip{font-family:Georgia,serif;font-size:8.5px;color:rgba(58,40,0,.5);font-style:italic;margin-top:3px;line-height:1.4}
+.ncl-origin-badge{position:absolute;top:6px;left:6px;background:rgba(232,151,42,.92);border-radius:4px;padding:2px 6px;font-size:6.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#120800;font-family:var(--sans);z-index:2}
 .ncl-pol-del{position:absolute;top:6px;right:6px;background:rgba(180,50,50,.8);border:none;border-radius:50%;width:20px;height:20px;font-size:9px;color:white;cursor:pointer;display:none;align-items:center;justify-content:center;font-family:var(--sans);transition:opacity .15s;z-index:2}
 .ncl-pol:hover .ncl-pol-del{display:flex}
 
@@ -56,21 +57,37 @@ const CSS = `
 const ROTS = [-3.2, 1.8, -1.5, 2.8, -2.1, 1.2, -2.8, 0.9, -1.8, 2.4, -0.8, 3.1];
 const SIZES = [150, 138, 145, 142, 148, 135, 152, 140];
 
-interface Props { userId: string; onBack: () => void; }
+interface Props { userId: string; onBack: () => void; filterCharacterId?: string; }
 
-export default function NightCardLibrary({ userId, onBack }: Props) {
+export default function NightCardLibrary({ userId, onBack, filterCharacterId }: Props) {
   const [cards, setCards] = useState<SavedNightCard[]>([]);
   const [viewing, setViewing] = useState<SavedNightCard | null>(null);
-  const [filter, setFilter] = useState('all');
-  useEffect(() => { getNightCards(userId).then(c => setCards(c)); }, [userId]);
+  useEffect(() => {
+    getNightCards(userId).then(fetched => {
+      // Pin origin card first, then sort by date descending
+      const sorted = [...fetched].sort((a, b) => {
+        if (a.isOrigin) return -1;
+        if (b.isOrigin) return 1;
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
+      setCards(sorted);
+    });
+  }, [userId]);
 
-  const heroNames = [...new Set(cards.map(c => c.heroName).filter(Boolean))];
-  const filtered = filter === 'all' ? cards : cards.filter(c => c.heroName === filter);
+  const displayed = filterCharacterId
+    ? cards.filter(c => c.characterIds?.includes(filterCharacterId))
+    : cards;
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!confirm('Remove this Night Card?')) return;
     await deleteNightCard(userId, id);
-    getNightCards(userId).then(c => setCards(c));
+    const fetched = await getNightCards(userId);
+    const sorted = [...fetched].sort((a, b) => {
+      if (a.isOrigin) return -1;
+      if (b.isOrigin) return 1;
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+    setCards(sorted);
     if (viewing?.id === id) setViewing(null);
   };
 
@@ -85,26 +102,23 @@ export default function NightCardLibrary({ userId, onBack }: Props) {
         </div>
       </nav>
       <div className="ncl-inner">
-        {cards.length > 0 && (
+        {/* filter bar when character filter is active */}
+        {filterCharacterId && (
+          <div style={{background:'rgba(160,120,255,.06)',border:'.5px solid rgba(160,120,255,.18)',borderRadius:10,padding:'8px 14px',marginBottom:12,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <div style={{fontSize:10,color:'rgba(160,120,255,.75)',fontFamily:'monospace',letterSpacing:'.04em'}}>
+              🌙 Showing cards for this character only
+            </div>
+            <button style={{fontSize:10,color:'rgba(160,120,255,.5)',background:'none',border:'none',cursor:'pointer',fontFamily:'inherit'}} onClick={onBack}>← all cards</button>
+          </div>
+        )}
+        {displayed.length > 0 && (
           <div className="ncl-intro">
-            Every story creates a Night Card — a keepsake of what your child said, felt, and was on that specific night.
+            {filterCharacterId
+              ? `${displayed.length} night ${displayed.length===1?'card':'cards'} for this character`
+              : 'Every story creates a Night Card — a keepsake of what your child said, felt, and was on that specific night.'}
           </div>
         )}
-        {heroNames.length > 1 && (
-          <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:16}}>
-            <div onClick={()=>setFilter('all')} style={{padding:'5px 14px',borderRadius:50,fontSize:11,fontWeight:600,cursor:'pointer',
-              border:`1px solid ${filter==='all'?'rgba(232,151,42,.5)':'rgba(255,255,255,.1)'}`,
-              background:filter==='all'?'rgba(232,151,42,.1)':'rgba(255,255,255,.03)',
-              color:filter==='all'?'#F5B84C':'rgba(244,239,232,.45)',transition:'all .15s'}}>All</div>
-            {heroNames.map(n => (
-              <div key={n} onClick={()=>setFilter(filter===n?'all':n)} style={{padding:'5px 14px',borderRadius:50,fontSize:11,fontWeight:600,cursor:'pointer',
-                border:`1px solid ${filter===n?'rgba(232,151,42,.5)':'rgba(255,255,255,.1)'}`,
-                background:filter===n?'rgba(232,151,42,.1)':'rgba(255,255,255,.03)',
-                color:filter===n?'#F5B84C':'rgba(244,239,232,.45)',transition:'all .15s'}}>{n}</div>
-            ))}
-          </div>
-        )}
-        {filtered.length === 0 && cards.length === 0 ? (
+        {displayed.length === 0 ? (
           <div className="ncl-empty">
             <div className="ncl-empty-moon" />
             <div className="ncl-empty-h">No Night Cards yet.</div>
@@ -114,13 +128,16 @@ export default function NightCardLibrary({ userId, onBack }: Props) {
           </div>
         ) : (
           <div className="ncl-cork">
-            {filtered.map((nc, i) => {
+            {displayed.map((nc, i) => {
               const sz = SIZES[i % SIZES.length];
               const rot = ROTS[i % ROTS.length];
               return (
                 <div key={nc.id} className="ncl-pol"
-                  style={{ width: sz, transform: `rotate(${rot}deg)`, boxShadow: `0 ${4 + (i % 3) * 2}px ${18 + (i % 4) * 5}px rgba(0,0,0,.6)` }}
+                  style={{ width: sz, transform: nc.isOrigin ? 'rotate(-1deg)' : `rotate(${rot}deg)`, boxShadow: nc.isOrigin ? '0 8px 32px rgba(232,151,42,.25),0 4px 16px rgba(0,0,0,.6)' : `0 ${4 + (i % 3) * 2}px ${18 + (i % 4) * 5}px rgba(0,0,0,.6)` }}
                   onClick={() => setViewing(nc)}>
+                  {nc.isOrigin && (
+                    <div className="ncl-origin-badge">where it began ✦</div>
+                  )}
                   <div className="ncl-pol-photo" style={{ width: '100%', height: sz - 20, aspectRatio: '1' }}>
                     {nc.photo
                       ? <img className="ncl-pol-img" src={nc.photo} alt="" />
@@ -131,7 +148,9 @@ export default function NightCardLibrary({ userId, onBack }: Props) {
                     <div className="ncl-pol-date">{nc.date}</div>
                     {nc.gratitude && <div className="ncl-pol-snip">"{nc.gratitude.slice(0, 36)}{nc.gratitude.length > 36 ? '…' : ''}"</div>}
                   </div>
-                  <button className="ncl-pol-del" onClick={e => handleDelete(e, nc.id)}>✕</button>
+                  <button style={{position:'absolute',top:6,right:6,background:'rgba(180,50,50,.8)',border:'none',borderRadius:'50%',width:20,height:20,fontSize:9,color:'white',cursor:'pointer',display:'none',alignItems:'center',justifyContent:'center',fontFamily:'sans-serif'}}
+                    className="ncl-pol-del"
+                    onClick={e => handleDelete(e, nc.id)}>✕</button>
                 </div>
               );
             })}

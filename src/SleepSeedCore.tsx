@@ -786,11 +786,11 @@ const extractJSON = (text) => {
 
 /* ── Storage ── */
 const S_PFX = "ss9_";
-// Helper to get user-scoped storage key (falls back to shared if no userId)
-const userKey = (k: string, uid?: string) => uid ? `ss2_u${uid}_${k}` : S_PFX + k;
-const sGet = async (k) => { try { const v=localStorage.getItem(S_PFX+k); return v?JSON.parse(v):null; } catch { return null; } };
-const sSet = async (k,v) => { try { localStorage.setItem(S_PFX+k,JSON.stringify(v)); } catch {} };
-const sDel = async (k) => { try { localStorage.removeItem(S_PFX+k); } catch {} };
+// User-scoped key — prevents data leaking between users on the same device
+const userKey = (k: string, uid?: string) => uid ? `ss9_u_${uid}_${k}` : S_PFX + k;
+const sGet = async (k, uid?) => { try { const v=localStorage.getItem(userKey(k,uid)); return v?JSON.parse(v):null; } catch { return null; } };
+const sSet = async (k,v,uid?) => { try { localStorage.setItem(userKey(k,uid),JSON.stringify(v)); } catch {} };
+const sDel = async (k,uid?) => { try { localStorage.removeItem(userKey(k,uid)); } catch {} };
 
 /* ── Preload cache ── */
 const _imgCache = new Map();
@@ -1355,6 +1355,7 @@ interface SleepSeedCoreProps {
   userId?: string;
   isGuest?: boolean;
   preloadedCharacter?: any;
+  preloadedBook?: any;
   ritualSeed?: string;
   ritualMood?: string;
   builderChoices?: import('./lib/types').BuilderChoices | null;
@@ -1366,6 +1367,7 @@ export default function SleepSeed({
   userId,
   isGuest = false,
   preloadedCharacter,
+  preloadedBook,
   ritualSeed,
   ritualMood,
   builderChoices,
@@ -1464,13 +1466,24 @@ export default function SleepSeed({
   },[]);
 
   useEffect(() => {
-    sGet("memories").then(s => { if(s?.items) setMemories(s.items); });
-    sGet("nightcards").then(s => { if(s?.items) setNightCards(s.items); });
+    // Use user-scoped keys for memories and nightcards to prevent cross-user data leakage
+    sGet("memories", userId).then(s => { if(s?.items) setMemories(s.items); });
+    sGet("nightcards", userId).then(s => { if(s?.items) setNightCards(s.items); });
     sGet("style_dna").then(s => { if(s) setStyleDna(s); });
     sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); });
     sGet("onboarded").then(s => { if(s?.v) setHasSeenOnboard(true); });
+  },[userId]);
 
-  },[]);
+  // Open directly to book stage when a saved story is passed in
+  const hasLoadedBookRef = useRef(false);
+  useEffect(() => {
+    if (!preloadedBook || hasLoadedBookRef.current) return;
+    hasLoadedBookRef.current = true;
+    setBook(preloadedBook);
+    setPageIdx(0);
+    setFromCache(true);
+    setStage("book");
+  }, [preloadedBook]);
 
   // Pre-populate from a saved character when passed in from the dashboard
   useEffect(() => {
@@ -2144,7 +2157,7 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
       refrain: bookData.refrain || ""};
     const next = [entry,...memories];
     setMemories(next);
-    await sSet("memories",{items:next});
+    await sSet("memories",{items:next},userId);
     // Also mirror to v2 user-scoped storage so UserDashboard can read it
     if (userId) {
       try {
@@ -2171,14 +2184,14 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
   const deleteMemory = useCallback(async (id) => {
     const next = memories.filter(m => m.id!==id);
     setMemories(next);
-    await sSet("memories",{items:next});
-  },[memories]);
+    await sSet("memories",{items:next},userId);
+  },[memories,userId]);
 
   const saveNightCard = useCallback(async (cardData) => {
     const entry = {id:uid(),...cardData,date:new Date().toISOString().split("T")[0]};
     const next = [entry,...nightCards];
     setNightCards(next);
-    await sSet("nightcards",{items:next});
+    await sSet("nightcards",{items:next},userId);
     // Mirror to v2 user-scoped storage
     if (userId) {
       try {

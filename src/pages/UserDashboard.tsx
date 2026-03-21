@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useApp } from '../AppContext';
-import { getNightCards, getCharacters } from '../lib/storage';
 import type { SavedNightCard, Character } from '../lib/types';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -216,11 +215,37 @@ const CSS=`
 
 /* ── TONIGHT DONE ── */
 .dash-tnc-done{background:rgba(8,18,12,.98);border:1.5px solid #1D9E75;border-radius:16px;padding:18px;margin-bottom:12px;text-align:center;animation:fadein .5s ease-out}
+.dash-td-ritual-lbl{font-size:8px;letter-spacing:.1em;color:rgba(29,158,117,.6);font-weight:700;text-transform:uppercase;font-family:var(--mono);margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:5px}
+.dash-td-ritual-dot{width:4px;height:4px;border-radius:50%;background:#1D9E75;animation:twk 2s ease-in-out infinite}
 .dash-td-star{font-size:36px;color:#D4A028;animation:done-ring 3s ease-in-out infinite;display:inline-block;border-radius:50%;padding:3px;line-height:1;margin-bottom:8px}
 .dash-td-title{font-family:var(--serif);font-size:16px;color:var(--cream);margin-bottom:5px;line-height:1.45}
 .dash-td-name{color:var(--teal2);font-style:italic}
 .dash-td-sub{font-size:10.5px;color:rgba(244,239,232,.32);line-height:1.6;font-style:italic;margin-bottom:9px}
 .dash-td-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(29,158,117,.11);border:1px solid rgba(29,158,117,.24);border-radius:20px;padding:4px 12px;font-size:10px;color:var(--teal2);font-weight:500}
+
+/* ── FIRST-TIME WELCOME CARD ── */
+.dash-ft-card{background:linear-gradient(135deg,rgba(232,151,42,.07),rgba(232,151,42,.02));border:1px solid rgba(232,151,42,.2);border-radius:15px;padding:14px 16px;margin-bottom:14px;animation:fadein .5s ease-out}
+.dash-ft-title{font-family:var(--serif);font-size:17px;color:var(--cream);font-weight:700;margin-bottom:4px;line-height:1.35}
+.dash-ft-title em{color:var(--amber2);font-style:italic}
+.dash-ft-sub{font-size:11px;color:rgba(244,239,232,.38);line-height:1.65;margin-bottom:10px;font-weight:300}
+.dash-ft-btn{background:rgba(232,151,42,.12);border:1px solid rgba(232,151,42,.25);border-radius:9px;padding:8px 16px;font-size:12px;font-weight:500;color:var(--amber);cursor:pointer;font-family:var(--sans);transition:all .18s}
+.dash-ft-btn:hover{background:rgba(232,151,42,.2)}
+
+/* ── THREE ACTION CARDS ── */
+.dash-ys-wrap{display:flex;gap:8px;margin-bottom:12px}
+.dash-ys-card{flex:1;border-radius:12px;padding:11px 9px 10px;cursor:pointer;transition:filter .18s,transform .15s;display:flex;flex-direction:column;align-items:flex-start;min-height:82px;position:relative;overflow:hidden}
+.dash-ys-card:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.dash-ys-card:active{transform:scale(.97)}
+.dash-ys-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px}
+.dash-ys-create{background:linear-gradient(145deg,rgba(232,151,42,.14),rgba(200,110,18,.08));border:1px solid rgba(232,151,42,.24)}
+.dash-ys-create::before{background:linear-gradient(90deg,transparent,rgba(232,151,42,.5),transparent)}
+.dash-ys-library{background:linear-gradient(145deg,rgba(90,120,220,.13),rgba(60,80,180,.07));border:1px solid rgba(100,130,255,.19)}
+.dash-ys-library::before{background:linear-gradient(90deg,transparent,rgba(110,140,255,.42),transparent)}
+.dash-ys-nc{background:linear-gradient(145deg,rgba(150,90,240,.14),rgba(110,60,200,.08));border:1px solid rgba(160,110,255,.19)}
+.dash-ys-nc::before{background:linear-gradient(90deg,transparent,rgba(170,120,255,.42),transparent)}
+.dash-ys-icon{font-size:17px;line-height:1;margin-bottom:5px}
+.dash-ys-title{font-size:10.5px;font-weight:600;color:var(--cream);line-height:1.2;margin-bottom:2px}
+.dash-ys-stat{font-size:8.5px;color:rgba(244,239,232,.3);line-height:1.35;font-family:var(--mono)}
 
 /* ── WEEK ROW ── */
 .dash-week{background:rgba(255,255,255,.016);border:1px solid rgba(255,255,255,.042);border-radius:16px;padding:13px 18px}
@@ -351,17 +376,34 @@ export default function UserDashboard({onSignUp}:{onSignUp:()=>void}){
   const[weekViewId,setWeekViewId]=useState<string>('');
   const[modalCard,setModalCard]=useState<SavedNightCard|null>(null);
   const[missTooltip,setMissTooltip]=useState<number|null>(null);
+  const[storyCount,setStoryCount]=useState(0);
   const missTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
   const isGuest=!!user?.isGuest;
 
+  // detect first-time user — createdAt within 10 minutes of now
+  const isNewUser=useMemo(()=>{
+    if(!user?.createdAt) return false;
+    const created=new Date(user.createdAt).getTime();
+    const now=Date.now();
+    return (now-created)<10*60*1000;
+  },[user?.createdAt]);
+
   useEffect(()=>{
     if(!user) return;
-    Promise.all([getCharacters(user.id),getNightCards(user.id)]).then(([chars,cards])=>{
-      setCharacters(chars);setAllCards(cards);
-      if(chars.length>0){setSelectedCharacters([chars[0]]);setWeekViewId(chars[0].id);}
-      setLoading(false);
+    import('../lib/storage').then(({getCharacters,getNightCards,getStories})=>{
+      Promise.all([getCharacters(user.id),getNightCards(user.id),getStories(user.id)]).then(([chars,cards,stories])=>{
+        setCharacters(chars);setAllCards(cards);setStoryCount(stories.length);
+        // Only auto-select family characters (isFamily === true)
+        const familyChars=chars.filter(c=>c.isFamily===true);
+        if(familyChars.length>0){setSelectedCharacters([familyChars[0]]);setWeekViewId(familyChars[0].id);}
+        else if(chars.length>0){setSelectedCharacters([chars[0]]);setWeekViewId(chars[0].id);}
+        setLoading(false);
+      });
     });
   },[user]); // eslint-disable-line
+
+  // Only family characters appear in the ritual dashboard tab row
+  const familyChars=useMemo(()=>characters.filter(c=>c.isFamily===true),[characters]);
 
   const primary=selectedCharacters[0]??null;
   const secondary=selectedCharacters[1]??null;
@@ -394,7 +436,8 @@ export default function UserDashboard({onSignUp}:{onSignUp:()=>void}){
   let greetSuffix:'done'|'close'|'welcome'='close';
   if(tonightDone) greetSuffix='done';
   else if(hour<17) greetSuffix='welcome';
-  const greetEmText=greetSuffix==='done'?'Tonight\'s star is saved.':greetSuffix==='welcome'?'Welcome back.':'Bedtime is close.';
+  // New users get a special greeting; returning users get the time-aware one
+  const greetEmText=isNewUser?'Welcome to SleepSeed.':greetSuffix==='done'?'Tonight\'s star is saved.':greetSuffix==='welcome'?'Welcome back.':'Bedtime is close.';
 
   const today=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toUpperCase();
   const hasAnyNights=allCards.length>0;
@@ -541,23 +584,32 @@ export default function UserDashboard({onSignUp}:{onSignUp:()=>void}){
           <div className="dash-date">{today}</div>
         </div>
 
-        {/* empty state */}
+        {/* first-time welcome card */}
+        {isNewUser&&!isGuest&&(
+          <div className="dash-ft-card">
+            <div className="dash-ft-title">Welcome to SleepSeed.<br/>Let's get <em>started.</em></div>
+            <div className="dash-ft-sub">Add your child, then begin tonight's ritual — your first story is minutes away.</div>
+            <button className="dash-ft-btn" onClick={()=>setView('onboarding-tour')}>Take a quick tour →</button>
+          </div>
+        )}
+
+        {/* empty state — no characters at all */}
         {characters.length===0&&(
           <div className="dash-empty-cta">
             <div className="dash-empty-h">Welcome to SleepSeed ✦</div>
-            <div className="dash-empty-sub">Start by creating your first character — the child who stars in every story.</div>
+            <div className="dash-empty-sub">Start by creating your first child character — they'll star in every story.</div>
             <button className="dash-empty-btn" onClick={()=>{setEditingCharacter(null);setView('character-builder');}}>
               + Create first character
             </button>
           </div>
         )}
 
-        {/* child tabs */}
-        {characters.length>0&&(
+        {/* child tabs — only family characters */}
+        {familyChars.length>0&&(
           <div className="dash-tabs-section">
             <div className="dash-tabs-label">whose story is tonight?</div>
             <div className="dash-tabs-row">
-              {characters.map(c=>{
+              {familyChars.map(c=>{
                 const idx=selectedCharacters.findIndex(x=>x.id===c.id);
                 return(
                   <div key={c.id} className={tabClass(c)} onClick={()=>toggleChild(c)}>
@@ -659,6 +711,9 @@ export default function UserDashboard({onSignUp}:{onSignUp:()=>void}){
         {/* tonight card — normal OR done */}
         {tonightDone?(
           <div className="dash-tnc-done">
+            <div className="dash-td-ritual-lbl">
+              <div className="dash-td-ritual-dot"/><span>ritual complete</span><div className="dash-td-ritual-dot"/>
+            </div>
             <div className="dash-td-star">★</div>
             <div className="dash-td-title">
               Tonight's star is saved.<br/>
@@ -692,15 +747,30 @@ export default function UserDashboard({onSignUp}:{onSignUp:()=>void}){
               <button className="dash-tnc-btn" style={{background:btnBg,color:btnColor}}
                 onClick={e=>{e.stopPropagation();startRitual();}}
                 disabled={selectedCharacters.length===0}>
-                Start tonight's story ✦
-              </button>
-              <button className="dash-tnc-sec"
-                onClick={e=>{e.stopPropagation();setView('story-builder');}}>
-                create a different story →
+                Begin tonight's ritual ✦
               </button>
             </div>
           </div>
         )}
+
+        {/* ── THREE ACTION CARDS ── */}
+        <div className="dash-ys-wrap">
+          <div className="dash-ys-card dash-ys-create" onClick={()=>setView('story-configure' as any)}>
+            <div className="dash-ys-icon">✨</div>
+            <div className="dash-ys-title">Create a story</div>
+            <div className="dash-ys-stat">Any story, any time</div>
+          </div>
+          <div className="dash-ys-card dash-ys-library" onClick={()=>setView('story-library')}>
+            <div className="dash-ys-icon">📚</div>
+            <div className="dash-ys-title">My Library</div>
+            <div className="dash-ys-stat">{storyCount>0?`${storyCount} ${storyCount===1?'story':'stories'} saved`:'No stories yet'}</div>
+          </div>
+          <div className="dash-ys-card dash-ys-nc" onClick={()=>setView('nightcard-library')}>
+            <div className="dash-ys-icon">🌙</div>
+            <div className="dash-ys-title">Night Cards</div>
+            <div className="dash-ys-stat">{allCards.filter(c=>!c.isOrigin).length>0?`${allCards.filter(c=>!c.isOrigin).length} cards saved`:'Start saving'}</div>
+          </div>
+        </div>
 
         {/* this week */}
         {weekChild&&hasAnyNights&&(

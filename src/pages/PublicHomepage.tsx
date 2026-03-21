@@ -262,9 +262,7 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp, onNi
           SleepSeed
         </button>
         <div className="hp-nav-links">
-          <button className="hp-nl" onClick={onCreateStory}>Create a Story</button>
-          <button className="hp-nl" onClick={onNightCards}>Night Cards</button>
-          <button className="hp-nl" onClick={onLibrary}>My Library</button>
+          <button className="hp-nl" onClick={() => { const el = document.getElementById('about'); el?.scrollIntoView({behavior:'smooth'}); }}>About</button>
           <button className="hp-nl">Pricing</button>
         </div>
         <div className="hp-nav-right">

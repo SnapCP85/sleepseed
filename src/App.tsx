@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './AppContext';
 import PublicHomepage from './pages/PublicHomepage';
 import Auth from './pages/Auth';
+import OnboardingWelcome from './pages/OnboardingWelcome';
+import OnboardingTour from './pages/OnboardingTour';
+import OnboardingNightCard from './pages/OnboardingNightCard';
 import UserDashboard from './pages/UserDashboard';
 import UserProfile from './pages/UserProfile';
 import RitualStarter from './pages/RitualStarter';
@@ -15,46 +18,6 @@ import SleepSeedCore from './SleepSeedCore';
 import SharedStoryViewer from './pages/SharedStoryViewer';
 import type { Character } from './lib/types';
 
-const APP_NAV_CSS = `
-.anav{display:flex;align-items:center;justify-content:space-between;padding:0 5%;height:52px;border-bottom:1px solid rgba(232,151,42,.07);background:rgba(8,12,24,.97);position:sticky;top:0;z-index:20;backdrop-filter:blur(20px);font-family:'Plus Jakarta Sans',system-ui,sans-serif}
-.anav-logo{font-family:'Playfair Display',Georgia,serif;font-size:15px;font-weight:700;color:#F4EFE8;display:flex;align-items:center;gap:7px;cursor:pointer;flex-shrink:0}
-.anav-moon{width:14px;height:14px;border-radius:50%;background:#F5B84C;position:relative;overflow:hidden;flex-shrink:0}
-.anav-moon-sh{position:absolute;width:13px;height:13px;border-radius:50%;background:#050916;top:-3px;left:-6px}
-.anav-tabs{display:flex;align-items:center;gap:2px}
-.anav-tab{display:flex;align-items:center;gap:5px;cursor:pointer;padding:6px 10px;border-radius:9px;transition:background .15s;font-size:11px;font-weight:500;color:rgba(255,255,255,.3);white-space:nowrap}
-.anav-tab:hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.5)}
-.anav-tab.on{background:rgba(232,151,42,.08);color:#E8972A}
-@media(max-width:480px){.anav{padding:0 3%}.anav-tab{padding:5px 7px;font-size:10px}}
-`;
-
-function AppNav({ currentView, onNavigate }: { currentView: string; onNavigate: (v: string) => void }) {
-  const tabs = [
-    { key: 'dashboard', label: 'Home', icon: '🏠' },
-    { key: 'story-library', label: 'Stories', icon: '📖' },
-    { key: 'nightcard-library', label: 'Cards', icon: '🌙' },
-    { key: 'user-profile', label: 'Profile', icon: '👤' },
-  ];
-  return (
-    <>
-      <style>{APP_NAV_CSS}</style>
-      <nav className="anav">
-        <div className="anav-logo" onClick={() => onNavigate('dashboard')}>
-          <div className="anav-moon"><div className="anav-moon-sh" /></div>
-          SleepSeed
-        </div>
-        <div className="anav-tabs">
-          {tabs.map(t => (
-            <div key={t.key} className={`anav-tab${currentView === t.key ? ' on' : ''}`}
-              onClick={() => onNavigate(t.key)}>
-              <span>{t.icon}</span>{t.label}
-            </div>
-          ))}
-        </div>
-      </nav>
-    </>
-  );
-}
-
 function AppInner() {
   const {
     user, view, setView, logout,
@@ -65,6 +28,9 @@ function AppInner() {
     editingCharacter, setEditingCharacter,
   } = useApp();
 
+  const [preloadedBook,      setPreloadedBook]      = useState<any>(null);
+  const [nightCardFilter,    setNightCardFilter]    = useState<string | undefined>(undefined);
+
   // Check for shared story link on mount
   const [isSharedStory, setIsSharedStory] = useState(false);
   useEffect(() => {
@@ -72,20 +38,30 @@ function AppInner() {
     if (params.get('s')) setIsSharedStory(true);
   }, []);
 
-  // Shared story viewer — no auth required
   if (isSharedStory) return <SharedStoryViewer />;
 
-  const goAuth = () => setView('auth');
-  const goDashboard = () => setView('dashboard');
-  const goStoryBuilder = (char?: Character) => {
+  const goAuth        = () => setView('auth');
+  const goDashboard   = () => { setNightCardFilter(undefined); setView('dashboard'); };
+  const goStoryBuilder= (char?: Character) => {
     if (char) setSelectedCharacter(char);
+    setPreloadedBook(null);
     setView('story-builder');
   };
-  const goCharacters = () => setView('characters');
-  const goNewCharacter = () => { setEditingCharacter(null); setView('character-builder'); };
+  const goNewCharacter  = () => { setEditingCharacter(null); setView('character-builder'); };
   const goEditCharacter = (c: Character) => { setEditingCharacter(c); setView('character-builder'); };
-  const goNightCards = () => setView('nightcard-library');
-  const goStoryLibrary = () => setView('story-library');
+  const goNightCards    = (filterId?: string) => { setNightCardFilter(filterId); setView('nightcard-library'); };
+  const goStoryLibrary  = () => setView('story-library');
+
+  // Read a saved story directly — sets preloadedBook then routes to story-builder
+  const openSavedStory = (bookData: any) => {
+    setPreloadedBook(bookData);
+    setView('story-builder');
+  };
+
+  // User-scoped onboarding flag
+  const onboardingDone = typeof localStorage !== 'undefined' && user
+    ? !!localStorage.getItem(`sleepseed_onboarding_${user.id}`)
+    : false;
 
   if (view === 'public') return (
     <PublicHomepage
@@ -99,48 +75,61 @@ function AppInner() {
 
   if (view === 'auth') return <Auth />;
 
-  const nav = user ? <AppNav currentView={view} onNavigate={(v) => setView(v as any)} /> : null;
+  // Onboarding views
+  if (view === 'onboarding-welcome') return <OnboardingWelcome />;
+  if (view === 'onboarding-tour')    return <OnboardingTour />;
+  if (view === 'onboarding-night0')  return <OnboardingNightCard />;
 
-  if (view === 'dashboard') return (<UserDashboard onSignUp={goAuth} />);
+  if (view === 'dashboard') {
+    if (user && !user.isGuest && !onboardingDone) {
+      // Mark onboarding complete so user sees the dashboard on subsequent visits
+      // (the onboarding pages themselves will mark the flag on completion)
+      return <OnboardingWelcome />;
+    }
+    return <UserDashboard onSignUp={goAuth} />;
+  }
 
-  if (view === 'ritual-starter') return (<>{nav}<RitualStarter /></>);
-
-  if (view === 'story-handoff') return (<>{nav}<StoryHandoff /></>);
-
-  if (view === 'story-configure') return (<>{nav}<StoryBuilderPage /></>);
-
-  if (view === 'user-profile') return (<>{nav}<UserProfile /></>);
+  if (view === 'ritual-starter') return <RitualStarter />;
+  if (view === 'story-handoff')  return <StoryHandoff />;
+  if (view === 'story-configure') return <StoryBuilderPage />;
+  if (view === 'user-profile')   return <UserProfile />;
 
   if (view === 'characters') return (
-    <>{nav}<CharacterLibrary
+    <CharacterLibrary
       userId={user!.id}
       onBack={goDashboard}
       onNew={goNewCharacter}
       onEdit={goEditCharacter}
       onUseInStory={char => goStoryBuilder(char)}
-    /></>
+      onReadStory={openSavedStory}
+      onViewNightCards={charId => goNightCards(charId)}
+    />
   );
 
   if (view === 'character-builder') return (
-    <>{nav}<CharacterBuilder
+    <CharacterBuilder
       userId={user!.id}
       initialCharacter={editingCharacter}
       onSaved={() => { setEditingCharacter(null); setView('characters'); }}
       onCancel={() => { setEditingCharacter(null); setView('characters'); }}
-    /></>
+    />
   );
 
   if (view === 'story-library') return (
-    <>{nav}<StoryLibrary
+    <StoryLibrary
       userId={user!.id}
       onBack={goDashboard}
-      onReadStory={() => setView('story-builder')}
+      onReadStory={openSavedStory}
       onCreateStory={() => goStoryBuilder()}
-    /></>
+    />
   );
 
   if (view === 'nightcard-library') return (
-    <>{nav}<NightCardLibrary userId={user!.id} onBack={goDashboard} /></>
+    <NightCardLibrary
+      userId={user!.id}
+      onBack={goDashboard}
+      filterCharacterId={nightCardFilter}
+    />
   );
 
   if (view === 'story-builder') {
@@ -184,6 +173,7 @@ function AppInner() {
           userId={user?.id}
           isGuest={user?.isGuest}
           preloadedCharacter={selectedCharacters.length > 0 ? selectedCharacters[0] : selectedCharacter}
+          preloadedBook={preloadedBook}
           ritualSeed={ritualSeed}
           ritualMood={ritualMood}
           builderChoices={builderChoices}

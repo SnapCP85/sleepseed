@@ -20,7 +20,7 @@ export const signUp = async (email: string, password: string, displayName: strin
   });
   if (error) throw error;
   if (data.user) {
-    try { await supabase.from('profiles').upsert({ id: data.user.id, display_name: displayName }); } catch(_) {}
+    await supabase.from('profiles').upsert({ id: data.user.id, display_name: displayName });
   }
   return data.user;
 };
@@ -32,30 +32,6 @@ export const signIn = async (email: string, password: string) => {
 };
 
 export const signOut = async () => {
-  await supabase.auth.signOut();
-};
-
-export const updateUserProfile = async (userId: string, data: { display_name?: string }) => {
-  const { error } = await supabase.from('profiles').upsert({ id: userId, ...data });
-  if (error) console.error('updateUserProfile:', error);
-  // Also update Supabase auth metadata
-  if (data.display_name) {
-    await supabase.auth.updateUser({ data: { display_name: data.display_name } });
-  }
-};
-
-export const updateUserEmail = async (newEmail: string) => {
-  const { error } = await supabase.auth.updateUser({ email: newEmail });
-  if (error) throw error;
-};
-
-export const updateUserPassword = async (newPassword: string) => {
-  const { error } = await supabase.auth.updateUser({ password: newPassword });
-  if (error) throw error;
-};
-
-export const deleteUserAccount = async () => {
-  // Sign out — actual account deletion requires server-side admin
   await supabase.auth.signOut();
 };
 
@@ -93,16 +69,7 @@ export const uploadPhoto = async (userId: string, base64: string, name: string):
   }
 };
 
-// ── Characters (localStorage primary, Supabase sync) ─────────────────────────
-
-const LS_CHARS = (uid: string) => `ss2_chars_${uid}`;
-
-const lsGetChars = (userId: string): Character[] => {
-  try { return JSON.parse(localStorage.getItem(LS_CHARS(userId)) || '[]'); } catch { return []; }
-};
-const lsSetChars = (userId: string, chars: Character[]) => {
-  try { localStorage.setItem(LS_CHARS(userId), JSON.stringify(chars)); } catch {}
-};
+// ── Characters ────────────────────────────────────────────────────────────────
 
 const dbToChar = (row: any): Character => ({
   id: row.id, userId: row.user_id, name: row.name, type: row.type,
@@ -111,46 +78,35 @@ const dbToChar = (row: any): Character => ({
   currentSituation: row.current_situation ?? '', photo: row.photo_url,
   color: row.color ?? '#1E1640', emoji: row.emoji ?? '🌙',
   storyIds: row.story_ids ?? [], createdAt: row.created_at, updatedAt: row.updated_at,
+  isFamily: row.is_family ?? undefined,
+  parentRole: row.parent_role ?? undefined,
 });
 
 export const getCharacters = async (userId: string): Promise<Character[]> => {
-  const local = lsGetChars(userId);
-  try {
-    const { data } = await supabase.from('characters').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
-    if (data?.length) {
-      const dbChars = data.map(dbToChar);
-      const localIds = new Set(local.map(c => c.id));
-      const merged = [...local, ...dbChars.filter(c => !localIds.has(c.id))];
-      if (merged.length > local.length) lsSetChars(userId, merged);
-      return merged;
-    }
-  } catch {}
-  return local;
+  const { data, error } = await supabase.from('characters').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
+  if (error) { console.error('getCharacters:', error); return []; }
+  return (data ?? []).map(dbToChar);
 };
 
 export const saveCharacter = async (c: Character): Promise<void> => {
-  // Always save to localStorage first
-  const existing = lsGetChars(c.userId);
-  const filtered = existing.filter(x => x.id !== c.id);
-  lsSetChars(c.userId, [{ ...c, updatedAt: new Date().toISOString() }, ...filtered]);
-  // Best-effort Supabase sync
-  try {
-    let photoUrl = c.photo ?? null;
-    if (photoUrl && photoUrl.startsWith('data:')) photoUrl = await uploadPhoto(c.userId, photoUrl, `char_${c.id}`);
-    await supabase.from('characters').upsert({
-      id: c.id, user_id: c.userId, name: c.name, type: c.type,
-      age_description: c.ageDescription, pronouns: c.pronouns,
-      personality_tags: c.personalityTags, weird_detail: c.weirdDetail,
-      current_situation: c.currentSituation, photo_url: photoUrl,
-      color: c.color, emoji: c.emoji, story_ids: c.storyIds,
-      updated_at: new Date().toISOString(),
-    });
-  } catch {}
+  let photoUrl = c.photo ?? null;
+  if (photoUrl && photoUrl.startsWith('data:')) photoUrl = await uploadPhoto(c.userId, photoUrl, `char_${c.id}`);
+  const { error } = await supabase.from('characters').upsert({
+    id: c.id, user_id: c.userId, name: c.name, type: c.type,
+    age_description: c.ageDescription, pronouns: c.pronouns,
+    personality_tags: c.personalityTags, weird_detail: c.weirdDetail,
+    current_situation: c.currentSituation, photo_url: photoUrl,
+    color: c.color, emoji: c.emoji, story_ids: c.storyIds,
+    is_family: c.isFamily ?? null,
+    parent_role: c.parentRole ?? null,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) console.error('saveCharacter:', error);
 };
 
 export const deleteCharacter = async (userId: string, charId: string): Promise<void> => {
-  lsSetChars(userId, lsGetChars(userId).filter(c => c.id !== charId));
-  try { await supabase.from('characters').delete().eq('id', charId).eq('user_id', userId); } catch {}
+  const { error } = await supabase.from('characters').delete().eq('id', charId).eq('user_id', userId);
+  if (error) console.error('deleteCharacter:', error);
 };
 
 export const tagCharacterInStory = async (userId: string, characterId: string, storyId: string): Promise<void> => {
@@ -160,117 +116,93 @@ export const tagCharacterInStory = async (userId: string, characterId: string, s
   await saveCharacter({ ...char, storyIds: [...char.storyIds, storyId] });
 };
 
-// ── Stories (localStorage primary, Supabase sync) ────────────────────────────
+// ── Stories ───────────────────────────────────────────────────────────────────
 
-const LS_STORIES = (uid: string) => `ss2_stories_${uid}`;
-
-const lsGetStories = (userId: string): SavedStory[] => {
-  try { return JSON.parse(localStorage.getItem(LS_STORIES(userId)) || '[]'); } catch { return []; }
-};
-const lsSetStories = (userId: string, stories: SavedStory[]) => {
-  try { localStorage.setItem(LS_STORIES(userId), JSON.stringify(stories)); } catch {}
-};
+const dbToStory = (row: any): SavedStory => ({
+  id: row.id, userId: row.user_id, title: row.title, heroName: row.hero_name,
+  characterIds: row.character_ids ?? [], refrain: row.refrain, date: row.date,
+  occasion: row.occasion, bookData: row.book_data,
+});
 
 export const getStories = async (userId: string): Promise<SavedStory[]> => {
-  const local = lsGetStories(userId);
-  console.log("[storage] getStories for userId:", userId, "localStorage key:", LS_STORIES(userId), "found:", local.length);
-  // Best-effort: try Supabase too and merge any missing
-  try {
-    const { data } = await supabase.from('stories').select('*').eq('user_id', userId).order('date', { ascending: false });
-    if (data?.length) {
-      const dbStories = data.map((row: any): SavedStory => ({
-        id: row.id, userId: row.user_id, title: row.title, heroName: row.hero_name,
-        characterIds: row.character_ids ?? [], refrain: row.refrain, date: row.date,
-        occasion: row.occasion, bookData: row.book_data,
-      }));
-      // Merge: add any from DB not in local
-      const localIds = new Set(local.map(s => s.id));
-      const merged = [...local, ...dbStories.filter(s => !localIds.has(s.id))];
-      if (merged.length > local.length) lsSetStories(userId, merged);
-      return merged.sort((a, b) => b.date.localeCompare(a.date));
-    }
-  } catch {}
-  return local.sort((a, b) => b.date.localeCompare(a.date));
+  const { data, error } = await supabase.from('stories').select('*').eq('user_id', userId).order('date', { ascending: false });
+  if (error) { console.error('getStories:', error); return []; }
+  return (data ?? []).map(dbToStory);
 };
 
 export const saveStory = async (s: SavedStory): Promise<void> => {
-  // Always save to localStorage first
-  const existing = lsGetStories(s.userId);
-  const filtered = existing.filter(x => x.id !== s.id);
-  lsSetStories(s.userId, [s, ...filtered]);
-  // Best-effort Supabase sync
-  try {
-    await supabase.from('stories').upsert({
-      id: s.id, user_id: s.userId, title: s.title, hero_name: s.heroName,
-      character_ids: s.characterIds ?? [], refrain: s.refrain ?? null,
-      date: s.date, occasion: s.occasion ?? null, book_data: s.bookData,
-    });
-  } catch {}
+  const { error } = await supabase.from('stories').upsert({
+    id: s.id, user_id: s.userId, title: s.title, hero_name: s.heroName,
+    character_ids: s.characterIds ?? [], refrain: s.refrain ?? null,
+    date: s.date, occasion: s.occasion ?? null, book_data: s.bookData,
+  });
+  if (error) console.error('saveStory:', error);
 };
 
 export const deleteStory = async (userId: string, storyId: string): Promise<void> => {
-  lsSetStories(userId, lsGetStories(userId).filter(s => s.id !== storyId));
-  try { await supabase.from('stories').delete().eq('id', storyId).eq('user_id', userId); } catch {}
+  const { error } = await supabase.from('stories').delete().eq('id', storyId).eq('user_id', userId);
+  if (error) console.error('deleteStory:', error);
 };
 
-// ── Night Cards (localStorage primary, Supabase sync) ────────────────────────
+// ── Night Cards ───────────────────────────────────────────────────────────────
 
-const LS_CARDS = (uid: string) => `ss2_nightcards_${uid}`;
-
-const lsGetCards = (userId: string): SavedNightCard[] => {
-  try { return JSON.parse(localStorage.getItem(LS_CARDS(userId)) || '[]'); } catch { return []; }
+const dbToCard = (row: any): SavedNightCard => {
+  let extra = row.extra ?? undefined;
+  let isOrigin: boolean | undefined;
+  let whisper: string | undefined;
+  if (extra && extra.startsWith('{')) {
+    try {
+      const p = JSON.parse(extra);
+      if (p.isOrigin) isOrigin = true;
+      if (p.whisper)  whisper  = p.whisper;
+      if (p.note)     extra    = p.note;
+      else            extra    = undefined;
+    } catch(_) {}
+  }
+  return {
+    id: row.id, userId: row.user_id, heroName: row.hero_name, storyId: row.story_id,
+    storyTitle: row.story_title, characterIds: row.character_ids ?? [],
+    headline: row.headline, quote: row.quote, memory_line: row.memory_line,
+    bondingQuestion: row.bonding_question, bondingAnswer: row.bonding_answer,
+    gratitude: row.gratitude, extra, photo: row.photo_url,
+    emoji: row.emoji, date: row.date, isOrigin, whisper,
+  };
 };
-const lsSetCards = (userId: string, cards: SavedNightCard[]) => {
-  try { localStorage.setItem(LS_CARDS(userId), JSON.stringify(cards)); } catch {}
-};
-
-const dbToCard = (row: any): SavedNightCard => ({
-  id: row.id, userId: row.user_id, heroName: row.hero_name, storyId: row.story_id,
-  storyTitle: row.story_title, characterIds: row.character_ids ?? [],
-  headline: row.headline, quote: row.quote, memory_line: row.memory_line,
-  bondingQuestion: row.bonding_question, bondingAnswer: row.bonding_answer,
-  gratitude: row.gratitude, extra: row.extra, photo: row.photo_url,
-  emoji: row.emoji, date: row.date,
-});
 
 export const getNightCards = async (userId: string): Promise<SavedNightCard[]> => {
-  const local = lsGetCards(userId);
-  try {
-    const { data } = await supabase.from('night_cards').select('*').eq('user_id', userId).order('date', { ascending: false });
-    if (data?.length) {
-      const dbCards = data.map(dbToCard);
-      const localIds = new Set(local.map(c => c.id));
-      const merged = [...local, ...dbCards.filter(c => !localIds.has(c.id))];
-      if (merged.length > local.length) lsSetCards(userId, merged);
-      return merged.sort((a, b) => b.date.localeCompare(a.date));
-    }
-  } catch {}
-  return local.sort((a, b) => b.date.localeCompare(a.date));
+  const { data, error } = await supabase.from('night_cards').select('*').eq('user_id', userId).order('date', { ascending: false });
+  if (error) { console.error('getNightCards:', error); return []; }
+  return (data ?? []).map(dbToCard);
 };
 
 export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
-  // Always save to localStorage first
-  const existing = lsGetCards(nc.userId);
-  const filtered = existing.filter(x => x.id !== nc.id);
-  lsSetCards(nc.userId, [nc, ...filtered]);
-  // Best-effort Supabase sync
-  try {
-    let photoUrl = nc.photo ?? null;
-    if (photoUrl && photoUrl.startsWith('data:')) photoUrl = await uploadPhoto(nc.userId, photoUrl, `nc_${nc.id}`);
-    await supabase.from('night_cards').upsert({
-      id: nc.id, user_id: nc.userId, hero_name: nc.heroName, story_id: nc.storyId ?? null,
-      story_title: nc.storyTitle, character_ids: nc.characterIds ?? [],
-      headline: nc.headline, quote: nc.quote, memory_line: nc.memory_line ?? null,
-      bonding_question: nc.bondingQuestion ?? null, bonding_answer: nc.bondingAnswer ?? null,
-      gratitude: nc.gratitude ?? null, extra: nc.extra ?? null,
-      photo_url: photoUrl, emoji: nc.emoji ?? null, date: nc.date,
-    });
-  } catch {}
+  let photoUrl = nc.photo ?? null;
+  if (photoUrl && photoUrl.startsWith('data:')) photoUrl = await uploadPhoto(nc.userId, photoUrl, `nc_${nc.id}`);
+  // Pack isOrigin + whisper into extra field as JSON when present
+  let extraField = nc.extra ?? null;
+  if (nc.isOrigin || nc.whisper) {
+    try {
+      const packed: any = {};
+      if (nc.isOrigin) packed.isOrigin = true;
+      if (nc.whisper)  packed.whisper  = nc.whisper;
+      if (nc.extra)    packed.note     = nc.extra;
+      extraField = JSON.stringify(packed);
+    } catch(_) {}
+  }
+  const { error } = await supabase.from('night_cards').upsert({
+    id: nc.id, user_id: nc.userId, hero_name: nc.heroName, story_id: nc.storyId ?? null,
+    story_title: nc.storyTitle, character_ids: nc.characterIds ?? [],
+    headline: nc.headline, quote: nc.quote, memory_line: nc.memory_line ?? null,
+    bonding_question: nc.bondingQuestion ?? null, bonding_answer: nc.bondingAnswer ?? null,
+    gratitude: nc.gratitude ?? null, extra: extraField,
+    photo_url: photoUrl, emoji: nc.emoji ?? null, date: nc.date,
+  });
+  if (error) console.error('saveNightCard:', error);
 };
 
 export const deleteNightCard = async (userId: string, cardId: string): Promise<void> => {
-  lsSetCards(userId, lsGetCards(userId).filter(c => c.id !== cardId));
-  try { await supabase.from('night_cards').delete().eq('id', cardId).eq('user_id', userId); } catch {}
+  const { error } = await supabase.from('night_cards').delete().eq('id', cardId).eq('user_id', userId);
+  if (error) console.error('deleteNightCard:', error);
 };
 
 // ── Legacy stubs (kept so nothing breaks) ────────────────────────────────────
