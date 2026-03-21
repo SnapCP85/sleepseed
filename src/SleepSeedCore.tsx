@@ -2619,10 +2619,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       <div className="pinset" />
       <div className="story-lay">
         <div className="story-illo">
-          {pg?.imgUrl
-            ? <Illo url={pg.imgUrl} loaded={imgReady(pg.imgUrl)} />
-            : <DreamIllo />
-          }
+          <DreamIllo />
         </div>
         <div className="story-txt-col">
           <div className="s-pgnum">Page {pgNum}</div>
@@ -2646,10 +2643,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
         <div className="pinset" style={{borderColor:"rgba(212,160,48,.15)"}} />
         <div className="cover-lay">
           <div className="cover-art">
-            {book.coverUrl
-              ? <Illo url={book.coverUrl} loaded={imgReady(book.coverUrl)} />
-              : <DreamIllo />
-            }
+            <DreamIllo />
           </div>
           <div className="cover-bot">
             <div className="c-stars">✦ ★ ✦</div>
