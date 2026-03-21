@@ -15,6 +15,46 @@ import SleepSeedCore from './SleepSeedCore';
 import SharedStoryViewer from './pages/SharedStoryViewer';
 import type { Character } from './lib/types';
 
+const APP_NAV_CSS = `
+.anav{display:flex;align-items:center;justify-content:space-between;padding:0 5%;height:52px;border-bottom:1px solid rgba(232,151,42,.07);background:rgba(8,12,24,.97);position:sticky;top:0;z-index:20;backdrop-filter:blur(20px);font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.anav-logo{font-family:'Playfair Display',Georgia,serif;font-size:15px;font-weight:700;color:#F4EFE8;display:flex;align-items:center;gap:7px;cursor:pointer;flex-shrink:0}
+.anav-moon{width:14px;height:14px;border-radius:50%;background:#F5B84C;position:relative;overflow:hidden;flex-shrink:0}
+.anav-moon-sh{position:absolute;width:13px;height:13px;border-radius:50%;background:#050916;top:-3px;left:-6px}
+.anav-tabs{display:flex;align-items:center;gap:2px}
+.anav-tab{display:flex;align-items:center;gap:5px;cursor:pointer;padding:6px 10px;border-radius:9px;transition:background .15s;font-size:11px;font-weight:500;color:rgba(255,255,255,.3);white-space:nowrap}
+.anav-tab:hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.5)}
+.anav-tab.on{background:rgba(232,151,42,.08);color:#E8972A}
+@media(max-width:480px){.anav{padding:0 3%}.anav-tab{padding:5px 7px;font-size:10px}}
+`;
+
+function AppNav({ currentView, onNavigate }: { currentView: string; onNavigate: (v: string) => void }) {
+  const tabs = [
+    { key: 'dashboard', label: 'Home', icon: '🏠' },
+    { key: 'story-library', label: 'Stories', icon: '📖' },
+    { key: 'nightcard-library', label: 'Cards', icon: '🌙' },
+    { key: 'user-profile', label: 'Profile', icon: '👤' },
+  ];
+  return (
+    <>
+      <style>{APP_NAV_CSS}</style>
+      <nav className="anav">
+        <div className="anav-logo" onClick={() => onNavigate('dashboard')}>
+          <div className="anav-moon"><div className="anav-moon-sh" /></div>
+          SleepSeed
+        </div>
+        <div className="anav-tabs">
+          {tabs.map(t => (
+            <div key={t.key} className={`anav-tab${currentView === t.key ? ' on' : ''}`}
+              onClick={() => onNavigate(t.key)}>
+              <span>{t.icon}</span>{t.label}
+            </div>
+          ))}
+        </div>
+      </nav>
+    </>
+  );
+}
+
 function AppInner() {
   const {
     user, view, setView, logout,
@@ -59,50 +99,48 @@ function AppInner() {
 
   if (view === 'auth') return <Auth />;
 
-  if (view === 'dashboard') return (
-    <UserDashboard
-      onSignUp={goAuth}
-    />
-  );
+  const nav = user ? <AppNav currentView={view} onNavigate={(v) => setView(v as any)} /> : null;
 
-  if (view === 'ritual-starter') return <RitualStarter />;
+  if (view === 'dashboard') return (<>{nav}<UserDashboard onSignUp={goAuth} /></>);
 
-  if (view === 'story-handoff') return <StoryHandoff />;
+  if (view === 'ritual-starter') return (<>{nav}<RitualStarter /></>);
 
-  if (view === 'story-configure') return <StoryBuilderPage />;
+  if (view === 'story-handoff') return (<>{nav}<StoryHandoff /></>);
 
-  if (view === 'user-profile') return <UserProfile />;
+  if (view === 'story-configure') return (<>{nav}<StoryBuilderPage /></>);
+
+  if (view === 'user-profile') return (<>{nav}<UserProfile /></>);
 
   if (view === 'characters') return (
-    <CharacterLibrary
+    <>{nav}<CharacterLibrary
       userId={user!.id}
       onBack={goDashboard}
       onNew={goNewCharacter}
       onEdit={goEditCharacter}
       onUseInStory={char => goStoryBuilder(char)}
-    />
+    /></>
   );
 
   if (view === 'character-builder') return (
-    <CharacterBuilder
+    <>{nav}<CharacterBuilder
       userId={user!.id}
       initialCharacter={editingCharacter}
       onSaved={() => { setEditingCharacter(null); setView('characters'); }}
       onCancel={() => { setEditingCharacter(null); setView('characters'); }}
-    />
+    /></>
   );
 
   if (view === 'story-library') return (
-    <StoryLibrary
+    <>{nav}<StoryLibrary
       userId={user!.id}
       onBack={goDashboard}
       onReadStory={() => setView('story-builder')}
       onCreateStory={() => goStoryBuilder()}
-    />
+    /></>
   );
 
   if (view === 'nightcard-library') return (
-    <NightCardLibrary userId={user!.id} onBack={goDashboard} />
+    <>{nav}<NightCardLibrary userId={user!.id} onBack={goDashboard} /></>
   );
 
   if (view === 'story-builder') {
