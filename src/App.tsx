@@ -101,7 +101,7 @@ function AppInner() {
 
   const nav = user ? <AppNav currentView={view} onNavigate={(v) => setView(v as any)} /> : null;
 
-  if (view === 'dashboard') return (<>{nav}<UserDashboard onSignUp={goAuth} /></>);
+  if (view === 'dashboard') return (<UserDashboard onSignUp={goAuth} />);
 
   if (view === 'ritual-starter') return (<>{nav}<RitualStarter /></>);
 
