@@ -775,14 +775,38 @@ const illoUrlTracked = (prompt, seed, w=480, h=220, gender="") => {
 
 const extractJSON = (text) => {
   let s = text.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim();
+  // Strategy 1: direct parse
   try { return JSON.parse(s); } catch(_) {}
+  // Strategy 2: extract { ... } block
   const start = s.indexOf("{");
   const end = s.lastIndexOf("}");
   if(start===-1||end<=start) throw new Error("No JSON found in response");
-  const block = s.slice(start,end+1);
+  let block = s.slice(start,end+1);
   try { return JSON.parse(block); } catch(_) {}
-  const fixed = block.replace(/,(\s*[}\]])/g,"$1");
-  return JSON.parse(fixed);
+  // Strategy 3: fix trailing commas
+  let fixed = block.replace(/,(\s*[}\]])/g,"$1");
+  try { return JSON.parse(fixed); } catch(_) {}
+  // Strategy 4: fix unescaped newlines in string values
+  fixed = fixed.replace(/(?<="[^"]*)\n(?=[^"]*")/g,"\\n");
+  try { return JSON.parse(fixed); } catch(_) {}
+  // Strategy 5: fix smart quotes and curly apostrophes
+  fixed = fixed.replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g,'\\"').replace(/[\u2018\u2019\u201A\u201B\u2032\u2035]/g,"'");
+  try { return JSON.parse(fixed); } catch(_) {}
+  // Strategy 6: fix unescaped quotes inside string values
+  fixed = fixed.replace(/:(\s*)"((?:[^"\\]|\\.)*)"/g, (match,ws,content) => {
+    const safeContent = content.replace(/(?<!\\)"/g,'\\"');
+    return `:${ws}"${safeContent}"`;
+  });
+  try { return JSON.parse(fixed); } catch(_) {}
+  // Strategy 7: aggressive — strip control chars, fix common issues
+  fixed = block.replace(/[\x00-\x1F\x7F]/g,' ')
+    .replace(/,(\s*[}\]])/g,"$1")
+    .replace(/([{,]\s*)(\w+)\s*:/g,'$1"$2":')
+    .replace(/:\s*'([^']*)'/g,':"$1"');
+  try { return JSON.parse(fixed); } catch(e) {
+    console.error("All JSON parse strategies failed. Raw text:", text.slice(0,500));
+    throw new Error("Could not parse story response — tap Try Again");
+  }
 };
 
 /* ── Storage ── */
