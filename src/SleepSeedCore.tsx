@@ -348,12 +348,16 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .dot.on{background:var(--gold2);transform:scale(1.35)}
 .auto-bar{height:3px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-top:6px;transition:opacity .3s}
 .auto-fill{height:100%;background:var(--gold2);border-radius:99px;transition:width .12s linear}
-/* ── Collapsed toolbar ── */
-.rd-toolbar-collapsed{position:absolute;bottom:12px;right:12px;z-index:10}
-.rd-dots-btn{height:32px;padding:0 12px;border-radius:16px;background:rgba(6,11,24,.85);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:all .2s;font-family:'Nunito',sans-serif;font-weight:700}
-.rd-dots-btn:hover{background:rgba(6,11,24,.95);color:var(--cream)}
-.rd-expanded{position:absolute;bottom:44px;right:0;background:rgba(6,11,24,.95);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:4px;min-width:160px;backdrop-filter:blur(16px);animation:fup .2s ease}
-.rd-exp-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:none;background:transparent;color:rgba(244,239,232,.6);font-size:12px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;white-space:nowrap}
+/* ── Story toolbar ── */
+.rd-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:8px;position:relative}
+.rd-audio-btn{height:40px;padding:0 16px;border-radius:20px;border:1.5px solid rgba(212,160,48,.35);background:rgba(212,160,48,.1);color:var(--gold2);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;backdrop-filter:blur(10px);transition:all .2s;font-family:'Nunito',sans-serif}
+.rd-audio-btn:hover{background:rgba(212,160,48,.18);border-color:rgba(212,160,48,.5)}
+.rd-audio-btn.active{background:rgba(212,160,48,.22);border-color:var(--gold2);box-shadow:0 0 12px rgba(212,160,48,.2)}
+.rd-menu-btn{height:40px;padding:0 16px;border-radius:20px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;backdrop-filter:blur(10px);transition:all .2s;font-family:'Nunito',sans-serif}
+.rd-menu-btn:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:var(--cream)}
+.rd-menu-btn.open{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:var(--cream)}
+.rd-expanded{position:absolute;bottom:48px;right:0;background:rgba(6,11,24,.97);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:4px;min-width:180px;backdrop-filter:blur(16px);animation:fup .2s ease;box-shadow:0 12px 40px rgba(0,0,0,.6);z-index:20}
+.rd-exp-btn{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:8px;border:none;background:transparent;color:rgba(244,239,232,.6);font-size:12px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;white-space:nowrap}
 .rd-exp-btn:hover{background:rgba(255,255,255,.06);color:var(--cream)}
 .snd-bar{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;flex-wrap:wrap}
 .snd-tog{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;cursor:pointer;
@@ -3483,14 +3487,15 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </button>
             </div>
 
-            {/* Collapsed toolbar — immersive reading */}
-            <div className="rd-toolbar-collapsed">
-              {/* Read aloud button always visible */}
-              <button style={{width:36,height:36,borderRadius:'50%',background:isReading?'rgba(212,160,48,.2)':'rgba(6,11,24,.85)',border:`1px solid ${isReading?'rgba(212,160,48,.4)':'rgba(255,255,255,.12)'}`,color:isReading?'var(--gold2)':'rgba(255,255,255,.5)',fontSize:14,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(10px)',marginBottom:6}}
+            {/* Story toolbar — below nav, not overlapping */}
+            <div className="rd-toolbar">
+              <button className={`rd-audio-btn${isReading?' active':''}`}
                 onClick={()=>{ const prog=totalPages>1?pageIdx/(totalPages-1):0.5; toggleRead(pageIdx===0?`${book.title}. A bedtime story for ${book.heroName}.`:getCurrentPageText(),prog); }}>
-                {isReading ? '⏸' : '🔊'}
+                {isReading ? '⏸ Pause' : '🔊 Read Aloud'}
               </button>
-              <button className="rd-dots-btn" onClick={()=>setShowToolbar(!showToolbar)} style={{fontSize:11,letterSpacing:'.02em'}}>{showToolbar ? '✕' : '☰'}<span style={{fontSize:9,marginLeft:3,opacity:.7}}>More</span></button>
+              <button className={`rd-menu-btn${showToolbar?' open':''}`} onClick={()=>setShowToolbar(!showToolbar)}>
+                {showToolbar ? '✕ Close' : '☰ More'}
+              </button>
               {showToolbar && (
                 <div className="rd-expanded" onClick={e=>e.stopPropagation()}>
                   <button className="rd-exp-btn" onClick={toggleAmbient} style={ambientOn?{color:'var(--gold2)',background:'rgba(212,160,48,.08)'}:{}}>
@@ -3507,7 +3512,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                     setStoryContext(""); setLessonContext(""); setTodayPrompt(""); setStoryBrief1(""); setStoryBrief2(""); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(true); setBriefStep2Open(false);
                     setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
                   }}>🔄 New Story</button>
-                  <div style={{padding:'6px 12px',fontSize:10,color:'rgba(76,200,144,.6)'}}>✓ Auto-saved</div>
+                  <div style={{padding:'6px 14px',fontSize:10,color:'rgba(76,200,144,.6)'}}>✓ Auto-saved</div>
                 </div>
               )}
             </div>
