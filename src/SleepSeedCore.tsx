@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import SleepSeedLibrary from "./sleepseed-library";
 import { buildStoryPrompt } from "./sleepseed-prompts";
 import { StoryFeedback, RereadCheck } from "./StoryFeedback";
