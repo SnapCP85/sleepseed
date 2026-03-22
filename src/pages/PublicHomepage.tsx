@@ -521,11 +521,11 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp, onNi
             <div className="phone-screen">
               <div className="pnav">
                 <div className="pnav-logo">🌙 SleepSeed</div>
-                <div className="pnav-badge">night 13 · Emma</div>
+                <div className="pnav-badge">night 13 · Adina</div>
               </div>
               <div className="p-ritual">
                 <div className="p-ritual-lbl">✦ tonight's ritual</div>
-                <div className="p-ritual-q">What happened in <em>Emma's</em> world today?</div>
+                <div className="p-ritual-q">What happened in <em>Adina's</em> world today?</div>
                 <button className="p-ritual-btn">Begin tonight's ritual ✦</button>
               </div>
               <div className="p-cards">
@@ -654,8 +654,7 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp, onNi
             <div className="nc-live-lbl"><div className="nc-live-dot" />A real Night Card — Night 47</div>
             <div className="nc-card">
               <div className="nc-img">
-                {/* Photo slot — replace src with real user photo URL when available */}
-                <div className="nc-img-moon"><div className="nc-img-moon-sh" /></div>
+                <img src="/nightcard-hero.jpg" alt="Bedtime moment" />
                 <div className="nc-img-overlay" />
                 <div className="nc-img-title">The Spelling Test Dragon</div>
               </div>
@@ -672,7 +671,7 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp, onNi
                     <div className="nc-chip-a" style={{color:'#2A3060'}}>I remember every dog I've ever met. In order of how much they understood me.</div>
                   </div>
                 </div>
-                <div className="nc-meta"><span>🌙 SleepSeed · Emma · Age 6</span><span>Mar 21 2026</span></div>
+                <div className="nc-meta"><span>🌙 SleepSeed · Adina · Age 6</span><span>Mar 21 2026</span></div>
               </div>
             </div>
           </div>
@@ -687,14 +686,14 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp, onNi
           <p className="story-sec-sub fu d2">Written in seconds from what she told you tonight. Her name. Her dog. The spelling test she was terrified about. Her world.</p>
           <div className="book fu d2">
             <div className="book-kicker">Tonight's story · Age 6 · Brave &amp; warm · ~4 minutes aloud</div>
-            <div className="book-title">The <span className="book-hero-name">Emma</span> Who Faced the Dragon</div>
+            <div className="book-title">The <span className="book-hero-name">Adina</span> Who Faced the Dragon</div>
             <div className="book-tags">
               <span className="book-tag">⚡ Brave</span>
               <span className="book-tag">💛 Warm</span>
               <span className="book-tag">🌙 Bedtime</span>
             </div>
             <p className="book-p">
-              <span className="cn">Emma</span>'s tummy felt like it was full of tangled string. Tomorrow was the spelling test. She had studied seventeen times. She had written every word three times each. But still — what if her brain forgot everything the moment she sat down?
+              <span className="cn">Adina</span>'s tummy felt like it was full of tangled string. Tomorrow was the spelling test. She had studied seventeen times. She had written every word three times each. But still — what if her brain forgot everything the moment she sat down?
             </p>
             <p className="book-p">
               She pulled her pencil case toward her. Inside it: a rubber eraser shaped like a small dragon, which she'd named <em>Biscuit</em>, which she'd carried to every hard thing since she was four. Biscuit had been there for the wobbly tooth. Biscuit had been there for the big swim.
@@ -710,9 +709,9 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp, onNi
               </button>
               <div className="audio-info">
                 <div className="audio-label">Read aloud by SleepSeed</div>
-                <div className="audio-title-line">The Emma Who Faced the Dragon</div>
+                <div className="audio-title-line">The Adina Who Faced the Dragon</div>
                 <div className="audio-note">
-                  {audioPlaying ? 'Playing — The Emma Who Faced the Dragon ✦' : 'Tap to hear Emma\'s story ✦'}
+                  {audioPlaying ? 'Playing — The Adina Who Faced the Dragon ✦' : 'Tap to hear Adina\'s story ✦'}
                 </div>
               </div>
               <div className="audio-waves">
@@ -722,7 +721,7 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp, onNi
               </div>
             </div>
             <div className="book-footer">
-              <span>SleepSeed · Emma · Mar 21 2026</span>
+              <span>SleepSeed · Adina · Mar 21 2026</span>
             </div>
           </div>
         </div>

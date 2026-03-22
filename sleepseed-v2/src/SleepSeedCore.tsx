@@ -1,8 +1,7 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import SleepSeedLibrary from "./sleepseed-library";
 import { buildStoryPrompt } from "./sleepseed-prompts";
 import { StoryFeedback, RereadCheck } from "./StoryFeedback";
-import { saveStory as dbSaveStory, saveNightCard as dbSaveNightCard } from "./lib/storage";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Cormorant+Garamond:ital,wght@1,600&family=Patrick+Hand&family=Nunito:wght@400;600;700&family=Kalam:wght@400;700&display=swap');`;
 
@@ -306,9 +305,9 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
   background:rgba(0,0,0,.5);font-family:'Fraunces',serif;font-size:72px;font-weight:700;
   color:var(--gold3);animation:countPop .4s ease}
 @keyframes countPop{from{transform:scale(1.8);opacity:0}to{transform:scale(1);opacity:1}}
-.polaroid{background:#faf8f2;border-radius:4px;padding:16px 16px 32px;
-  box-shadow:0 16px 60px rgba(0,0,0,.6),0 4px 20px rgba(0,0,0,.4);transform:rotate(-1.5deg);
-  max-width:min(85vw,380px);margin:0 auto;animation:polaroidIn 1.2s cubic-bezier(.16,1,.3,1) both}
+.polaroid{background:#faf8f2;border-radius:4px;padding:14px 14px 28px;
+  box-shadow:0 8px 40px rgba(0,0,0,.5);transform:rotate(-2deg);
+  max-width:320px;margin:0 auto;animation:polaroidIn 1.2s cubic-bezier(.16,1,.3,1) both}
 @keyframes polaroidIn{from{opacity:0;transform:scale(.75) rotate(-10deg)}to{opacity:1;transform:scale(1) rotate(-2deg)}}
 .polaroid-photo{width:100%;aspect-ratio:4/3;border-radius:2px;overflow:hidden;
   background:linear-gradient(135deg,#1a1428,#2a1f3d);margin-bottom:14px}
@@ -325,34 +324,6 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .polaroid-meta{font-size:9px;color:#a08a5a;animation:fadeUp .5s ease 1.4s both}
 .polaroid-brand{font-family:'Fraunces',serif;font-size:10px;color:#c0a870;margin-top:4px;
   animation:fadeUp .5s ease 1.6s both}
-/* ── Story reveal screen ── */
-.reveal-screen{position:fixed;inset:0;z-index:200;background:#060b18;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:revealIn .6s ease both}
-@keyframes revealIn{from{opacity:0}to{opacity:1}}
-.reveal-moon{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 34% 32%,#fdf0c0,#e2c050,#b07818);box-shadow:0 0 60px 20px rgba(210,170,50,.25);margin-bottom:20px;animation:revealMoon 1s ease .2s both}
-@keyframes revealMoon{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
-.reveal-ready{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(212,160,48,.6);margin-bottom:12px;animation:revealText .6s ease .6s both;font-family:'Fraunces',serif}
-@keyframes revealText{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.reveal-title{font-family:'Fraunces',serif;font-size:clamp(22px,5vw,32px);font-weight:700;font-style:italic;color:var(--gold3);text-align:center;line-height:1.3;max-width:340px;padding:0 20px;margin-bottom:8px;animation:revealText .6s ease .9s both}
-.reveal-for{font-size:13px;color:rgba(212,160,48,.5);margin-bottom:28px;animation:revealText .6s ease 1.1s both;font-family:'Fraunces',serif}
-.reveal-btn{background:linear-gradient(135deg,#a87818,#d4a030);color:#180e00;border:none;border-radius:14px;padding:16px 40px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;cursor:pointer;animation:revealText .6s ease 1.5s both;transition:all .2s;box-shadow:0 4px 24px rgba(170,130,30,.35)}
-.reveal-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(170,130,30,.5)}
-.reveal-stars{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.reveal-star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d) ease-in-out infinite var(--dl)}
-/* ── Collapsed toolbar ── */
-.rd-toolbar-collapsed{position:absolute;bottom:12px;right:12px;z-index:10}
-.rd-dots-btn{width:36px;height:36px;border-radius:50%;background:rgba(6,11,24,.85);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:all .2s}
-.rd-dots-btn:hover{background:rgba(6,11,24,.95);color:var(--cream)}
-.rd-expanded{position:absolute;bottom:44px;right:0;background:rgba(6,11,24,.95);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:4px;min-width:160px;backdrop-filter:blur(16px);animation:fup .2s ease}
-.rd-exp-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:none;background:transparent;color:rgba(244,239,232,.6);font-size:12px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;white-space:nowrap}
-.rd-exp-btn:hover{background:rgba(255,255,255,.06);color:var(--cream)}
-/* ── Night Card seal screen ── */
-.seal-screen{position:fixed;inset:0;z-index:200;background:#060b18;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:revealIn .6s ease both;text-align:center;padding:32px}
-.seal-star{font-size:48px;animation:sealStar 1s ease .3s both}
-@keyframes sealStar{from{transform:scale(0) rotate(-180deg);opacity:0}to{transform:scale(1) rotate(0deg);opacity:1}}
-.seal-title{font-family:'Fraunces',serif;font-size:clamp(20px,4.5vw,28px);font-weight:700;color:var(--cream);margin:16px 0 6px;animation:revealText .6s ease .8s both}
-.seal-name{font-family:'Fraunces',serif;font-size:clamp(18px,4vw,24px);font-style:italic;color:var(--gold2);animation:revealText .6s ease 1s both}
-.seal-sub{font-size:12px;color:rgba(212,160,48,.45);margin-top:16px;animation:revealText .6s ease 1.3s both}
-.seal-dismiss{background:transparent;border:none;color:rgba(255,255,255,.2);font-size:11px;cursor:pointer;margin-top:24px;animation:revealText .6s ease 1.8s both;font-family:'Nunito',sans-serif}
 .end-msg{font-family:'Kalam',cursive;font-size:14px;color:var(--ui);text-align:center;line-height:1.9}
 .illo-slot{position:absolute;inset:0}
 .shimmer{position:absolute;inset:0;background:linear-gradient(110deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.09) 50%,rgba(255,255,255,.04) 75%);
@@ -770,147 +741,45 @@ const compressImage = (file) => new Promise((res,rej) => {
   r.readAsDataURL(file);
 });
 
-const ILLO_STYLE = "Micha Archer style picture book illustration. Vibrant layered folk-art textures, bold patterned fabrics, rich warm earthy palette, glowing soft light, collage-like painterly depth, whimsical and heartfelt, award-winning children's book quality. Fill the full image area. No text, no borders, no watermarks.";
-
-const CHILD_GIRL = "young girl, warm brown skin, curly dark hair in soft ponytail with colorful ribbon, big expressive eyes, gentle smile, cozy patterned nightgown";
-const CHILD_BOY  = "young boy, warm brown skin, short curly dark hair, big expressive eyes, gentle smile, cozy striped pyjamas";
-
-// Model fallback chain — best quality first. If a model returns a server error
-// (500/503), the next model is tried automatically.
-const ILLO_MODELS = ["flux-pro", "flux", "turbo"];
-
-const _illoBaseUrl = (prompt, seed, w, h, model) =>
-  `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${w}&height=${h}&nologo=true&model=${model}&seed=${seed}&nofeed=true`;
-
-const illoUrl = (prompt, seed, w=480, h=220, gender="") => {
-  const child = gender === "boy" ? CHILD_BOY : CHILD_GIRL;
-  const full  = `${prompt}. Child character: ${child}. ${ILLO_STYLE}`;
-  // Return the best-model URL; fallback happens in preloadImgWithFallback below
-  return _illoBaseUrl(full, seed, w, h, ILLO_MODELS[0]);
-};
-
-// Store the resolved full prompt per URL so fallback can rebuild with next model
-const _illoPromptCache = new Map<string, {prompt:string,seed:number,w:number,h:number}>();
-
-const illoUrlTracked = (prompt, seed, w=480, h=220, gender="") => {
-  const child = gender === "boy" ? CHILD_BOY : CHILD_GIRL;
-  const full  = `${prompt}. Child character: ${child}. ${ILLO_STYLE}`;
-  const url   = _illoBaseUrl(full, seed, w, h, ILLO_MODELS[0]);
-  _illoPromptCache.set(url, {prompt:full, seed, w, h});
-  return url;
+const illoUrl = (prompt,seed,w=400,h=200) => {
+  const style = "children's picture book illustration, soft watercolor, gouache, warm pastel, cozy bedtime, no text";
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(`${prompt}, ${style}`)}?width=${w}&height=${h}&nologo=true&model=turbo&seed=${seed}&nofeed=true`;
 };
 
 const extractJSON = (text) => {
   let s = text.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim();
-  // Attempt 1: direct parse
   try { return JSON.parse(s); } catch(_) {}
-  // Extract JSON block
   const start = s.indexOf("{");
   const end = s.lastIndexOf("}");
   if(start===-1||end<=start) throw new Error("No JSON found in response");
-  let block = s.slice(start,end+1);
-  // Attempt 2: extracted block
+  const block = s.slice(start,end+1);
   try { return JSON.parse(block); } catch(_) {}
-  // Attempt 3: fix trailing commas
-  block = block.replace(/,(\s*[}\]])/g,"$1");
-  try { return JSON.parse(block); } catch(_) {}
-  // Attempt 4: replace smart quotes
-  block = block.replace(/[\u201C\u201D\u2033]/g,'"').replace(/[\u2018\u2019\u2032]/g,"'");
-  try { return JSON.parse(block); } catch(_) {}
-  // Attempt 5: aggressive — escape all problematic characters inside string values
-  // Walk char-by-char to find unescaped newlines/tabs inside strings
-  let result = "";
-  let inStr = false;
-  let escaped = false;
-  for (let i = 0; i < block.length; i++) {
-    const ch = block[i];
-    if (escaped) { result += ch; escaped = false; continue; }
-    if (ch === "\\") { result += ch; escaped = true; continue; }
-    if (ch === '"') { inStr = !inStr; result += ch; continue; }
-    if (inStr) {
-      if (ch === "\n") { result += "\\n"; continue; }
-      if (ch === "\r") { result += "\\r"; continue; }
-      if (ch === "\t") { result += "\\t"; continue; }
-    }
-    result += ch;
-  }
-  try { return JSON.parse(result); } catch(_) {}
-  // Attempt 6: even more aggressive — strip control chars inside strings
-  const stripped = result.replace(/[\x00-\x1F\x7F]/g, " ");
-  try { return JSON.parse(stripped); } catch(_) {}
-  // Attempt 7: try to fix unescaped inner quotes by replacing them with apostrophes
-  const fixed7 = stripped.replace(/"text"\s*:\s*"((?:[^"\\]|\\.)*)"/g, (match) => {
-    // Leave the key and outer quotes, escape inner unescaped quotes
-    return match;
-  });
-  // Final: remove everything after the last complete property and close
-  const lastGoodComma = stripped.lastIndexOf('","');
-  if (lastGoodComma > 0) {
-    const truncated = stripped.slice(0, lastGoodComma) + '"}';
-    // Close any open arrays
-    const openBrackets = (truncated.match(/\[/g)||[]).length - (truncated.match(/\]/g)||[]).length;
-    const openBraces = (truncated.match(/\{/g)||[]).length - (truncated.match(/\}/g)||[]).length;
-    let closed = truncated;
-    for (let i = 0; i < openBrackets; i++) closed += "]";
-    for (let i = 0; i < openBraces; i++) closed += "}";
-    try { return JSON.parse(closed); } catch(_) {}
-  }
-  throw new Error("Could not parse JSON from response after 7 attempts");
+  const fixed = block.replace(/,(\s*[}\]])/g,"$1");
+  return JSON.parse(fixed);
 };
 
 /* ── Storage ── */
 const S_PFX = "ss9_";
-// User-scoped key — prevents data leaking between users on the same device
-const userKey = (k: string, uid?: string) => uid ? `ss9_u_${uid}_${k}` : S_PFX + k;
-const sGet = async (k, uid?) => { try { const v=localStorage.getItem(userKey(k,uid)); return v?JSON.parse(v):null; } catch { return null; } };
-const sSet = async (k,v,uid?) => { try { localStorage.setItem(userKey(k,uid),JSON.stringify(v)); } catch {} };
-const sDel = async (k,uid?) => { try { localStorage.removeItem(userKey(k,uid)); } catch {} };
+// Helper to get user-scoped storage key (falls back to shared if no userId)
+const userKey = (k: string, uid?: string) => uid ? `ss2_u${uid}_${k}` : S_PFX + k;
+const sGet = async (k) => { try { const v=localStorage.getItem(S_PFX+k); return v?JSON.parse(v):null; } catch { return null; } };
+const sSet = async (k,v) => { try { localStorage.setItem(S_PFX+k,JSON.stringify(v)); } catch {} };
+const sDel = async (k) => { try { localStorage.removeItem(S_PFX+k); } catch {} };
 
 /* ── Preload cache ── */
 const _imgCache = new Map();
-const preloadImg = (url, onLoad, onErr) => {
-  // Resolve which model fallback to try
-  const meta = _illoPromptCache.get(url);
-
-  const tryModel = (modelIdx: number, currentUrl: string) => {
-    if(_imgCache.has(currentUrl)){
-      const img=_imgCache.get(currentUrl);
-      if(img.complete && img.naturalWidth>0){ onLoad?.(currentUrl); return img; }
-      const prevLoad = img.onload;
-      const prevErr  = img.onerror;
-      img.onload  = () => { prevLoad?.(); onLoad?.(currentUrl); };
-      img.onerror = () => {
-        prevErr?.();
-        // Try next model in chain
-        if(meta && modelIdx + 1 < ILLO_MODELS.length){
-          const nextUrl = _illoBaseUrl(meta.prompt, meta.seed, meta.w, meta.h, ILLO_MODELS[modelIdx+1]);
-          _illoPromptCache.set(nextUrl, meta);
-          tryModel(modelIdx+1, nextUrl);
-        } else {
-          onErr?.(currentUrl);
-        }
-      };
-      return img;
-    }
-
-    const img = new window.Image();
-    img.onload  = () => { onLoad?.(currentUrl); };
-    img.onerror = () => {
-      if(meta && modelIdx + 1 < ILLO_MODELS.length){
-        const nextUrl = _illoBaseUrl(meta.prompt, meta.seed, meta.w, meta.h, ILLO_MODELS[modelIdx+1]);
-        _illoPromptCache.set(nextUrl, meta);
-        tryModel(modelIdx+1, nextUrl);
-      } else {
-        onErr?.(currentUrl);
-      }
-    };
-    img.src = currentUrl;
-    _imgCache.set(currentUrl, img);
+const preloadImg = (url,onLoad,onErr) => {
+  if(_imgCache.has(url)){
+    const img=_imgCache.get(url);
+    if(img.complete&&img.naturalWidth>0) onLoad?.();
     return img;
-  };
-
-  const startModelIdx = meta ? 0 : 0;
-  return tryModel(startModelIdx, url);
+  }
+  const img = new window.Image();
+  img.onload = () => onLoad?.();
+  img.onerror = () => onErr?.();
+  img.src = url;
+  _imgCache.set(url,img);
+  return img;
 };
 
 
@@ -979,52 +848,18 @@ const callClaude = async (messages, system="", maxTokens=4000) => {
 };
 
 /* ── Shared sub-components (defined outside main to avoid transpiler issues) ── */
-const Illo = ({url,loaded}) => {
-  const [resolvedSrc, setResolvedSrc] = React.useState(url);
-  const [selfLoaded,  setSelfLoaded]  = React.useState(false);
-
-  React.useEffect(() => {
-    if(!url) return;
-    setSelfLoaded(false);
-    setResolvedSrc(url);
-    // Check if a fallback model already resolved a different URL for this slot
-    const cached = _imgCache.get(url);
-    if(cached && cached.complete && cached.naturalWidth > 0 && cached.src !== url){
-      setResolvedSrc(cached.src);
-    }
-  }, [url]);
-
-  const show = loaded || selfLoaded;
-  return (
-    <div className="illo-slot">
-      <div className="shimmer" style={{opacity:show?0:1,transition:"opacity .8s"}} />
-      {resolvedSrc && (
-        <img
-          src={resolvedSrc}
-          className="illo-img"
-          style={{opacity:show?1:0}}
-          alt=""
-          onLoad={() => setSelfLoaded(true)}
-          onError={(e) => {
-            // If primary src fails, check if preloadImg resolved a fallback
-            const cached = _imgCache.get(url);
-            if(cached && cached.src !== resolvedSrc){
-              setResolvedSrc(cached.src);
-            } else {
-              setSelfLoaded(true); // give up gracefully — hide spinner
-            }
-          }}
-        />
-      )}
-      {!show && (
-        <div className="illo-fb">
-          <div className="illo-fb-e">✨</div>
-          <div className="illo-fb-t">Painting…</div>
-        </div>
-      )}
-    </div>
-  );
-};
+const Illo = ({url,loaded}) => (
+  <div className="illo-slot">
+    <div className="shimmer" style={{opacity:loaded?0:1,transition:"opacity .8s"}} />
+    {url && <img src={url} className="illo-img" style={{opacity:loaded?1:0}} alt="" />}
+    {!loaded && (
+      <div className="illo-fb">
+        <div className="illo-fb-e">✨</div>
+        <div className="illo-fb-t">Painting…</div>
+      </div>
+    )}
+  </div>
+);
 
 
 /* ── Dream Illustration (static animated scene, used on all pages until personal illustrations are ready) ── */
@@ -1429,10 +1264,6 @@ interface SleepSeedCoreProps {
   userId?: string;
   isGuest?: boolean;
   preloadedCharacter?: any;
-  preloadedBook?: any;
-  ritualSeed?: string;
-  ritualMood?: string;
-  builderChoices?: import('./lib/types').BuilderChoices | null;
   onCharacterSavePrompt?: (charData: any) => void;
   onStoryReady?: (storyData: any) => void;
 }
@@ -1441,10 +1272,6 @@ export default function SleepSeed({
   userId,
   isGuest = false,
   preloadedCharacter,
-  preloadedBook,
-  ritualSeed,
-  ritualMood,
-  builderChoices,
   onCharacterSavePrompt,
   onStoryReady,
 }: SleepSeedCoreProps = {}) {
@@ -1515,8 +1342,6 @@ export default function SleepSeed({
   const [viewingNightCard, setViewingNightCard] = useState<any>(null); // Night Card detail view
   const [styleDna,         setStyleDna]         = useState<any>(null); // Style DNA for feedback
   const [showFeedback,     setShowFeedback]     = useState(false);     // StoryFeedback sheet visible
-  const [showToolbar,      setShowToolbar]      = useState(false);     // collapsed toolbar expanded
-  const [showSeal,         setShowSeal]         = useState(false);     // Night Card seal screen
 
   const totalPagesRef = useRef(0);
   const fileRefs      = useRef({});
@@ -1542,24 +1367,13 @@ export default function SleepSeed({
   },[]);
 
   useEffect(() => {
-    // Use user-scoped keys for memories and nightcards to prevent cross-user data leakage
-    sGet("memories", userId).then(s => { if(s?.items) setMemories(s.items); });
-    sGet("nightcards", userId).then(s => { if(s?.items) setNightCards(s.items); });
+    sGet("memories").then(s => { if(s?.items) setMemories(s.items); });
+    sGet("nightcards").then(s => { if(s?.items) setNightCards(s.items); });
     sGet("style_dna").then(s => { if(s) setStyleDna(s); });
     sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); });
     sGet("onboarded").then(s => { if(s?.v) setHasSeenOnboard(true); });
-  },[userId]);
 
-  // Open directly to book stage when a saved story is passed in
-  const hasLoadedBookRef = useRef(false);
-  useEffect(() => {
-    if (!preloadedBook || hasLoadedBookRef.current) return;
-    hasLoadedBookRef.current = true;
-    setBook(preloadedBook);
-    setPageIdx(0);
-    setFromCache(true);
-    setStage("book");
-  }, [preloadedBook]);
+  },[]);
 
   // Pre-populate from a saved character when passed in from the dashboard
   useEffect(() => {
@@ -1575,77 +1389,6 @@ export default function SleepSeed({
     if (c.currentSituation) setStoryContext(c.currentSituation);
     if (c.weirdDetail) setStoryGuidance(c.weirdDetail);
   }, [preloadedCharacter]);
-
-  // Pre-populate ritual seed and mood from the ritual starter screen
-  useEffect(() => {
-    if (ritualSeed) setStoryContext(ritualSeed);
-  }, [ritualSeed]);
-
-  useEffect(() => {
-    if (ritualMood) {
-      const moodMap: Record<string, string> = {
-        '😊': 'calm', '🥺': 'heartfelt', '😂': 'silly', '🦁': 'exciting', '😴': 'calm'
-      };
-      const mapped = moodMap[ritualMood];
-      if (mapped) setStoryMood(mapped);
-    }
-  }, [ritualMood]);
-
-  // ── Auto-generate from StoryBuilderPage choices ──────────────────────────────
-  // Fires once heroName is populated (from preloadedCharacter effect) AND
-  // builderChoices are present — then calls generate() with all mapped overrides.
-  const hasAutoGenRef = useRef(false);
-
-  useEffect(() => {
-    if (!builderChoices || !heroName.trim() || hasAutoGenRef.current) return;
-    hasAutoGenRef.current = true;
-
-    const vibeToFeel: Record<string, string> = {
-      'warm-funny':  'warm and funny, with lots of laughs',
-      'calm-cosy':   'calm and cosy, drifting toward sleep',
-      'exciting':    'exciting and full of surprises',
-      'heartfelt':   'heartfelt and emotionally true',
-      'silly':       'completely silly from start to finish',
-      'mysterious':  'mysterious with a satisfying ending',
-    };
-
-    const vibeToAction: Record<string, string> = {
-      'warm-funny':  'about to go on a warm and funny adventure',
-      'calm-cosy':   'about to discover something magical and cosy',
-      'exciting':    'about to go on a completely made-up adventure',
-      'heartfelt':   'on a journey that fills the heart',
-      'silly':       'on a silly quest with friends',
-      'mysterious':  'about to discover something magical and mysterious',
-    };
-
-    const feel   = vibeToFeel[builderChoices.vibe]   || builderChoices.vibe;
-    const action = vibeToAction[builderChoices.vibe]  || 'going on an adventure';
-
-    const isRitual   = builderChoices.path === 'ritual';
-    const storyCtx   = isRitual ? (ritualSeed || '') : '';
-    const brief1     = isRitual ? '' : (builderChoices.brief.trim() || action);
-    const isAdventure = builderChoices.style === 'adventure';
-
-    generate({
-      ageGroup:       builderChoices.level    || 'age5',
-      storyLen:       builderChoices.length   || 'standard',
-      storyBrief1:    brief1,
-      storyBrief2:    feel,
-      storyContext:   storyCtx,
-      storyGuidance:  '',
-      realLifeCtx:    '',
-      lessonContext:  '',
-      storyMood:      feel,
-      storyPace:      builderChoices.pace  || 'normal',
-      storyStyle:     builderChoices.style || 'standard',
-      adventure:      isAdventure,
-      extraChars:     builderChoices.chars  || [],
-      lessons:        builderChoices.lessons || [],
-      occasion:       builderChoices.occasion || '',
-      occasionCustom: builderChoices.occasionCustom || '',
-      heroTraits:     [],
-    });
-  }, [builderChoices, heroName]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   useEffect(() => {
@@ -2233,7 +1976,7 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
       refrain: bookData.refrain || ""};
     const next = [entry,...memories];
     setMemories(next);
-    await sSet("memories",{items:next},userId);
+    await sSet("memories",{items:next});
     // Also mirror to v2 user-scoped storage so UserDashboard can read it
     if (userId) {
       try {
@@ -2246,73 +1989,44 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
           occasion: occ, bookData
         };
         localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
-        // ── Save to Supabase so dashboard reads it ──
-        await dbSaveStory({
-          id: entry.id, userId, title: entry.title,
-          heroName: entry.heroName, characterIds: entry.characterIds,
-          refrain: entry.refrain, date: entry.date,
-          occasion: occ, bookData
-        });
-      } catch(e) { console.error('SleepSeedCore dbSaveStory:', e); }
+      } catch(_) {}
     }
   },[memories,occasion,occasionCustom,userId,preloadedCharacter]);
 
   const deleteMemory = useCallback(async (id) => {
     const next = memories.filter(m => m.id!==id);
     setMemories(next);
-    await sSet("memories",{items:next},userId);
-  },[memories,userId]);
+    await sSet("memories",{items:next});
+  },[memories]);
 
   const saveNightCard = useCallback(async (cardData) => {
     const entry = {id:uid(),...cardData,date:new Date().toISOString().split("T")[0]};
     const next = [entry,...nightCards];
     setNightCards(next);
-    await sSet("nightcards",{items:next},userId);
+    await sSet("nightcards",{items:next});
     // Mirror to v2 user-scoped storage
     if (userId) {
       try {
         const v2Key = `ss2_nightcards_${userId}`;
         const existing = JSON.parse(localStorage.getItem(v2Key) || "[]");
-        // Collect character IDs from all sources
-        const ncCharIds: string[] = cardData.characterIds?.length ? [...cardData.characterIds] : [];
-        if (preloadedCharacter?.id && !ncCharIds.includes(preloadedCharacter.id)) ncCharIds.push(preloadedCharacter.id);
-        if (preloadedCharacter?.id && !ncCharIds.includes(preloadedCharacter.id)) ncCharIds.push(preloadedCharacter.id);
-
         const v2Entry = {
           id: entry.id, userId,
           heroName: entry.heroName || cardData.heroName || "",
-          storyTitle: entry.storyTitle || cardData.storyTitle || "",
-          characterIds: ncCharIds,
-          headline: entry.headline || cardData.headline || "",
-          quote: entry.quote || cardData.quote || cardData.bondingA || "",
-          memory_line: entry.memory_line || cardData.memory_line || "",
-          bondingQuestion: entry.bondingQuestion || entry.bondingQ || cardData.bondingQuestion || cardData.bondingQ || "",
-          bondingAnswer: entry.bondingAnswer || entry.bondingA || cardData.bondingAnswer || cardData.bondingA || "",
-          gratitude: entry.gratitude || cardData.gratitude || "",
-          extra: entry.extra || cardData.extra || "",
-          photo: entry.photo || cardData.photo || null,
-          emoji: entry.emoji || cardData.emoji || "🌙",
+          storyTitle: entry.storyTitle || "",
+          characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
+          headline: entry.headline || "",
+          quote: entry.quote || cardData.bondingA || "",
+          memory_line: entry.memory_line || "",
+          bondingQuestion: entry.bondingQ || "",
+          bondingAnswer: entry.bondingA || "",
+          gratitude: entry.gratitudeA || "",
+          extra: entry.extraA || "",
+          photo: entry.photo || null,
+          emoji: entry.emoji || "🌙",
           date: entry.date
         };
         localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
-        // ── Save to Supabase so dashboard reads it ──
-        await dbSaveNightCard({
-          id: entry.id, userId,
-          heroName: v2Entry.heroName,
-          storyTitle: v2Entry.storyTitle,
-          characterIds: ncCharIds,
-          headline: v2Entry.headline,
-          quote: v2Entry.quote,
-          memory_line: v2Entry.memory_line || undefined,
-          bondingQuestion: v2Entry.bondingQuestion || undefined,
-          bondingAnswer: v2Entry.bondingAnswer || undefined,
-          gratitude: v2Entry.gratitude || undefined,
-          extra: v2Entry.extra || undefined,
-          photo: entry.photo || undefined,
-          emoji: entry.emoji || "🌙",
-          date: entry.date,
-        });
-      } catch(e) { console.error('SleepSeedCore dbSaveNightCard:', e); }
+      } catch(_) {}
     }
     return entry;
   },[nightCards,userId,preloadedCharacter]);
@@ -2362,10 +2076,10 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
         const allUrls = [cached.coverUrl,...pages.map(p=>p.imgUrl)];
         const dots = mk(allUrls.length,"p");
         setGen(g => ({...g,dots:[...dots]}));
-        allUrls.forEach((url,i) => setTimeout(() => preloadImg(url,
+        allUrls.forEach((url,i) => preloadImg(url,
           () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:true})); },
-          () => { dots[i]="e"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:"e"})); }
-        ), i * 800));
+          () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); }
+        ));
         setBook(cached); setPageIdx(0); setFromCache(true);
         await new Promise(r => setTimeout(r,180));
         setStage("book");
@@ -2540,11 +2254,11 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
 
       // ── JSON output schema (app needs structured pages) ─────────────────
       const pgSchema = (n) => Array.from({length:n},()=>(
-        '{"text":"[page text]","illustration_prompt":"[15-20 words: vivid scene, setting and action, no character names, Micha Archer folk-art paintable]"}'
+        '{"text":"[page text]","illustration_prompt":"[warm playful scene under 20 words]"}'
       )).join(",");
 
-      const simpleSchema = `{"title":"3-6 word title","cover_prompt":"[15-20 words: wide magical bedtime scene establishing the story world, cozy glowing folk-art atmosphere]","pages":[${pgSchema(totalN)}],"refrain":"4-8 word refrain from the story"}`;
-      const advSchema = `{"title":"3-6 word title","cover_prompt":"[15-20 words: wide magical bedtime scene establishing the story world, cozy glowing folk-art atmosphere]","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"exciting choice question for ${name}","option_a_label":"4-7 words","option_b_label":"4-7 words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}],"refrain":"4-8 word refrain from the story"}`;
+      const simpleSchema = `{"title":"3-6 word title","cover_prompt":"wide warm magical scene, all characters visible","pages":[${pgSchema(totalN)}],"refrain":"4-8 word refrain from the story"}`;
+      const advSchema = `{"title":"3-6 word title","cover_prompt":"wide warm magical scene, all characters visible","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"exciting choice question for ${name}","option_a_label":"4-7 words","option_b_label":"4-7 words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}],"refrain":"4-8 word refrain from the story"}`;
 
       // ── Assemble final prompt with characters + age + JSON output ───────
       const storyPrompt = `${promptUser}
@@ -2580,14 +2294,13 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
       setGen(g => ({...g,stepIdx:2,progress:65,label:"Painting the illustrations…"}));
 
-      const g = heroGender || "girl";
-      const coverUrl = illoUrlTracked(story.cover_prompt, seed, 640, 280, g);
+      const coverUrl = illoUrl(`${story.cover_prompt}, characters: ${charVisual}`,seed,520,220);
       let bookData, allUrls;
 
       if(resolvedAdv && story.setup_pages){
-        const sU = story.setup_pages.map((p,i) => illoUrlTracked(p.illustration_prompt, seed+i+1, 480, 220, g));
-        const aU = story.path_a.map((p,i) => illoUrlTracked(p.illustration_prompt, seed+100+i, 480, 220, g));
-        const bU = story.path_b.map((p,i) => illoUrlTracked(p.illustration_prompt, seed+200+i, 480, 220, g));
+        const sU = story.setup_pages.map((p,i) => illoUrl(`${p.illustration_prompt}, ${charVisual}`,seed+i+1,400,190));
+        const aU = story.path_a.map((p,i) => illoUrl(`${p.illustration_prompt}, ${charVisual}`,seed+100+i,400,190));
+        const bU = story.path_b.map((p,i) => illoUrl(`${p.illustration_prompt}, ${charVisual}`,seed+200+i,400,190));
         allUrls = [coverUrl,...sU,...aU,...bU];
         bookData = {
           title:story.title,heroName:name,coverUrl,allChars,isAdventure:true,
@@ -2598,7 +2311,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
           path_b:story.path_b.map((p,i) => ({text:p.text,imgUrl:bU[i]})),
         };
       } else {
-        const pU = story.pages.map((p,i) => illoUrlTracked(p.illustration_prompt, seed+i+1, 480, 220, g));
+        const pU = story.pages.map((p,i) => illoUrl(`${p.illustration_prompt}, ${charVisual}`,seed+i+1,400,190));
         allUrls = [coverUrl,...pU];
         bookData = {
           title:story.title,heroName:name,coverUrl,allChars,
@@ -2609,16 +2322,11 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
       const dots = mk(allUrls.length,"p");
       setGen(g => ({...g,progress:80,label:"Story ready! Illustrations loading…",dots:[...dots]}));
-      // Stagger requests by 800ms each — flux-pro on the free tier rate-limits
-      // simultaneous requests, causing silent failures. Sequential loading means
-      // images appear one by one rather than all failing at once.
       allUrls.forEach((url,i) => {
-        setTimeout(() => {
-          preloadImg(url,
-            (_resolvedUrl) => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:true})); },
-            (_resolvedUrl) => { dots[i]="e"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:"e"})); }
-          );
-        }, i * 800);
+        preloadImg(url,
+          () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:true})); },
+          () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); }
+        );
       });
 
       // ── Generate parent note ──────────────────────────────────────────
@@ -2636,7 +2344,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       setBook(bookData); setPageIdx(0);
       setGen(g => ({...g,stepIdx:3,progress:94,label:"Enjoy your story!",dots:[...dots]}));
       await new Promise(r => setTimeout(r,200));
-      setStage("reveal");
+      setStage("book");
       sSet(bKey,bookData).catch(()=>{});
 
       // ── Auto-save story to library ────────────────────────────────────
@@ -2647,10 +2355,10 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       const msg = e.message||"Something went wrong";
       const isParseErr = msg.toLowerCase().includes("json")||msg.toLowerCase().includes("parse")||msg.toLowerCase().includes("missing");
       const userMsg = isParseErr
-        ? "The story world needs a moment ✦ Everything you wrote is saved — tap to try again."
+        ? "The story response was incomplete — your settings are saved. Tap Try Again."
         : msg.includes("ANTHROPIC_KEY")
           ? "API key not set — check your Vercel environment variables."
-          : "The story world needs a moment ✦ Everything you wrote is saved — tap to try again.";
+          : "Something went wrong — your settings are saved. Tap Try Again.";
       setError(userMsg);
       setLastErrStage(stage==="builder" ? "builder" : "quick");
       setStage("error");
@@ -3753,46 +3461,12 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
           </div>
         )}
 
-        {/* STORY REVEAL */}
-        {stage==="reveal" && book && (
-          <div className="reveal-screen" onClick={()=>{setStage("book");}}>
-            <div className="reveal-stars">
-              {Array.from({length:30},(_,i) => (
-                <div key={i} className="reveal-star" style={{
-                  top:`${Math.random()*100}%`,left:`${Math.random()*100}%`,
-                  width:Math.random()*2+0.5,height:Math.random()*2+0.5,
-                  '--d':`${Math.random()*3+2}s`,'--dl':`-${Math.random()*4}s`,
-                  '--lo':(Math.random()*.15+.05).toFixed(2),'--hi':(Math.random()*.5+.2).toFixed(2),
-                } as any} />
-              ))}
-            </div>
-            <div className="reveal-moon" />
-            <div className="reveal-ready">Your story is ready</div>
-            <div className="reveal-title">{book.title}</div>
-            <div className="reveal-for">A bedtime story for {book.heroName}</div>
-            <button className="reveal-btn" onClick={(e)=>{e.stopPropagation();setStage("book");}}>
-              Begin reading ✦
-            </button>
-          </div>
-        )}
-
-        {/* NIGHT CARD SEAL */}
-        {showSeal && (
-          <div className="seal-screen" onClick={()=>setShowSeal(false)}>
-            <div className="seal-star">✦</div>
-            <div className="seal-title">Tonight's star is saved</div>
-            <div className="seal-name">Sleep well, {book?.heroName} ✦</div>
-            <div className="seal-sub">This night is kept forever</div>
-            <button className="seal-dismiss" onClick={()=>setShowSeal(false)}>continue →</button>
-          </div>
-        )}
-
         {/* ERROR RECOVERY */}
         {stage==="error" && (
           <div className="screen" style={{maxWidth:420}}>
             <div className="card" style={{textAlign:"center",padding:24}}>
               <div style={{fontSize:36,marginBottom:12}}>😔</div>
-              <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:"var(--cream)",marginBottom:8}}>The story world needs a moment ✦</div>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:"var(--cream)",marginBottom:8}}>Something went wrong</div>
               <div style={{fontSize:12,color:"var(--dim)",marginBottom:6,lineHeight:1.7}}>{error}</div>
               <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:20,lineHeight:1.6}}>
                 Don't worry — all your story settings are saved.
@@ -3868,30 +3542,32 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </button>
             </div>
 
-            {/* Collapsed toolbar — immersive reading */}
-            <div className="rd-toolbar-collapsed">
-              {/* Read aloud button always visible */}
-              <button style={{width:36,height:36,borderRadius:'50%',background:isReading?'rgba(212,160,48,.2)':'rgba(6,11,24,.85)',border:`1px solid ${isReading?'rgba(212,160,48,.4)':'rgba(255,255,255,.12)'}`,color:isReading?'var(--gold2)':'rgba(255,255,255,.5)',fontSize:14,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(10px)',marginBottom:6}}
+            <div className="ctrl-bar">
+              <button className={`ctrl-btn read${isReading?" active":""}`}
                 onClick={()=>{ const prog=totalPages>1?pageIdx/(totalPages-1):0.5; toggleRead(pageIdx===0?`${book.title}. A bedtime story for ${book.heroName}.`:getCurrentPageText(),prog); }}>
-                {isReading ? '⏸' : '🔊'}
+                {isReading ? "⏸ Pause" : (selectedVoiceId||voiceId) ? `🔊 ${(PRESET_VOICES.find(v=>v.id===selectedVoiceId)||{name:voiceId?"My Voice":"Read"}).name}` : "🔊 Read aloud"}
               </button>
-              <div className="rd-dots-btn" onClick={()=>setShowToolbar(!showToolbar)}>⋯</div>
-              {showToolbar && (
-                <div className="rd-expanded" onClick={e=>e.stopPropagation()}>
-                  <button className="rd-exp-btn" onClick={()=>{setShowVoicePicker(true);setShowToolbar(false);}}>🎤 Choose Voice</button>
-                  <button className="rd-exp-btn" onClick={()=>{shareStory();setShowToolbar(false);}}>📤 Share</button>
-                  <button className="rd-exp-btn" onClick={()=>{downloadStory();setShowToolbar(false);}}>📄 Download PDF</button>
-                  <button className="rd-exp-btn" onClick={async()=>{
-                    try { const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance); await sDel(`book_${s}`); } catch(_) {}
-                    window.speechSynthesis?.cancel();
-                    if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
-                    autoReadRef.current = false;
-                    setStoryContext(""); setLessonContext(""); setTodayPrompt(""); setStoryBrief1(""); setStoryBrief2(""); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(true); setBriefStep2Open(false);
-                    setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
-                  }}>🔄 New Story</button>
-                  <div style={{padding:'6px 12px',fontSize:10,color:'rgba(76,200,144,.6)'}}>✓ Auto-saved</div>
-                </div>
-              )}
+              <div className="ctrl-btn" style={{cursor:"default",background:"rgba(76,200,144,.08)",borderColor:"rgba(76,200,144,.25)",color:"var(--green2)",fontSize:11}}>
+                ✓ Auto-saved
+              </div>
+              <button className="ctrl-btn fresh" onClick={async()=>{
+                try {
+                  const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance);
+                  await sDel(`book_${s}`);
+                } catch(_) {}
+                window.speechSynthesis?.cancel();
+                if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
+                autoReadRef.current = false;
+                setStoryContext(""); setLessonContext(""); setTodayPrompt(""); setStoryBrief1(""); setStoryBrief2(""); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(true); setBriefStep2Open(false);
+                setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
+              }}>🔄 New</button>
+              <button className="ctrl-btn dl" onClick={downloadStory}>📄 Download</button>
+              <button className="ctrl-btn" style={{background:"rgba(100,160,255,.1)",borderColor:"rgba(100,160,255,.25)",color:"#a8c8ff"}}
+                onClick={shareStory}>📤 Share</button>
+              <button className={`ctrl-btn vc-btn${(selectedVoiceId||voiceId)?" active":""}`}
+                onClick={()=>setShowVoicePicker(true)}>
+                🎤 {selectedVoiceId ? (PRESET_VOICES.find(v=>v.id===selectedVoiceId)?.name||"Voice") : voiceId ? "My Voice ✓" : "Choose Voice"}
+              </button>
             </div>
 
             {/* ── Voice Picker Modal ── */}
@@ -4300,10 +3976,8 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                           heroName:book.heroName, storyTitle:book.title,
                           refrain:book.refrain||"",
                           bondingQ:ncBondingQ, bondingA:ncBondingA,
-                          bondingQuestion:ncBondingQ, bondingAnswer:ncBondingA,
                           gratitude:ncGratitude, extra:ncExtra,
                           photo:ncPhoto,
-                          characterIds: preloadedCharacter?.id ? [preloadedCharacter.id] : [],
                           ...ncResult,
                         };
                         try { await saveNightCard(ncData); } catch(_) {}
@@ -4323,8 +3997,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                             Array.isArray(lessons)?lessons.join("|"):lessons,adventure,storyLen,heroGender,heroClassify,storyGuidance);
                           sSet(`book_${s}`,updatedBook).catch(()=>{});
                         } catch(_) {}
-                        setShowSeal(true);
-                        setTimeout(()=>{ setShowSeal(false); setStage("book"); setPageIdx(totalPages-1); }, 3500);
+                        setStage("book"); setPageIdx(totalPages-1);
                       }}>
                         ✓ Save &amp; Done
                       </button>

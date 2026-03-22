@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sI \"https://image.pollinations.ai/prompt/a%20child%20reading%20a%20book?width=480&height=220&nologo=true&model=flux-pro&seed=42&nofeed=true\")",
+      "Bash(curl -sI \"https://image.pollinations.ai/prompt/a%20child%20reading%20a%20book?width=480&height=220&nologo=true&model=turbo&seed=42&nofeed=true\")",
+      "Bash(curl -sI \"https://image.pollinations.ai/prompt/a%20child%20reading%20a%20book?width=480&height=220&nologo=true&model=flux&seed=42&nofeed=true\")",
+      "Bash(curl -sI \"https://image.pollinations.ai/prompt/a%20child%20reading?width=200&height=200&nologo=true&model=flux-pro&seed=1&nofeed=true\")",
+      "Bash(cp \"C:\\\\Users\\\\gregc\\\\Downloads\\\\SleepSeedCore.tsx\" \"C:\\\\Users\\\\gregc\\\\OneDrive\\\\Desktop\\\\sleepseed-vercel\\\\src\\\\SleepSeedCore.tsx\")",
+      "Bash(npx vite:*)",
+      "Bash(curl -sI \"https://image.pollinations.ai/prompt/a%20child%20reading%20a%20book%20in%20bed?width=480&height=220&nologo=true&model=flux&seed=42&nofeed=true\")",
+      "Bash(curl -sI \"https://image.pollinations.ai/prompt/hello?width=200&height=200\")",
+      "Bash(curl:*)",
+      "Bash(npm install:*)",
+      "Bash(mkdir -p src/lib)",
+      "Bash(cp \"C:\\\\Users\\\\gregc\\\\Downloads\\\\supabase.ts\" src/lib/supabase.ts)",
+      "Bash(cp \"C:\\\\Users\\\\gregc\\\\Downloads\\\\storage.ts\" src/lib/storage.ts)",
+      "Bash(cp \"C:\\\\Users\\\\gregc\\\\Downloads\\\\AppContext.tsx\" src/AppContext.tsx)",
+      "Bash(cp \"C:\\\\Users\\\\gregc\\\\Downloads\\\\Auth.tsx\" src/pages/Auth.tsx)",
+      "Bash(ls C:UsersgregcDownloads/*.ts C:UsersgregcDownloads/*.tsx)",
+      "Bash(ls C:UsersgregcDownloads/*files*.zip)",
+      "Bash(ls C:UsersgregcDownloads/*.zip)",
+      "Bash(find C:UsersgregcDownloads -maxdepth 1 -name *.zip -newer C:UsersgregcDownloads -mmin -30)",
+      "Bash(find C:UsersgregcDownloads -maxdepth 1 -name *files*)",
+      "Bash(find C:UsersgregcDownloads -maxdepth 1 -name *.zip)",
+      "Bash(unzip -l \"files.zip\")",
+      "Bash(unzip -o files.zip -d /tmp/supfiles)",
+      "Bash(cp /tmp/supfiles/supabase.ts \"C:\\\\Users\\\\gregc\\\\OneDrive\\\\Desktop\\\\sleepseed-vercel\\\\src\\\\lib\\\\supabase.ts\")",
+      "Bash(cp /tmp/supfiles/storage.ts \"C:\\\\Users\\\\gregc\\\\OneDrive\\\\Desktop\\\\sleepseed-vercel\\\\src\\\\lib\\\\storage.ts\")",
+      "Bash(cp /tmp/supfiles/AppContext.tsx \"C:\\\\Users\\\\gregc\\\\OneDrive\\\\Desktop\\\\sleepseed-vercel\\\\src\\\\AppContext.tsx\")",
+      "Bash(cp /tmp/supfiles/Auth.tsx \"C:\\\\Users\\\\gregc\\\\OneDrive\\\\Desktop\\\\sleepseed-vercel\\\\src\\\\pages\\\\Auth.tsx\")",
+      "Bash(cp ~/Downloads/types.ts src/lib/types.ts)",
+      "Bash(cp ~/Downloads/AppContext.tsx src/AppContext.tsx)",
+      "Bash(cp ~/Downloads/App.tsx src/App.tsx)",
+      "Bash(cp ~/Downloads/RitualStarter.tsx src/pages/RitualStarter.tsx)",
+      "Bash(cp ~/Downloads/StoryHandoff.tsx src/pages/StoryHandoff.tsx)",
+      "Bash(npx vercel:*)",
+      "Bash(VERCEL_ORG_ID=\"\" npx vercel --prod --yes --force)"
+    ]
+  }
+}
