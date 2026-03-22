@@ -2566,15 +2566,27 @@ ${resolvedAdv
 Return ONLY this exact JSON object. No extra text, no markdown, no explanation:
 ${resolvedAdv ? advSchema : simpleSchema}`;
 
-      const raw = await callClaude(
-        [{role:"user",content:storyPrompt}],
-        promptSystem,
-        6000
-      );
+      let raw, story;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          raw = await callClaude(
+            [{role:"user",content:storyPrompt}],
+            promptSystem,
+            8000
+          );
+          story = extractJSON(raw);
+          if (story?.title) break;
+        } catch (parseErr) {
+          if (attempt === 0) {
+            console.warn("[SleepSeed] Story parse failed, retrying...", parseErr);
+            setGen(g => ({...g,label:"Polishing the story…",progress:42}));
+            continue;
+          }
+          throw parseErr;
+        }
+      }
 
-      const story = extractJSON(raw);
-
-      if(!story.title) throw new Error("Response missing title");
+      if(!story?.title) throw new Error("Response missing title");
       if(!resolvedAdv && (!Array.isArray(story.pages)||story.pages.length===0)) throw new Error("Response missing pages array");
       if(resolvedAdv && (!Array.isArray(story.setup_pages)||!Array.isArray(story.path_a)||!Array.isArray(story.path_b))) throw new Error("Response missing adventure paths");
 
@@ -2652,7 +2664,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
           ? "API key not set — check your Vercel environment variables."
           : "The story world needs a moment ✦ Everything you wrote is saved — tap to try again.";
       setError(userMsg);
-      setLastErrStage(stage==="builder" ? "builder" : "quick");
+      setLastErrStage(stage==="builder" ? "builder" : "home");
       setStage("error");
     }
   };
@@ -3799,7 +3811,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </div>
               <button className="btn" style={{marginBottom:10}} onClick={()=>{
                 setError("");
-                setStage(lastErrStage||"quick");
+                setStage(lastErrStage||"home");
               }}>
                 ✨ Try again
               </button>
