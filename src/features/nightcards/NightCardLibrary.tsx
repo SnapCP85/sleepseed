@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getNightCards, deleteNightCard } from '../../lib/storage';
+import { getNightCards, deleteNightCard, saveNightCard } from '../../lib/storage';
 import type { SavedNightCard } from '../../lib/types';
 
 const CSS = `
@@ -62,6 +62,8 @@ interface Props { userId: string; onBack: () => void; filterCharacterId?: string
 export default function NightCardLibrary({ userId, onBack, filterCharacterId }: Props) {
   const [cards, setCards] = useState<SavedNightCard[]>([]);
   const [viewing, setViewing] = useState<SavedNightCard | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editFields, setEditFields] = useState<any>({});
   useEffect(() => {
     getNightCards(userId).then(fetched => {
       // Pin origin card first, then sort by date descending
@@ -186,6 +188,44 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
                 </div>
               )}
             </div>
+            {!editing ? (
+              <div style={{display:'flex',gap:8,marginTop:10}}>
+                <button onClick={()=>{setEditing(true);setEditFields({headline:viewing.headline||'',quote:viewing.quote||'',memory_line:viewing.memory_line||'',gratitude:viewing.gratitude||'',extra:viewing.extra||''});}}
+                  style={{flex:1,padding:'8px 12px',borderRadius:8,border:'1px solid rgba(232,151,42,.25)',background:'rgba(232,151,42,.06)',color:'rgba(232,151,42,.8)',fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:'inherit'}}>
+                  ✏️ Edit
+                </button>
+                <button onClick={e=>handleDelete(e,viewing.id)}
+                  style={{padding:'8px 12px',borderRadius:8,border:'1px solid rgba(200,80,80,.2)',background:'rgba(200,80,80,.05)',color:'rgba(255,140,130,.7)',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}>
+                  🗑
+                </button>
+              </div>
+            ) : (
+              <div style={{marginTop:10,display:'flex',flexDirection:'column',gap:8}}>
+                {[{k:'headline',l:'Headline'},{k:'quote',l:'Quote'},{k:'memory_line',l:'Memory line'},{k:'gratitude',l:'Best three seconds'},{k:'extra',l:'Extra note'}].map(f=>(
+                  <div key={f.k}>
+                    <div style={{fontSize:8,color:'rgba(58,40,0,.4)',fontFamily:'monospace',marginBottom:3,textTransform:'uppercase',letterSpacing:'.5px'}}>{f.l}</div>
+                    <textarea value={editFields[f.k]||''} onChange={e=>setEditFields({...editFields,[f.k]:e.target.value})}
+                      style={{width:'100%',background:'rgba(58,40,0,.04)',border:'1px solid rgba(58,40,0,.12)',borderRadius:6,padding:'6px 8px',fontSize:11,color:'#3A2600',fontFamily:'Georgia,serif',fontStyle:'italic',resize:'none',minHeight:36,lineHeight:1.5,outline:'none'}} />
+                  </div>
+                ))}
+                <div style={{display:'flex',gap:8}}>
+                  <button onClick={async()=>{
+                    const updated = {...viewing,...editFields};
+                    await saveNightCard(updated);
+                    const fetched = await getNightCards(userId);
+                    setCards(fetched);
+                    setViewing(updated);
+                    setEditing(false);
+                  }} style={{flex:1,padding:'8px',borderRadius:8,background:'#E8972A',color:'#120800',fontSize:11,fontWeight:700,cursor:'pointer',border:'none',fontFamily:'inherit'}}>
+                    Save changes
+                  </button>
+                  <button onClick={()=>setEditing(false)}
+                    style={{padding:'8px 12px',borderRadius:8,border:'1px solid rgba(58,40,0,.12)',background:'transparent',color:'rgba(58,40,0,.5)',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="ncl-modal-stamp">🌙 SleepSeed · {viewing.heroName} · {viewing.date}</div>
           </div>
         </div>

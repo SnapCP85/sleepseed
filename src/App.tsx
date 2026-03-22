@@ -16,7 +16,45 @@ import StoryLibrary from './features/stories/StoryLibrary';
 import NightCardLibrary from './features/nightcards/NightCardLibrary';
 import SleepSeedCore from './SleepSeedCore';
 import SharedStoryViewer from './pages/SharedStoryViewer';
+import CharacterDetail from './features/characters/CharacterDetail';
 import type { Character } from './lib/types';
+
+const NAV_CSS = `
+.anav{display:flex;align-items:center;gap:0;padding:0 5%;height:50px;border-bottom:1px solid rgba(232,151,42,.12);background:rgba(8,12,24,.97);position:sticky;top:0;z-index:20;backdrop-filter:blur(20px);font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.anav-logo{font-family:'Playfair Display',Georgia,serif;font-size:15px;font-weight:700;color:#F4EFE8;display:flex;align-items:center;gap:7px;cursor:pointer;flex-shrink:0;margin-right:12px;padding-right:14px;border-right:1px solid rgba(255,255,255,.08)}
+.anav-moon{width:14px;height:14px;border-radius:50%;background:#F5B84C;position:relative;overflow:hidden;flex-shrink:0}
+.anav-moon-sh{position:absolute;width:13px;height:13px;border-radius:50%;background:#050916;top:-3px;left:-6px}
+.anav-tabs{display:flex;align-items:center;gap:3px;flex:1;min-width:0}
+.anav-tab{padding:7px 14px;border-radius:9px;font-size:12px;font-weight:600;color:rgba(244,239,232,.35);cursor:pointer;transition:all .15s;white-space:nowrap;border:1px solid transparent;background:transparent}
+.anav-tab:hover{color:rgba(244,239,232,.7);background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.08)}
+.anav-tab.on{color:#E8972A;background:rgba(232,151,42,.1);border-color:rgba(232,151,42,.25)}
+@media(max-width:480px){.anav{padding:0 3%}.anav-tab{padding:5px 9px;font-size:10px}}
+`;
+
+function AppNav({ currentView, onNav }: { currentView: string; onNav: (v: string) => void }) {
+  return (
+    <>
+      <style>{NAV_CSS}</style>
+      <nav className="anav">
+        <div className="anav-logo" onClick={() => onNav('dashboard')}>
+          <div className="anav-moon"><div className="anav-moon-sh" /></div>
+          SleepSeed
+        </div>
+        <div className="anav-tabs">
+          {[
+            { key: 'dashboard', label: '🏠 Home' },
+            { key: 'story-library', label: '📖 Stories' },
+            { key: 'nightcard-library', label: '🌙 Night Cards' },
+            { key: 'characters', label: '👤 Characters' },
+          ].map(t => (
+            <div key={t.key} className={`anav-tab${currentView === t.key ? ' on' : ''}`}
+              onClick={() => onNav(t.key)}>{t.label}</div>
+          ))}
+        </div>
+      </nav>
+    </>
+  );
+}
 
 function AppInner() {
   const {
@@ -30,6 +68,7 @@ function AppInner() {
 
   const [preloadedBook,      setPreloadedBook]      = useState<any>(null);
   const [nightCardFilter,    setNightCardFilter]    = useState<string | undefined>(undefined);
+  const [viewingCharacter,   setViewingCharacter]   = useState<Character | null>(null);
 
   // Check for shared story link on mount
   const [isSharedStory, setIsSharedStory] = useState(false);
@@ -51,6 +90,11 @@ function AppInner() {
   const goEditCharacter = (c: Character) => { setEditingCharacter(c); setView('character-builder'); };
   const goNightCards    = (filterId?: string) => { setNightCardFilter(filterId); setView('nightcard-library'); };
   const goStoryLibrary  = () => setView('story-library');
+  const goCharacterDetail = (c: Character) => { setViewingCharacter(c); setView('character-detail' as any); };
+  const handleNav = (v: string) => {
+    if (v === 'nightcard-library') goNightCards();
+    else setView(v as any);
+  };
 
   // Read a saved story directly — sets preloadedBook then routes to story-builder
   const openSavedStory = (bookData: any) => {
@@ -103,15 +147,16 @@ function AppInner() {
   if (view === 'user-profile')   return <UserProfile />;
 
   if (view === 'characters') return (
+    <><AppNav currentView="characters" onNav={handleNav} />
     <CharacterLibrary
       userId={user!.id}
       onBack={goDashboard}
       onNew={goNewCharacter}
       onEdit={goEditCharacter}
-      onUseInStory={char => goStoryBuilder(char)}
+      onUseInStory={char => goCharacterDetail(char)}
       onReadStory={openSavedStory}
       onViewNightCards={charId => goNightCards(charId)}
-    />
+    /></>
   );
 
   if (view === 'character-builder') return (
@@ -124,20 +169,34 @@ function AppInner() {
   );
 
   if (view === 'story-library') return (
+    <><AppNav currentView="story-library" onNav={handleNav} />
     <StoryLibrary
       userId={user!.id}
       onBack={goDashboard}
       onReadStory={openSavedStory}
       onCreateStory={() => goStoryBuilder()}
-    />
+    /></>
   );
 
   if (view === 'nightcard-library') return (
+    <><AppNav currentView="nightcard-library" onNav={handleNav} />
     <NightCardLibrary
       userId={user!.id}
       onBack={goDashboard}
       filterCharacterId={nightCardFilter}
-    />
+    /></>
+  );
+
+  if ((view as string) === 'character-detail' && viewingCharacter) return (
+    <><AppNav currentView="characters" onNav={handleNav} />
+    <CharacterDetail
+      character={viewingCharacter}
+      userId={user!.id}
+      onBack={() => setView('characters')}
+      onEdit={goEditCharacter}
+      onUseInStory={char => goStoryBuilder(char)}
+      onReadStory={openSavedStory}
+    /></>
   );
 
   if (view === 'story-builder') {

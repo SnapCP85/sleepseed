@@ -40,7 +40,16 @@ interface Props { userId: string; onBack: () => void; onReadStory: (bookData: an
 
 export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStory }: Props) {
   const [stories, setStories] = useState<SavedStory[]>([]);
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('all');
   useEffect(() => { getStories(userId).then(setStories); }, [userId]);
+
+  const heroNames = [...new Set(stories.map(s => s.heroName).filter(Boolean))];
+  const filtered = stories.filter(s => {
+    const matchFilter = filter === 'all' || s.heroName === filter;
+    const matchSearch = !search || s.title.toLowerCase().includes(search.toLowerCase()) || s.heroName.toLowerCase().includes(search.toLowerCase());
+    return matchFilter && matchSearch;
+  });
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!confirm('Remove this story?')) return;
@@ -58,6 +67,20 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
         </div>
       </nav>
       <div className="sl-inner">
+        {stories.length > 0 && (
+          <div style={{marginBottom:16}}>
+            <input placeholder="Search stories…" value={search} onChange={e=>setSearch(e.target.value)}
+              style={{width:'100%',background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.1)',borderRadius:10,padding:'10px 14px',fontSize:13,color:'#F4EFE8',outline:'none',marginBottom:10,fontFamily:'inherit'}} />
+            {heroNames.length > 1 && (
+              <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                <div onClick={()=>setFilter('all')} style={{padding:'5px 14px',borderRadius:50,fontSize:11,fontWeight:600,cursor:'pointer',border:`1px solid ${filter==='all'?'rgba(232,151,42,.5)':'rgba(255,255,255,.1)'}`,background:filter==='all'?'rgba(232,151,42,.1)':'rgba(255,255,255,.03)',color:filter==='all'?'#F5B84C':'rgba(244,239,232,.45)',transition:'all .15s'}}>All</div>
+                {heroNames.map(n=>(
+                  <div key={n} onClick={()=>setFilter(filter===n?'all':n)} style={{padding:'5px 14px',borderRadius:50,fontSize:11,fontWeight:600,cursor:'pointer',border:`1px solid ${filter===n?'rgba(232,151,42,.5)':'rgba(255,255,255,.1)'}`,background:filter===n?'rgba(232,151,42,.1)':'rgba(255,255,255,.03)',color:filter===n?'#F5B84C':'rgba(244,239,232,.45)',transition:'all .15s'}}>{n}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         {stories.length === 0 ? (
           <div className="sl-empty">
             <div className="sl-empty-moon" />
@@ -67,7 +90,7 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
           </div>
         ) : (
           <div className="sl-grid">
-            {stories.map(s => (
+            {filtered.map(s => (
               <div key={s.id} className="sl-card" onClick={() => onReadStory(s.bookData)}>
                 <div className="sl-card-header">
                   <div className="sl-card-icon">{s.occasion ? '🎉' : '🌙'}</div>
