@@ -368,7 +368,7 @@ function ConstellationSvg({filled,complete}:{filled:number;complete:boolean}){
 
 // ── component ─────────────────────────────────────────────────────────────────
 
-export default function UserDashboard({onSignUp}:{onSignUp:()=>void}){
+export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;onReadStory?:(book:any)=>void}){
   const{user,logout,setView,selectedCharacters,setSelectedCharacters,setRitualSeed,setRitualMood,setEditingCharacter}=useApp();
   const[characters,setCharacters]=useState<Character[]>([]);
   const[allCards,setAllCards]=useState<SavedNightCard[]>([]);
@@ -377,6 +377,7 @@ export default function UserDashboard({onSignUp}:{onSignUp:()=>void}){
   const[modalCard,setModalCard]=useState<SavedNightCard|null>(null);
   const[missTooltip,setMissTooltip]=useState<number|null>(null);
   const[storyCount,setStoryCount]=useState(0);
+  const[lastStory,setLastStory]=useState<any>(null);
   const missTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
   const isGuest=!!user?.isGuest;
 
@@ -393,6 +394,10 @@ export default function UserDashboard({onSignUp}:{onSignUp:()=>void}){
     import('../lib/storage').then(({getCharacters,getNightCards,getStories})=>{
       Promise.all([getCharacters(user.id),getNightCards(user.id),getStories(user.id)]).then(([chars,cards,stories])=>{
         setCharacters(chars);setAllCards(cards);setStoryCount(stories.length);
+        if(stories.length>0){
+          const sorted=[...stories].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+          setLastStory(sorted[0]);
+        }
         // Auto-select family characters (isFamily or human type as default)
         const familyChars=chars.filter(c=>c.isFamily===true||(c.isFamily===undefined&&c.type==='human'));
         if(familyChars.length>0){setSelectedCharacters([familyChars[0]]);setWeekViewId(familyChars[0].id);}
@@ -696,6 +701,16 @@ export default function UserDashboard({onSignUp}:{onSignUp:()=>void}){
               </div>
             </div>
           )
+        )}
+
+        {/* re-read last story shortcut */}
+        {lastStory&&lastStory.bookData&&onReadStory&&!tonightDone&&(
+          <div className="dash-ly" style={{cursor:'pointer',marginBottom:8}} onClick={()=>onReadStory(lastStory.bookData)}>
+            <div className="dash-ly-ico">📖</div>
+            <div className="dash-ly-text">
+              Re-read <em>{lastStory.title}</em> →
+            </div>
+          </div>
         )}
 
         {/* last year banner */}

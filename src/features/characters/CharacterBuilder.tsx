@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../AppContext';
 import { saveCharacter, uid } from '../../lib/storage';
 import type { Character, CharacterType, Pronoun, PersonalityTag, ParentRole } from '../../lib/types';
@@ -113,6 +113,19 @@ const CSS = `
 .cb-save{flex:1;padding:14px;background:var(--amber);color:var(--ink);border:none;border-radius:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .2s}
 .cb-save:hover{background:var(--amber2);transform:translateY(-1px)}
 .cb-save:disabled{opacity:.35;cursor:not-allowed;transform:none}
+
+/* ── Character reveal ceremony ── */
+.cb-reveal{position:fixed;inset:0;z-index:100;background:var(--night);display:flex;flex-direction:column;align-items:center;justify-content:center;animation:cbRevealIn .6s ease both}
+@keyframes cbRevealIn{from{opacity:0}to{opacity:1}}
+.cb-reveal-avatar{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:44px;border:3px solid rgba(232,151,42,.3);overflow:hidden;animation:cbAvPop .5s cubic-bezier(.16,1,.3,1) .2s both;box-shadow:0 0 40px rgba(232,151,42,.15)}
+@keyframes cbAvPop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+.cb-reveal-sparkle{position:absolute;border-radius:50%;animation:cbSparkle 1.8s ease-in-out infinite}
+@keyframes cbSparkle{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1.3)}}
+.cb-reveal-name{font-family:var(--serif);font-size:26px;font-weight:700;color:#F4EFE8;margin-top:20px;animation:cbTextUp .5s ease .4s both;text-align:center}
+@keyframes cbTextUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.cb-reveal-sub{font-size:14px;color:rgba(232,151,42,.7);margin-top:6px;animation:cbTextUp .5s ease .55s both;font-family:var(--serif);font-style:italic}
+.cb-reveal-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px;animation:cbTextUp .5s ease .7s both}
+.cb-reveal-tag{padding:6px 14px;border-radius:50px;background:rgba(232,151,42,.08);border:1px solid rgba(232,151,42,.2);color:rgba(232,151,42,.8);font-size:12px;font-weight:500;font-family:var(--sans)}
 `;
 
 interface Props { onSaved: () => void; onCancel: () => void; initialCharacter?: Character | null; userId: string; }
@@ -131,6 +144,7 @@ export default function CharacterBuilder({ onSaved, onCancel, initialCharacter, 
   const [situation,  setSituation]  = useState(initialCharacter?.currentSituation || '');
   const [photo,      setPhoto]      = useState<string | undefined>(initialCharacter?.photo);
   const [color,      setColor]      = useState(initialCharacter?.color || AVATAR_COLORS[0]);
+  const [saved,      setSaved]      = useState(false);
 
   const toggleTag = (t: PersonalityTag) => setTags(prev => prev.includes(t) ? prev.filter(x => x !== t) : prev.length < 5 ? [...prev, t] : prev);
   const cycleExample = () => { setWeirdDetail(WEIRD_EXAMPLES[exRef.current % WEIRD_EXAMPLES.length]); exRef.current++; };
@@ -162,9 +176,55 @@ export default function CharacterBuilder({ onSaved, onCancel, initialCharacter, 
       isFamily: isFamily || undefined,
       parentRole: type === 'parent' ? parentRole : undefined,
     });
-    onSaved();
+    if (initialCharacter) { onSaved(); return; }
+    setSaved(true);
   };
+
+  useEffect(() => {
+    if (!saved) return;
+    const t = setTimeout(() => onSaved(), 2800);
+    return () => clearTimeout(t);
+  }, [saved, onSaved]);
+
   const ct = CHAR_TYPES.find(t => t.v === type);
+
+  if (saved) {
+    const SPARKLES = Array.from({length:12},(_,i) => ({
+      x: 50 + 40*Math.cos(i*Math.PI/6), y: 50 + 40*Math.sin(i*Math.PI/6),
+      s: 3+Math.random()*4, d: `${1.5+Math.random()}s`, dl: `${Math.random()*.8}s`,
+      c: i%2===0 ? 'rgba(232,151,42,.6)' : 'rgba(245,184,76,.4)',
+    }));
+    return (
+      <div className="cb">
+        <style>{CSS}</style>
+        <div className="cb-reveal">
+          <div style={{position:'relative'}}>
+            {SPARKLES.map((s,i) => (
+              <div key={i} className="cb-reveal-sparkle" style={{
+                left:`${s.x}%`,top:`${s.y}%`,width:s.s,height:s.s,
+                background:s.c,animationDuration:s.d,animationDelay:s.dl,
+              }} />
+            ))}
+            <div className="cb-reveal-avatar" style={{background:color}}>
+              {photo ? <img src={photo} style={{width:'100%',height:'100%',objectFit:'cover'}} alt="" /> : ct?.emoji}
+            </div>
+          </div>
+          <div className="cb-reveal-name">{name.trim()}</div>
+          <div className="cb-reveal-sub">
+            {isFamily ? 'is ready for their first story ✦' : type === 'parent' ? 'has joined the family ✦' : 'is ready for adventure ✦'}
+          </div>
+          {tags.length > 0 && (
+            <div className="cb-reveal-tags">
+              {tags.map(t => {
+                const p = PERSONALITY.find(p => p.v === t);
+                return <div key={t} className="cb-reveal-tag">{p?.emoji} {t}</div>;
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="cb">

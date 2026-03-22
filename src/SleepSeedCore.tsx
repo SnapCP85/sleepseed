@@ -203,11 +203,14 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .img-dot.done{border-color:rgba(76,200,144,.6);background:rgba(76,200,144,.12)}
 @keyframes dotPulse{0%,100%{opacity:.5}50%{opacity:1}}
 .err-box{background:rgba(192,64,48,.14);border:1px solid rgba(192,64,48,.28);border-radius:10px;padding:10px 14px;font-size:13px;color:#f09080;margin-bottom:14px}
-.book-shell{width:100%;max-width:500px;animation:fup .4s cubic-bezier(.16,1,.3,1) both}
+.book-shell{width:100%;max-width:500px;position:relative;animation:fup .4s cubic-bezier(.16,1,.3,1) both}
 .book-3d{border-radius:18px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.7);
   height:520px;position:relative;background:#0e1428;cursor:pointer}
-.bpage{position:absolute;inset:0;width:100%;height:100%;animation:pageFade .3s ease both}
-@keyframes pageFade{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
+.bpage{position:absolute;inset:0;width:100%;height:100%}
+.pg-fwd{animation:pageFwd .32s cubic-bezier(.25,.46,.45,.94) both}
+.pg-bwd{animation:pageBwd .32s cubic-bezier(.25,.46,.45,.94) both}
+@keyframes pageFwd{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pageBwd{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
 .pinset{position:absolute;inset:10px;border:1px solid rgba(212,160,48,.1);border-radius:8px;pointer-events:none;z-index:2}
 .cover-bg{background:linear-gradient(160deg,#0a0f28,#14204a,#0e1830)}
 .cover-lay{height:100%;display:flex;flex-direction:column}
@@ -340,7 +343,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .reveal-star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d) ease-in-out infinite var(--dl)}
 /* ── Collapsed toolbar ── */
 .rd-toolbar-collapsed{position:absolute;bottom:12px;right:12px;z-index:10}
-.rd-dots-btn{width:36px;height:36px;border-radius:50%;background:rgba(6,11,24,.85);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:all .2s}
+.rd-dots-btn{height:32px;padding:0 12px;border-radius:16px;background:rgba(6,11,24,.85);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:all .2s;font-family:'Nunito',sans-serif;font-weight:700}
 .rd-dots-btn:hover{background:rgba(6,11,24,.95);color:var(--cream)}
 .rd-expanded{position:absolute;bottom:44px;right:0;background:rgba(6,11,24,.95);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:4px;min-width:160px;backdrop-filter:blur(16px);animation:fup .2s ease}
 .rd-exp-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:none;background:transparent;color:rgba(244,239,232,.6);font-size:12px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;white-space:nowrap}
@@ -1527,6 +1530,12 @@ export default function SleepSeed({
   const voiceIdRef       = useRef<string|null>(null); // always-current cloned voice ID
   const speakELRef       = useRef<any>(null);          // always-current speakTextEL fn
   const speakTextRef     = useRef<any>(null);          // always-current speakText fn
+  const speechKeepAlive  = useRef<any>(null);          // Chrome speech keepalive interval
+  const pageDirRef       = useRef<'fwd'|'bwd'>('fwd');  // page turn direction for animation
+  const ambientCtxRef    = useRef<AudioContext|null>(null);
+  const ambientGainRef   = useRef<GainNode|null>(null);
+  const ambientSrcRef    = useRef<AudioBufferSourceNode|null>(null);
+  const [ambientOn,      setAmbientOn]      = useState(false);
   const ncVideoRef       = useRef<HTMLVideoElement>(null);
   const ncStreamRef      = useRef<MediaStream|null>(null);
 
@@ -1648,7 +1657,18 @@ export default function SleepSeed({
   }, [builderChoices, heroName]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
+  // Stop ambient sound when leaving the book
   useEffect(() => {
+    if(stage !== 'book' && ambientOn) {
+      ambientSrcRef.current?.stop(); ambientSrcRef.current=null;
+      ambientCtxRef.current?.close(); ambientCtxRef.current=null;
+      ambientGainRef.current=null;
+      setAmbientOn(false);
+    }
+  }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if(speechKeepAlive.current){ clearInterval(speechKeepAlive.current); speechKeepAlive.current=null; }
     if("speechSynthesis" in window) window.speechSynthesis.cancel();
     if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current = null; }
     if(autoReadRef.current) {
@@ -1691,6 +1711,7 @@ export default function SleepSeed({
       if(voice) utt.voice = voice;
 
       utt.onend = () => {
+        if(speechKeepAlive.current){ clearInterval(speechKeepAlive.current); speechKeepAlive.current=null; }
         const isLast = pageIdx >= totalPagesRef.current - 1;
         const pause  = SleepUtils.getPostPagePause(pageProgress);
         if(autoReadRef.current) {
@@ -1698,9 +1719,15 @@ export default function SleepSeed({
           else setTimeout(() => goPageRef.current?.(1), pause);
         } else { setIsReading(false); }
       };
-      utt.onerror = () => { autoReadRef.current = false; setIsReading(false); };
+      utt.onerror = () => { if(speechKeepAlive.current){ clearInterval(speechKeepAlive.current); speechKeepAlive.current=null; } autoReadRef.current = false; setIsReading(false); };
       setIsReading(true);
       window.speechSynthesis.speak(utt);
+      // Chrome bug: speechSynthesis silently stops after ~15s. Keep it alive.
+      if(speechKeepAlive.current) clearInterval(speechKeepAlive.current);
+      speechKeepAlive.current = setInterval(()=>{
+        if(!window.speechSynthesis.speaking){ clearInterval(speechKeepAlive.current); speechKeepAlive.current=null; return; }
+        window.speechSynthesis.pause(); window.speechSynthesis.resume();
+      }, 10000);
     };
 
     const voices = window.speechSynthesis.getVoices();
@@ -1753,6 +1780,7 @@ export default function SleepSeed({
 
   const toggleRead = useCallback((text, pageProgress=0.5) => {
     if(isReading) {
+      if(speechKeepAlive.current){ clearInterval(speechKeepAlive.current); speechKeepAlive.current=null; }
       window.speechSynthesis.cancel();
       if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
       autoReadRef.current = false;
@@ -1763,6 +1791,57 @@ export default function SleepSeed({
       else speakText(text, pageProgress);
     }
   },[isReading, speakText, speakTextEL, voiceId, selectedVoiceId]);
+
+  // ── Ambient sound (cozy night) ──────────────────────────────────────
+  const toggleAmbient = useCallback(() => {
+    if(ambientOn) {
+      // Fade out
+      if(ambientGainRef.current) {
+        const g = ambientGainRef.current;
+        g.gain.setTargetAtTime(0, g.context.currentTime, 0.5);
+        setTimeout(() => {
+          ambientSrcRef.current?.stop();
+          ambientSrcRef.current = null;
+          ambientCtxRef.current?.close();
+          ambientCtxRef.current = null;
+          ambientGainRef.current = null;
+        }, 1500);
+      }
+      setAmbientOn(false);
+      return;
+    }
+    try {
+      const ctx = new AudioContext();
+      ambientCtxRef.current = ctx;
+      // Generate 4 seconds of soft brown noise, looped
+      const len = ctx.sampleRate * 4;
+      const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+      for(let ch=0; ch<2; ch++) {
+        const data = buf.getChannelData(ch);
+        let last = 0;
+        for(let i=0; i<len; i++) {
+          const white = Math.random() * 2 - 1;
+          last = (last + (0.02 * white)) / 1.02; // brown noise
+          data[i] = last * 3.5; // normalize
+        }
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      gain.gain.setTargetAtTime(0.12, ctx.currentTime, 0.8); // fade in
+      // Low-pass filter for extra softness
+      const lpf = ctx.createBiquadFilter();
+      lpf.type = 'lowpass';
+      lpf.frequency.value = 400;
+      src.connect(lpf).connect(gain).connect(ctx.destination);
+      src.start();
+      ambientSrcRef.current = src;
+      ambientGainRef.current = gain;
+      setAmbientOn(true);
+    } catch(e) { console.error("Ambient sound error:", e); }
+  }, [ambientOn]);
 
   // ── Voice input for story guidance ──────────────────────────────────
   const startListening = useCallback(() => {
@@ -2656,13 +2735,11 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
     } catch(e) {
       console.error("SleepSeed error:",e);
+      console.error("SleepSeed raw error message:", e?.message);
       const msg = e.message||"Something went wrong";
-      const isParseErr = msg.toLowerCase().includes("json")||msg.toLowerCase().includes("parse")||msg.toLowerCase().includes("missing");
-      const userMsg = isParseErr
-        ? "The story world needs a moment ✦ Everything you wrote is saved — tap to try again."
-        : msg.includes("ANTHROPIC_KEY")
-          ? "API key not set — check your Vercel environment variables."
-          : "The story world needs a moment ✦ Everything you wrote is saved — tap to try again.";
+      const userMsg = msg.includes("ANTHROPIC_KEY")
+        ? "API key not set — check your Vercel environment variables."
+        : "The story world needs a moment — everything you wrote is saved.";
       setError(userMsg);
       setLastErrStage(stage==="builder" ? "builder" : "home");
       setStage("error");
@@ -2683,11 +2760,12 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
   const goPage = (dir) => {
     if(dir>0&&onChoicePg&&!chosenPath) return;
+    pageDirRef.current = dir > 0 ? 'fwd' : 'bwd';
     setPageIdx(p => Math.max(0,Math.min(totalPages-1,p+dir)));
   };
   goPageRef.current = goPage;
 
-  const handleChoice = (path) => { setChosenPath(path); setPageIdx(choicePgIdx+1); };
+  const handleChoice = (path) => { pageDirRef.current='fwd'; setChosenPath(path); setPageIdx(choicePgIdx+1); };
 
   const getCurrentPageText = () => {
     if(!book) return "";
@@ -3803,22 +3881,23 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
         {stage==="error" && (
           <div className="screen" style={{maxWidth:420}}>
             <div className="card" style={{textAlign:"center",padding:24}}>
-              <div style={{fontSize:36,marginBottom:12}}>😔</div>
-              <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:"var(--cream)",marginBottom:8}}>The story world needs a moment ✦</div>
+              <div style={{fontSize:36,marginBottom:12}}>✦</div>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:"var(--cream)",marginBottom:8}}>The story world needs a moment</div>
               <div style={{fontSize:12,color:"var(--dim)",marginBottom:6,lineHeight:1.7}}>{error}</div>
               <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:20,lineHeight:1.6}}>
-                Don't worry — all your story settings are saved.
+                Everything you wrote is saved. Tap below to try again.
               </div>
               <button className="btn" style={{marginBottom:10}} onClick={()=>{
                 setError("");
-                setStage(lastErrStage||"home");
+                hasAutoGenRef.current = false;
+                generate({storyBrief1, storyBrief2, realLifeCtx});
               }}>
                 ✨ Try again
               </button>
               <button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={()=>{
                 setError(""); setStage("home");
               }}>
-                ← Back to home
+                ← Start over
               </button>
             </div>
           </div>
@@ -3847,7 +3926,13 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
             </div>
 
             <div className="book-3d" onClick={addSparkle}>
-              {renderPage()}
+              {/* Reading progress bar */}
+              <div style={{position:'absolute',top:0,left:0,right:0,height:3,zIndex:5,background:'rgba(255,255,255,.06)',borderRadius:'18px 18px 0 0',overflow:'hidden'}}>
+                <div style={{height:'100%',width:`${totalPages>1?((pageIdx/(totalPages-1))*100):0}%`,background:'linear-gradient(90deg,rgba(212,160,48,.4),rgba(212,160,48,.8))',borderRadius:3,transition:'width .4s ease'}} />
+              </div>
+              <div key={`pg-${pageIdx}-${chosenPath||''}`} className={`pg-${pageDirRef.current}`} style={{position:'absolute',inset:0}}>
+                {renderPage()}
+              </div>
               {sparkles.map(sp => (
                 <div key={sp.id} className="spark-ring" style={{left:sp.x,top:sp.y}}>
                   {Array.from({length:8},(_,i) => {
@@ -3887,9 +3972,12 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 onClick={()=>{ const prog=totalPages>1?pageIdx/(totalPages-1):0.5; toggleRead(pageIdx===0?`${book.title}. A bedtime story for ${book.heroName}.`:getCurrentPageText(),prog); }}>
                 {isReading ? '⏸' : '🔊'}
               </button>
-              <div className="rd-dots-btn" onClick={()=>setShowToolbar(!showToolbar)}>⋯</div>
+              <button className="rd-dots-btn" onClick={()=>setShowToolbar(!showToolbar)} style={{fontSize:11,letterSpacing:'.02em'}}>{showToolbar ? '✕' : '☰'}<span style={{fontSize:9,marginLeft:3,opacity:.7}}>More</span></button>
               {showToolbar && (
                 <div className="rd-expanded" onClick={e=>e.stopPropagation()}>
+                  <button className="rd-exp-btn" onClick={toggleAmbient} style={ambientOn?{color:'var(--gold2)',background:'rgba(212,160,48,.08)'}:{}}>
+                    {ambientOn ? '🌧 Cozy Night · On' : '🌧 Cozy Night'}
+                  </button>
                   <button className="rd-exp-btn" onClick={()=>{setShowVoicePicker(true);setShowToolbar(false);}}>🎤 Choose Voice</button>
                   <button className="rd-exp-btn" onClick={()=>{shareStory();setShowToolbar(false);}}>📤 Share</button>
                   <button className="rd-exp-btn" onClick={()=>{downloadStory();setShowToolbar(false);}}>📄 Download PDF</button>

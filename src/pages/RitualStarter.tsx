@@ -181,10 +181,11 @@ const CSS = `
 .rs-textarea::placeholder{color:rgba(58,66,112,.6);font-style:italic}
 
 /* ── SEED QUALITY ── */
-.rs-seed-quality{display:flex;align-items:center;justify-content:space-between;padding:5px 16px 8px;border-top:.5px solid rgba(255,255,255,.03)}
-.rs-sq-bar{flex:1;height:2.5px;background:rgba(255,255,255,.05);border-radius:2px;margin-right:9px;overflow:hidden}
-.rs-sq-fill{height:2.5px;border-radius:2px;transition:width .4s ease,background .4s ease}
-.rs-sq-lbl{font-size:8.5px;font-family:var(--mono);transition:color .3s;white-space:nowrap;min-width:90px;text-align:right}
+.rs-seed-quality{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 6px;border-top:.5px solid rgba(255,255,255,.04)}
+.rs-sq-bar{flex:1;height:4px;background:rgba(255,255,255,.06);border-radius:3px;margin-right:10px;overflow:hidden}
+.rs-sq-fill{height:4px;border-radius:3px;transition:width .4s ease,background .4s ease}
+.rs-sq-lbl{font-size:11px;font-weight:600;font-family:var(--sans);transition:color .3s;white-space:nowrap;min-width:90px;text-align:right}
+.rs-sq-hint{padding:0 16px 8px;font-size:11.5px;color:rgba(232,151,42,.45);font-style:italic;font-family:var(--sans);line-height:1.5;transition:opacity .3s}
 
 /* ── MOOD ROW ── */
 .rs-mood-row{display:flex;align-items:center;gap:8px;padding:8px 16px 10px;border-top:.5px solid rgba(255,255,255,.04);flex-wrap:wrap}
@@ -492,6 +493,13 @@ export default function RitualStarter() {
             </div>
             <div className="rs-sq-lbl" style={{ color: sqColor }}>{sqLbl}</div>
           </div>
+          {seedLen < 25 && (
+            <div className="rs-sq-hint">
+              {seedLen === 0
+                ? `Tell us one specific thing that happened to ${primary?.name ?? 'them'} today`
+                : 'A little more detail makes the story feel like magic'}
+            </div>
+          )}
           {/* Mood row with word labels */}
           <div className="rs-mood-row">
             <div className="rs-mood-lbl">tonight {isMulti ? "they're" : "they're"}</div>

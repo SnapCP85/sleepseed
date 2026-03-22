@@ -138,7 +138,7 @@ function AppInner() {
       }
       return <OnboardingWelcome />;
     }
-    return <UserDashboard onSignUp={goAuth} />;
+    return <UserDashboard onSignUp={goAuth} onReadStory={openSavedStory} />;
   }
 
   if (view === 'ritual-starter') return <RitualStarter />;
@@ -174,7 +174,7 @@ function AppInner() {
       userId={user!.id}
       onBack={goDashboard}
       onReadStory={openSavedStory}
-      onCreateStory={() => goStoryBuilder()}
+      onCreateStory={() => setView('ritual-starter')}
     /></>
   );
 

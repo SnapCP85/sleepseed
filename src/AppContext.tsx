@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import type { User, AppView, Character, BuilderChoices } from './lib/types';
 import { supabase } from './lib/supabase';
 import { signOut as sbSignOut } from './lib/storage';
@@ -44,7 +44,9 @@ const toAppUser = (sbUser: any): User => ({
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [user,                  setUser]                  = useState<User | null>(null);
   const [authLoading,           setAuthLoading]           = useState(true);
-  const [view,                  setView]                  = useState<AppView>('public');
+  const [view,                  setViewRaw]               = useState<AppView>('public');
+  const viewRef = useRef<AppView>('public');
+  const setView = (v: AppView) => { viewRef.current = v; setViewRaw(v); };
   const [selectedCharacter,     setSelectedCharacter]     = useState<Character | null>(null);
   const [selectedCharacters,    setSelectedCharacters]    = useState<Character[]>([]);
   const [ritualSeed,            setRitualSeed]            = useState<string>('');
@@ -75,7 +77,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       if (session?.user) {
         const u = toAppUser(session.user);
         setUser(u);
-        if (view === 'public' || view === 'auth') setView('dashboard');
+        if (viewRef.current === 'public' || viewRef.current === 'auth') setView('dashboard');
         // Run one-time migration for real (non-guest) users
         if (!session.user.is_anonymous) {
           migrateLocalStorageToSupabase(session.user.id).catch(e =>
