@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useApp } from '../AppContext';
 import { saveNightCard } from '../lib/storage';
 
@@ -178,6 +178,42 @@ export default function OnboardingNightCard() {
 
   const fileRef = useRef<HTMLInputElement>(null);
   const confettiRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
+
+  const openCamera = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } }, audio: false });
+      streamRef.current = stream;
+      setCameraOpen(true);
+      setTimeout(() => { if (videoRef.current) videoRef.current.srcObject = stream; }, 50);
+    } catch {
+      // Camera not available — fall back to file input with capture
+      const inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'user';
+      inp.onchange = (e: any) => {
+        const f = e.target?.files?.[0]; if (!f) return;
+        const r = new FileReader(); r.onload = ev => setPhoto(ev.target?.result as string); r.readAsDataURL(f);
+      };
+      inp.click();
+    }
+  }, []);
+
+  const capturePhoto = useCallback(() => {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth) return;
+    const canvas = document.createElement('canvas');
+    const scale = Math.min(640 / video.videoWidth, 640 / video.videoHeight, 1);
+    canvas.width = Math.round(video.videoWidth * scale);
+    canvas.height = Math.round(video.videoHeight * scale);
+    const ctx = canvas.getContext('2d');
+    if (ctx) { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); ctx.drawImage(video, 0, 0, canvas.width, canvas.height); }
+    setPhoto(canvas.toDataURL('image/jpeg', 0.82));
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
+    setCameraOpen(false);
+  }, []);
 
   function spawnConfetti() {
     const container = document.getElementById('nc0-confetti-root');
@@ -303,31 +339,29 @@ export default function OnboardingNightCard() {
               </div>
             ) : (
               <>
-                <button className="nc0-photo-btn" onClick={() => {
-                  // Try camera first on mobile
-                  const inp = document.createElement('input');
-                  inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'user';
-                  inp.onchange = (e: any) => {
-                    const f = e.target?.files?.[0]; if (!f) return;
-                    const r = new FileReader(); r.onload = ev => {
-                      const img = new Image(); img.onload = () => {
-                        const c = document.createElement('canvas');
-                        const s = Math.min(640/img.width,640/img.height,1);
-                        c.width = Math.round(img.width*s); c.height = Math.round(img.height*s);
-                        c.getContext('2d')?.drawImage(img,0,0,c.width,c.height);
-                        setPhoto(c.toDataURL('image/jpeg',0.82));
-                      }; img.src = ev.target?.result as string;
-                    }; r.readAsDataURL(f);
-                  };
-                  inp.click();
-                }}>
-                  📸 Take a selfie
-                </button>
-                <button className="nc0-photo-btn" style={{marginTop:6,background:'rgba(255,255,255,.03)'}} onClick={() => fileRef.current?.click()}>
-                  🖼️ Upload a photo from today
-                </button>
-                <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoInput} />
-                <button className="nc0-photo-skip" onClick={() => {}}>skip photo →</button>
+                {cameraOpen ? (
+                  <div style={{borderRadius:12,overflow:'hidden',marginBottom:8}}>
+                    <video ref={videoRef} autoPlay playsInline muted style={{width:'100%',display:'block',borderRadius:12,transform:'scaleX(-1)'}} />
+                    <div style={{display:'flex',gap:8,marginTop:8}}>
+                      <button className="nc0-photo-btn" style={{flex:1}} onClick={capturePhoto}>📸 Capture</button>
+                      <button className="nc0-photo-btn" style={{flex:1,background:'rgba(255,255,255,.03)'}} onClick={() => {
+                        streamRef.current?.getTracks().forEach(t => t.stop());
+                        streamRef.current = null; setCameraOpen(false);
+                      }}>Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <button className="nc0-photo-btn" onClick={openCamera}>
+                      📸 Take a selfie
+                    </button>
+                    <button className="nc0-photo-btn" style={{marginTop:6,background:'rgba(255,255,255,.03)'}} onClick={() => fileRef.current?.click()}>
+                      🖼️ Upload a photo from today
+                    </button>
+                    <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoInput} />
+                    <button className="nc0-photo-skip" onClick={() => {}}>skip photo →</button>
+                  </>
+                )}
               </>
             )}
           </div>

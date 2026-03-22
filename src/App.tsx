@@ -129,15 +129,7 @@ function AppInner() {
   if (view === 'onboarding-night0')  return <OnboardingNightCard />;
 
   if (view === 'dashboard') {
-    if (user && !user.isGuest && !onboardingDone) {
-      // Check if user was mid-onboarding and restore their step
-      const savedStep = localStorage.getItem(`ss_onboarding_step_${user.id}`);
-      if (savedStep && ['onboarding-welcome','onboarding-tour','onboarding-night0'].includes(savedStep)) {
-        setView(savedStep as any);
-        return null;
-      }
-      return <OnboardingWelcome />;
-    }
+    // Skip walkthrough — dashboard has "Take a quick tour" for new users
     return <UserDashboard onSignUp={goAuth} onReadStory={openSavedStory} />;
   }
 

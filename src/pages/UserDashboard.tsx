@@ -743,7 +743,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
             <div className="dash-td-badge">✦ {glow} nights strong</div>
           </div>
         ):(
-          <div className="dash-tnc" style={{border:cardBdr}} onClick={startRitual}>
+          <div className="dash-tnc" style={{border:cardBdr,cursor:familyChars.length===0?'default':undefined,opacity:familyChars.length===0?.6:1}} onClick={()=>{if(familyChars.length>0)startRitual();}}>
             <div className="dash-tnc-sp" style={{color:spColor}}>✦</div>
             <div className="dash-tnc-sp2" style={{color:spColor}}>✧</div>
             <div style={{flex:1}}>
@@ -752,19 +752,26 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
                 {isMulti?`tonight's ritual · ${selectedCharacters.length} children`:"tonight's ritual"}
               </div>
               <div className="dash-tnc-q">
-                {selectedCharacters.length===0&&'Create a character to get started'}
-                {selectedCharacters.length===1&&<>What happened in <span className="dash-n1">{primary?.name}'s</span> world today?</>}
-                {selectedCharacters.length===2&&<>What happened in <span className="dash-n1">{primary?.name}</span>{' '}<span style={{color:'rgba(255,255,255,.3)',fontSize:'0.82em',fontStyle:'normal'}}>&</span>{' '}<span className="dash-n2">{secondary?.name}'s</span> world today?</>}
-                {selectedCharacters.length>2&&<>{buildPromptText(selectedCharacters)}</>}
+                {familyChars.length===0&&'Create a family character to get started'}
+                {familyChars.length>0&&selectedCharacters.length===1&&<>What happened in <span className="dash-n1">{primary?.name}'s</span> world today?</>}
+                {familyChars.length>0&&selectedCharacters.length===2&&<>What happened in <span className="dash-n1">{primary?.name}</span>{' '}<span style={{color:'rgba(255,255,255,.3)',fontSize:'0.82em',fontStyle:'normal'}}>&</span>{' '}<span className="dash-n2">{secondary?.name}'s</span> world today?</>}
+                {familyChars.length>0&&selectedCharacters.length>2&&<>{buildPromptText(selectedCharacters)}</>}
               </div>
-              <div className="dash-tnc-sub">{subText}</div>
+              <div className="dash-tnc-sub">{familyChars.length===0?'Add your child as a character first':`${subText}`}</div>
             </div>
             <div className="dash-tnc-right">
-              <button className="dash-tnc-btn" style={{background:btnBg,color:btnColor}}
-                onClick={e=>{e.stopPropagation();startRitual();}}
-                disabled={selectedCharacters.length===0}>
-                Begin tonight's ritual ✦
-              </button>
+              {familyChars.length===0?(
+                <button className="dash-tnc-btn" style={{background:'var(--amber)',color:'var(--ink)'}}
+                  onClick={e=>{e.stopPropagation();setEditingCharacter(null);setView('character-builder');}}>
+                  + Create character
+                </button>
+              ):(
+                <button className="dash-tnc-btn" style={{background:btnBg,color:btnColor}}
+                  onClick={e=>{e.stopPropagation();startRitual();}}
+                  disabled={selectedCharacters.length===0}>
+                  Begin tonight's ritual ✦
+                </button>
+              )}
             </div>
           </div>
         )}

@@ -313,7 +313,7 @@ export default function StoryBuilderPage() {
       </div>
 
       <nav className="sb-nav">
-        <button className="sb-back" onClick={() => setView(isRitual ? 'story-handoff' : 'story-handoff')}>← back</button>
+        <button className="sb-back" onClick={() => setView('dashboard')}>← back</button>
         <div className="sb-badge"><div className="sb-dot" />{nightLabel}</div>
       </nav>
 

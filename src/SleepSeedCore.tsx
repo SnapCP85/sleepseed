@@ -704,7 +704,7 @@ TONE: Intelligent, funny, and emotionally honest. Not condescending. The best mo
 
 BEDTIME GUARD: No matter how sophisticated the structure, this is still a bedtime story. The emotional complexity earns its place only if it resolves completely and lands in warmth and sleep. A 9-year-old reading this at 9pm should feel satisfied, seen, and sleepy — not stimulated or unsettled.`},
 ];
-const CHAR_ICONS = {hero:"⭐",friend:"👫",sibling:"👶",parent:"🧑‍🍼",pet:"🐾",toy:"🧸"};
+const CHAR_ICONS = {hero:"⭐",friend:"👫",sibling:"👶",parent:"🧑‍🍼",pet:"🐾",toy:"🧸",other:"✨"};
 const BONDING_QUESTIONS = [
   "If you could be any animal for one day, what would you be?",
   "What's the silliest dream you can remember?",
@@ -1490,6 +1490,7 @@ export default function SleepSeed({
   const [isReading,      setIsReading]      = useState(false);
   const [sparkles,       setSparkles]       = useState([]);
   const [cachedChars,    setCachedChars]    = useState({});
+  const [savedCharacters, setSavedCharacters] = useState<any[]>([]);
   const [imgLoaded,      setImgLoaded]      = useState({});
   const [memories,       setMemories]       = useState([]);
   const [voiceId,        setVoiceId]        = useState(null); // EL cloned voice
@@ -1554,9 +1555,15 @@ export default function SleepSeed({
     // Use user-scoped keys for memories and nightcards to prevent cross-user data leakage
     sGet("memories", userId).then(s => { if(s?.items) setMemories(s.items); });
     sGet("nightcards", userId).then(s => { if(s?.items) setNightCards(s.items); });
-    sGet("style_dna").then(s => { if(s) setStyleDna(s); });
-    sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); });
-    sGet("onboarded").then(s => { if(s?.v) setHasSeenOnboard(true); });
+    sGet("style_dna", userId).then(s => { if(s) setStyleDna(s); });
+    sGet("voice_id", userId).then(s => { if(s?.id) setVoiceId(s.id); });
+    sGet("onboarded", userId).then(s => { if(s?.v) setHasSeenOnboard(true); });
+    // Load saved characters for the "who's in the story" picker
+    if(userId) {
+      import('./lib/storage').then(({getCharacters}) => {
+        getCharacters(userId).then(chars => setSavedCharacters(chars));
+      });
+    }
   },[userId]);
 
   // Open directly to book stage when a saved story is passed in
@@ -1902,7 +1909,7 @@ export default function SleepSeed({
         if(voiceId) await elDeleteVoice(voiceId);
         const newId = await elCloneVoice(file);
         setVoiceId(newId);
-        await sSet("voice_id", { id: newId });
+        await sSet("voice_id", { id: newId }, userId);
         setVcStage("ready");
       } catch(err) {
         setVcError((err as any).message || "Upload failed. Please try again.");
@@ -1926,7 +1933,7 @@ export default function SleepSeed({
       try { mediaRecRef.current.stop(); mediaRecRef.current.stream.getTracks().forEach(t => t.stop()); } catch(_) {}
     }
     if(voiceId) await elDeleteVoice(voiceId);
-    await sDel("voice_id");
+    await sDel("voice_id", userId);
     setVoiceId(null);
     setVcStage("idle");
     setVcSeconds(0);
@@ -2399,8 +2406,8 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
   const deleteNightCard = useCallback(async (id) => {
     const next = nightCards.filter(c => c.id!==id);
     setNightCards(next);
-    await sSet("nightcards",{items:next});
-  },[nightCards]);
+    await sSet("nightcards",{items:next},userId);
+  },[nightCards,userId]);
 
   /* ══ GENERATE ══ */
   const generate = async (overrides:any={}) => {
@@ -3053,12 +3060,12 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 styleDna={styleDna}
                 onAnswer={(updatedDna) => {
                   setStyleDna(updatedDna);
-                  sSet("style_dna", updatedDna).catch(()=>{});
+                  sSet("style_dna", updatedDna, userId).catch(()=>{});
                 }}
                 onDismiss={() => {
                   const updated = {...styleDna, pendingRereadChecks: (styleDna.pendingRereadChecks||[]).slice(1)};
                   setStyleDna(updated);
-                  sSet("style_dna", updated).catch(()=>{});
+                  sSet("style_dna", updated, userId).catch(()=>{});
                 }}
               />
             )}
@@ -3108,7 +3115,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                   setHeroName(e.target.value);
                   if(!hasSeenOnboard && e.target.value.trim().length >= 1) {
                     setHasSeenOnboard(true);
-                    sSet("onboarded",{v:true});
+                    sSet("onboarded",{v:true},userId);
                   }
                 }} maxLength={20}
                 style={{marginBottom:heroName.trim().length<2?6:10,textAlign:"center",
@@ -3556,6 +3563,22 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                   <div className="section-label" style={{marginBottom:8}}>👥 Who's in the story with {heroName}?</div>
                   {extraChars.length<4 && (
                     <div style={{marginBottom:extraChars.length?10:0}}>
+                      {/* Saved characters */}
+                      {savedCharacters.filter(sc => sc.name !== heroName).length > 0 && (
+                        <div style={{marginBottom:8}}>
+                          <div style={{fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--dimmer)',marginBottom:6}}>Your characters</div>
+                          <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+                            {savedCharacters.filter(sc => sc.name !== heroName && !extraChars.some(ec => ec._savedId === sc.id)).map(sc => (
+                              <button key={sc.id} className="char-add-pill" style={{borderColor:'rgba(212,160,48,.25)',background:'rgba(212,160,48,.06)'}}
+                                onClick={()=>setExtraChars(cs=>[...cs,{...newChar(), _savedId:sc.id, name:sc.name, type:sc.type==='human'?'friend':sc.type==='animal'?'pet':sc.type==='stuffy'?'toy':sc.type||'friend', note:sc.weirdDetail||sc.currentSituation||'', classify:sc.type||''}])}>
+                                <span className="char-add-pill-icon">{sc.emoji||'⭐'}</span>
+                                <span>+ {sc.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {/* Generic types + Other */}
                       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                         {CHAR_TYPES.map(t => (
                           <button key={t.value} className="char-add-pill"
@@ -3564,6 +3587,11 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                             <span>+ {t.label}</span>
                           </button>
                         ))}
+                        <button className="char-add-pill"
+                          onClick={()=>setExtraChars(cs=>[...cs,{...newChar(),type:"other"}])}>
+                          <span className="char-add-pill-icon">✨</span>
+                          <span>+ Other</span>
+                        </button>
                       </div>
                     </div>
                   )}
@@ -4416,7 +4444,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                             ? {...m, bookData:updatedBook} : m
                         );
                         setMemories(updatedMemories);
-                        try { await sSet("memories",{items:updatedMemories}); } catch(_) {}
+                        try { await sSet("memories",{items:updatedMemories},userId); } catch(_) {}
                         // Update cache
                         try {
                           const s = makeStorySeed(book.heroName,theme,extraChars,occasion,occasionCustom,
@@ -4710,7 +4738,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
         styleDna={styleDna}
         onFeedback={(updatedDna) => {
           setStyleDna(updatedDna);
-          sSet("style_dna", updatedDna).catch(()=>{});
+          sSet("style_dna", updatedDna, userId).catch(()=>{});
         }}
         onClose={() => setShowFeedback(false)}
         visible={showFeedback}
