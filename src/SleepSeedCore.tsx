@@ -4,6 +4,7 @@ import { buildStoryPrompt } from "./sleepseed-prompts";
 import { StoryFeedback, RereadCheck } from "./StoryFeedback";
 import { saveStory as dbSaveStory, saveNightCard as dbSaveNightCard } from "./lib/storage";
 import { getSceneByVibe } from "./lib/storyScenes";
+import type { HatchedCreature } from "./lib/types";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Cormorant+Garamond:ital,wght@1,600&family=Patrick+Hand&family=Nunito:wght@400;600;700&family=Kalam:wght@400;700&display=swap');`;
 
@@ -1026,6 +1027,7 @@ interface SleepSeedCoreProps {
   ritualSeed?: string;
   ritualMood?: string;
   builderChoices?: import('./lib/types').BuilderChoices | null;
+  companionCreature?: HatchedCreature | null;
   onCharacterSavePrompt?: (charData: any) => void;
   onStoryReady?: (storyData: any) => void;
 }
@@ -1038,6 +1040,7 @@ export default function SleepSeed({
   ritualSeed,
   ritualMood,
   builderChoices,
+  companionCreature,
   onCharacterSavePrompt,
   onStoryReady,
 }: SleepSeedCoreProps = {}) {
@@ -1171,6 +1174,26 @@ export default function SleepSeed({
     if (c.currentSituation) setStoryContext(c.currentSituation);
     if (c.weirdDetail) setStoryGuidance(c.weirdDetail);
   }, [preloadedCharacter]);
+
+  // Pre-populate companion creature from the hatchery
+  useEffect(() => {
+    if (!companionCreature) return;
+    const companionChar = {
+      id:       companionCreature.id,
+      type:     'creature' as const,
+      name:     companionCreature.name,
+      photo:    null,
+      classify: companionCreature.creatureType,
+      gender:   '',
+      note:     companionCreature.dreamAnswer
+                ? `${companionCreature.name} dreams about ${companionCreature.dreamAnswer}`
+                : `${companionCreature.name} is the child's magical companion`,
+    };
+    setExtraChars(prev => {
+      if (prev.some(c => c.id === companionChar.id)) return prev;
+      return [companionChar, ...prev];
+    });
+  }, [companionCreature]); // eslint-disable-line
 
   // Pre-populate ritual seed and mood from the ritual starter screen
   useEffect(() => {

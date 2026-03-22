@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
-import type { User, AppView, Character, BuilderChoices } from './lib/types';
+import type { User, AppView, Character, BuilderChoices, HatchedCreature } from './lib/types';
 import { supabase } from './lib/supabase';
 import { signOut as sbSignOut } from './lib/storage';
 import { migrateLocalStorageToSupabase } from './lib/migrateLocalStorage';
@@ -25,6 +25,8 @@ interface AppCtx {
   setEditingCharacter: (c: Character | null) => void;
   pendingSaveCharacter: Partial<Character> | null;
   setPendingSaveCharacter: (c: Partial<Character> | null) => void;
+  companionCreature: HatchedCreature | null;
+  setCompanionCreature: (c: HatchedCreature | null) => void;
 }
 
 const Ctx = createContext<AppCtx>({} as AppCtx);
@@ -54,6 +56,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [builderChoices,        setBuilderChoices]        = useState<BuilderChoices | null>(null);
   const [editingCharacter,      setEditingCharacter]      = useState<Character | null>(null);
   const [pendingSaveCharacter,  setPendingSaveCharacter]  = useState<Partial<Character> | null>(null);
+  const [companionCreature,    setCompanionCreature]    = useState<HatchedCreature | null>(null);
 
   useEffect(() => {
     // Check existing session on mount
@@ -118,6 +121,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       builderChoices, setBuilderChoices,
       editingCharacter, setEditingCharacter,
       pendingSaveCharacter, setPendingSaveCharacter,
+      companionCreature, setCompanionCreature,
     }}>
       {children}
     </Ctx.Provider>

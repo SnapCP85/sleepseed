@@ -18,7 +18,7 @@ import SleepSeedCore from './SleepSeedCore';
 import SharedStoryViewer from './pages/SharedStoryViewer';
 import CharacterDetail from './features/characters/CharacterDetail';
 import Hatchery from './pages/Hatchery';
-import type { Character } from './lib/types';
+import type { Character, HatchedCreature } from './lib/types';
 
 const NAV_CSS = `
 .anav{display:flex;align-items:center;gap:0;padding:0 5%;height:50px;border-bottom:1px solid rgba(232,151,42,.12);background:rgba(8,12,24,.97);position:sticky;top:0;z-index:20;backdrop-filter:blur(20px);font-family:'Plus Jakarta Sans',system-ui,sans-serif}
@@ -65,6 +65,7 @@ function AppInner() {
     ritualSeed, ritualMood,
     builderChoices,
     editingCharacter, setEditingCharacter,
+    companionCreature, setCompanionCreature,
   } = useApp();
 
   const [preloadedBook,      setPreloadedBook]      = useState<any>(null);
@@ -79,6 +80,16 @@ function AppInner() {
   }, []);
 
   if (isSharedStory) return <SharedStoryViewer />;
+
+  // Load companion creature for story builder
+  useEffect(() => {
+    if (!user || user.isGuest) return;
+    import('./lib/hatchery').then(({ getAllHatchedCreatures }) => {
+      getAllHatchedCreatures(user.id).then(creatures => {
+        if (creatures.length > 0) setCompanionCreature(creatures[0]);
+      });
+    });
+  }, [user]); // eslint-disable-line
 
   const goAuth        = () => setView('auth');
   const goDashboard   = () => { setNightCardFilter(undefined); setView('dashboard'); };
@@ -95,6 +106,43 @@ function AppInner() {
   const handleNav = (v: string) => {
     if (v === 'nightcard-library') goNightCards();
     else setView(v as any);
+  };
+
+  // Handle onboarding completion — save character, creature, egg, night card
+  const handleOnboardingComplete = async (result: any) => {
+    if (!user) return;
+    try {
+      const { saveCharacter, saveNightCard } = await import('./lib/storage');
+      const { saveHatchedCreature, createEgg } = await import('./lib/hatchery');
+
+      // 1. Save the character
+      if (result.character) await saveCharacter(result.character);
+
+      // 2. Save the hatched creature
+      if (result.creature) await saveHatchedCreature(result.creature);
+
+      // 3. Create the next egg (week 2, since week 1 creature just hatched)
+      if (result.character && result.creature) {
+        await createEgg(user.id, result.character.id, result.creature.creatureType, 2);
+      }
+
+      // 4. Save the origin night card
+      if (result.nightCard) {
+        await saveNightCard({
+          ...result.nightCard,
+          userId: user.id,
+          isOrigin: true,
+          quote: result.dreamAnswer ?? '',
+        });
+      }
+    } catch (e) {
+      console.error('[onboarding] save error:', e);
+    }
+
+    // 5-7. Always run these even if saves failed
+    if (result.creature) setCompanionCreature(result.creature);
+    try { localStorage.setItem(`sleepseed_onboarding_${user.id}`, '1'); } catch {}
+    setView('dashboard');
   };
 
   // Read a saved story directly — sets preloadedBook then routes to story-builder
@@ -238,6 +286,7 @@ function AppInner() {
           ritualSeed={ritualSeed}
           ritualMood={ritualMood}
           builderChoices={builderChoices}
+          companionCreature={companionCreature}
           onCharacterSavePrompt={() => {}}
           onStoryReady={() => {}}
         />

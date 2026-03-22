@@ -73,33 +73,35 @@ export interface SavedNightCard {
   whisper?: string;     // the closing whisper line
 }
 
-// ── Hatchery Egg (active, one per character) ────────────────────────────────
+// ── Hatchery ─────────────────────────────────────────────────────────────────
 export type CreatureRarity = 'common' | 'rare' | 'legendary';
+
+export interface HatchedCreature {
+  id: string;
+  userId: string;
+  characterId: string;
+  name: string;
+  creatureType: string;
+  creatureEmoji: string;
+  color: string;
+  rarity: CreatureRarity;
+  personalityTraits: string[];
+  dreamAnswer: string;
+  parentSecret: string;
+  photoUrl?: string;
+  weekNumber: number;
+  hatchedAt: string;
+  createdAt?: string;
+}
 
 export interface HatcheryEgg {
   id: string;
   userId: string;
   characterId: string;
-  creatureType: string;       // e.g. 'Moon Bunny', 'Star Phoenix'
-  creatureEmoji: string;
-  weekNumber: number;
-  startedAt: string;          // ISO timestamp — stage derived from night cards since this date
-  createdAt: string;
-}
-
-// ── Hatched Creature (permanent collection) ──────────────────────────────────
-export interface HatchedCreature {
-  id: string;
-  userId: string;
-  characterId: string;
-  name: string;               // chosen by the child at hatch time
   creatureType: string;
   creatureEmoji: string;
-  rarity: CreatureRarity;
   weekNumber: number;
-  personalityTraits: string[];  // up to 4 traits from that week's night cards
-  favouriteQuote?: string;      // best answer from that week
-  hatchedAt: string;
+  startedAt: string;
   createdAt: string;
 }
 
@@ -135,4 +137,5 @@ export type AppView =
   | 'character-builder'   // create/edit a character
   | 'story-library'       // my stories
   | 'nightcard-library'  // my night cards
+  | 'onboarding'         // onboarding flow
   | 'hatchery';          // hatchery screen

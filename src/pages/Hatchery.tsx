@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { User, Character, HatcheryEgg, HatchedCreature } from '../lib/types';
 import { hasSupabase } from '../lib/supabase';
-import { getActiveEgg, getEggStage, getAllHatchedCreatures, createEgg } from '../lib/hatchery';
+import { getActiveEgg, getAllHatchedCreatures, createEgg } from '../lib/hatchery';
+import { CREATURES } from '../lib/creatures';
 
 // ── CSS ──────────────────────────────────────────────────────────────────────
 
@@ -138,7 +139,7 @@ export default function Hatchery({ user, onBack }: HatcheryProps) {
       for (const char of familyChars) {
         let egg = await getActiveEgg(user.id, char.id);
         if (!egg) {
-          try { egg = await createEgg(user.id, char.id, 1); } catch {}
+          try { const rc=CREATURES[Math.floor(Math.random()*CREATURES.length)]; egg = await createEgg(user.id, char.id, rc.id, 1); } catch {}
         }
         if (egg) eggMap.set(char.id, egg);
       }
@@ -150,10 +151,15 @@ export default function Hatchery({ user, onBack }: HatcheryProps) {
 
   const primaryChar = characters[0] ?? null;
   const primaryEgg = primaryChar ? eggs.get(primaryChar.id) ?? null : null;
-  const primaryStage = useMemo(
-    () => primaryEgg ? getEggStage(primaryEgg, allCards) : 0,
-    [primaryEgg, allCards],
-  );
+  const primaryStage = useMemo(() => {
+    if (!primaryEgg) return 0;
+    const startDate = primaryEgg.startedAt.split('T')[0];
+    const count = allCards.filter(card =>
+      card.characterIds.includes(primaryEgg.characterId) &&
+      card.date.split('T')[0] >= startDate
+    ).length;
+    return Math.min(count, 7);
+  }, [primaryEgg, allCards]);
 
   // Most recent 5 creatures for the living room
   const roomCreatures = creatures.slice(0, 5);

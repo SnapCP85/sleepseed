@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useApp } from '../AppContext';
 import type { SavedNightCard, Character, HatcheryEgg } from '../lib/types';
 import { hasSupabase } from '../lib/supabase';
-import { getActiveEgg, getEggStage, createEgg } from '../lib/hatchery';
+import { getActiveEgg, createEgg } from '../lib/hatchery';
+import { CREATURES } from '../lib/creatures';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -476,7 +477,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
     if(!hasSupabase||!user||!primary) return;
     getActiveEgg(user.id,primary.id).then(egg=>{
       if(egg){setActiveEgg(egg);}
-      else{createEgg(user.id,primary.id,1).then(setActiveEgg).catch(()=>{});}
+      else{const rc=CREATURES[Math.floor(Math.random()*CREATURES.length)];createEgg(user.id,primary.id,rc.id,1).then(setActiveEgg).catch(()=>{});}
     });
   },[user,primary?.id]); // eslint-disable-line
 
@@ -484,7 +485,15 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const week   =useMemo(()=>weekChild?getWeekNights(allCards,weekChild.id):[]  ,[allCards,weekChild]);
   const lyCard =useMemo(()=>primary?getLastYearCard(allCards,primary.id):null  ,[allCards,primary]);
 
-  const eggStage=useMemo(()=>activeEgg?getEggStage(activeEgg,allCards):0,[activeEgg,allCards]);
+  const eggStage=useMemo(()=>{
+    if(!activeEgg) return 0;
+    const startDate=activeEgg.startedAt.split('T')[0];
+    const count=allCards.filter(card=>
+      card.characterIds.includes(activeEgg.characterId)&&
+      card.date.split('T')[0]>=startDate
+    ).length;
+    return Math.min(count,7);
+  },[activeEgg,allCards]);
 
   const weekDone=week.filter(n=>n.state==='complete').length;
   const glowPct =Math.min(100,Math.round((weekDone/7)*100));

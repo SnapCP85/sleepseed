@@ -34,7 +34,8 @@
       "Bash(cp ~/Downloads/RitualStarter.tsx src/pages/RitualStarter.tsx)",
       "Bash(cp ~/Downloads/StoryHandoff.tsx src/pages/StoryHandoff.tsx)",
       "Bash(npx vercel:*)",
-      "Bash(VERCEL_ORG_ID=\"\" npx vercel --prod --yes --force)"
+      "Bash(VERCEL_ORG_ID=\"\" npx vercel --prod --yes --force)",
+      "Bash(npx tsc:*)"
     ]
   }
 }
