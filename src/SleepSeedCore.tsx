@@ -780,8 +780,19 @@ const extractJSON = (text) => {
   if(start===-1||end<=start) throw new Error("No JSON found in response");
   const block = s.slice(start,end+1);
   try { return JSON.parse(block); } catch(_) {}
+  // Fix trailing commas
   const fixed = block.replace(/,(\s*[}\]])/g,"$1");
-  return JSON.parse(fixed);
+  try { return JSON.parse(fixed); } catch(_) {}
+  // Fix unescaped quotes inside strings (common Claude issue)
+  const fixed2 = fixed.replace(/:\s*"((?:[^"\\]|\\.)*)(?:(?<!\\)"(?=[^,}\]\s]))/g, (m) => m.replace(/(?<!\\)"/g, '\\"'));
+  try { return JSON.parse(fixed2); } catch(_) {}
+  // Last resort: fix common issues — newlines in strings, smart quotes
+  const fixed3 = fixed
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/\n/g, "\\n")
+    .replace(/\t/g, "\\t");
+  return JSON.parse(fixed3);
 };
 
 /* ── Storage ── */
