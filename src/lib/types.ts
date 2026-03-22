@@ -73,6 +73,36 @@ export interface SavedNightCard {
   whisper?: string;     // the closing whisper line
 }
 
+// ── Hatchery Egg (active, one per character) ────────────────────────────────
+export type CreatureRarity = 'common' | 'rare' | 'legendary';
+
+export interface HatcheryEgg {
+  id: string;
+  userId: string;
+  characterId: string;
+  creatureType: string;       // e.g. 'Moon Bunny', 'Star Phoenix'
+  creatureEmoji: string;
+  weekNumber: number;
+  startedAt: string;          // ISO timestamp — stage derived from night cards since this date
+  createdAt: string;
+}
+
+// ── Hatched Creature (permanent collection) ──────────────────────────────────
+export interface HatchedCreature {
+  id: string;
+  userId: string;
+  characterId: string;
+  name: string;               // chosen by the child at hatch time
+  creatureType: string;
+  creatureEmoji: string;
+  rarity: CreatureRarity;
+  weekNumber: number;
+  personalityTraits: string[];  // up to 4 traits from that week's night cards
+  favouriteQuote?: string;      // best answer from that week
+  hatchedAt: string;
+  createdAt: string;
+}
+
 // ── Builder choices (passed from StoryBuilderPage → SleepSeedCore) ───────────
 export interface BuilderChoices {
   path: 'ritual' | 'free';
@@ -104,4 +134,5 @@ export type AppView =
   | 'characters'          // character library
   | 'character-builder'   // create/edit a character
   | 'story-library'       // my stories
-  | 'nightcard-library';  // my night cards
+  | 'nightcard-library'  // my night cards
+  | 'hatchery';          // hatchery screen

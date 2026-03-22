@@ -17,6 +17,7 @@ import NightCardLibrary from './features/nightcards/NightCardLibrary';
 import SleepSeedCore from './SleepSeedCore';
 import SharedStoryViewer from './pages/SharedStoryViewer';
 import CharacterDetail from './features/characters/CharacterDetail';
+import Hatchery from './pages/Hatchery';
 import type { Character } from './lib/types';
 
 const NAV_CSS = `
@@ -133,6 +134,7 @@ function AppInner() {
     return <UserDashboard onSignUp={goAuth} onReadStory={openSavedStory} />;
   }
 
+  if (view === 'hatchery') return <Hatchery user={user!} onBack={goDashboard} />;
   if (view === 'ritual-starter') return <RitualStarter />;
   if (view === 'story-handoff')  return <StoryHandoff />;
   if (view === 'story-configure') return <StoryBuilderPage />;

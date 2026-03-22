@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useApp } from '../AppContext';
-import type { SavedNightCard, Character } from '../lib/types';
+import type { SavedNightCard, Character, HatcheryEgg } from '../lib/types';
+import { hasSupabase } from '../lib/supabase';
+import { getActiveEgg, getEggStage, createEgg } from '../lib/hatchery';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -430,6 +432,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const[missTooltip,setMissTooltip]=useState<number|null>(null);
   const[storyCount,setStoryCount]=useState(0);
   const[lastStory,setLastStory]=useState<any>(null);
+  const[activeEgg,setActiveEgg]=useState<HatcheryEgg|null>(null);
   const missTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
   const isGuest=!!user?.isGuest;
 
@@ -468,9 +471,20 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const isMulti=selectedCharacters.length>1;
   const weekChild=characters.find(c=>c.id===weekViewId)??primary;
 
+  // Fetch active egg for the primary character
+  useEffect(()=>{
+    if(!hasSupabase||!user||!primary) return;
+    getActiveEgg(user.id,primary.id).then(egg=>{
+      if(egg){setActiveEgg(egg);}
+      else{createEgg(user.id,primary.id,1).then(setActiveEgg).catch(()=>{});}
+    });
+  },[user,primary?.id]); // eslint-disable-line
+
   const glow   =useMemo(()=>weekChild?calculateGlow(allCards,weekChild.id):0,[allCards,weekChild]);
   const week   =useMemo(()=>weekChild?getWeekNights(allCards,weekChild.id):[]  ,[allCards,weekChild]);
   const lyCard =useMemo(()=>primary?getLastYearCard(allCards,primary.id):null  ,[allCards,primary]);
+
+  const eggStage=useMemo(()=>activeEgg?getEggStage(activeEgg,allCards):0,[activeEgg,allCards]);
 
   const weekDone=week.filter(n=>n.state==='complete').length;
   const glowPct =Math.min(100,Math.round((weekDone/7)*100));
@@ -801,16 +815,16 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
             {/* Done state card 2: egg placeholder */}
             <div className="dash-done-egg">
               <div className="dash-de-hd">
-                <div className="dash-de-title">🥚 Your Hatchling</div>
+                <div className="dash-de-title">{activeEgg?.creatureEmoji??'🥚'} {activeEgg?activeEgg.creatureType:'Your Hatchling'}</div>
                 <div className="dash-de-badge"><span style={{width:5,height:5,borderRadius:'50%',background:'#60E8B0',display:'inline-block',animation:'twk 1.5s ease-in-out infinite'}}/> new crack!</div>
               </div>
               <div className="dash-de-body">
                 <div className="dash-de-egg">
                   <div className="dash-de-halo"/>
-                  <div className="dash-de-emoji">🥚</div>
+                  <div className="dash-de-emoji">{activeEgg?.creatureEmoji??'🥚'}</div>
                 </div>
                 <div className="dash-de-right">
-                  <div className="dash-de-hint">"A new crack appeared tonight… something warm is glowing inside"</div>
+                  <div className="dash-de-hint">"Night {eggStage} of 7 — a new crack appeared tonight… something warm is glowing inside"</div>
                   {/* 7-dot week trail */}
                   <div className="dash-u-trail">
                     {week.map((n,i)=>{
@@ -845,7 +859,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
                 {isMulti?`tonight's ritual · ${selectedCharacters.length} children`:"tonight's ritual"}
               </div>
               <div className="dash-u-eye-right" style={{color:lblColor}}>
-                night {glow+1}
+                {activeEgg?`${activeEgg.creatureEmoji} ${activeEgg.creatureType}`:`night ${glow+1}`}
               </div>
             </div>
 
@@ -853,10 +867,12 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
             <div className="dash-u-egg-row">
               <div className="dash-u-egg-fig">
                 <div className="dash-u-egg-halo" style={{background:`radial-gradient(circle,${isMulti?'rgba(96,232,176,.16)':'rgba(245,184,76,.16)'},transparent 70%)`}}/>
-                <div className="dash-u-egg-emoji">🥚</div>
+                <div className="dash-u-egg-emoji">{activeEgg?.creatureEmoji??'🥚'}</div>
               </div>
               <div className="dash-u-clue">
-                <div className="dash-u-clue-kick" style={{color:isMulti?'rgba(96,232,176,.45)':'rgba(245,184,76,.45)'}}>your hatchling</div>
+                <div className="dash-u-clue-kick" style={{color:isMulti?'rgba(96,232,176,.45)':'rgba(245,184,76,.45)'}}>
+                  {activeEgg?`night ${eggStage} of 7`:'your hatchling'}
+                </div>
                 <div className="dash-u-clue-text" style={{color:isMulti?'rgba(96,232,176,.85)':'rgba(245,184,76,.85)'}}>
                   "Your hatchling is waiting… complete tonight's ritual to see what happens next"
                 </div>
@@ -915,12 +931,12 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
         )}
 
         {/* ── HATCHERY PLACEHOLDER ── */}
-        <div className="dash-hatch-ph">
-          <div className="dash-hatch-emoji">🏠</div>
+        <div className="dash-hatch-ph" style={{cursor:'pointer'}} onClick={()=>setView('hatchery')}>
+          <div className="dash-hatch-emoji">{activeEgg?.creatureEmoji??'🏠'}</div>
           <div className="dash-hatch-info">
             <div className="dash-hatch-label">Your Hatchery</div>
-            <div className="dash-hatch-name">Coming soon</div>
-            <div className="dash-hatch-sub">Complete rituals to hatch creatures ✦</div>
+            <div className="dash-hatch-name">{activeEgg?`${activeEgg.creatureType} · Week ${activeEgg.weekNumber}`:'View your creatures'}</div>
+            <div className="dash-hatch-sub">{activeEgg?`${eggStage} of 7 nights · ${7-eggStage} to hatch ✦`:'Complete rituals to hatch creatures ✦'}</div>
           </div>
         </div>
 
