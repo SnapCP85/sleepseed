@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SleepSeed — Rebuilt Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,500;1,9..144,700&family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ══ RESET ══ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100vh;background:#020309;font-family:'Nunito',sans-serif;-webkit-font-smoothing:antialiased;color:#fff;overflow-x:hidden}
+
+/* ══ PAGE ══ */
+.pg{text-align:center;padding:52px 24px 22px}
+.pg h1{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,30px);color:#f5e8c8;font-weight:700;margin-bottom:8px}
+.pg p{font-size:13px;color:rgba(255,255,255,.35);max-width:540px;margin:0 auto;line-height:1.7}
+
+/* ══ CHANGE NOTE ══ */
+.change-note{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:760px;margin:18px auto 32px;padding:0 24px}
+.cn{flex:1;min-width:200px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 16px}
+.cn-label{font-size:8.5px;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.cn-text{font-size:11.5px;color:rgba(255,255,255,.45);line-height:1.6}
+
+/* ══ SWITCHER ══ */
+.sw-row{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;padding:0 20px 30px}
+.sw{padding:12px 22px;border-radius:50px;font-size:12px;font-weight:800;cursor:pointer;border:1.5px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);font-family:'Nunito',sans-serif;transition:all .22s;white-space:nowrap}
+.sw:hover{background:rgba(255,255,255,.09);color:rgba(255,255,255,.7)}
+.sw.on{border-color:transparent;color:#060210}
+.sw-a.on{background:linear-gradient(135deg,#F5B84C,#d4880a)}
+.sw-d.on{background:linear-gradient(135deg,#14d890,#0a8a56);color:#041a0c}
+.sw-h.on{background:linear-gradient(135deg,#b48cff,#7040d0)}
+
+/* ══ CANVAS ══ */
+.canvas{display:flex;gap:28px;justify-content:center;align-items:flex-start;padding:0 20px 80px;flex-wrap:wrap}
+.pw{display:flex;flex-direction:column;align-items:center;gap:12px}
+.plbl{text-align:center}
+.ptag{display:inline-block;padding:4px 12px;border-radius:20px;font-size:9px;font-weight:800;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.ptitle{font-family:'Fraunces',serif;font-size:13px;font-weight:700;margin-bottom:3px}
+.pdesc{font-size:10px;color:rgba(255,255,255,.28);line-height:1.5;max-width:200px;font-style:italic}
+.pf{width:390px;height:830px;border-radius:52px;overflow:hidden;position:relative;box-shadow:0 48px 120px rgba(0,0,0,.85),0 0 0 2px rgba(255,255,255,.1),inset 0 0 0 1px rgba(255,255,255,.04)}
+.ps{width:100%;height:100%;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;position:relative}
+.ps::-webkit-scrollbar{display:none}
+
+/* ══════════════════════════════════════
+   KEYFRAMES
+══════════════════════════════════════ */
+@keyframes twinkle{0%,100%{opacity:.04;transform:scale(.4)}50%{opacity:.88;transform:scale(1.35)}}
+@keyframes floatCard{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes floatS{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes eggRock{0%,100%{transform:rotate(0)}18%{transform:rotate(-4.5deg)}55%{transform:rotate(4.5deg)}80%{transform:rotate(-2deg)}}
+@keyframes glowAmber{0%,100%{filter:drop-shadow(0 0 8px rgba(245,184,76,.42))}50%{filter:drop-shadow(0 0 24px rgba(245,184,76,.85))}}
+@keyframes glowTeal{0%,100%{filter:drop-shadow(0 0 8px rgba(20,216,144,.38))}50%{filter:drop-shadow(0 0 22px rgba(20,216,144,.8))}}
+@keyframes pulse{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:.72;transform:scale(1.05)}}
+@keyframes ringAmber{0%,100%{box-shadow:0 0 0 0 rgba(245,184,76,.65)}70%{box-shadow:0 0 0 20px rgba(245,184,76,0)}}
+@keyframes ringTeal{0%,100%{box-shadow:0 0 0 0 rgba(20,216,144,.6)}70%{box-shadow:0 0 0 18px rgba(20,216,144,0)}}
+@keyframes doneStar{0%,100%{box-shadow:0 0 0 3px rgba(20,216,144,.5),0 0 16px rgba(20,216,144,.22)}50%{box-shadow:0 0 0 8px rgba(20,216,144,0),0 0 28px rgba(20,216,144,.45)}}
+@keyframes shimmer{0%{transform:translateX(-120%)}100%{transform:translateX(160%)}}
+@keyframes aurora{0%,100%{opacity:.08;transform:scaleX(1)}50%{opacity:.35;transform:scaleX(1.04)}}
+@keyframes popIn{0%{opacity:0;transform:scale(.55)}65%{transform:scale(1.12)}100%{opacity:1;transform:scale(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes eyeBlink{0%,82%,100%{transform:scaleY(1)}88%{transform:scaleY(.08)}}
+@keyframes creatureFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes crackGlow{0%,100%{opacity:.6}50%{opacity:1;stroke-width:3}}
+@keyframes newCrackIn{from{stroke-dashoffset:60;opacity:0}to{stroke-dashoffset:0;opacity:1}}
+@keyframes celebrate{0%{transform:scale(1)}30%{transform:scale(1.12) rotate(3deg)}60%{transform:scale(1.06) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}
+
+/* ══════════════════════════════════════
+   DASHBOARD SHELL
+══════════════════════════════════════ */
+.dash{background:radial-gradient(ellipse 120% 58% at 50% 4%,#07102a 0%,#040614 55%,#020410 100%);min-height:830px;position:relative}
+.sf{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.st{position:absolute;border-radius:50%;animation:twinkle var(--d) var(--dl) ease-in-out infinite}
+.aura{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+
+/* ── NAV ── */
+.nav{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:relative;z-index:20;background:rgba(4,6,24,.9);backdrop-filter:blur(16px);border-bottom:1px solid rgba(245,184,76,.07)}
+.nav-logo{font-family:'Fraunces',serif;font-size:18px;color:#f5e8c8;font-weight:700;display:flex;align-items:center;gap:9px}
+.nav-moon{width:19px;height:19px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#fef3c0,#F5B84C);position:relative;overflow:hidden;flex-shrink:0}
+.nav-moon::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#040614;top:-4px;left:-7px}
+.nav-profile{width:34px;height:34px;border-radius:50%;background:rgba(245,184,76,.1);border:1.5px solid rgba(245,184,76,.26);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer}
+
+/* ── GREETING ── */
+.greet{padding:14px 20px 8px;position:relative;z-index:5}
+.greet-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.greet-main{font-family:'Fraunces',serif;font-size:clamp(16px,2.8vw,19px);font-weight:700;color:#f5e8c8;line-height:1.25}
+.greet-main em{font-style:italic}
+.greet-main em.amber{color:#F5B84C}
+.greet-main em.teal{color:#5DCAA5}
+.greet-date{font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.2);letter-spacing:.06em;flex-shrink:0;margin-top:4px}
+
+/* ── PODS ── */
+.pods{display:flex;gap:11px;padding:10px 16px 6px;position:relative;z-index:5}
+.pod{flex:1;border-radius:24px;padding:13px 10px 11px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;border:3px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);transition:all .28s;position:relative;overflow:hidden}
+.pod::before{content:'';position:absolute;top:0;left:15%;right:15%;height:2px;background:linear-gradient(90deg,transparent,var(--pl,rgba(255,255,255,.05)),transparent)}
+.pod-glow{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:60px;height:14px;border-radius:50%;background:radial-gradient(ellipse,var(--pg,rgba(245,184,76,.28)),transparent 70%);opacity:0;transition:opacity .3s;pointer-events:none}
+.pod-check{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--pc,#F5B84C);border:2px solid rgba(0,0,0,.2);display:none;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#0a0300;animation:popIn .22s ease-out}
+.pod.on{transform:scale(1.07);border-color:var(--pb,#F5B84C);background:var(--pbg,linear-gradient(155deg,rgba(245,184,76,.12),rgba(180,100,10,.07)));box-shadow:0 0 24px var(--ps,rgba(245,184,76,.2)),0 0 0 1px var(--pi,rgba(245,184,76,.1)) inset;--pl:var(--pb)}
+.pod.on .pod-glow{opacity:1;animation:pulse 2.5s ease-in-out infinite}
+.pod.on .pod-check{display:flex}
+.pod.on .pod-emoji{animation:floatS 3.5s ease-in-out infinite;filter:drop-shadow(0 0 11px var(--pg,rgba(245,184,76,.4)))}
+.pod-emoji{font-size:42px;line-height:1;transition:all .25s}
+.pod-name{font-family:'Baloo 2',cursive;font-size:16px;font-weight:800;color:rgba(255,255,255,.5);transition:color .25s}
+.pod.on .pod-name{color:var(--pn,#FFE080)}
+.pod-streak{font-size:10.5px;font-weight:700;color:rgba(255,255,255,.22);transition:color .25s}
+.pod.on .pod-streak{color:rgba(245,184,76,.5)}
+/* teal variant */
+.pod.tl{--pb:#60E8B0;--pbg:linear-gradient(155deg,rgba(96,232,176,.12),rgba(20,120,90,.07));--ps:rgba(96,232,176,.2);--pi:rgba(96,232,176,.08);--pg:rgba(96,232,176,.28);--pc:#60E8B0;--pn:#80FFCC}
+/* add child — inline with pods, compact */
+.pod-add{flex:0.65;border-radius:24px;padding:13px 8px 11px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;border:1.5px dashed rgba(255,255,255,.1);background:rgba(255,255,255,.02);transition:opacity .2s;opacity:.4}
+.pod-add:hover{opacity:.7}
+.pod-add-ico{width:38px;height:38px;border-radius:50%;border:1.5px dashed rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:18px;color:rgba(255,255,255,.35)}
+.pod-add-lbl{font-family:'Baloo 2',cursive;font-size:11px;font-weight:700;color:rgba(255,255,255,.3);text-align:center;line-height:1.3}
+
+/* ══════════════════════════════════════
+   ★★★ THE UNIFIED RITUAL + EGG CARD
+   Active state — ONE element, hero of screen
+══════════════════════════════════════ */
+.unified-wrap{padding:8px 16px 14px;position:relative;z-index:5}
+
+.unified-card{border-radius:24px;overflow:hidden;position:relative;border:1.5px solid var(--ub,rgba(245,184,76,.38));background:rgba(8,12,32,.98);box-shadow:0 6px 32px rgba(0,0,0,.5),0 0 0 1px var(--us,rgba(245,184,76,.06)) inset;animation:floatCard 4s ease-in-out infinite;transition:filter .2s,border-color .3s}
+.unified-card:hover{filter:brightness(1.04)}
+/* shimmer top line */
+.unified-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--ul,rgba(245,184,76,.45)),transparent)}
+/* ambient sparkles */
+.u-spark{position:absolute;pointer-events:none;border-radius:50%;animation:twinkle var(--d) var(--dl) ease-in-out infinite}
+
+/* ritual eyebrow */
+.u-eyebrow{display:flex;align-items:center;gap:6px;padding:16px 18px 0}
+.u-dot{width:5px;height:5px;border-radius:50%;background:var(--ud,#F5B84C);animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+.u-eyebrow-text{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ud,rgba(245,184,76,.7));font-weight:500}
+.u-eyebrow-right{margin-left:auto;font-family:'Baloo 2',cursive;font-size:10px;font-weight:800;color:var(--ud2,rgba(245,184,76,.5))}
+
+/* egg + clue row — the emotional hook */
+.u-egg-row{display:flex;align-items:center;gap:14px;padding:14px 18px 12px}
+.u-egg-figure{flex-shrink:0;position:relative;width:110px;display:flex;align-items:center;justify-content:center}
+.u-egg-halo{position:absolute;width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,var(--uh,rgba(245,184,76,.16)),transparent 70%);animation:pulse 3s ease-in-out infinite}
+.u-egg-svg{position:relative;z-index:2}
+/* clue section */
+.u-clue-col{flex:1}
+.u-clue-kicker{font-size:9px;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ud2,rgba(245,184,76,.45));margin-bottom:5px}
+.u-clue-text{font-family:'Fraunces',serif;font-size:14px;font-style:italic;color:rgba(245,184,76,.85);line-height:1.5;margin-bottom:12px}
+/* 7-dot trail inside card */
+.u-trail{display:flex;gap:3px}
+.u-trail-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.u-td{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px}
+.u-td.done{background:rgba(245,184,76,.1);border:1.5px solid rgba(245,184,76,.5)}
+.u-td.tonight{background:rgba(245,184,76,.07);border:2px solid #F5B84C;animation:ringAmber 2.4s ease-in-out infinite}
+.u-td.wait{background:rgba(255,255,255,.02);border:1.5px solid rgba(255,255,255,.1);opacity:.35}
+.u-td.future{opacity:.1;border:.5px solid rgba(255,255,255,.05)}
+/* teal trail variants */
+.u-td.done-teal{background:rgba(96,232,176,.1);border:1.5px solid rgba(96,232,176,.5)}
+.u-td.tonight-teal{background:rgba(96,232,176,.07);border:2px solid #60E8B0;animation:ringTeal 2.4s ease-in-out infinite}
+.u-tl{font-family:'Baloo 2',cursive;font-size:8px;font-weight:700}
+.u-trail-item.done .u-tl{color:rgba(245,184,76,.5)}
+.u-trail-item.done-teal .u-tl{color:rgba(96,232,176,.5)}
+.u-trail-item.tonight .u-tl,.u-trail-item.tonight-teal .u-tl{color:var(--ud,#F5B84C)}
+.u-trail-item.wait .u-tl,.u-trail-item.future .u-tl{color:rgba(255,255,255,.1)}
+
+/* ritual question + button */
+.u-bottom{padding:0 18px 18px}
+.u-question{font-family:'Fraunces',serif;font-size:clamp(15px,2.6vw,18px);color:#f5e8c8;line-height:1.35;margin-bottom:14px}
+.u-question span.cn{font-style:italic}
+.u-question span.cn-a{color:#F5B84C}
+.u-question span.cn-t{color:#60E8B0}
+/* THE BUTTON */
+.u-btn{width:100%;padding:18px 20px;border:none;border-radius:17px;cursor:pointer;position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;transition:transform .18s,filter .2s;background:var(--btnbg,linear-gradient(145deg,#a06010,#F5B84C 48%,#a06010));box-shadow:var(--btnsh,0 8px 30px rgba(200,130,20,.42)),0 1px 0 rgba(255,255,255,.18) inset}
+.u-btn:hover{transform:scale(1.02) translateY(-1px);filter:brightness(1.1)}
+.u-btn:active{transform:scale(.97)}
+.u-btn::after{content:'';position:absolute;top:0;left:-120%;width:55%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.16),transparent);animation:shimmer 3.8s ease-in-out infinite}
+.u-btn-ico{font-size:28px;flex-shrink:0;position:relative;z-index:1}
+.u-btn-texts{flex:1;text-align:left;position:relative;z-index:1}
+.u-btn-title{font-family:'Baloo 2',cursive;font-size:18px;font-weight:800;display:block;line-height:1.18;margin-bottom:1px;color:var(--bttc,#080200)}
+.u-btn-sub{font-size:10px;font-weight:700;display:block;color:var(--btsc,rgba(8,2,0,.5))}
+.u-btn-arr{font-size:24px;flex-shrink:0;position:relative;z-index:1;color:var(--btac,rgba(8,2,0,.38))}
+/* teal button */
+.u-btn.tl{--btnbg:linear-gradient(145deg,#0a7a50,#14d890 48%,#0a7a50);--btnsh:0 8px 30px rgba(20,200,130,.35);--bttc:#041a0c;--btsc:rgba(4,26,16,.5);--btac:rgba(4,26,16,.38)}
+
+/* ══════════════════════════════════════
+   ★★★ DONE STATE — SPLIT INTO TWO
+══════════════════════════════════════ */
+/* 1) Ritual done card */
+.done-ritual-wrap{padding:8px 16px 10px;position:relative;z-index:5}
+.done-ritual{background:rgba(6,16,10,.98);border:1.5px solid #1D9E75;border-radius:22px;padding:18px 18px;position:relative;overflow:hidden;animation:fadeUp .45s ease-out}
+.done-ritual::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,rgba(93,202,165,.55),transparent)}
+.dr-lbl{display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:10px}
+.dr-dot{width:4px;height:4px;border-radius:50%;background:#1D9E75;animation:pulse 2s ease-in-out infinite}
+.dr-lbl-text{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(29,158,117,.65)}
+.dr-star{font-size:40px;display:block;text-align:center;margin-bottom:8px;animation:doneStar 3s ease-in-out infinite;line-height:1;padding:3px}
+.dr-title{font-family:'Fraunces',serif;font-size:17px;color:#f5e8c8;text-align:center;margin-bottom:5px;line-height:1.42}
+.dr-name{color:#5DCAA5;font-style:italic}
+.dr-quote{font-size:11.5px;color:rgba(244,239,232,.38);line-height:1.65;font-style:italic;text-align:center;margin-bottom:10px;padding:0 6px}
+.dr-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(29,158,117,.1);border:1px solid rgba(29,158,117,.22);border-radius:20px;padding:5px 14px;font-size:10.5px;color:#5DCAA5;font-weight:700;margin:0 auto;width:fit-content;display:flex}
+
+/* 2) Egg celebration card — separate after ritual done */
+.done-egg-wrap{padding:0 16px 14px;position:relative;z-index:5}
+.done-egg-card{background:rgba(8,12,32,.96);border:1.5px solid rgba(20,216,144,.28);border-radius:22px;padding:14px 15px 13px;position:relative;overflow:hidden;animation:fadeUp .5s ease-out .1s both;cursor:pointer;transition:border-color .25s}
+.done-egg-card:hover{border-color:rgba(20,216,144,.45)}
+.done-egg-card::before{content:'';position:absolute;top:0;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,rgba(20,216,144,.4),transparent)}
+.de-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.de-title{font-family:'Baloo 2',cursive;font-size:13px;font-weight:800;color:#80FFCC;display:flex;align-items:center;gap:6px}
+.de-new-crack{display:flex;align-items:center;gap:4px;background:rgba(20,216,144,.1);border:1px solid rgba(20,216,144,.3);border-radius:20px;padding:3px 9px;font-family:'Baloo 2',cursive;font-size:10px;font-weight:800;color:#60E8B0}
+.de-new-crack-dot{width:5px;height:5px;border-radius:50%;background:#60E8B0;animation:pulse 1.5s ease-in-out infinite}
+/* egg row inside done card */
+.de-body{display:flex;align-items:center;gap:12px}
+.de-egg-fig{flex-shrink:0;width:88px;display:flex;align-items:center;justify-content:center;position:relative}
+.de-egg-halo{position:absolute;width:76px;height:76px;border-radius:50%;background:radial-gradient(circle,rgba(20,216,144,.18),transparent 70%);animation:pulse 2.5s ease-in-out infinite}
+.de-right{flex:1}
+.de-hint{font-family:'Fraunces',serif;font-size:12.5px;font-style:italic;color:rgba(80,230,160,.82);line-height:1.5;margin-bottom:10px}
+/* done trail */
+.de-trail{display:flex;gap:3px}
+.de-ti{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.de-td{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px}
+.de-td.done{background:rgba(245,184,76,.1);border:1.5px solid rgba(245,184,76,.48)}
+.de-td.new{background:rgba(20,216,144,.1);border:2px solid #14d890;animation:ringTeal 2.4s ease-in-out infinite}
+.de-td.future{opacity:.1;border:.5px solid rgba(255,255,255,.05)}
+.de-dl{font-family:'Baloo 2',cursive;font-size:8px;font-weight:700}
+.de-ti.done .de-dl{color:rgba(245,184,76,.5)}
+.de-ti.new .de-dl{color:#5DCAA5}
+.de-ti.future .de-dl{color:rgba(255,255,255,.06)}
+.de-tap{font-size:9.5px;font-weight:700;color:rgba(20,216,144,.45);display:flex;align-items:center;gap:4px;margin-top:10px}
+
+/* ══════════════════════════════════════
+   QUICK ACTIONS — compact, below fold
+══════════════════════════════════════ */
+.acts{display:flex;gap:8px;padding:0 16px 10px;position:relative;z-index:5}
+.act{flex:1;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055);border-radius:15px;padding:11px 6px 9px;cursor:pointer;text-align:center;transition:all .2s}
+.act:hover{background:rgba(245,184,76,.07);border-color:rgba(245,184,76,.18);transform:translateY(-1px)}
+.act-ico{font-size:20px;margin-bottom:4px}
+.act-lbl{font-family:'Baloo 2',cursive;font-size:10px;font-weight:700;color:rgba(255,255,255,.42)}
+
+/* ══════════════════════════════════════
+   HATCHERY BUTTON — breathing room
+══════════════════════════════════════ */
+.hatch-btn-wrap{padding:0 16px 12px;position:relative;z-index:5}
+.hatch-btn{width:100%;background:linear-gradient(145deg,rgba(5,16,10,.95),rgba(7,22,14,.98));border:1.5px solid rgba(96,232,176,.24);border-radius:20px;padding:13px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.hatch-btn:hover{border-color:rgba(96,232,176,.48);transform:translateY(-1px)}
+.hatch-btn::before{content:'';position:absolute;top:0;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,rgba(96,232,176,.32),transparent)}
+.hb-faces{display:flex;flex-shrink:0}
+.hb-face{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.04);border:1.5px solid rgba(96,232,176,.22);display:flex;align-items:center;justify-content:center;font-size:17px;margin-left:-5px;animation:creatureFloat var(--d) ease-in-out infinite var(--dl)}
+.hb-face:first-child{margin-left:0}
+.hb-face.plus{font-size:10px;font-weight:900;color:rgba(96,232,176,.55);font-family:'Baloo 2',cursive}
+.hb-info{flex:1}
+.hb-label{font-size:8px;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:rgba(96,232,176,.4);margin-bottom:2px}
+.hb-name{font-family:'Baloo 2',cursive;font-size:13.5px;font-weight:800;color:#80FFCC;line-height:1.15;margin-bottom:1px}
+.hb-sub{font-size:10px;color:rgba(96,232,176,.48);font-weight:700}
+.hb-arr{font-size:18px;color:rgba(96,232,176,.35);transition:transform .2s}
+.hatch-btn:hover .hb-arr{transform:translateX(3px)}
+
+/* ── BOTTOM NAV ── */
+.bnav{display:flex;background:rgba(4,6,24,.97);border-top:1px solid rgba(245,184,76,.07);padding:10px 0 8px;position:relative;z-index:20}
+.bnav-i{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;position:relative;padding:2px 0}
+.bnav-ico{font-size:20px;line-height:1}
+.bnav-lbl{font-size:9.5px;font-weight:800;font-family:'Nunito',sans-serif}
+.bnav-i.on .bnav-lbl{color:#F5B84C}
+.bnav-i:not(.on) .bnav-lbl{color:rgba(255,255,255,.16)}
+.bnav-i:not(.on) .bnav-ico{filter:grayscale(1) opacity(.3)}
+.bnav-badge{position:absolute;top:0px;right:calc(50% - 14px);width:14px;height:14px;border-radius:50%;background:#F5B84C;border:1.5px solid rgba(4,6,24,.97);font-size:7.5px;font-weight:900;color:#0a0300;display:flex;align-items:center;justify-content:center}
+
+/* ══════════════════════════════════════
+   HATCHERY SCREEN
+══════════════════════════════════════ */
+.hscr{background:linear-gradient(175deg,#050420 0%,#030315 55%,#020210 100%);min-height:830px;position:relative}
+.hscr-nav{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(4,6,24,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(96,232,176,.08);position:relative;z-index:20}
+.hscr-back{display:flex;align-items:center;gap:6px;background:rgba(96,232,176,.07);border:1px solid rgba(96,232,176,.18);border-radius:50px;padding:6px 14px;cursor:pointer;font-family:'Baloo 2',cursive;font-size:12px;font-weight:800;color:rgba(96,232,176,.7);transition:all .2s}
+.hscr-back:hover{background:rgba(96,232,176,.13)}
+.hscr-title{font-family:'Fraunces',serif;font-size:16px;color:#f5e8c8;font-weight:700}
+.hscr-egg-badge{display:flex;align-items:center;gap:4px;padding:5px 10px;border-radius:50px;background:rgba(245,184,76,.1);border:1px solid rgba(245,184,76,.2);font-size:10.5px;font-weight:800;color:rgba(245,184,76,.75);font-family:'Baloo 2',cursive}
+/* room */
+.hroom{position:relative;height:180px;margin:14px 16px 12px;background:linear-gradient(170deg,#07062a,#04031a,#020210);border:1px solid rgba(255,255,255,.05);border-radius:24px;overflow:hidden}
+.hroom-floor{position:absolute;bottom:0;left:0;right:0;height:38px;background:linear-gradient(0deg,rgba(18,10,46,.9),transparent)}
+.hroom-sky{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.hroom-glow{position:absolute;border-radius:50%;pointer-events:none;filter:blur(20px)}
+.hc-creature{position:absolute;bottom:16px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:transform .25s;z-index:5}
+.hc-creature:hover{transform:translateY(-6px) scale(1.12)}
+.hc-e{font-size:38px;line-height:1;animation:creatureFloat var(--d) ease-in-out infinite var(--dl)}
+.hc-n{font-family:'Baloo 2',cursive;font-size:9px;font-weight:800;color:rgba(255,255,255,.5)}
+.hc-sh{width:32px;height:6px;border-radius:50%;background:rgba(0,0,0,.4);margin-top:-3px}
+.hroom-locked{position:absolute;bottom:20px;width:42px;height:42px;border-radius:50%;border:1.5px dashed rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center;font-size:16px;opacity:.18}
+/* progress */
+.hprog{margin:0 16px 12px;background:rgba(255,255,255,.022);border:1px solid rgba(245,184,76,.11);border-radius:18px;padding:12px 16px;position:relative;z-index:5}
+.hp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.hp-lbl{font-family:'Baloo 2',cursive;font-size:13px;font-weight:800;color:#FFE080}
+.hp-num{font-family:'Baloo 2',cursive;font-size:21px;font-weight:800;color:#F5B84C;line-height:1}
+.hp-bar{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.hp-fill{height:100%;background:linear-gradient(90deg,#F5B84C,#FFE080);border-radius:3px}
+.hp-hint{font-size:10.5px;font-weight:700;color:rgba(245,184,76,.42);margin-top:5px}
+/* grid */
+.hgrid-section{padding:0 16px;position:relative;z-index:5}
+.hgs-title{font-family:'Baloo 2',cursive;font-size:11.5px;font-weight:800;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px}
+.hgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hg{background:rgba(255,255,255,.025);border:1.5px solid rgba(255,255,255,.07);border-radius:17px;padding:12px 9px 10px;text-align:center;cursor:pointer;transition:all .22s;position:relative}
+.hg:hover{transform:scale(1.04);border-color:rgba(245,184,76,.28);background:rgba(245,184,76,.05)}
+.hg.new{border-color:rgba(245,184,76,.42);background:rgba(245,184,76,.06);box-shadow:0 0 16px rgba(245,184,76,.14)}
+.hg.new::after{content:'NEW';position:absolute;top:4px;left:4px;background:#F5B84C;color:#0a0300;font-size:7px;font-weight:900;padding:1px 5px;border-radius:8px;font-family:'DM Mono',monospace}
+.hg-rar{position:absolute;top:5px;right:5px;width:13px;height:13px;border-radius:50%;font-size:7px;display:flex;align-items:center;justify-content:center}
+.hg-emoji{font-size:30px;line-height:1;margin-bottom:4px;animation:floatS var(--d) ease-in-out infinite var(--dl)}
+.hg-name{font-family:'Baloo 2',cursive;font-size:11px;font-weight:800;color:rgba(255,255,255,.62);margin-bottom:2px}
+.hg-wk{font-size:9px;color:rgba(255,255,255,.24);font-weight:700}
+.hg-lock{opacity:.18;cursor:default;border-style:dashed}
+.hg-lock:hover{transform:none;border-color:rgba(255,255,255,.07);background:transparent}
+</style>
+</head>
+<body>
+
+<!-- PAGE HEADER -->
+<div class="pg">
+  <h1>SleepSeed Dashboard — Rebuilt</h1>
+  <p>The key change: ritual card and egg are ONE unified card while the ritual is pending. The egg becomes the <em>reason</em> to do the ritual, not a tracker below it. Once done, they split cleanly.</p>
+</div>
+
+<!-- CHANGE NOTES -->
+<div class="change-note">
+  <div class="cn">
+    <div class="cn-label" style="color:#F5B84C">Combined → Split</div>
+    <div class="cn-text">Active: ritual + egg = one card. The egg clue hooks the child before the button. Done: they separate — done card celebrates ritual, egg card celebrates new crack.</div>
+  </div>
+  <div class="cn">
+    <div class="cn-label" style="color:#60E8B0">Add Child Moved</div>
+    <div class="cn-text">Removed full-width "Add child" row from prime real estate. Now a compact inline pod — same width as a child pod, dashed border, greyed out. Edge case treated as edge case.</div>
+  </div>
+  <div class="cn">
+    <div class="cn-label" style="color:#b48cff">Actions Repositioned</div>
+    <div class="cn-text">Quick actions sit below the hatchery button — not between the egg and hatchery. No escape routes before the ritual is done. Hatchery button gets its own breathing section.</div>
+  </div>
+</div>
+
+<!-- STATE SWITCHER -->
+<div class="sw-row">
+  <button class="sw sw-a on" id="sw-a" onclick="setState('active',this)">🌙 Ritual Pending</button>
+  <button class="sw sw-d" id="sw-d" onclick="setState('done',this)">✦ Ritual Complete</button>
+  <button class="sw sw-h" id="sw-h" onclick="setState('hatchery',this)">🏠 Hatchery</button>
+</div>
+
+<!-- CANVAS -->
+<div class="canvas">
+  <div class="pw">
+    <div class="plbl">
+      <div class="ptag" id="lab-tag" style="background:rgba(245,184,76,.13);color:#F5B84C;border:1px solid rgba(245,184,76,.23)">Active State</div>
+      <div class="ptitle" id="lab-title" style="color:#f5e8c8">Unified ritual + egg card</div>
+      <div class="pdesc" id="lab-desc">Egg clue hooks the child. Tap "Begin tonight's ritual" to see the done state. Tap pods to switch children.</div>
+    </div>
+    <div class="pf">
+      <div class="ps" id="screen"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATES -->
+<div style="display:none" id="tpls">
+
+<!-- ─── DASHBOARD TEMPLATE ─── -->
+<div id="tpl-dash">
+<div class="dash">
+  <div class="sf" id="sf-dash"></div>
+  <div class="aura">
+    <div style="position:absolute;width:380px;height:110px;top:16px;left:-70px;background:radial-gradient(ellipse,rgba(80,90,220,.06),transparent 70%);border-radius:50%;animation:aurora 7s ease-in-out infinite"></div>
+    <div style="position:absolute;width:320px;height:90px;top:50px;right:-55px;background:radial-gradient(ellipse,rgba(245,184,76,.05),transparent 70%);border-radius:50%;animation:aurora 9s ease-in-out infinite 2.5s"></div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav">
+    <div class="nav-logo"><div class="nav-moon"></div>SleepSeed</div>
+    <div class="nav-profile">👤</div>
+  </div>
+
+  <!-- GREETING -->
+  <div class="greet">
+    <div class="greet-row">
+      <div class="greet-main" id="g-main">Good evening, Sarah.&nbsp;<em class="amber" id="g-em">Bedtime is close.</em></div>
+      <div class="greet-date">SUN · MAR 22</div>
+    </div>
+  </div>
+
+  <!-- PODS + ADD CHILD inline -->
+  <div class="pods" id="pods">
+    <div class="pod on" id="pod-emma" onclick="selectPod('emma')">
+      <div class="pod-glow" style="--pg:rgba(245,184,76,.28)"></div>
+      <div class="pod-check" style="--pc:#F5B84C">✓</div>
+      <div class="pod-emoji">🦊</div>
+      <div class="pod-name">Emma</div>
+      <div class="pod-streak">⭐ 23 nights</div>
+    </div>
+    <div class="pod" id="pod-theo" onclick="selectPod('theo')">
+      <div class="pod-glow" style="--pg:rgba(96,232,176,.28)"></div>
+      <div class="pod-check" style="--pc:#60E8B0;color:#020e08">✓</div>
+      <div class="pod-emoji">🐉</div>
+      <div class="pod-name">Theo</div>
+      <div class="pod-streak">⭐ 15 nights</div>
+    </div>
+    <!-- ADD CHILD — inline, compact, clearly secondary -->
+    <div class="pod-add" onclick="">
+      <div class="pod-add-ico">+</div>
+      <div class="pod-add-lbl">Add child</div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT AREA — switches between active/done -->
+  <div id="main-area"></div>
+
+  <!-- HATCHERY BUTTON -->
+  <div class="hatch-btn-wrap">
+    <div class="hatch-btn" onclick="setState('hatchery',document.getElementById('sw-h'))">
+      <div class="hb-faces">
+        <div class="hb-face" style="--d:4s;--dl:0s">🐰</div>
+        <div class="hb-face" style="--d:5s;--dl:-.6s">🦊</div>
+        <div class="hb-face" style="--d:4.5s;--dl:-1.2s">🔥</div>
+        <div class="hb-face plus">+1</div>
+      </div>
+      <div class="hb-info">
+        <div class="hb-label">🏠 Your Hatchery</div>
+        <div class="hb-name" id="hb-name">Luna, Ember &amp; Blaze waiting</div>
+        <div class="hb-sub" id="hb-sub">5 of 7 nights · 2 nights left to hatch ✦</div>
+      </div>
+      <div class="hb-arr">→</div>
+    </div>
+  </div>
+
+  <!-- QUICK ACTIONS — after hatchery, below fold -->
+  <div class="acts">
+    <div class="act"><div class="act-ico">✨</div><div class="act-lbl">New Story</div></div>
+    <div class="act"><div class="act-ico">📚</div><div class="act-lbl">Our Stories</div></div>
+    <div class="act"><div class="act-ico">🌙</div><div class="act-lbl">Memories</div></div>
+  </div>
+
+  <div style="height:8px"></div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bnav">
+    <div class="bnav-i on"><div class="bnav-ico">🏠</div><div class="bnav-lbl">Home</div></div>
+    <div class="bnav-i"><div class="bnav-ico">📖</div><div class="bnav-lbl">Stories</div></div>
+    <div class="bnav-i"><div class="bnav-ico">🌙</div><div class="bnav-lbl">Cards</div></div>
+    <div class="bnav-i" onclick="setState('hatchery',document.getElementById('sw-h'))">
+      <div class="bnav-ico">🥚</div>
+      <div class="bnav-lbl">Hatchery</div>
+      <div class="bnav-badge">4</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ─── HATCHERY TEMPLATE ─── -->
+<div id="tpl-hatchery">
+<div class="hscr">
+  <div class="sf" id="sf-hatch"></div>
+  <div class="aura">
+    <div style="position:absolute;width:360px;height:100px;top:15px;left:-65px;background:radial-gradient(ellipse,rgba(96,232,176,.07),transparent 70%);border-radius:50%;animation:aurora 6s ease-in-out infinite"></div>
+    <div style="position:absolute;width:300px;height:80px;top:50px;right:-50px;background:radial-gradient(ellipse,rgba(180,140,255,.06),transparent 70%);border-radius:50%;animation:aurora 8.5s ease-in-out infinite 2s"></div>
+  </div>
+  <div class="hscr-nav">
+    <div class="hscr-back" onclick="backToDash()">← Home</div>
+    <div class="hscr-title">Your Hatchery 🏠</div>
+    <div class="hscr-egg-badge">🥚 5 / 7</div>
+  </div>
+  <!-- living room -->
+  <div class="hroom">
+    <div class="hroom-sky" id="sf-room"></div>
+    <div class="hroom-glow" style="width:200px;height:80px;top:8px;left:-50px;background:radial-gradient(ellipse,rgba(245,184,76,.08),transparent 70%);animation:pulse 5s ease-in-out infinite"></div>
+    <div class="hroom-glow" style="width:180px;height:70px;top:18px;right:-40px;background:radial-gradient(ellipse,rgba(96,232,176,.07),transparent 70%);animation:pulse 6.5s ease-in-out infinite 1.5s"></div>
+    <div class="hroom-glow" style="width:160px;height:60px;bottom:5px;left:30%;background:radial-gradient(ellipse,rgba(180,140,255,.07),transparent 70%);animation:pulse 5.5s ease-in-out infinite 3s"></div>
+    <div class="hroom-floor"></div>
+    <div class="hc-creature" style="left:12px;--d:4s;--dl:0s"><div class="hc-e" style="--d:4s;--dl:0s">🐰</div><div class="hc-n">Luna</div><div class="hc-sh"></div></div>
+    <div class="hc-creature" style="left:88px;--d:5s;--dl:-.8s"><div class="hc-e" style="--d:5s;--dl:-.8s">🦊</div><div class="hc-n">Ember</div><div class="hc-sh"></div></div>
+    <div class="hc-creature" style="left:174px;--d:4.5s;--dl:-1.4s"><div class="hc-e" style="--d:4.5s;--dl:-1.4s">🔥</div><div class="hc-n">Blaze</div><div class="hc-sh"></div></div>
+    <div class="hc-creature" style="left:256px;--d:3.8s;--dl:-.5s"><div class="hc-e" style="--d:3.8s;--dl:-.5s">🦋</div><div class="hc-n">Wisp</div><div class="hc-sh"></div></div>
+    <div class="hroom-locked" style="left:328px;bottom:20px">🔒</div>
+  </div>
+  <!-- progress -->
+  <div class="hprog">
+    <div class="hp-row"><div class="hp-lbl">🥚 Emma's Hatchling · Week 5</div><div class="hp-num">5/7</div></div>
+    <div class="hp-bar"><div class="hp-fill" style="width:71%"></div></div>
+    <div class="hp-hint">2 more nights · your Starfish is almost here! ⭐</div>
+  </div>
+  <!-- grid -->
+  <div class="hgrid-section">
+    <div class="hgs-title">All Creatures · 4 hatched</div>
+    <div class="hgrid">
+      <div class="hg new"><div class="hg-rar" style="background:#F5B84C;color:#0a0300">⭐</div><div class="hg-emoji" style="--d:4s;--dl:0s">🐰</div><div class="hg-name">Luna</div><div class="hg-wk">Week 4</div></div>
+      <div class="hg"><div class="hg-rar" style="background:rgba(180,140,255,.8);color:#fff">✦</div><div class="hg-emoji" style="--d:5s;--dl:-.6s">🦊</div><div class="hg-name">Ember</div><div class="hg-wk">Week 2</div></div>
+      <div class="hg"><div class="hg-emoji" style="--d:4.5s;--dl:-1s">🔥</div><div class="hg-name">Blaze</div><div class="hg-wk">Week 1</div></div>
+      <div class="hg"><div class="hg-emoji" style="--d:3.8s;--dl:-.4s">🦋</div><div class="hg-name">Wisp</div><div class="hg-wk">Week 3</div></div>
+      <div class="hg" style="border-color:rgba(245,184,76,.28);background:rgba(245,184,76,.04)"><div class="hg-emoji" style="font-size:24px;opacity:.4;filter:blur(1px)">⭐</div><div class="hg-name" style="color:rgba(255,255,255,.38)">Week 5…</div><div class="hg-wk">2 nights left!</div></div>
+      <div class="hg hg-lock"><div class="hg-emoji" style="font-size:24px;filter:grayscale(1) brightness(.3)">🔒</div><div class="hg-name" style="color:rgba(255,255,255,.18)">Week 6</div><div class="hg-wk">coming soon</div></div>
+      <div class="hg hg-lock"><div class="hg-emoji" style="font-size:24px;filter:grayscale(1) brightness(.3)">🔒</div><div class="hg-name" style="color:rgba(255,255,255,.18)">Week 7</div></div>
+      <div class="hg hg-lock"><div class="hg-emoji" style="font-size:24px;filter:grayscale(1) brightness(.3)">🔒</div><div class="hg-name" style="color:rgba(255,255,255,.18)">Week 8</div></div>
+      <div class="hg hg-lock"><div class="hg-emoji" style="font-size:24px;filter:grayscale(1) brightness(.3)">🔒</div><div class="hg-name" style="color:rgba(255,255,255,.18)">Week 9</div></div>
+    </div>
+  </div>
+  <div style="height:10px"></div>
+  <div class="bnav hatch-bnav" style="border-top-color:rgba(96,232,176,.08)">
+    <div class="bnav-i" onclick="backToDash()"><div class="bnav-ico">🏠</div><div class="bnav-lbl">Home</div></div>
+    <div class="bnav-i"><div class="bnav-ico">📖</div><div class="bnav-lbl">Stories</div></div>
+    <div class="bnav-i"><div class="bnav-ico">🌙</div><div class="bnav-lbl">Cards</div></div>
+    <div class="bnav-i on"><div class="bnav-ico">🥚</div><div class="bnav-lbl">Hatchery</div><div class="bnav-badge">4</div></div>
+  </div>
+</div>
+</div>
+
+</div><!-- /tpls -->
+
+<script>
+/* ══ EGG SVG (shared, used in both states) ══ */
+const EGG_SVG_ACTIVE = `
+<svg width="100" height="122" viewBox="0 0 90 110" style="animation:eggRock 2.2s ease-in-out infinite,glowAmber 3s ease-in-out infinite;position:relative;z-index:2">
+  <defs>
+    <radialGradient id="eg" cx="38%" cy="32%" r="68%"><stop offset="0%" stop-color="#fef9e8"/><stop offset="55%" stop-color="#f0d060"/><stop offset="100%" stop-color="#b07010"/></radialGradient>
+    <radialGradient id="ei" cx="50%" cy="40%" r="58%"><stop offset="0%" stop-color="#fde68a" stop-opacity=".9"/><stop offset="100%" stop-color="#fde68a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="45" cy="57" rx="38" ry="48" fill="#fde68a" opacity=".13"/>
+  <path d="M45 6C68 6 78 34 78 55 78 80 63 103 45 103 27 103 12 80 12 55 12 34 22 6 45 6Z" fill="url(#eg)" stroke="#a07018" stroke-width=".8"/>
+  <path d="M45 26C62 26 70 44 70 57 70 75 59 93 45 93 31 93 20 75 20 57 20 44 28 26 45 26Z" fill="url(#ei)" opacity=".5"/>
+  <path d="M51 30L47 46L54 53L50 66" stroke="#9a7010" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M30 46L36 55L32 66" stroke="#9a7010" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M46 22L42 32L47 38" stroke="#9a7010" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <path d="M50 50L44 46L40 52" stroke="#9a7010" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <g style="animation:eyeBlink 3.8s ease-in-out infinite">
+    <ellipse cx="52" cy="52" rx="6" ry="4" fill="#fde68a" opacity=".9"/>
+    <ellipse cx="52" cy="52" rx="3.5" ry="2.5" fill="#1a0a30"/>
+    <circle cx="53.5" cy="50.5" r="1" fill="white"/>
+  </g>
+  <path d="M26 58Q20 63 22 71Q25 75 29 71L31 63Z" fill="#f0c888" stroke="#c08040" stroke-width=".7"/>
+  <circle cx="23" cy="66" r="2.2" fill="#f0c888" stroke="#c08040" stroke-width=".6"/>
+  <circle cx="57" cy="44" r="1.8" fill="#fde68a" style="animation:twinkle 1.8s ease-in-out infinite"/>
+  <circle cx="37" cy="22" r="1.3" fill="#fde68a" style="animation:twinkle 2.5s ease-in-out infinite -.4s"/>
+</svg>`;
+
+const EGG_SVG_DONE = `
+<svg width="80" height="97" viewBox="0 0 90 110" style="animation:eggRock 2.5s ease-in-out infinite,glowTeal 2.8s ease-in-out infinite;position:relative;z-index:2">
+  <defs>
+    <radialGradient id="egd" cx="38%" cy="32%" r="68%"><stop offset="0%" stop-color="#f0fff8"/><stop offset="55%" stop-color="#80e8c0"/><stop offset="100%" stop-color="#208860"/></radialGradient>
+    <radialGradient id="eid" cx="50%" cy="40%" r="58%"><stop offset="0%" stop-color="#80ffcc" stop-opacity=".9"/><stop offset="100%" stop-color="#80ffcc" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="45" cy="57" rx="38" ry="48" fill="#80e8c0" opacity=".13"/>
+  <path d="M45 6C68 6 78 34 78 55 78 80 63 103 45 103 27 103 12 80 12 55 12 34 22 6 45 6Z" fill="url(#egd)" stroke="#208860" stroke-width=".8"/>
+  <path d="M45 26C62 26 70 44 70 57 70 75 59 93 45 93 31 93 20 75 20 57 20 44 28 26 45 26Z" fill="url(#eid)" opacity=".5"/>
+  <path d="M51 30L47 46L54 53L50 66" stroke="#107840" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M30 46L36 55L32 66" stroke="#107840" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M46 22L42 32L47 38" stroke="#107840" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <path d="M50 50L44 46L40 52" stroke="#107840" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <!-- new crack — highlighted teal, animated in -->
+  <path d="M60 60L55 70L62 78" stroke="#14d890" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="60" style="animation:newCrackIn .8s ease-out forwards"/>
+  <g style="animation:eyeBlink 3s ease-in-out infinite">
+    <ellipse cx="52" cy="52" rx="6.5" ry="4.5" fill="#80ffcc" opacity=".9"/>
+    <ellipse cx="52" cy="52" rx="4" ry="2.8" fill="#041a10"/>
+    <circle cx="54" cy="50.5" r="1.1" fill="white"/>
+  </g>
+  <path d="M26 58Q20 63 22 71Q25 75 29 71L31 63Z" fill="#a0f0d0" stroke="#40c090" stroke-width=".7"/>
+  <circle cx="23" cy="66" r="2.2" fill="#a0f0d0" stroke="#40c090" stroke-width=".6"/>
+  <!-- sparkle burst at new crack -->
+  <circle cx="68" cy="68" r="2.8" fill="#14d890" style="animation:twinkle .7s ease-out"/>
+  <circle cx="75" cy="60" r="2" fill="#14d890" style="animation:twinkle .7s ease-out .1s"/>
+  <circle cx="65" cy="76" r="2" fill="#80ffcc" style="animation:twinkle .7s ease-out .15s"/>
+</svg>`;
+
+/* ══ TRAIL HTML ══ */
+function trailHTML(doneCount, isNewDone, amber=true) {
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const doneCls=amber?'done':'done';
+  const tonightCls=amber?'tonight':'tonight-teal';
+  return days.map((d,i)=>{
+    let cls,icon;
+    if(i < doneCount - (isNewDone?1:0)){ cls=doneCls; icon='★'; }
+    else if(i === doneCount-1 && isNewDone){ cls='new'; icon='★'; }
+    else if(i === doneCount && !isNewDone){ cls=tonightCls; icon='✦'; }
+    else{ cls='future'; icon=''; }
+    return `<div class="u-trail-item ${cls}"><div class="u-td ${cls}">${icon}</div><div class="u-tl">${d}</div></div>`;
+  }).join('');
+}
+function doneTrailHTML(doneCount){
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  return days.map((d,i)=>{
+    let cls,icon;
+    if(i<doneCount-1){cls='done';icon='★';}
+    else if(i===doneCount-1){cls='new';icon='★';}
+    else{cls='future';icon='';}
+    return `<div class="de-ti ${cls}"><div class="de-td ${cls}">${icon}</div><div class="de-dl">${d}</div></div>`;
+  }).join('');
+}
+
+/* ══ RENDER STATES ══ */
+let curChild='emma', curView='dash', curState='active';
+const CD={
+  emma:{emoji:'🦊',name:'Emma',streak:'⭐ 23 nights',eggWeek:'Week 4',
+    btnSub:'Night 24 · 3 more nights to hatch your Moon Bunny 🥚',
+    clue:'"Something is watching you… a tiny paw just appeared at the crack! 🐾"',
+    doneSub:'Night 24 · Luna hatched tonight! 🌟',
+    doneClue:'"A new crack appeared! Something warm is glowing inside… 🌙"',
+    doneQuote:'"The best three seconds was when you carried me to bed and I pretended to be asleep"',
+    q:'What happened in ',qname:'Emma\'s',q2:' world today?',
+    hbName:'Luna, Ember & Blaze waiting',amberPods:true},
+  theo:{emoji:'🐉',name:'Theo',streak:'⭐ 15 nights',eggWeek:'Week 3',
+    btnSub:'Night 15 · 4 more nights to hatch your Star Phoenix 🔥',
+    clue:'"Something is glowing deep inside… and it\'s very warm. Fire? ✨"',
+    doneSub:'Night 15 · Blaze hatched tonight! 🔥',
+    doneClue:'"The egg feels warmer tonight. Something powerful is almost ready… 🔥"',
+    doneQuote:'"Today I was brave because I tried the big swimming pool and it was only a little bit scary"',
+    q:'What happened in ',qname:'Theo\'s',q2:' world today?',
+    hbName:'Blaze, Wisp waiting',amberPods:false}
+};
+
+function renderActiveCard(child){
+  const c=CD[child];
+  const isTeal=(child==='theo');
+  return `
+  <div class="unified-wrap">
+    <div class="unified-card" style="--ub:1.5px solid ${isTeal?'rgba(96,232,176,.38)':'rgba(245,184,76,.38)'};--us:${isTeal?'rgba(96,232,176,.06)':'rgba(245,184,76,.06)'};--ul:${isTeal?'rgba(96,232,176,.45)':'rgba(245,184,76,.45)'};--ud:${isTeal?'rgba(96,232,176,.75)':'rgba(245,184,76,.75)'};--ud2:${isTeal?'rgba(96,232,176,.5)':'rgba(245,184,76,.5)'};--uh:${isTeal?'rgba(96,232,176,.16)':'rgba(245,184,76,.16)'}">
+      <div class="u-spark" style="width:3px;height:3px;background:${isTeal?'#60E8B0':'#fde68a'};top:12px;right:20px;--d:2.5s;--dl:0s"></div>
+      <div class="u-spark" style="width:2px;height:2px;background:${isTeal?'#60E8B0':'#fde68a'};bottom:60px;right:18px;--d:3.2s;--dl:-.7s"></div>
+      <!-- eyebrow -->
+      <div class="u-eyebrow">
+        <div class="u-dot" style="background:${isTeal?'#60E8B0':'#F5B84C'}"></div>
+        <div class="u-eyebrow-text" style="color:${isTeal?'rgba(96,232,176,.7)':'rgba(245,184,76,.7)'}">tonight's ritual</div>
+        <div class="u-eyebrow-right" style="color:${isTeal?'rgba(96,232,176,.5)':'rgba(245,184,76,.5)'}">🥚 ${c.eggWeek}</div>
+      </div>
+      <!-- egg + clue row -->
+      <div class="u-egg-row">
+        <div class="u-egg-figure">
+          <div class="u-egg-halo"></div>
+          ${EGG_SVG_ACTIVE}
+        </div>
+        <div class="u-clue-col">
+          <div class="u-clue-kicker">🐾 Tonight's clue</div>
+          <div class="u-clue-text" style="color:${isTeal?'rgba(80,230,175,.85)':'rgba(245,184,76,.85)'}">${c.clue}</div>
+          <div class="u-trail">${trailHTML(4,false,!isTeal)}</div>
+        </div>
+      </div>
+      <!-- question + button -->
+      <div class="u-bottom">
+        <div class="u-question">${c.q}<span class="cn ${isTeal?'cn-t':'cn-a'}">${c.qname}</span>${c.q2}</div>
+        <button class="u-btn ${isTeal?'tl':''}" onclick="setState('done',null)">
+          <span class="u-btn-ico">🌙</span>
+          <div class="u-btn-texts">
+            <span class="u-btn-title">Begin tonight's ritual ✦</span>
+            <span class="u-btn-sub">${c.btnSub}</span>
+          </div>
+          <span class="u-btn-arr">→</span>
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderDoneCards(child){
+  const c=CD[child];
+  const glow=child==='emma'?'23':'15';
+  return `
+  <div class="done-ritual-wrap">
+    <div class="done-ritual">
+      <div class="dr-lbl"><div class="dr-dot"></div><div class="dr-lbl-text">ritual complete</div><div class="dr-dot"></div></div>
+      <div class="dr-star">⭐</div>
+      <div class="dr-title">Tonight's star is saved.<br/>Sleep well, <span class="dr-name">${c.name}.</span></div>
+      <div class="dr-quote">${c.doneQuote}</div>
+      <div class="dr-badge">✦ ${glow} nights strong</div>
+    </div>
+  </div>
+  <div class="done-egg-wrap">
+    <div class="done-egg-card" onclick="this.style.transform='scale(.98)';setTimeout(()=>this.style.transform='',200)">
+      <div class="de-hd">
+        <div class="de-title">🥚 ${c.name}'s Hatchling · ${c.eggWeek}</div>
+        <div class="de-new-crack"><div class="de-new-crack-dot"></div>New crack!</div>
+      </div>
+      <div class="de-body">
+        <div class="de-egg-fig">
+          <div class="de-egg-halo"></div>
+          ${EGG_SVG_DONE}
+        </div>
+        <div class="de-right">
+          <div class="de-hint">${c.doneClue}</div>
+          <div class="de-trail">${doneTrailHTML(5)}</div>
+          <div class="de-tap">👆 Tap the egg to celebrate!</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ══ POD SELECTION ══ */
+function selectPod(child){
+  curChild=child;
+  ['emma','theo'].forEach(c=>{
+    const p=document.getElementById('pod-'+c);
+    if(!p)return;
+    p.classList.remove('on','tl');
+  });
+  const ap=document.getElementById('pod-'+child);
+  if(!ap)return;
+  ap.classList.add('on');
+  if(child==='theo')ap.classList.add('tl');
+  // update main area
+  renderMainArea();
+  // update greeting
+  const gem=document.getElementById('g-em');
+  if(gem){gem.textContent=curState==='done'?'Tonight\'s star is saved.':'Bedtime is close.';gem.className=curState==='done'?'teal':'amber';}
+  // update hatchery button
+  const hbn=document.getElementById('hb-name');
+  if(hbn)hbn.textContent=CD[child].hbName;
+}
+
+function renderMainArea(){
+  const ma=document.getElementById('main-area');
+  if(!ma)return;
+  ma.innerHTML = curState==='done' ? renderDoneCards(curChild) : renderActiveCard(curChild);
+}
+
+/* ══ STATE SWITCHING ══ */
+function setState(state, btnEl){
+  curState=state;
+  // nav buttons
+  document.querySelectorAll('.sw').forEach(b=>{b.classList.remove('on');b.style.cssText='';});
+  if(btnEl)btnEl.classList.add('on');
+  else{
+    const dBtn=document.getElementById('sw-d');
+    if(dBtn)dBtn.classList.add('on');
+  }
+
+  if(state==='hatchery'){
+    curView='hatchery';
+    const scr=document.getElementById('screen');
+    const tpl=document.getElementById('tpl-hatchery');
+    scr.innerHTML=tpl.innerHTML;
+    scr.scrollTop=0;
+    makeStars('sf-hatch',42);
+    makeStars('sf-room',18);
+    updateLabel('hatchery');
+    return;
+  }
+
+  // back to dash if coming from hatchery
+  if(curView!=='dash'){
+    curView='dash';
+    loadDash();
+  }
+  renderMainArea();
+  // greeting
+  const gem=document.getElementById('g-em');
+  if(gem){gem.textContent=state==='done'?'Tonight\'s star is saved.':'Bedtime is close.';gem.className=state==='done'?'teal':'amber';}
+  const scr=document.getElementById('screen');
+  if(scr)scr.scrollTop=0;
+  updateLabel(state);
+}
+
+function loadDash(){
+  const scr=document.getElementById('screen');
+  const tpl=document.getElementById('tpl-dash');
+  scr.innerHTML=tpl.innerHTML;
+  makeStars('sf-dash',48);
+  // restore pod
+  const ep=document.getElementById('pod-emma');
+  const tp=document.getElementById('pod-theo');
+  if(curChild==='emma'&&ep){ep.classList.add('on');}
+  if(curChild==='theo'&&tp){tp.classList.add('on');tp.classList.add('tl');}
+  // render main area
+  renderMainArea();
+  const gem=document.getElementById('g-em');
+  if(gem){gem.textContent=curState==='done'?'Tonight\'s star is saved.':'Bedtime is close.';gem.className=curState==='done'?'teal':'amber';}
+  const hbn=document.getElementById('hb-name');
+  if(hbn)hbn.textContent=CD[curChild].hbName;
+}
+
+function backToDash(){
+  curView='dash';
+  loadDash();
+  document.querySelectorAll('.sw').forEach(b=>{b.classList.remove('on');b.style.cssText='';});
+  const btn=document.getElementById(curState==='done'?'sw-d':'sw-a');
+  if(btn)btn.classList.add('on');
+  updateLabel(curState);
+}
+
+/* ══ STARS ══ */
+const SC=['#fff8e0','#e8d8ff','#d0f0e8','#c8e8ff','#fff'];
+function makeStars(id,n){
+  const el=document.getElementById(id);if(!el)return;el.innerHTML='';
+  for(let i=0;i<n;i++){
+    const s=document.createElement('div');s.className='st';
+    const sz=Math.random()<.28?2.2:Math.random()<.6?1.4:.7;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*65}%;background:${SC[i%SC.length]};--d:${(2+Math.random()*3.5).toFixed(1)}s;--dl:-${(Math.random()*4.5).toFixed(1)}s`;
+    el.appendChild(s);
+  }
+}
+
+/* ══ LABEL UPDATES ══ */
+function updateLabel(state){
+  const tag=document.getElementById('lab-tag');
+  const title=document.getElementById('lab-title');
+  const desc=document.getElementById('lab-desc');
+  const m={
+    active:{tag:'Active State',tc:'rgba(245,184,76,.13)',cc:'#F5B84C',bc:'rgba(245,184,76,.23)',title:'Ritual + Egg = one unified card',desc:'The egg clue hooks the child. Tap "Begin tonight\'s ritual" to see the done state. Tap pods to switch children.'},
+    done:{tag:'Done State',tc:'rgba(20,216,144,.13)',cc:'#5DCAA5',bc:'rgba(20,216,144,.23)',title:'Split: ritual done + egg celebrating',desc:'Ritual done card (teal) + egg card (teal) are two separate elements. The egg shows the new crack and updated hint.'},
+    hatchery:{tag:'Hatchery',tc:'rgba(180,140,255,.13)',cc:'#b48cff',bc:'rgba(180,140,255,.23)',title:'The Living Hatchery',desc:'Magical room + progress + collection grid. Tap ← Home to return to the dashboard.'}
+  };
+  const d=m[state]||m.active;
+  if(tag){tag.textContent=d.tag;tag.style.background=d.tc;tag.style.color=d.cc;tag.style.borderColor=d.bc;}
+  if(title)title.textContent=d.title;
+  if(desc)desc.textContent=d.desc;
+}
+
+/* ══ INIT ══ */
+loadDash();
+</script>
+</body>
+</html>
