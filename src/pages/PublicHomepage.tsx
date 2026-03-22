@@ -1,216 +1,376 @@
-import { useEffect, useRef } from 'react';
-import { useApp } from '../AppContext';
+import { useEffect, useRef, useState } from 'react';
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --night:#0D1018;--night2:#131828;
-  --amber:#E8972A;--amber2:#F5B84C;
-  --rose:#C85070;--cream:#FEF9F2;--parch:#F8F1E4;
-  --ink:#1A1420;--ink2:#4A4058;--ink3:#8A7898;
+  --night:#080C18;--night2:#0D1120;--night3:#131828;
+  --amber:#E8972A;--amber2:#F5B84C;--amber3:#CC7818;
+  --teal:#1D9E75;--teal2:#5DCAA5;--rose:#C85070;
+  --cream:#F4EFE8;--parch:#F8F1E4;
+  --ink:#1A1420;--ink2:#3A3048;--ink3:#7A6888;
   --serif:'Playfair Display',Georgia,serif;
   --sans:'Plus Jakarta Sans',system-ui,sans-serif;
   --mono:'DM Mono',monospace;
 }
-.hp{background:var(--night);color:#F4EFE8;font-family:var(--sans);-webkit-font-smoothing:antialiased}
-.fade-up{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
-.fade-up.vis{opacity:1;transform:translateY(0)}
-.fade-up:nth-child(2){transition-delay:.1s}
-.fade-up:nth-child(3){transition-delay:.2s}
-.fade-up:nth-child(4){transition-delay:.3s}
+.hp{background:var(--night);color:var(--cream);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 
-.hp-nav{background:rgba(13,16,24,.97);backdrop-filter:blur(16px);border-bottom:1px solid rgba(232,151,42,.12);padding:0 6%;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100}
-.hp-logo{font-family:var(--serif);font-size:20px;font-weight:700;color:#F4EFE8;display:flex;align-items:center;gap:9px;cursor:pointer;border:none;background:none}
-.hp-logo-moon{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020);flex-shrink:0}
+/* ── ANIMATIONS ── */
+@keyframes twinkle{0%,100%{opacity:.06}50%{opacity:.55}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
+@keyframes moon-glow{0%,100%{box-shadow:0 0 20px rgba(245,184,76,.2),0 0 50px rgba(245,184,76,.06)}50%{box-shadow:0 0 38px rgba(245,184,76,.4),0 0 80px rgba(245,184,76,.15)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes waveL{0%,100%{height:6px}25%{height:18px}50%{height:10px}75%{height:22px}}
+@keyframes waveM{0%,100%{height:10px}30%{height:28px}60%{height:16px}80%{height:32px}}
+@keyframes waveS{0%,100%{height:4px}35%{height:14px}65%{height:8px}}
+
+/* ── FADE UP ── */
+.fu{opacity:0;transform:translateY(30px);transition:opacity .72s cubic-bezier(.22,1,.36,1),transform .72s cubic-bezier(.22,1,.36,1)}
+.fu.vis{opacity:1;transform:none}
+.fu.d1{transition-delay:.1s}.fu.d2{transition-delay:.2s}.fu.d3{transition-delay:.3s}.fu.d4{transition-delay:.4s}
+
+/* ── NAV ── */
+.hp-nav{background:rgba(8,12,24,.97);backdrop-filter:blur(20px);border-bottom:1px solid rgba(232,151,42,.1);padding:0 6%;display:flex;align-items:center;justify-content:space-between;height:68px;position:sticky;top:0;z-index:100}
+.hp-logo{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:10px;cursor:pointer;border:none;background:none}
+.hp-logo-moon{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#F5C060,#C87020);flex-shrink:0}
 .hp-nav-links{display:flex;gap:28px}
 .hp-nl{font-size:13px;color:rgba(244,239,232,.45);cursor:pointer;font-weight:400;transition:color .15s;background:none;border:none;font-family:var(--sans)}
 .hp-nl:hover{color:rgba(244,239,232,.85)}
 .hp-nav-right{display:flex;align-items:center;gap:12px}
-.hp-signin{font-size:13px;color:rgba(244,239,232,.5);cursor:pointer;font-weight:400;background:none;border:none;font-family:var(--sans);transition:color .15s}
+.hp-signin{font-size:13px;color:rgba(244,239,232,.5);cursor:pointer;background:none;border:none;font-family:var(--sans);transition:color .15s}
 .hp-signin:hover{color:rgba(244,239,232,.85)}
-.hp-cta-sm{background:var(--amber);color:var(--ink);padding:9px 22px;border-radius:50px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:var(--sans);transition:all .2s}
+.hp-cta-sm{background:var(--amber);color:var(--ink);padding:10px 24px;border-radius:50px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:var(--sans);transition:all .2s;white-space:nowrap}
 .hp-cta-sm:hover{background:var(--amber2);transform:translateY(-1px)}
 
-.hero{min-height:100vh;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(232,151,42,.08),transparent),var(--night);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 6% 100px;text-align:center;position:relative;overflow:hidden}
-.hero-stars{position:absolute;inset:0;pointer-events:none}
+/* ── STICKY MOBILE CTA ── */
+.hp-sticky-cta{position:fixed;bottom:0;left:0;right:0;z-index:200;padding:12px 16px 20px;background:linear-gradient(to top,rgba(8,12,24,1) 70%,rgba(8,12,24,0));display:none;flex-direction:column;align-items:stretch;transform:translateY(100%);transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.hp-sticky-cta.show{transform:translateY(0)}
+.hp-sticky-btn{background:linear-gradient(135deg,#E8972A,#CC7818);color:var(--ink);padding:15px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:var(--sans);text-align:center}
+.hp-sticky-note{font-size:9.5px;color:rgba(255,255,255,.3);font-family:var(--mono);text-align:center;margin-top:5px}
+@media(max-width:768px){.hp-sticky-cta{display:flex}}
+
+/* ── HERO ── */
+.hero{background:radial-gradient(ellipse 90% 55% at 50% -5%,rgba(232,151,42,.09),transparent),var(--night);display:grid;grid-template-columns:1fr 340px;align-items:center;gap:56px;padding:96px 6% 96px;position:relative;overflow:hidden}
+@media(max-width:960px){.hero{grid-template-columns:1fr;padding:80px 6% 90px}}
+.hero-stars{position:absolute;inset:0;pointer-events:none;z-index:0}
 .hero-star{position:absolute;border-radius:50%;background:#FFF8E8;animation:twinkle var(--d,4s) var(--dl,0s) ease-in-out infinite}
-@keyframes twinkle{0%,100%{opacity:.06}50%{opacity:.5}}
-.hero-glow{position:absolute;bottom:-120px;left:50%;transform:translateX(-50%);width:700px;height:350px;border-radius:50%;background:radial-gradient(ellipse,rgba(232,151,42,.07),transparent 65%);pointer-events:none}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(232,151,42,.1);border:1px solid rgba(232,151,42,.25);border-radius:50px;padding:7px 18px;font-size:11px;font-family:var(--mono);color:var(--amber2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:32px}
-.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:pulse 2s ease-in-out infinite;flex-shrink:0}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
-.hero-h{font-family:var(--serif);font-size:clamp(42px,6.5vw,80px);font-weight:900;line-height:1.06;letter-spacing:-.03em;color:#F4EFE8;margin-bottom:22px;max-width:900px;position:relative;z-index:1}
+.hero-glow-orb{position:absolute;bottom:-180px;left:40%;width:700px;height:380px;border-radius:50%;background:radial-gradient(ellipse,rgba(232,151,42,.07),transparent 65%);pointer-events:none}
+.hero-left{position:relative;z-index:2}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(232,151,42,.1);border:1px solid rgba(232,151,42,.22);border-radius:50px;padding:7px 18px;font-size:10.5px;font-family:var(--mono);color:var(--amber2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:32px}
+.hero-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:pulse 2.5s ease-in-out infinite;flex-shrink:0}
+.hero-h{font-family:var(--serif);font-size:clamp(40px,5.5vw,70px);font-weight:900;line-height:1.07;letter-spacing:-.03em;color:var(--cream);margin-bottom:22px}
 .hero-h em{font-style:italic;color:var(--amber2)}
-.hero-sub{font-size:clamp(15px,1.8vw,18px);color:rgba(244,239,232,.58);font-weight:300;line-height:1.78;max-width:540px;margin:0 auto 48px;position:relative;z-index:1}
-.hero-sub strong{color:rgba(244,239,232,.82);font-weight:500}
-.hero-form{width:100%;max-width:500px;margin:0 auto 24px;position:relative;z-index:1}
-.hero-input-row{display:flex;background:rgba(255,255,255,.06);border:1.5px solid rgba(232,151,42,.3);border-radius:16px;overflow:hidden;transition:border-color .2s}
-.hero-input-row:focus-within{border-color:var(--amber);box-shadow:0 0 0 4px rgba(232,151,42,.08)}
-.hero-input{flex:1;background:none;border:none;padding:17px 22px;font-size:16px;color:#F4EFE8;font-family:var(--sans);outline:none;font-weight:400;min-width:0}
-.hero-input::placeholder{color:rgba(244,239,232,.25)}
-.hero-submit{background:var(--amber);color:var(--ink);border:none;padding:17px 26px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);white-space:nowrap;transition:background .2s;flex-shrink:0}
-.hero-submit:hover{background:var(--amber2)}
-.hero-trust{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;position:relative;z-index:1}
-.hero-trust-item{font-size:12px;color:rgba(244,239,232,.35);display:flex;align-items:center;gap:7px}
-.hero-ck{width:16px;height:16px;border-radius:50%;background:rgba(232,151,42,.12);border:1px solid rgba(232,151,42,.28);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
-.hero-scene{position:absolute;bottom:0;right:4%;width:340px;height:300px;pointer-events:none;opacity:.3}
+.hero-h .dim{color:rgba(244,239,232,.52);font-style:normal;font-weight:700}
+.hero-sub{font-size:clamp(15px,1.7vw,17px);color:rgba(244,239,232,.6);font-weight:300;line-height:1.82;margin-bottom:28px;max-width:520px}
+.hero-sub strong{color:rgba(244,239,232,.88);font-weight:500}
+.hero-age-label{font-size:10.5px;color:rgba(244,239,232,.32);font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.hero-age-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.hero-age-pill{border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:var(--sans);transition:all .15s;border:.5px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03);color:rgba(244,239,232,.38)}
+.hero-age-pill.sel{border-color:rgba(232,151,42,.35);background:rgba(232,151,42,.08);color:rgba(232,151,42,.85)}
+.hero-age-note{font-size:11px;color:rgba(244,239,232,.35);font-style:italic;min-height:14px;margin-bottom:18px;font-weight:300}
+.hero-name-row{display:flex;background:rgba(255,255,255,.06);border:1.5px solid rgba(232,151,42,.28);border-radius:14px;overflow:hidden;margin-bottom:14px;max-width:500px;transition:border-color .2s,box-shadow .2s}
+.hero-name-row:focus-within{border-color:var(--amber);box-shadow:0 0 0 4px rgba(232,151,42,.08)}
+.hero-name-input{flex:1;background:none;border:none;padding:15px 20px;font-size:15px;color:var(--cream);font-family:var(--sans);outline:none;min-width:0}
+.hero-name-input::placeholder{color:rgba(244,239,232,.2);font-style:italic}
+.hero-cta-primary{background:linear-gradient(135deg,#E8972A,#CC7818);color:var(--ink);padding:15px 26px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:var(--sans);white-space:nowrap;flex-shrink:0;transition:filter .2s}
+.hero-cta-primary:hover{filter:brightness(1.1)}
+.hero-cta-ghost{background:rgba(255,255,255,.05);color:rgba(244,239,232,.65);padding:13px 24px;border-radius:13px;font-size:14px;font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,.1);font-family:var(--sans);transition:all .2s;margin-bottom:22px}
+.hero-cta-ghost:hover{background:rgba(255,255,255,.09)}
+.hero-trust{display:flex;gap:20px;flex-wrap:wrap}
+.hero-trust-item{font-size:11.5px;color:rgba(244,239,232,.35);display:flex;align-items:center;gap:5px;font-family:var(--mono)}
+.hero-trust-item::before{content:'✓';color:var(--teal2);font-weight:700}
 
-.window-sec{background:var(--night2);padding:90px 6%;border-top:1px solid rgba(232,151,42,.06);border-bottom:1px solid rgba(232,151,42,.06)}
-.window-inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
-.window-kicker{font-size:10px;font-family:var(--mono);letter-spacing:2.5px;text-transform:uppercase;color:rgba(232,151,42,.5);margin-bottom:22px;display:flex;align-items:center;gap:10px}
-.window-kicker::after{content:'';flex:1;height:1px;background:rgba(232,151,42,.12)}
-.w-row{display:flex;gap:16px;align-items:baseline;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-.w-row:last-child{border-bottom:none}
-.w-time{font-family:var(--mono);font-size:11px;color:rgba(244,239,232,.28);width:54px;flex-shrink:0}
-.w-text{font-size:14px;color:rgba(244,239,232,.32);font-weight:300;line-height:1.5}
-.w-row.now .w-time{color:var(--amber);font-weight:500;font-size:12px}
-.w-row.now .w-text{color:rgba(244,239,232,.92);font-weight:500;font-size:17px;line-height:1.45}
-.window-quote{font-family:var(--serif);font-size:clamp(17px,2.5vw,23px);font-style:italic;color:rgba(244,239,232,.7);line-height:1.75;margin-bottom:22px}
-.window-quote strong{font-style:normal;color:rgba(244,239,232,.92);font-weight:700}
-.window-statement{font-size:14px;color:rgba(244,239,232,.48);line-height:1.78;font-weight:300}
-.window-statement strong{color:rgba(232,151,42,.88);font-weight:600}
+/* phone mock */
+.hero-right{position:relative;z-index:2;display:flex;justify-content:center}
+@media(max-width:960px){.hero-right{display:none}}
+.phone-mock{width:250px;background:#080C18;border-radius:36px;border:4px solid #0A0A1E;box-shadow:0 0 0 1.5px #1E1E3A,0 28px 72px rgba(0,0,0,.72),0 0 60px rgba(232,151,42,.06);animation:float 5s ease-in-out infinite}
+.phone-notch{width:64px;height:13px;background:#0A0A1E;border-radius:0 0 8px 8px;margin:0 auto}
+.phone-screen{background:linear-gradient(180deg,#030810 0%,#080C18 60%);padding:10px 9px 16px;min-height:440px;border-radius:0 0 30px 30px;position:relative;overflow:hidden}
+.pnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;position:relative;z-index:2}
+.pnav-logo{font-family:var(--serif);font-size:9px;font-weight:700;color:var(--cream)}
+.pnav-badge{background:rgba(20,26,50,.9);border:.5px solid rgba(255,255,255,.07);border-radius:20px;padding:2px 7px;font-size:6.5px;color:var(--amber);font-family:monospace}
+.p-ritual{background:rgba(10,15,34,.98);border:1.5px solid var(--amber);border-radius:10px;padding:9px 10px;margin-bottom:7px;position:relative;z-index:2}
+.p-ritual-lbl{font-size:6px;letter-spacing:.08em;color:var(--amber);font-weight:700;text-transform:uppercase;font-family:monospace;margin-bottom:3px}
+.p-ritual-q{font-family:var(--serif);font-size:9.5px;color:var(--cream);line-height:1.35;margin-bottom:6px}
+.p-ritual-q em{color:var(--amber2);font-style:italic}
+.p-ritual-btn{width:100%;background:linear-gradient(135deg,#E8972A,#CC7818);border:none;border-radius:6px;padding:6px;font-size:8.5px;font-weight:700;color:#120800;font-family:var(--sans)}
+.p-cards{display:flex;gap:4px;margin-bottom:7px;position:relative;z-index:2}
+.p-card{flex:1;border-radius:7px;padding:6px 5px;display:flex;flex-direction:column;align-items:flex-start;min-height:50px}
+.p-card.create{background:linear-gradient(145deg,rgba(232,151,42,.14),rgba(200,110,18,.07));border:1px solid rgba(232,151,42,.22)}
+.p-card.lib{background:linear-gradient(145deg,rgba(90,120,220,.12),rgba(60,80,180,.06));border:1px solid rgba(100,130,255,.17)}
+.p-card.nc{background:linear-gradient(145deg,rgba(150,90,240,.12),rgba(110,60,200,.06));border:1px solid rgba(160,110,255,.17)}
+.p-card-icon{font-size:11px;line-height:1;margin-bottom:3px}
+.p-card-title{font-size:7px;font-weight:600;color:var(--cream);line-height:1.2}
+.p-card-stat{font-size:6px;color:rgba(244,239,232,.3);font-family:monospace}
+.p-glow{background:rgba(255,255,255,.016);border:1px solid rgba(255,255,255,.045);border-radius:8px;padding:7px 9px;position:relative;z-index:2}
+.p-glow-name{font-size:6.5px;color:rgba(90,72,32,.85);font-style:italic;font-family:var(--serif);margin-bottom:3px}
+.p-stars{display:flex;gap:2px;align-items:center}
+.p-star{font-size:7px;color:#B07808}
+.p-star.dim{color:#0E1220}
 
-.how-sec{background:var(--cream);padding:110px 6%}
-.how-inner{max-width:1060px;margin:0 auto}
-.sec-label{font-size:10px;font-family:var(--mono);letter-spacing:2.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:14px;display:flex;align-items:center;gap:10px}
-.sec-label::before{content:'';width:24px;height:1px;background:var(--ink3);flex-shrink:0}
-.sec-h{font-family:var(--serif);font-size:clamp(32px,4.5vw,54px);font-weight:700;color:var(--ink);line-height:1.1;letter-spacing:-.03em;margin-bottom:12px}
-.sec-sub{font-size:16px;color:var(--ink2);font-weight:300;line-height:1.68;max-width:520px;margin-bottom:68px}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-.step{background:#fff;border-radius:22px;overflow:hidden;border:1px solid rgba(26,20,32,.07);transition:transform .25s,box-shadow .25s}
-.step:hover{transform:translateY(-5px);box-shadow:0 20px 50px rgba(26,20,32,.1)}
-.step-num{width:34px;height:34px;border-radius:50%;background:var(--amber);color:var(--ink);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--mono);flex-shrink:0}
-.step-body{padding:30px}
-.step-header{display:flex;align-items:center;gap:13px;margin-bottom:14px}
-.step-title{font-family:var(--serif);font-size:19px;font-weight:700;color:var(--ink)}
-.step-desc{font-size:13.5px;color:var(--ink2);line-height:1.72;font-weight:300;margin-bottom:18px}
-.step-tags{display:flex;flex-wrap:wrap;gap:7px}
-.step-tag{font-size:10px;font-weight:500;padding:4px 12px;border-radius:50px;background:#F0EAD8;color:var(--ink2);font-family:var(--mono)}
-.story-card{background:linear-gradient(160deg,#FDF8EE,#F7EDDA);border-radius:14px;padding:22px;border:1px solid rgba(180,140,60,.12);margin:0 28px 28px}
-.sc-genre{display:inline-flex;align-items:center;gap:5px;background:rgba(52,180,130,.1);border:1px solid rgba(52,180,130,.25);border-radius:50px;padding:3px 11px;font-size:9px;font-family:var(--mono);color:#1A7A56;margin-bottom:12px;font-weight:600;letter-spacing:.3px}
-.sc-title{font-family:var(--serif);font-size:15px;font-weight:700;color:#2E1E08;margin-bottom:10px}
-.sc-text{font-family:var(--serif);font-size:12px;color:#6B4A18;line-height:1.85;font-style:italic}
-.sc-name{color:#B87010;font-style:normal;font-weight:700}
-.nc-preview{background:linear-gradient(160deg,#F5F0E8,#EDE5D8);border-radius:4px;padding:12px 12px 28px;margin:0 28px 28px;box-shadow:0 6px 24px rgba(0,0,0,.1)}
-.nc-photo-box{width:100%;aspect-ratio:1;background:linear-gradient(145deg,#1A1C2A,#221830);border-radius:3px;margin-bottom:12px;display:flex;align-items:flex-end;justify-content:center;position:relative;overflow:hidden;padding-bottom:14px}
-.nc-warm{position:absolute;bottom:0;left:0;right:0;height:55%;background:radial-gradient(ellipse at 50% 120%,rgba(200,120,40,.2),transparent 65%)}
-.nc-ts{position:absolute;top:7px;left:8px;font-size:7px;font-family:var(--mono);color:rgba(255,255,255,.42);background:rgba(0,0,0,.4);padding:2px 6px;border-radius:3px}
-.nc-sil{display:flex;align-items:flex-end;gap:9px;position:relative;z-index:1}
-.nc-sil-p{width:28px;height:60px;background:rgba(0,0,0,.55);border-radius:14px 14px 3px 3px;position:relative}
-.nc-sil-p::before{content:'';position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:19px;height:19px;border-radius:50%;background:rgba(0,0,0,.55)}
-.nc-sil-c{width:19px;height:42px;background:rgba(0,0,0,.48);border-radius:9px 9px 3px 3px;position:relative}
-.nc-sil-c::before{content:'';position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;background:rgba(0,0,0,.48)}
-.nc-name-line{font-family:Georgia,serif;font-size:11px;color:#3A2600;text-align:center;font-style:italic;line-height:1.45}
-.nc-resp{border-radius:5px;padding:6px 9px;margin-top:7px}
-.nc-resp-q{font-size:7.5px;font-family:var(--mono);opacity:.5;margin-bottom:3px;text-transform:uppercase;letter-spacing:.3px;font-weight:600}
-.nc-resp-a{font-family:Georgia,serif;font-size:10px;line-height:1.4;font-style:italic}
+/* ── PROBLEM ── */
+.problem-sec{padding:120px 6%;background:var(--night)}
+.problem-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+@media(max-width:900px){.problem-inner{grid-template-columns:1fr;gap:48px}}
+.sec-kicker{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-family:var(--mono);color:rgba(232,151,42,.65);font-weight:700;margin-bottom:18px;display:block}
+.p-timeline{display:flex;flex-direction:column}
+.p-row{display:flex;align-items:baseline;gap:18px;padding:14px 0;border-bottom:.5px solid rgba(255,255,255,.05)}
+.p-row:last-child{border-bottom:none}
+.p-time{font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.22);width:40px;flex-shrink:0}
+.p-text{font-size:15px;color:rgba(244,239,232,.42);line-height:1.6;font-weight:300}
+.p-row.now .p-time{color:var(--amber2)}
+.p-row.now .p-text{color:var(--cream);font-weight:500}
+.p-row.now{border-bottom:none;padding-top:22px;margin-top:6px}
+.p-now-label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);color:rgba(232,151,42,.5);margin-left:58px;margin-bottom:-8px;display:block}
+.problem-copy h2{font-family:var(--serif);font-size:clamp(28px,3.5vw,46px);font-weight:700;color:var(--cream);line-height:1.18;letter-spacing:-.02em;margin-bottom:22px}
+.problem-copy h2 em{font-style:italic;color:var(--amber2)}
+.problem-copy p{font-size:16px;color:rgba(244,239,232,.55);line-height:1.88;font-weight:300;margin-bottom:18px}
+.problem-copy p strong{color:rgba(244,239,232,.82);font-weight:500}
+.problem-link{display:inline-flex;align-items:center;gap:8px;background:rgba(232,151,42,.08);border:1px solid rgba(232,151,42,.2);border-radius:50px;padding:10px 22px;font-size:12.5px;color:var(--amber2);cursor:pointer;font-family:var(--sans);font-weight:500;transition:all .2s;margin-top:4px}
+.problem-link:hover{background:rgba(232,151,42,.16)}
 
-.nc-sec{background:var(--night2);padding:110px 6%}
-.nc-inner{max-width:1060px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
-.nc-left .sec-label{color:rgba(232,151,42,.55)}
-.nc-left .sec-label::before{background:rgba(232,151,42,.3)}
-.nc-left .sec-h{color:#F4EFE8}
-.nc-left .sec-sub{color:rgba(244,239,232,.48);margin-bottom:36px}
-.nc-features{display:flex;flex-direction:column;gap:18px}
-.nc-feat{display:flex;gap:15px;align-items:flex-start}
-.nc-feat-num{width:28px;height:28px;border-radius:50%;border:1px solid rgba(232,151,42,.35);color:rgba(232,151,42,.8);font-size:11px;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(232,151,42,.05)}
-.nc-feat-h{font-size:14px;font-weight:600;color:#F4EFE8;margin-bottom:4px}
-.nc-feat-d{font-size:12.5px;color:rgba(244,239,232,.42);line-height:1.62;font-weight:300}
-.nc-right{display:flex;justify-content:center;align-items:center}
-.nc-pol-large{background:#F4EFE2;border-radius:4px;padding:15px 15px 38px;width:280px;box-shadow:0 36px 90px rgba(0,0,0,.75),0 8px 28px rgba(0,0,0,.5);transform:rotate(-1.8deg)}
-.nc-pol-photo{width:100%;aspect-ratio:1;border-radius:3px;overflow:hidden;background:linear-gradient(160deg,#161828,#201830);position:relative;display:flex;align-items:flex-end;justify-content:center;padding-bottom:20px}
-.nc-pol-photo::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 110%,rgba(200,120,40,.18),transparent 65%)}
-.nc-pol-ts{position:absolute;top:8px;left:9px;font-size:7px;font-family:var(--mono);color:rgba(255,255,255,.38);background:rgba(0,0,0,.42);padding:2px 6px;border-radius:3px;z-index:2}
-.nc-pol-sil{display:flex;align-items:flex-end;gap:9px;position:relative;z-index:1}
-.nc-pol-sil-p{width:30px;height:66px;background:rgba(0,0,0,.55);border-radius:15px 15px 3px 3px;position:relative}
-.nc-pol-sil-p::before{content:'';position:absolute;top:-13px;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.55)}
-.nc-pol-sil-c{width:20px;height:46px;background:rgba(0,0,0,.48);border-radius:10px 10px 3px 3px;position:relative}
-.nc-pol-sil-c::before{content:'';position:absolute;top:-11px;left:50%;transform:translateX(-50%);width:15px;height:15px;border-radius:50%;background:rgba(0,0,0,.48)}
-.nc-pol-content{padding:11px 5px 0}
-.nc-portrait{font-family:Georgia,serif;font-size:10.5px;font-style:italic;color:#3A2000;line-height:1.68;border-bottom:1px solid rgba(58,32,0,.1);padding-bottom:9px;margin-bottom:9px}
-.nc-chips{display:flex;flex-direction:column;gap:5px}
-.nc-chip{border-radius:4px;padding:6px 8px}
-.nc-chipq{font-size:7.5px;font-family:var(--mono);letter-spacing:.3px;opacity:.52;margin-bottom:3px;font-weight:600;text-transform:uppercase}
-.nc-chipa{font-family:Georgia,serif;font-size:10px;font-style:italic;line-height:1.45}
-.nc-stamp{font-size:8px;color:rgba(58,32,0,.2);font-family:var(--mono);text-align:right;margin-top:7px;padding-top:5px;border-top:1px solid rgba(58,32,0,.07)}
+/* ── DIFF STATEMENT ── */
+.diff-sec{padding:64px 6%;background:var(--night)}
+.diff-inner{max-width:820px;margin:0 auto;text-align:center}
+.diff-divider{width:56px;height:1.5px;background:linear-gradient(90deg,transparent,rgba(232,151,42,.4),transparent);margin:20px auto}
+.diff-line{font-family:var(--serif);font-size:clamp(19px,2.8vw,30px);color:rgba(244,239,232,.7);line-height:1.65;font-weight:400;font-style:italic}
+.diff-line em{color:var(--amber2)}
+.diff-line strong{color:var(--cream);font-style:normal;font-weight:700}
 
-.proof-sec{background:var(--parch);padding:110px 6%}
-.proof-inner{max-width:1060px;margin:0 auto}
-.proof-sec .sec-h{color:var(--ink)}
-.proof-sec .sec-sub{color:var(--ink2)}
-.testimonials{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
-.tcard{background:#fff;border-radius:20px;padding:30px;border:1px solid rgba(26,20,32,.06);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
-.tcard:hover{transform:translateY(-3px);box-shadow:0 12px 36px rgba(26,20,32,.08)}
-.tcard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0}
-.tcard.amber::before{background:linear-gradient(90deg,#E8972A,rgba(232,151,42,.05))}
-.tcard.rose::before{background:linear-gradient(90deg,#C85070,rgba(200,80,112,.05))}
-.tcard.teal::before{background:linear-gradient(90deg,#2AB89A,rgba(42,184,154,.05))}
-.tcard-quote{font-family:var(--serif);font-size:14px;font-style:italic;color:var(--ink2);line-height:1.8;margin-bottom:20px}
-.tcard-moment{background:#FAF4E8;border-radius:9px;padding:11px 13px;margin-bottom:20px;font-size:11.5px;font-family:var(--mono);color:var(--ink2);line-height:1.6}
-.tcard-moment-label{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:5px;font-weight:600}
-.tcard-meta{display:flex;align-items:center;gap:11px}
-.tcard-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#D4A060,#B07020);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:700;font-family:var(--mono);flex-shrink:0}
-.tcard-name{font-size:13px;font-weight:600;color:var(--ink)}
-.tcard-role{font-size:11px;color:var(--ink3);margin-top:2px}
+/* ── RITUAL ── */
+.ritual-sec{padding:120px 6%;background:linear-gradient(180deg,var(--night) 0%,var(--night2) 50%,var(--night) 100%)}
+.ritual-inner{max-width:1100px;margin:0 auto}
+.sec-header{text-align:center;margin-bottom:72px}
+.sec-header h2{font-family:var(--serif);font-size:clamp(32px,4.5vw,58px);font-weight:700;color:var(--cream);line-height:1.1;letter-spacing:-.03em;margin-bottom:16px}
+.sec-header h2 em{font-style:italic;color:var(--amber2)}
+.sec-header p{font-size:17px;color:rgba(244,239,232,.5);font-weight:300;line-height:1.75;max-width:500px;margin:0 auto}
+.ritual-loop{display:grid;grid-template-columns:1fr 1fr 1.5fr 1.5fr;gap:2px;margin-bottom:52px}
+@media(max-width:900px){.ritual-loop{grid-template-columns:1fr 1fr;gap:8px}}
+@media(max-width:500px){.ritual-loop{grid-template-columns:1fr}}
+.ls{background:rgba(255,255,255,.024);border:1px solid rgba(255,255,255,.06);padding:30px 24px;position:relative;transition:background .2s}
+.ls:hover{background:rgba(255,255,255,.04)}
+.ls:first-child{border-radius:16px 0 0 16px}
+.ls:last-child{border-radius:0 16px 16px 0}
+@media(max-width:900px){.ls{border-radius:12px !important}}
+.ls::after{content:'→';position:absolute;right:-13px;top:50%;transform:translateY(-50%);font-size:14px;color:rgba(255,255,255,.13);z-index:1}
+.ls:last-child::after{content:none}
+@media(max-width:900px){.ls::after{display:none}}
+.ls.prep{opacity:.85}
+.ls.peak{background:rgba(232,151,42,.04);border-color:rgba(232,151,42,.14)}
+.ls-num{font-family:var(--mono);font-size:9px;color:rgba(232,151,42,.38);letter-spacing:.1em;margin-bottom:12px}
+.ls-icon{font-size:24px;margin-bottom:12px;display:block;line-height:1;transition:transform .2s}
+.ls:hover .ls-icon{transform:scale(1.1)}
+.ls.peak .ls-icon{font-size:28px}
+.ls-peak-note{font-size:8.5px;color:rgba(232,151,42,.5);font-family:var(--mono);letter-spacing:.07em;text-transform:uppercase;display:block;margin-bottom:6px}
+.ls-title{font-family:var(--serif);font-weight:700;color:var(--cream);margin-bottom:7px;line-height:1.3;font-size:15px}
+.ls.peak .ls-title{font-size:17px;color:var(--amber2)}
+.ls-desc{font-size:13px;color:rgba(244,239,232,.42);line-height:1.75;font-weight:300}
+.ritual-arc{background:rgba(232,151,42,.04);border:1px solid rgba(232,151,42,.12);border-radius:18px;padding:32px 40px;display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap}
+.arc-left h3{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--cream);margin-bottom:8px}
+.arc-left p{font-size:14.5px;color:rgba(244,239,232,.5);line-height:1.75;max-width:480px;font-weight:300}
+.arc-stats{display:flex;gap:48px;flex-wrap:wrap;justify-content:center}
+.arc-num{font-family:var(--serif);font-size:52px;font-weight:900;color:var(--amber2);line-height:1;display:block}
+.arc-lbl{font-size:10.5px;color:rgba(244,239,232,.38);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-top:5px;display:block}
 
-.price-sec{background:var(--night);padding:110px 6%}
-.price-inner{max-width:840px;margin:0 auto;text-align:center}
-.price-sec .sec-label{justify-content:center}
-.price-sec .sec-label::before{display:none}
-.price-sec .sec-h{color:#F4EFE8}
-.price-sec .sec-sub{margin:0 auto 60px;color:rgba(244,239,232,.48)}
-.price-cards{display:grid;grid-template-columns:1fr 1fr;gap:22px;text-align:left;max-width:620px;margin:0 auto}
-.pcard{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:30px}
-.pcard.featured{background:rgba(232,151,42,.07);border-color:rgba(232,151,42,.3);position:relative;overflow:hidden}
-.pcard.featured::after{content:'Most popular';position:absolute;top:16px;right:16px;background:var(--amber);color:var(--ink);font-size:9px;font-weight:700;padding:3px 11px;border-radius:50px;font-family:var(--mono);letter-spacing:.5px}
-.pcard-tier{font-size:10px;font-family:var(--mono);letter-spacing:1.5px;text-transform:uppercase;color:rgba(244,239,232,.3);margin-bottom:16px}
-.pcard.featured .pcard-tier{color:rgba(232,151,42,.65)}
-.pcard-price{font-family:var(--serif);font-size:46px;font-weight:700;color:#F4EFE8;line-height:1;margin-bottom:6px;display:flex;align-items:flex-start;gap:2px}
-.pcard-price sup{font-size:21px;font-weight:400;font-family:var(--sans);margin-top:10px}
-.pcard-price sub{font-size:14px;font-weight:300;font-family:var(--sans);color:rgba(244,239,232,.45);align-self:flex-end;margin-bottom:6px}
-.pcard-note{font-size:11px;color:rgba(244,239,232,.3);margin-bottom:24px;font-family:var(--mono)}
-.pcard-btn{width:100%;padding:13px;border-radius:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);border:none;transition:all .2s}
-.pcard-btn.outline{background:transparent;border:1.5px solid rgba(255,255,255,.14);color:rgba(244,239,232,.6)}
-.pcard-btn.outline:hover{border-color:rgba(255,255,255,.28);color:#F4EFE8}
-.pcard-btn.solid{background:var(--amber);color:var(--ink)}
-.pcard-btn.solid:hover{background:var(--amber2);transform:translateY(-1px)}
-.pcard-features{margin-top:22px;display:flex;flex-direction:column;gap:10px}
-.pcard-feat{font-size:12.5px;color:rgba(244,239,232,.52);display:flex;align-items:center;gap:9px;font-weight:300}
-.pcard-feat::before{content:'';width:16px;height:16px;border-radius:50%;background:rgba(232,151,42,.1);border:1px solid rgba(232,151,42,.22);flex-shrink:0;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 8l3 3 6-6' stroke='rgba(232,151,42,.75)' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-size:contain}
+/* ── ARCHIVE ── */
+.archive-sec{padding:120px 6%;background:var(--night2)}
+.archive-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+@media(max-width:900px){.archive-inner{grid-template-columns:1fr;gap:56px}}
+.archive-copy h2{font-family:var(--serif);font-size:clamp(30px,3.8vw,50px);font-weight:700;color:var(--cream);line-height:1.15;letter-spacing:-.02em;margin-bottom:22px}
+.archive-copy h2 em{font-style:italic;color:var(--amber2)}
+.archive-copy p{font-size:16px;color:rgba(244,239,232,.55);line-height:1.85;font-weight:300;margin-bottom:16px}
+.archive-copy p strong{color:rgba(244,239,232,.82);font-weight:500}
+.milestones{display:flex;flex-direction:column;gap:10px;margin-top:28px}
+.milestone{display:flex;align-items:center;gap:16px;padding:12px 16px;background:rgba(255,255,255,.024);border-radius:12px;border:.5px solid rgba(255,255,255,.07)}
+.milestone-num{font-family:var(--serif);font-size:24px;font-weight:700;color:var(--amber2);min-width:46px}
+.milestone-text{font-size:13px;color:rgba(244,239,232,.52);line-height:1.55;font-weight:300}
+.milestone-text strong{color:rgba(244,239,232,.82);font-weight:500}
+/* live night card */
+.nc-live-wrap{position:relative}
+.nc-live-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);color:rgba(232,151,42,.5);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.nc-live-dot{width:5px;height:5px;border-radius:50%;background:var(--amber);animation:pulse 2s ease-in-out infinite}
+.nc-card{background:#F4EFE2;border-radius:4px;box-shadow:0 18px 56px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.05);overflow:hidden;max-width:330px;transform:rotate(-1.5deg);transition:transform .3s}
+.nc-card:hover{transform:rotate(0deg) scale(1.02)}
+.nc-img{height:200px;position:relative;overflow:hidden;background:linear-gradient(135deg,#080A14,#0E0A20);display:flex;align-items:center;justify-content:center}
+.nc-img img{width:100%;height:100%;object-fit:cover;object-position:center 18%;display:block}
+.nc-img-overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.48) 0%,transparent 55%);pointer-events:none}
+.nc-img-moon{width:50px;height:50px;border-radius:50%;background:#F5B84C;position:relative;overflow:hidden;animation:moon-glow 3.5s ease-in-out infinite}
+.nc-img-moon-sh{position:absolute;width:48px;height:48px;border-radius:50%;background:#06080E;top:-7px;left:-11px}
+.nc-img-title{position:absolute;bottom:9px;left:0;right:0;text-align:center;font-family:Georgia,serif;font-size:10px;font-style:italic;color:rgba(255,215,130,.75);z-index:1}
+.nc-body{padding:13px 14px 20px}
+.nc-origin-badge{font-size:7px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(232,151,42,.7);margin-bottom:6px;font-family:monospace;display:block}
+.nc-quote{font-family:Georgia,serif;font-size:14px;font-style:italic;color:#2A1600;line-height:1.55;margin-bottom:10px;font-weight:700}
+.nc-chips{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.nc-chip{border-radius:6px;padding:7px 10px;background:rgba(180,120,20,.06);border:1px solid rgba(180,120,20,.12)}
+.nc-chip-q{font-size:7.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#7A5010;margin-bottom:2px;font-family:monospace}
+.nc-chip-a{font-size:11.5px;color:#3A2000;line-height:1.45;font-style:italic;font-family:Georgia,serif}
+.nc-meta{display:flex;align-items:center;justify-content:space-between;font-family:monospace;font-size:7px;color:rgba(74,48,0,.4);border-top:1px solid rgba(0,0,0,.06);padding-top:8px}
 
-.cta-sec{background:radial-gradient(ellipse 60% 50% at 50% 100%,rgba(232,151,42,.07),transparent),var(--night2);padding:130px 6%;text-align:center;border-top:1px solid rgba(232,151,42,.06)}
-.cta-moon{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020);margin:0 auto 32px;box-shadow:0 0 50px 10px rgba(232,151,42,.12)}
-.cta-h{font-family:var(--serif);font-size:clamp(38px,6vw,68px);font-weight:700;color:#F4EFE8;line-height:1.08;letter-spacing:-.03em;margin-bottom:18px}
-.cta-h em{font-style:italic;color:var(--amber2)}
-.cta-sub{font-size:18px;color:rgba(244,239,232,.48);font-weight:300;line-height:1.78;max-width:500px;margin:0 auto 48px}
-.cta-btn-large{background:var(--amber);color:var(--ink);padding:20px 60px;border-radius:50px;font-size:17px;font-weight:700;cursor:pointer;border:none;font-family:var(--sans);transition:all .25s}
-.cta-btn-large:hover{background:var(--amber2);transform:translateY(-3px);box-shadow:0 20px 50px rgba(232,151,42,.28)}
-.cta-note{font-size:12px;color:rgba(244,239,232,.28);margin-top:18px;font-family:var(--mono)}
-.cta-note strong{color:rgba(244,239,232,.48);font-weight:500}
-.cta-trust2{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;margin-top:32px}
-.cta-trust2 span{font-size:12px;color:rgba(244,239,232,.28);display:flex;align-items:center;gap:6px;font-family:var(--mono)}
+/* ── STORY ── */
+.story-sec{padding:120px 6%;background:var(--night)}
+.story-inner{max-width:900px;margin:0 auto;text-align:center}
+.story-sec-h{font-family:var(--serif);font-size:clamp(28px,3.8vw,48px);font-weight:700;color:var(--cream);letter-spacing:-.02em;line-height:1.15;margin-bottom:12px}
+.story-sec-h em{font-style:italic;color:var(--amber2)}
+.story-sec-sub{font-size:16px;color:rgba(244,239,232,.5);font-weight:300;line-height:1.75;max-width:480px;margin:0 auto 52px}
+.book{background:linear-gradient(145deg,#F9F1E2,#F0E8D4);border-radius:20px;padding:48px 52px;text-align:left;box-shadow:0 28px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.8);position:relative;overflow:hidden}
+.book::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#C87020,#E8972A,#C87020)}
+@media(max-width:700px){.book{padding:32px 28px}}
+.book-kicker{font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-family:var(--mono);color:#8A6830;margin-bottom:18px}
+.book-title{font-family:var(--serif);font-size:clamp(20px,2.8vw,30px);font-weight:700;color:#2A1A00;margin-bottom:6px;line-height:1.2}
+.book-hero-name{color:#C87020;font-style:italic}
+.book-tags{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap}
+.book-tag{font-size:10px;padding:3px 10px;border-radius:20px;font-family:var(--mono);background:rgba(200,112,32,.1);color:#8A5010;border:1px solid rgba(200,112,32,.2)}
+.book-p{font-family:var(--serif);font-size:clamp(16px,1.8vw,18.5px);color:#3A2800;line-height:1.9;margin-bottom:20px}
+.book-p .cn{color:#C87020;font-weight:700}
+.book-p em{font-style:italic;color:#5A3800}
+.book-refrain{background:rgba(200,112,32,.08);border-left:3px solid rgba(200,112,32,.38);border-radius:0 8px 8px 0;padding:13px 20px;font-family:var(--serif);font-size:15.5px;color:#5A3800;font-style:italic;line-height:1.68;margin-top:22px;margin-bottom:24px}
+.audio-player{display:flex;align-items:center;gap:16px;background:rgba(200,112,32,.07);border:1px solid rgba(200,112,32,.18);border-radius:14px;padding:14px 18px}
+.audio-play-btn{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#E8972A,#CC7818);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:16px;color:#120800;transition:filter .2s,transform .15s}
+.audio-play-btn:hover{filter:brightness(1.1);transform:scale(1.06)}
+.audio-info{flex:1;min-width:0}
+.audio-label{font-size:9.5px;color:#8A6830;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.audio-title-line{font-family:var(--serif);font-size:13px;color:#3A2800;font-style:italic}
+.audio-note{font-size:10px;color:#7A5830;font-family:var(--mono);margin-top:2px}
+.audio-waves{display:flex;align-items:center;gap:3px;height:36px;flex-shrink:0}
+.wave-bar{width:3px;background:rgba(200,112,32,.3);border-radius:2px;height:6px}
+.wave-bar.playing{animation-duration:.8s;animation-iteration-count:infinite;animation-timing-function:ease-in-out}
+.wave-bar:nth-child(1){animation-name:waveS;animation-delay:0s}
+.wave-bar:nth-child(2){animation-name:waveM;animation-delay:.1s}
+.wave-bar:nth-child(3){animation-name:waveL;animation-delay:.2s}
+.wave-bar:nth-child(4){animation-name:waveM;animation-delay:.05s}
+.wave-bar:nth-child(5){animation-name:waveS;animation-delay:.15s}
+.wave-bar:nth-child(6){animation-name:waveL;animation-delay:.25s}
+.wave-bar:nth-child(7){animation-name:waveM;animation-delay:.1s}
+.book-footer{display:flex;align-items:center;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:1px solid rgba(200,112,32,.14);font-size:11px;font-family:var(--mono);color:rgba(90,56,0,.38)}
 
-.hp-footer{background:var(--night);border-top:1px solid rgba(255,255,255,.05);padding:36px 6%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
-.hp-footer-logo{font-family:var(--serif);font-size:16px;font-weight:700;color:rgba(244,239,232,.45);display:flex;align-items:center;gap:8px}
-.hp-footer-links{display:flex;gap:22px}
-.hp-footer-link{font-size:12px;color:rgba(244,239,232,.22);text-decoration:none;transition:color .15s;background:none;border:none;cursor:pointer;font-family:var(--sans)}
-.hp-footer-link:hover{color:rgba(244,239,232,.5)}
+/* ── PEAK QUOTE ── */
+.peak-sec{padding:80px 6%;background:var(--night)}
+.peak-inner{max-width:740px;margin:0 auto;text-align:center}
+.peak-who{font-size:11px;color:rgba(244,239,232,.24);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
+.peak-quote{font-family:var(--serif);font-size:clamp(18px,2.8vw,32px);font-style:italic;color:rgba(244,239,232,.72);line-height:1.62;margin-bottom:22px}
+.peak-quote em{color:var(--cream);font-style:italic;font-weight:700}
+.peak-nc{display:inline-flex;align-items:center;gap:8px;background:rgba(29,158,117,.07);border:1px solid rgba(29,158,117,.18);border-radius:12px;padding:10px 18px;font-size:12.5px;font-style:italic;font-family:var(--serif);color:rgba(93,202,165,.82)}
+.peak-nc-lbl{font-size:7.5px;font-family:var(--mono);color:rgba(93,202,165,.5);text-transform:uppercase;letter-spacing:.07em;margin-right:2px;font-style:normal}
+
+/* ── PROOF ── */
+.proof-sec{padding:120px 6%;background:linear-gradient(180deg,var(--night) 0%,var(--night2) 100%)}
+.proof-inner{max-width:1100px;margin:0 auto}
+.proof-sec .sec-header h2{color:var(--cream)}
+.proof-sec .sec-header p{color:rgba(244,239,232,.48)}
+.testimonials{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:900px){.testimonials{grid-template-columns:1fr}}
+.tcard{background:#FFFDF7;border-radius:18px;padding:28px;border:1px solid rgba(26,20,32,.06);position:relative;overflow:hidden;transition:transform .22s,box-shadow .22s}
+.tcard:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(26,20,32,.1)}
+.tcard::before{content:'';position:absolute;top:0;left:0;right:0;height:3.5px;border-radius:3px 3px 0 0}
+.tcard.amber::before{background:linear-gradient(90deg,#E8972A,rgba(232,151,42,.08))}
+.tcard.teal::before{background:linear-gradient(90deg,#1D9E75,rgba(29,158,117,.08))}
+.tcard.rose::before{background:linear-gradient(90deg,#C85070,rgba(200,80,112,.08))}
+.tcard-streak{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 10px;font-size:10px;font-family:var(--mono);margin-bottom:14px;border:1px solid transparent}
+.tcard-streak::before{content:'✦';font-size:9px}
+.tcard-streak.amber{background:rgba(232,151,42,.08);border-color:rgba(232,151,42,.16);color:#B07018}
+.tcard-streak.teal{background:rgba(29,158,117,.07);border-color:rgba(29,158,117,.16);color:#1A7A58}
+.tcard-streak.rose{background:rgba(200,80,112,.07);border-color:rgba(200,80,112,.16);color:#9A3050}
+.tcard-quote{font-family:var(--serif);font-size:14.5px;font-style:italic;color:#3A3048;line-height:1.82;margin-bottom:18px}
+.tcard-nc{background:#FAF4E8;border-radius:9px;padding:10px 13px;margin-bottom:18px;font-size:11px;font-family:var(--mono);color:#6A5030;line-height:1.6;border-left:2px solid rgba(200,112,32,.28)}
+.tcard-nc-lbl{font-size:7.5px;text-transform:uppercase;letter-spacing:1px;color:#9A7848;margin-bottom:4px;font-weight:700}
+.tcard-meta{display:flex;align-items:center;gap:10px}
+.tcard-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:700;font-family:var(--mono);flex-shrink:0}
+.tcard-name{font-size:13.5px;font-weight:600;color:#2A2038}
+.tcard-role{font-size:11px;color:#8A7888;margin-top:1px}
+
+/* ── PRICING ── */
+.price-sec{padding:120px 6%;background:var(--night2)}
+.price-inner{max-width:860px;margin:0 auto}
+.price-sec .sec-header h2{color:var(--cream)}
+.price-sec .sec-header p{color:rgba(244,239,232,.48);margin:0 auto}
+.price-cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:56px}
+@media(max-width:700px){.price-cards{grid-template-columns:1fr}}
+.pcard{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:36px;position:relative;overflow:hidden}
+.pcard.featured{background:linear-gradient(145deg,rgba(232,151,42,.07),rgba(200,112,32,.03));border-color:rgba(232,151,42,.3)}
+.pcard-badge{position:absolute;top:18px;right:18px;background:var(--amber);color:var(--ink);border-radius:50px;padding:4px 12px;font-size:9.5px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.pcard-tier{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-family:var(--mono);color:rgba(232,151,42,.55);margin-bottom:14px;font-weight:700}
+.pcard-price{font-family:var(--serif);font-size:48px;font-weight:900;color:var(--cream);line-height:1;margin-bottom:4px;display:flex;align-items:flex-start;gap:4px}
+.pcard-price sup{font-size:20px;margin-top:9px}
+.pcard-price sub{font-size:15px;color:rgba(244,239,232,.42);margin-bottom:5px;align-self:flex-end}
+.pcard-annual{font-size:12px;color:rgba(244,239,232,.38);font-family:var(--mono);margin-bottom:5px}
+.pcard-annual strong{color:rgba(232,151,42,.65)}
+.pcard-note{font-size:11.5px;color:rgba(244,239,232,.32);margin-bottom:28px;font-family:var(--mono)}
+.pcard-btn{width:100%;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .2s;margin-bottom:24px}
+.pcard-btn.outline{background:rgba(255,255,255,.05);color:rgba(244,239,232,.65);border:1px solid rgba(255,255,255,.1)}
+.pcard-btn.outline:hover{background:rgba(255,255,255,.09)}
+.pcard-btn.solid{background:linear-gradient(135deg,#E8972A,#CC7818);color:var(--ink)}
+.pcard-btn.solid:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.pcard-feats{display:flex;flex-direction:column;gap:9px}
+.pcard-feat{font-size:13px;color:rgba(244,239,232,.52);display:flex;align-items:flex-start;gap:9px;line-height:1.45}
+.pcard-feat::before{content:'✓';color:var(--teal2);font-weight:700;flex-shrink:0;margin-top:1px}
+.pcard-feat.hl{color:rgba(244,239,232,.82);font-weight:500}
+.price-note{background:rgba(232,151,42,.05);border:1px solid rgba(232,151,42,.14);border-radius:14px;padding:22px 30px;margin-top:28px;text-align:center}
+.price-note p{font-family:var(--serif);font-size:16px;color:rgba(244,239,232,.65);font-style:italic;line-height:1.72}
+.price-note p em{color:var(--amber2)}
+
+/* ── FINAL CTA ── */
+.cta-sec{padding:140px 6%;background:var(--night);text-align:center;position:relative;overflow:hidden}
+.cta-sec::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:450px;border-radius:50%;background:radial-gradient(ellipse,rgba(232,151,42,.06),transparent 62%);pointer-events:none}
+.cta-moon{width:64px;height:64px;border-radius:50%;background:#F5B84C;position:relative;overflow:hidden;margin:0 auto 32px;animation:moon-glow 3s ease-in-out infinite}
+.cta-moon-sh{position:absolute;width:62px;height:62px;border-radius:50%;background:var(--night);top:-9px;left:-13px}
+.cta-sec h2{font-family:var(--serif);font-size:clamp(38px,5.5vw,68px);font-weight:900;color:var(--cream);line-height:1.08;letter-spacing:-.03em;margin-bottom:22px;position:relative;z-index:1}
+.cta-sec h2 em{font-style:italic;color:var(--amber2)}
+.cta-sec p{font-size:17px;color:rgba(244,239,232,.52);font-weight:300;line-height:1.82;max-width:500px;margin:0 auto 44px;position:relative;z-index:1}
+.cta-sec p strong{color:rgba(244,239,232,.82);font-weight:500}
+.cta-btn{background:linear-gradient(135deg,#E8972A,#CC7818);color:var(--ink);padding:20px 56px;border-radius:18px;font-size:17px;font-weight:600;cursor:pointer;border:none;font-family:var(--sans);transition:filter .2s,transform .15s;letter-spacing:.01em;position:relative;z-index:1;margin-bottom:16px}
+.cta-btn:hover{filter:brightness(1.1);transform:translateY(-2px)}
+.cta-note{font-size:12px;color:rgba(244,239,232,.26);margin-bottom:32px;font-family:var(--mono);position:relative;z-index:1}
+.cta-note strong{color:rgba(244,239,232,.42)}
+.cta-trust{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;position:relative;z-index:1}
+.cta-trust-item{font-size:12px;color:rgba(244,239,232,.34);display:flex;align-items:center;gap:6px;font-family:var(--mono)}
+.cta-trust-item::before{content:'✓';color:var(--teal2)}
+
+/* ── FOOTER ── */
+.footer-cta-band{background:rgba(232,151,42,.04);border-top:1px solid rgba(232,151,42,.1);border-bottom:1px solid rgba(232,151,42,.07);padding:32px 6%;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.footer-cta-copy{font-family:var(--serif);font-size:17px;color:rgba(244,239,232,.7);font-style:italic}
+.footer-cta-copy em{color:var(--amber2)}
+.footer-cta-btn{background:linear-gradient(135deg,#E8972A,#CC7818);color:var(--ink);padding:12px 28px;border-radius:50px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:var(--sans);white-space:nowrap;transition:filter .2s}
+.footer-cta-btn:hover{filter:brightness(1.08)}
+.hp-footer{background:var(--night);padding:28px 6%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;border-top:1px solid rgba(255,255,255,.05)}
+.hp-footer-logo{font-family:var(--serif);font-size:16px;font-weight:700;color:rgba(244,239,232,.55);display:flex;align-items:center;gap:8px}
+.hp-footer-tagline{font-size:11px;color:rgba(244,239,232,.2);font-style:italic;font-family:var(--serif);margin-top:3px}
+.hp-footer-links{display:flex;gap:20px}
+.hp-footer-link{font-size:12px;color:rgba(244,239,232,.25);background:none;border:none;cursor:pointer;font-family:var(--sans);transition:color .15s}
+.hp-footer-link:hover{color:rgba(244,239,232,.6)}
 .hp-footer-copy{font-size:11px;color:rgba(244,239,232,.18);font-family:var(--mono)}
 
+/* ── RESPONSIVE ── */
 @media(max-width:900px){
-  .window-inner,.nc-inner{grid-template-columns:1fr;gap:44px}
-  .steps,.testimonials,.price-cards{grid-template-columns:1fr}
-  .hero-scene{display:none}
+  .ritual-arc{flex-direction:column;gap:24px}
+  .problem-inner,.archive-inner{grid-template-columns:1fr;gap:52px}
+  .testimonials{grid-template-columns:1fr}
+  .price-cards{grid-template-columns:1fr}
 }
 @media(max-width:640px){
+  .hero,.problem-sec,.diff-sec,.ritual-sec,.archive-sec,.story-sec,.peak-sec,.proof-sec,.price-sec,.cta-sec{padding-left:5%;padding-right:5%}
+  .hero{padding-top:80px;padding-bottom:90px}
+  .problem-sec,.ritual-sec,.archive-sec,.story-sec,.peak-sec,.proof-sec,.price-sec,.cta-sec{padding-top:80px;padding-bottom:80px}
+  .book{padding:32px 28px}
+  .ritual-loop{grid-template-columns:1fr}
   .hp-nav-links{display:none}
-  .hero{padding:60px 5% 80px;min-height:auto}
   .hp-footer{flex-direction:column;text-align:center}
   .hp-footer-links{justify-content:center}
+  .footer-cta-band{flex-direction:column;text-align:center}
 }
 `;
+
+const LOOP_STEPS = [
+  { n:'01', icon:'📝', prep:true, title:'Capture their day', desc:'Write or speak what happened — the test they were nervous about, the thing they said at dinner, the one detail that made today theirs.' },
+  { n:'02', icon:'✨', prep:true, title:'Their story appears', desc:'In 30 seconds, a story starring them — built from their actual day, written at their reading level, in the mood you choose.' },
+  { n:'03', icon:'🌙', prep:false, note:'the moment', title:'Read it together', desc:'Their name on every page. Their dog, their fear, their small victory woven into the adventure. Watch them light up when they hear themselves.' },
+  { n:'04', icon:'💛', prep:false, note:'the keepsake', title:'Capture the night', desc:'A bonding question. The best three seconds. A photo. Your Night Card saves what they said — the exact words, the exact moment, forever.' },
+];
+
+const AGE_NOTES: Record<string, string> = {
+  'age3-5': 'Stories use simple words, gentle themes, short sentences — perfect for little listeners.',
+  'age6-8': 'Stories adapt to their reading level, attention span and emotional age.',
+  'age9-11': 'Stories grow with them — richer language, longer arcs, bigger feelings handled honestly.',
+};
 
 interface Props {
   onCreateStory: () => void;
@@ -222,38 +382,66 @@ interface Props {
 
 export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp, onNightCards, onLibrary }: Props) {
   const starsRef = useRef<HTMLDivElement>(null);
+  const heroRef  = useRef<HTMLElement>(null);
+  const [childName,    setChildName]    = useState('');
+  const [selectedAge,  setSelectedAge]  = useState('age6-8');
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const [stickyShow,   setStickyShow]   = useState(false);
+  const audioTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    // Build stars
-    const container = starsRef.current;
-    if (container) {
-      for (let i = 0; i < 70; i++) {
+    // Stars
+    const c = starsRef.current;
+    if (c) {
+      for (let i = 0; i < 80; i++) {
         const s = document.createElement('div');
         s.className = 'hero-star';
-        const sz = Math.random() * 1.9 + 0.3;
-        s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${3+Math.random()*3.5}s;--dl:${Math.random()*4.5}s`;
-        container.appendChild(s);
+        const sz = Math.random() < .3 ? 2.5 : Math.random() < .6 ? 1.5 : 1;
+        s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${(3+Math.random()*4).toFixed(1)}s;--dl:${(Math.random()*5).toFixed(1)}s`;
+        c.appendChild(s);
       }
     }
-    // Scroll-triggered fade-ups
+    // Scroll reveal
     const obs = new IntersectionObserver(entries => {
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); obs.unobserve(e.target); } });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
-    return () => obs.disconnect();
+    }, { threshold: 0.08, rootMargin: '0px 0px -36px 0px' });
+    document.querySelectorAll('.fu').forEach(el => obs.observe(el));
+    // Sticky mobile CTA
+    const heroObs = new IntersectionObserver(entries => {
+      setStickyShow(!entries[0].isIntersecting);
+    }, { threshold: 0 });
+    if (heroRef.current) heroObs.observe(heroRef.current);
+    return () => { obs.disconnect(); heroObs.disconnect(); };
   }, []);
 
-  const Check = () => (
-    <div className="hero-ck">
-      <svg viewBox="0 0 8 8" fill="none" style={{width:8,height:8}}>
-        <path d="M1.5 4l2 2 3-3" stroke="#E8972A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    </div>
-  );
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+
+  const ctaLabel = childName.trim()
+    ? `Begin ${childName.trim()}'s ritual tonight ✦`
+    : 'Begin tonight\'s ritual — free ✦';
+  const navCtaLabel = childName.trim()
+    ? `Begin ${childName.trim()}'s ritual — free`
+    : 'Begin tonight — free';
+
+  const toggleAudio = () => {
+    if (audioTimer.current) clearTimeout(audioTimer.current);
+    if (!audioPlaying) {
+      setAudioPlaying(true);
+      audioTimer.current = setTimeout(() => setAudioPlaying(false), 8000);
+    } else {
+      setAudioPlaying(false);
+    }
+  };
 
   return (
     <div className="hp">
       <style>{CSS}</style>
+
+      {/* STICKY MOBILE CTA */}
+      <div className={`hp-sticky-cta${stickyShow ? ' show' : ''}`}>
+        <button className="hp-sticky-btn" onClick={onSignUp}>{ctaLabel}</button>
+        <div className="hp-sticky-note">3 rituals free · no card needed</div>
+      </div>
 
       {/* NAV */}
       <nav className="hp-nav">
@@ -262,131 +450,101 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp, onNi
           SleepSeed
         </button>
         <div className="hp-nav-links">
-          <button className="hp-nl" onClick={() => { const el = document.getElementById('about'); el?.scrollIntoView({behavior:'smooth'}); }}>About</button>
-          <button className="hp-nl">Pricing</button>
+          <button className="hp-nl" onClick={() => scrollTo('about')}>About</button>
+          <button className="hp-nl" onClick={() => scrollTo('pricing')}>Pricing</button>
         </div>
         <div className="hp-nav-right">
           <button className="hp-signin" onClick={onSignIn}>Sign in</button>
-          <button className="hp-cta-sm" onClick={onSignUp}>Start free</button>
+          <button className="hp-cta-sm" onClick={onSignUp}>{navCtaLabel}</button>
         </div>
       </nav>
 
       {/* HERO */}
-      <section className="hero">
+      <section className="hero" ref={heroRef} id="hero">
         <div className="hero-stars" ref={starsRef} />
-        <div className="hero-glow" />
-        <div className="hero-badge"><div className="hero-badge-dot" />Free to start — no card needed</div>
-        <h1 className="hero-h fade-up">
-          A bedtime story written<br />
-          <em>for your child.</em><br />
-          <span style={{fontStyle:'normal',color:'rgba(244,239,232,.88)'}}>Tonight. In 60 seconds.</span>
-        </h1>
-        <p className="hero-sub fade-up">
-          Type their name. SleepSeed writes a personalised story starring <strong>them</strong> — their dog, their fear about tomorrow, their world. Then captures what they say when it ends.
-        </p>
-        <div className="hero-form fade-up">
-          <div className="hero-input-row">
-            <input className="hero-input" type="text" placeholder="Your child's name…" />
-            <button className="hero-submit" onClick={onSignUp}>Build their story →</button>
-          </div>
-        </div>
-        <div className="hero-trust fade-up">
-          <div className="hero-trust-item"><Check />3 stories free</div>
-          <div className="hero-trust-item"><Check />No credit card</div>
-          <div className="hero-trust-item"><Check />Ready in 60 seconds</div>
-          <div className="hero-trust-item"><Check />Night Cards included</div>
-        </div>
-        <svg className="hero-scene" viewBox="0 0 340 300" fill="none">
-          <ellipse cx="230" cy="70" rx="90" ry="55" fill="rgba(232,151,42,.05)"/>
-          <rect x="222" y="65" width="9" height="76" fill="rgba(232,151,42,.14)"/>
-          <ellipse cx="227" cy="61" rx="25" ry="13" fill="rgba(232,151,42,.18)" stroke="rgba(232,151,42,.28)" strokeWidth="1"/>
-          <rect x="65" y="190" width="210" height="65" rx="6" fill="rgba(255,255,255,.03)" stroke="rgba(255,255,255,.05)" strokeWidth="1"/>
-          <rect x="65" y="168" width="210" height="26" rx="5" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.06)" strokeWidth="1"/>
-          <circle cx="120" cy="174" r="14" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.07)" strokeWidth="1"/>
-          <circle cx="238" cy="168" r="13" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.07)" strokeWidth="1"/>
-          <rect x="218" y="163" width="22" height="15" rx="2" fill="rgba(232,151,42,.13)" stroke="rgba(232,151,42,.22)" strokeWidth="1"/>
-          {[[170,130,1.3,'rgba(232,151,42,.4)'],[200,115,1,'rgba(232,151,42,.3)'],[145,140,.9,'rgba(232,151,42,.35)'],[185,100,1.2,'rgba(255,255,255,.28)'],[125,108,.8,'rgba(255,255,255,.22)'],[260,95,1.3,'rgba(255,255,255,.28)'],[85,118,.8,'rgba(255,255,255,.18)']].map(([x,y,r,f],i)=>(
-            <circle key={i} cx={x as number} cy={y as number} r={r as number} fill={f as string}/>
-          ))}
-          <ellipse cx="170" cy="278" rx="130" ry="9" fill="rgba(0,0,0,.18)"/>
-        </svg>
-      </section>
+        <div className="hero-glow-orb" />
 
-      {/* THE WINDOW */}
-      <section className="window-sec">
-        <div className="window-inner">
-          <div className="fade-up">
-            <div className="window-kicker">Every night</div>
-            <div className="w-row"><span className="w-time">6:00</span><span className="w-text">Homework, dinner, screens, bath, argument.</span></div>
-            <div className="w-row"><span className="w-time">7:30</span><span className="w-text">Teeth. Pyjamas. One more glass of water.</span></div>
-            <div className="w-row now"><span className="w-time">8:47</span><span className="w-text">Just you. Just them. Just now.</span></div>
+        <div className="hero-left">
+          <div className="hero-eyebrow fu">
+            <div className="hero-eyebrow-dot" />
+            The ritual that changes bedtime
           </div>
-          <div className="fade-up">
-            <p className="window-quote">
-              Something shifts when the noise of the day fades. Children stop performing. They ask the questions they've been holding all day. <strong>They say the things they only say in the dark.</strong>
-            </p>
-            <p className="window-statement">
-              There's a window every night, about twenty minutes long.<br /><br />
-              <strong>SleepSeed creates the space. It delivers the moment. Then it captures it</strong> — so that at the end of every day, what actually mattered is what you remember.
-            </p>
+          <h1 className="hero-h fu d1">
+            The 20 minutes before sleep<br />
+            are the <em>most important</em><br />
+            <span className="dim">of the day.</span>
+          </h1>
+          <p className="hero-sub fu d2">
+            Every night your child goes to sleep holding something they haven't said yet.{' '}
+            <strong>SleepSeed is the ritual that opens them up</strong> — a story that stars them,
+            a question that reaches them, a Night Card that keeps what they said.
+          </p>
+
+          <div className="fu d2">
+            <div className="hero-age-label">My child is:</div>
+            <div className="hero-age-row">
+              {['age3-5','age6-8','age9-11'].map(age => (
+                <button key={age} className={`hero-age-pill${selectedAge===age?' sel':''}`} onClick={() => setSelectedAge(age)}>
+                  {age === 'age3-5' ? 'Ages 3–5' : age === 'age6-8' ? 'Ages 6–8' : 'Ages 9–11'}
+                </button>
+              ))}
+            </div>
+            <div className="hero-age-note">{AGE_NOTES[selectedAge]}</div>
+          </div>
+
+          <div className="hero-name-row fu d3">
+            <input
+              className="hero-name-input"
+              type="text"
+              placeholder="Your child's name…"
+              value={childName}
+              onChange={e => setChildName(e.target.value)}
+              maxLength={30}
+            />
+            <button className="hero-cta-primary" onClick={onSignUp}>{ctaLabel}</button>
+          </div>
+
+          <button className="hero-cta-ghost fu d3" onClick={() => scrollTo('ritual')}>See how it works →</button>
+
+          <div className="hero-trust fu d4">
+            <span className="hero-trust-item">3 rituals free</span>
+            <span className="hero-trust-item">No credit card</span>
+            <span className="hero-trust-item">Ready in 60 seconds</span>
+            <span className="hero-trust-item">No ads, ever</span>
           </div>
         </div>
-      </section>
 
-      {/* HOW IT WORKS */}
-      <section className="how-sec">
-        <div className="how-inner">
-          <div className="sec-label fade-up">How it works</div>
-          <h2 className="sec-h fade-up">From name to story<br />in three steps.</h2>
-          <p className="sec-sub fade-up">No templates. No generic plots. Every story is built around this child, tonight.</p>
-          <div className="steps">
-            <div className="step fade-up">
-              <div className="step-body">
-                <div className="step-header"><div className="step-num">1</div><div className="step-title">Build their story</div></div>
-                <p className="step-desc">Enter their name, what's happening tonight, and one detail that makes them specifically them. That's it.</p>
-                <div className="step-tags"><span className="step-tag">Name + situation</span><span className="step-tag">One weird detail</span><span className="step-tag">5 genres</span></div>
+        {/* PHONE VISUAL */}
+        <div className="hero-right fu d2">
+          <div className="phone-mock">
+            <div className="phone-notch"></div>
+            <div className="phone-screen">
+              <div className="pnav">
+                <div className="pnav-logo">🌙 SleepSeed</div>
+                <div className="pnav-badge">night 13 · Emma</div>
               </div>
-              <div className="story-card">
-                <div className="sc-genre">💛 Calm</div>
-                <div className="sc-title">The Night Before New</div>
-                <div className="sc-text">Tonight, <span className="sc-name">Mia</span>'s tummy felt like it was full of tangled string. She opened her notebook to page twelve. <em>Thirty-one dogs, in order of how much they seemed to understand her.</em></div>
+              <div className="p-ritual">
+                <div className="p-ritual-lbl">✦ tonight's ritual</div>
+                <div className="p-ritual-q">What happened in <em>Emma's</em> world today?</div>
+                <button className="p-ritual-btn">Begin tonight's ritual ✦</button>
               </div>
-            </div>
-            <div className="step fade-up">
-              <div className="step-body">
-                <div className="step-header"><div className="step-num">2</div><div className="step-title">Read it together</div></div>
-                <p className="step-desc">A warm, book-style format built for reading aloud. Their name wherever it matters. About four minutes at bedtime pace.</p>
-                <div className="step-tags"><span className="step-tag">~4 min aloud</span><span className="step-tag">Therapist-informed</span><span className="step-tag">Auto-saved</span></div>
+              <div className="p-cards">
+                <div className="p-card create"><div className="p-card-icon">✨</div><div className="p-card-title">Create</div><div className="p-card-stat">any time</div></div>
+                <div className="p-card lib"><div className="p-card-icon">📚</div><div className="p-card-title">Library</div><div className="p-card-stat">12 saved</div></div>
+                <div className="p-card nc"><div className="p-card-icon">🌙</div><div className="p-card-title">Night Cards</div><div className="p-card-stat">47 cards</div></div>
               </div>
-              <div style={{padding:'0 28px 28px',display:'flex',flexDirection:'column',gap:9}}>
-                <div style={{background:'#F7F1E6',borderRadius:11,padding:'13px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                  <span style={{fontFamily:'Georgia,serif',fontSize:13.5,color:'#3A2800',fontStyle:'italic'}}>The Night Before New</span>
-                  <span style={{fontSize:10,fontFamily:'var(--mono)',color:'#8A6A30'}}>4 min</span>
+              <div className="p-glow">
+                <div className="p-glow-name">✦ the little fox · week 2</div>
+                <div className="p-stars">
+                  {[1,2,3,4,5].map(i => <span key={i} className="p-star">★</span>)}
+                  {[6,7].map(i => <span key={i} className="p-star dim">☆</span>)}
+                  <span style={{fontFamily:'var(--serif)',fontSize:14,color:'var(--amber2)',marginLeft:'auto',lineHeight:1}}>5</span>
                 </div>
-                <div style={{background:'#FAF6ED',borderRadius:9,padding:'11px 16px'}}>
-                  <div style={{display:'flex',gap:5,marginBottom:9}}>
-                    {[1,2].map(i=><div key={i} style={{width:9,height:9,borderRadius:'50%',background:'#E8A030',opacity:.55}}/>)}
-                    {[1,2,3].map(i=><div key={i} style={{width:9,height:9,borderRadius:'50%',background:'rgba(58,40,0,.14)'}}/>)}
-                  </div>
-                  <span style={{fontSize:10.5,color:'#8A6A30',fontFamily:'var(--mono)'}}>2 min remaining</span>
+                <div style={{height:2,background:'rgba(255,255,255,.05)',borderRadius:2,overflow:'hidden',marginTop:4}}>
+                  <div style={{height:2,background:'linear-gradient(90deg,#E8972A,#F5B84C)',borderRadius:2,width:'71%'}}></div>
                 </div>
-              </div>
-            </div>
-            <div className="step fade-up">
-              <div className="step-body">
-                <div className="step-header"><div className="step-num">3</div><div className="step-title">Capture the night</div></div>
-                <p className="step-desc">When the story ends, two minutes captures it forever — their words, the best moment of the day, a photo of the room.</p>
-                <div className="step-tags"><span className="step-tag">Bonding question</span><span className="step-tag">Gratitude moment</span><span className="step-tag">Night Card</span></div>
-              </div>
-              <div className="nc-preview">
-                <div className="nc-photo-box">
-                  <div className="nc-warm"/><div className="nc-ts">Tue 11 Feb · 8:47pm</div>
-                  <div className="nc-sil"><div className="nc-sil-p"/><div className="nc-sil-c"/></div>
-                </div>
-                <div className="nc-name-line" style={{marginTop:9}}>Mia — The Night Before New</div>
-                <div style={{marginTop:9,display:'flex',flexDirection:'column',gap:7}}>
-                  <div className="nc-resp" style={{background:'rgba(180,120,20,.07)',border:'1px solid rgba(180,120,20,.13)'}}><div className="nc-resp-q" style={{color:'#7A5010'}}>Best three seconds</div><div className="nc-resp-a" style={{color:'#4A3000'}}>When the dog knocked over the laundry basket</div></div>
-                  <div className="nc-resp" style={{background:'rgba(80,90,160,.06)',border:'1px solid rgba(80,90,160,.12)'}}><div className="nc-resp-q" style={{color:'#3A4080'}}>What makes you, you?</div><div className="nc-resp-a" style={{color:'#2A3060'}}>I'm really good at remembering things.</div></div>
+                <div style={{display:'flex',justifyContent:'space-between',fontSize:6,color:'rgba(255,255,255,.16)',fontFamily:'monospace',marginTop:3}}>
+                  <span>5 of 7 this week</span><span>2 to ✦</span>
                 </div>
               </div>
             </div>
@@ -394,71 +552,223 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp, onNi
         </div>
       </section>
 
-      {/* NIGHT CARDS */}
-      <section className="nc-sec">
-        <div className="nc-inner">
-          <div className="nc-left">
-            <div className="sec-label fade-up">Night Cards</div>
-            <h2 className="sec-h fade-up">The story ends.<br /><em>The memory begins.</em></h2>
-            <p className="sec-sub fade-up">Every story creates a Night Card — a permanent keepsake of what your child said, felt, and was on this specific night.</p>
-            <div className="nc-features">
+      {/* PROBLEM */}
+      <section className="problem-sec" id="about">
+        <div className="problem-inner">
+          <div className="fu">
+            <span className="sec-kicker">Every night</span>
+            <div className="p-timeline">
+              <div className="p-row"><span className="p-time">5:30</span><span className="p-text">Homework. Screen time. "One more minute."</span></div>
+              <div className="p-row"><span className="p-time">6:45</span><span className="p-text">Dinner. Argument about dinner. More screens.</span></div>
+              <div className="p-row"><span className="p-time">7:30</span><span className="p-text">Bath. Teeth. Pyjamas. One more glass of water.</span></div>
+              <div className="p-row"><span className="p-time">8:00</span><span className="p-text">One more hug. One more question. Two minutes of stalling.</span></div>
+              <span className="p-now-label">Then:</span>
+              <div className="p-row now"><span className="p-time">8:20</span><span className="p-text">The noise stops. The room gets quiet. Just you. Just them. Just now.</span></div>
+            </div>
+          </div>
+          <div className="fu d2">
+            <span className="sec-kicker">The window</span>
+            <div className="problem-copy">
+              <h2>Something shifts when<br />the day finally <em>stops.</em></h2>
+              <p>Children don't open up at dinner. They don't tell you the real thing at pickup or in the car. They tell you in the dark, right before sleep, when their guard is finally down.</p>
+              <p>This window — about twenty minutes — is the most emotionally available your child will be all day. <strong>Most parents rush through it. SleepSeed gives you a reason to stay.</strong></p>
+              <p>A story built from their day. A question that opens them up. A Night Card that keeps what they said. Every night, a new one.</p>
+              <button className="problem-link" onClick={() => scrollTo('ritual')}>See the ritual →</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* DIFFERENTIATION */}
+      <section className="diff-sec">
+        <div className="diff-inner fu">
+          <div className="diff-divider" />
+          <p className="diff-line">
+            SleepSeed is <strong>not a story app.</strong><br />
+            It's a <em>bedtime ritual platform.</em><br />
+            The stories are how it starts.<br />
+            <em>The Night Cards are why you stay.</em>
+          </p>
+          <div className="diff-divider" />
+        </div>
+      </section>
+
+      {/* RITUAL LOOP */}
+      <section className="ritual-sec" id="ritual">
+        <div className="ritual-inner">
+          <div className="sec-header">
+            <div className="fu"><span className="sec-kicker">How it works</span></div>
+            <h2 className="fu d1">Not an app. <em>A ritual.</em></h2>
+            <p className="fu d2">Four steps. Twenty minutes. Every night. The more nights you do it, the more it becomes the best part of the day.</p>
+          </div>
+
+          <div className="ritual-loop">
+            {LOOP_STEPS.map((s, i) => (
+              <div key={i} className={`ls${s.prep ? ' prep' : ' peak'} fu d${i+1}`}>
+                <div className="ls-num">{s.n}</div>
+                <span className="ls-icon">{s.icon}</span>
+                {!s.prep && s.note && <span className="ls-peak-note">{s.note}</span>}
+                <div className="ls-title">{s.title}</div>
+                <div className="ls-desc">{s.desc}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="ritual-arc fu">
+            <div className="arc-left">
+              <h3>It builds into something irreplaceable.</h3>
+              <p>After 30 nights you have 30 Night Cards. After a year, 365. A record of exactly who your child was at this age — what they were afraid of, what made them laugh, what they said the night before everything changed. By the time they leave home, you'll have years of them.</p>
+            </div>
+            <div className="arc-stats">
+              <div style={{textAlign:'center'}}><span className="arc-num">20</span><span className="arc-lbl">min · every night</span></div>
+              <div style={{textAlign:'center'}}><span className="arc-num">365</span><span className="arc-lbl">cards · every year</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ARCHIVE + LIVE NIGHT CARD */}
+      <section className="archive-sec">
+        <div className="archive-inner">
+          <div className="archive-copy fu">
+            <span className="sec-kicker">Night Cards</span>
+            <h2>A record of childhood<br />you can <em>hold.</em></h2>
+            <p>Every ritual night creates a Night Card — a keepsake of the moment. Their quote. The best three seconds. A photo. AI-written, human-felt.</p>
+            <p><strong>In ten years, most of this will be gone.</strong> Not because anything bad happened — just because that's how time works. Night Cards are the reason it isn't.</p>
+            <div className="milestones">
               {[
-                {n:'1',h:'The Bonding Question',d:"Asked while the story loads — what they actually said, verbatim, captured for the card."},
-                {n:'2',h:'The Gratitude Weave',d:'"What was the best three seconds of today?" One question. Fifteen seconds. Saved forever.'},
-                {n:'3',h:'The Photo',d:'Everyone in the room at 8:47pm. That image, in ten years, is everything.'},
-                {n:'4',h:'Your library grows',d:'After a year, you have 300+ Night Cards. By the time they leave home, there\'s a shelf.'},
-              ].map(f => (
-                <div key={f.n} className="nc-feat fade-up">
-                  <div className="nc-feat-num">{f.n}</div>
-                  <div><div className="nc-feat-h">{f.h}</div><div className="nc-feat-d">{f.d}</div></div>
+                {n:'7',   t:'nights in', d:'your first constellation glows. The ritual is taking hold.'},
+                {n:'30',  t:'nights in', d:'your child asks for it before you suggest it. Bedtime is different now.'},
+                {n:'365', t:'nights in', d:'SleepSeed shows you what they said on this night last year.'},
+              ].map((m,i) => (
+                <div key={i} className="milestone">
+                  <div className="milestone-num">{m.n}</div>
+                  <div className="milestone-text"><strong>{m.t}</strong> — {m.d}</div>
                 </div>
               ))}
             </div>
           </div>
-          <div className="nc-right fade-up">
-            <div className="nc-pol-large">
-              <div className="nc-pol-photo">
-                <div className="nc-pol-ts">Tue 11 Feb · 8:47 pm</div>
-                <div style={{position:'absolute',inset:0,background:'radial-gradient(ellipse at 50% 110%,rgba(200,120,40,.18),transparent 65%)'}}/>
-                <div className="nc-pol-sil" style={{position:'relative',zIndex:1}}>
-                  <div className="nc-pol-sil-p"/><div className="nc-pol-sil-c"/>
-                </div>
-                <div style={{position:'absolute',bottom:44,left:0,right:0,textAlign:'center',fontFamily:'Georgia,serif',fontSize:9.5,fontStyle:'italic',color:'rgba(255,220,130,.6)',zIndex:1}}>The Night Before New</div>
+
+          {/* LIVE NIGHT CARD */}
+          <div className="nc-live-wrap fu d1">
+            <div className="nc-live-lbl"><div className="nc-live-dot" />A real Night Card — Night 47</div>
+            <div className="nc-card">
+              <div className="nc-img">
+                {/* Photo slot — replace src with real user photo URL when available */}
+                <div className="nc-img-moon"><div className="nc-img-moon-sh" /></div>
+                <div className="nc-img-overlay" />
+                <div className="nc-img-title">The Spelling Test Dragon</div>
               </div>
-              <div className="nc-pol-content">
-                <div className="nc-portrait">Mia was here tonight, exactly as herself — <em>the girl who keeps a list of every dog she's ever met, in order of how much they seemed to understand her.</em></div>
+              <div className="nc-body">
+                <span className="nc-origin-badge">🌙 Night Card · 47 nights strong</span>
+                <div className="nc-quote">"I was brave like the dragon. Even though my tummy was full of tangled string."</div>
                 <div className="nc-chips">
-                  <div className="nc-chip" style={{background:'rgba(180,120,20,.07)',border:'1px solid rgba(180,120,20,.13)'}}><div className="nc-chipq" style={{color:'#7A5010'}}>What makes you, you?</div><div className="nc-chipa" style={{color:'#4A3000'}}>I'm really good at remembering things.</div></div>
-                  <div className="nc-chip" style={{background:'rgba(80,90,160,.06)',border:'1px solid rgba(80,90,160,.12)'}}><div className="nc-chipq" style={{color:'#3A4080'}}>Best three seconds</div><div className="nc-chipa" style={{color:'#2A3060'}}>When the dog knocked over the laundry basket</div></div>
-                  <div className="nc-chip" style={{background:'rgba(20,100,60,.06)',border:'1px solid rgba(20,100,60,.12)'}}><div className="nc-chipq" style={{color:'#0A5030'}}>Tonight I want to remember</div><div className="nc-chipa" style={{color:'#083820'}}>She held Grandma's hand the whole way through.</div></div>
+                  <div className="nc-chip">
+                    <div className="nc-chip-q">Best three seconds today</div>
+                    <div className="nc-chip-a">When you carried me to bed even though I'm not little anymore.</div>
+                  </div>
+                  <div className="nc-chip" style={{background:'rgba(80,90,160,.06)',border:'1px solid rgba(80,90,160,.12)'}}>
+                    <div className="nc-chip-q" style={{color:'#3A4080'}}>What makes you, you?</div>
+                    <div className="nc-chip-a" style={{color:'#2A3060'}}>I remember every dog I've ever met. In order of how much they understood me.</div>
+                  </div>
                 </div>
-                <div className="nc-stamp">🌙 SleepSeed · Mia · Age 5 · 11 Feb 2025</div>
+                <div className="nc-meta"><span>🌙 SleepSeed · Emma · Age 6</span><span>Mar 21 2026</span></div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* SOCIAL PROOF */}
+      {/* STORY + AUDIO */}
+      <section className="story-sec">
+        <div className="story-inner">
+          <span className="sec-kicker fu" style={{display:'block'}}>A story — just for her, just for tonight</span>
+          <h2 className="story-sec-h fu d1">Not a template. <em>Her story.</em></h2>
+          <p className="story-sec-sub fu d2">Written in seconds from what she told you tonight. Her name. Her dog. The spelling test she was terrified about. Her world.</p>
+          <div className="book fu d2">
+            <div className="book-kicker">Tonight's story · Age 6 · Brave &amp; warm · ~4 minutes aloud</div>
+            <div className="book-title">The <span className="book-hero-name">Emma</span> Who Faced the Dragon</div>
+            <div className="book-tags">
+              <span className="book-tag">⚡ Brave</span>
+              <span className="book-tag">💛 Warm</span>
+              <span className="book-tag">🌙 Bedtime</span>
+            </div>
+            <p className="book-p">
+              <span className="cn">Emma</span>'s tummy felt like it was full of tangled string. Tomorrow was the spelling test. She had studied seventeen times. She had written every word three times each. But still — what if her brain forgot everything the moment she sat down?
+            </p>
+            <p className="book-p">
+              She pulled her pencil case toward her. Inside it: a rubber eraser shaped like a small dragon, which she'd named <em>Biscuit</em>, which she'd carried to every hard thing since she was four. Biscuit had been there for the wobbly tooth. Biscuit had been there for the big swim.
+            </p>
+            <div className="book-refrain">
+              "You already know the words," said Biscuit, in a voice like very small thunder.<br />
+              "You just need to remember you know them."
+            </div>
+            {/* AUDIO PLAYER */}
+            <div className="audio-player">
+              <button className="audio-play-btn" onClick={toggleAudio}>
+                {audioPlaying ? '⏸' : '▶'}
+              </button>
+              <div className="audio-info">
+                <div className="audio-label">Read aloud by SleepSeed</div>
+                <div className="audio-title-line">The Emma Who Faced the Dragon</div>
+                <div className="audio-note">
+                  {audioPlaying ? 'Playing — The Emma Who Faced the Dragon ✦' : 'Tap to hear Emma\'s story ✦'}
+                </div>
+              </div>
+              <div className="audio-waves">
+                {[1,2,3,4,5,6,7].map(i => (
+                  <div key={i} className={`wave-bar${audioPlaying ? ' playing' : ''}`} />
+                ))}
+              </div>
+            </div>
+            <div className="book-footer">
+              <span>SleepSeed · Emma · Mar 21 2026</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* EMOTIONAL PEAK */}
+      <section className="peak-sec">
+        <div className="peak-inner fu">
+          <div className="peak-who">James K. · Dad of one · Age 8 · Night 18</div>
+          <p className="peak-quote">
+            "My son has anxiety about school. I've learned more<br />
+            about what's actually scaring him from Night Cards<br />
+            than from a year of asking <em>'how was your day.'</em>"
+          </p>
+          <div className="peak-nc">
+            <span className="peak-nc-lbl">His Night Card:</span>
+            "I'm afraid nobody will sit with me. But in the story I wasn't afraid."
+          </div>
+        </div>
+      </section>
+
+      {/* PROOF */}
       <section className="proof-sec">
         <div className="proof-inner">
-          <div className="sec-label fade-up">What families say</div>
-          <h2 className="sec-h fade-up">"Daddy, that's <em style={{fontFamily:'var(--serif)',color:'#C85070'}}>MY</em> name."</h2>
-          <p className="sec-sub fade-up">The moment every parent describes from the very first story.</p>
+          <div className="sec-header">
+            <span className="sec-kicker fu">What families say</span>
+            <h2 className="fu d1">47 nights in a row.<br /><em>Zero arguments about bedtime.</em></h2>
+            <p className="fu d2">The ritual doesn't just change the story. It changes what bedtime feels like.</p>
+          </div>
           <div className="testimonials">
-            <div className="tcard amber fade-up">
+            <div className="tcard amber fu">
+              <div className="tcard-streak amber">122 nights · still going</div>
               <p className="tcard-quote">"We've done it every single night for four months. My daughter asks for it before I even suggest it. Bedtime went from something I dreaded to the part of the day we both look forward to most."</p>
-              <div className="tcard-moment"><div className="tcard-moment-label">Her Night Card</div>"The best three seconds was when you carried me to bed."</div>
-              <div className="tcard-meta"><div className="tcard-av">S</div><div><div className="tcard-name">Sarah M.</div><div className="tcard-role">Mum of two · ages 4 &amp; 7</div></div></div>
+              <div className="tcard-nc"><div className="tcard-nc-lbl">Her Night Card, night 34</div>"The best three seconds was when you carried me to bed."</div>
+              <div className="tcard-meta"><div className="tcard-av" style={{background:'linear-gradient(135deg,#D4A060,#B07020)'}}>S</div><div><div className="tcard-name">Sarah M.</div><div className="tcard-role">Mum of two · ages 4 &amp; 7</div></div></div>
             </div>
-            <div className="tcard teal fade-up">
-              <p className="tcard-quote">"My daughter heard her name in the first story and stopped everything. She sat up and said 'that's about me.' She asked to hear it again before I'd even finished."</p>
-              <div className="tcard-moment"><div className="tcard-moment-label">Her Night Card</div>"The best three seconds was right now."</div>
-              <div className="tcard-meta"><div className="tcard-av" style={{background:'linear-gradient(135deg,#2AB89A,#1A8A70)'}}>M</div><div><div className="tcard-name">Marcus D.</div><div className="tcard-role">Dad of one · age 6</div></div></div>
+            <div className="tcard teal fu d1">
+              <div className="tcard-streak teal">47 nights · unbroken</div>
+              <p className="tcard-quote">"My son has anxiety about school. The stories let him work through things he couldn't say directly. I've learned more about what's actually scaring him from Night Cards than from a year of asking 'how was your day.'"</p>
+              <div className="tcard-nc"><div className="tcard-nc-lbl">His Night Card, night 18</div>"I'm afraid nobody will sit with me. But in the story I wasn't afraid."</div>
+              <div className="tcard-meta"><div className="tcard-av" style={{background:'linear-gradient(135deg,#2AB89A,#1A8A70)'}}>J</div><div><div className="tcard-name">James K.</div><div className="tcard-role">Dad of one · age 8</div></div></div>
             </div>
-            <div className="tcard rose fade-up">
-              <p className="tcard-quote">"As a child therapist I recommended it to a family navigating a new sibling. The mum called two weeks later — the older child was asking for bedtime stories for the first time in months."</p>
-              <div className="tcard-moment"><div className="tcard-moment-label">Story used</div>Calm genre · handling a big life transition</div>
+            <div className="tcard rose fu d2">
+              <div className="tcard-streak rose">Child therapist · recommends</div>
+              <p className="tcard-quote">"As a child therapist I recommended it to a family navigating a new sibling. The mum called two weeks later — the older child was asking for bedtime for the first time in months."</p>
+              <div className="tcard-nc"><div className="tcard-nc-lbl">Story used</div>New sibling transition · calm genre · age 5</div>
               <div className="tcard-meta"><div className="tcard-av" style={{background:'linear-gradient(135deg,#C85070,#9A3050)'}}>L</div><div><div className="tcard-name">Dr. Lisa R.</div><div className="tcard-role">Child &amp; Family Therapist</div></div></div>
             </div>
           </div>
@@ -466,66 +776,82 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp, onNi
       </section>
 
       {/* PRICING */}
-      <section className="price-sec">
+      <section className="price-sec" id="pricing">
         <div className="price-inner">
-          <div className="sec-label fade-up">Pricing</div>
-          <h2 className="sec-h fade-up">Start free. Stay forever.</h2>
-          <p className="sec-sub fade-up">Three stories free, no card needed. Upgrade when you're ready to keep every night.</p>
+          <div className="sec-header">
+            <span className="sec-kicker fu">Pricing</span>
+            <h2 className="fu d1">A record of childhood.<br /><em>For less than a coffee a month.</em></h2>
+            <p className="fu d2">Start free with 3 rituals. Keep every night with Family — unlimited stories, unlimited Night Cards, your growing archive.</p>
+          </div>
           <div className="price-cards">
-            <div className="pcard fade-up">
+            <div className="pcard fu">
               <div className="pcard-tier">Free</div>
               <div className="pcard-price"><sup>$</sup>0</div>
-              <div className="pcard-note">3 stories to try</div>
-              <button className="pcard-btn outline" onClick={onSignUp}>Start free tonight</button>
-              <div className="pcard-features">
+              <div className="pcard-note">3 rituals to try · no card needed</div>
+              <button className="pcard-btn outline" onClick={onSignUp}>Begin tonight — free</button>
+              <div className="pcard-feats">
                 <div className="pcard-feat">3 personalised stories</div>
-                <div className="pcard-feat">Night Cards included</div>
-                <div className="pcard-feat">5 story genres</div>
+                <div className="pcard-feat">3 Night Cards</div>
+                <div className="pcard-feat">All 6 story vibes</div>
+                <div className="pcard-feat">Voice narration</div>
               </div>
             </div>
-            <div className="pcard featured fade-up">
+            <div className="pcard featured fu d1">
+              <div className="pcard-badge">MOST POPULAR</div>
               <div className="pcard-tier">Family</div>
-              <div className="pcard-price"><sup>$</sup>9<sub>.99/mo</sub></div>
-              <div className="pcard-note">or $79/year — save 34%</div>
-              <button className="pcard-btn solid" onClick={onSignUp}>Get started</button>
-              <div className="pcard-features">
-                <div className="pcard-feat">Unlimited stories</div>
-                <div className="pcard-feat">Unlimited Night Cards</div>
-                <div className="pcard-feat">Memories library</div>
+              <div className="pcard-price"><sup>$</sup>6<sub>.58/mo</sub></div>
+              <div className="pcard-annual">Billed as <strong>$79/year</strong> — save 34%</div>
+              <div className="pcard-note">or $9.99 month-to-month</div>
+              <button className="pcard-btn solid" onClick={onSignUp}>Start tonight ✦</button>
+              <div className="pcard-feats">
+                <div className="pcard-feat hl">Unlimited rituals, every night</div>
+                <div className="pcard-feat hl">Unlimited Night Cards — forever</div>
+                <div className="pcard-feat hl">Your growing archive of childhood</div>
+                <div className="pcard-feat">"On this night last year" memories</div>
                 <div className="pcard-feat">Saved characters</div>
                 <div className="pcard-feat">Voice narration</div>
-                <div className="pcard-feat">Annual Book (coming soon)</div>
+                <div className="pcard-feat">Annual printed book (coming soon)</div>
               </div>
             </div>
+          </div>
+          <div className="price-note fu d2">
+            <p>For <em>$6.58 a month</em> on the annual plan, you get an archive of every night you showed up. Every story. Every Night Card. Every thing your child said before they fell asleep. <em>Years of it.</em></p>
           </div>
         </div>
       </section>
 
       {/* FINAL CTA */}
       <section className="cta-sec">
-        <div className="cta-moon" />
-        <h2 className="cta-h fade-up">Tonight happened.<br /><em>Keep it.</em></h2>
-        <p className="cta-sub fade-up">Your child will say something true tonight. Build their story in 60 seconds and capture the night when it ends.</p>
-        <button className="cta-btn-large fade-up" onClick={onSignUp}>Build tonight's story — free</button>
-        <div className="cta-note">Then <strong>$9.99/month</strong> or <strong>$79/year</strong>. Cancel any time.</div>
-        <div className="cta-trust2">
-          <span>✓ 3 stories free</span>
-          <span>✓ No card needed</span>
-          <span>✓ Night Cards included</span>
-          <span>✓ No ads, ever</span>
-          <span>✓ Photos stay on your device</span>
+        <div className="cta-moon"><div className="cta-moon-sh" /></div>
+        <h2 className="fu">These nights are<br />happening <em>right now.</em></h2>
+        <p className="fu d1">Your child will say something true tonight. Something they've been holding all day. <strong>Be there for it.</strong> The ritual takes twenty minutes. The Night Card lasts forever.</p>
+        <button className="cta-btn fu d2" onClick={onSignUp}>{ctaLabel}</button>
+        <div className="cta-note fu d3">Then <strong>$9.99/month</strong> or <strong>$79/year</strong>. Cancel any time.</div>
+        <div className="cta-trust fu d3">
+          <span className="cta-trust-item">3 rituals free</span>
+          <span className="cta-trust-item">No credit card</span>
+          <span className="cta-trust-item">Night Cards included</span>
+          <span className="cta-trust-item">No ads, ever</span>
+          <span className="cta-trust-item">Cancel any time</span>
         </div>
       </section>
 
       {/* FOOTER */}
+      <div className="footer-cta-band">
+        <div className="footer-cta-copy">Every night that passes is a night you can't get back.<br /><em>Start the ritual tonight.</em></div>
+        <button className="footer-cta-btn" onClick={onSignUp}>Begin free ✦</button>
+      </div>
       <footer className="hp-footer">
-        <div className="hp-footer-logo"><div className="hp-logo-moon" style={{width:17,height:17}}/>SleepSeed</div>
+        <div>
+          <div className="hp-footer-logo"><div className="hp-logo-moon" style={{width:17,height:17}} />SleepSeed</div>
+          <div className="hp-footer-tagline">Bedtime, but better. Every night.</div>
+        </div>
         <div className="hp-footer-links">
           <button className="hp-footer-link">Privacy</button>
           <button className="hp-footer-link">Terms</button>
           <button className="hp-footer-link">hello@sleepseed.app</button>
         </div>
-        <div className="hp-footer-copy">© 2025 SleepSeed. All rights reserved.</div>
+        <div className="hp-footer-copy">© 2026 SleepSeed. All rights reserved.</div>
       </footer>
     </div>
   );
