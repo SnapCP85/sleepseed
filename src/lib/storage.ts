@@ -235,7 +235,7 @@ export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
         extraField = JSON.stringify(packed);
       } catch(_) {}
     }
-    await supabase.from('night_cards').upsert({
+    const { error: ncErr } = await supabase.from('night_cards').upsert({
       id: nc.id, user_id: nc.userId, hero_name: nc.heroName, story_id: nc.storyId ?? null,
       story_title: nc.storyTitle, character_ids: nc.characterIds ?? [],
       headline: nc.headline, quote: nc.quote, memory_line: nc.memory_line ?? null,
@@ -243,7 +243,9 @@ export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
       gratitude: nc.gratitude ?? null, extra: extraField,
       photo_url: photoUrl, emoji: nc.emoji ?? null, date: nc.date,
     });
-  } catch {}
+    if (ncErr) console.error('[storage] saveNightCard Supabase error:', ncErr);
+    else console.log('[storage] Night Card saved to Supabase:', nc.id);
+  } catch (e) { console.error('[storage] saveNightCard exception:', e); }
 };
 
 export const deleteNightCard = async (userId: string, cardId: string): Promise<void> => {
