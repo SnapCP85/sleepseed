@@ -774,25 +774,60 @@ const illoUrlTracked = (prompt, seed, w=480, h=220, gender="") => {
 
 const extractJSON = (text) => {
   let s = text.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim();
+  // Attempt 1: direct parse
   try { return JSON.parse(s); } catch(_) {}
+  // Extract JSON block
   const start = s.indexOf("{");
   const end = s.lastIndexOf("}");
   if(start===-1||end<=start) throw new Error("No JSON found in response");
-  const block = s.slice(start,end+1);
+  let block = s.slice(start,end+1);
+  // Attempt 2: extracted block
   try { return JSON.parse(block); } catch(_) {}
-  // Fix trailing commas
-  const fixed = block.replace(/,(\s*[}\]])/g,"$1");
-  try { return JSON.parse(fixed); } catch(_) {}
-  // Fix unescaped quotes inside strings (common Claude issue)
-  const fixed2 = fixed.replace(/:\s*"((?:[^"\\]|\\.)*)(?:(?<!\\)"(?=[^,}\]\s]))/g, (m) => m.replace(/(?<!\\)"/g, '\\"'));
-  try { return JSON.parse(fixed2); } catch(_) {}
-  // Last resort: fix common issues — newlines in strings, smart quotes
-  const fixed3 = fixed
-    .replace(/[\u201C\u201D]/g, '"')
-    .replace(/[\u2018\u2019]/g, "'")
-    .replace(/\n/g, "\\n")
-    .replace(/\t/g, "\\t");
-  return JSON.parse(fixed3);
+  // Attempt 3: fix trailing commas
+  block = block.replace(/,(\s*[}\]])/g,"$1");
+  try { return JSON.parse(block); } catch(_) {}
+  // Attempt 4: replace smart quotes
+  block = block.replace(/[\u201C\u201D\u2033]/g,'"').replace(/[\u2018\u2019\u2032]/g,"'");
+  try { return JSON.parse(block); } catch(_) {}
+  // Attempt 5: aggressive — escape all problematic characters inside string values
+  // Walk char-by-char to find unescaped newlines/tabs inside strings
+  let result = "";
+  let inStr = false;
+  let escaped = false;
+  for (let i = 0; i < block.length; i++) {
+    const ch = block[i];
+    if (escaped) { result += ch; escaped = false; continue; }
+    if (ch === "\\") { result += ch; escaped = true; continue; }
+    if (ch === '"') { inStr = !inStr; result += ch; continue; }
+    if (inStr) {
+      if (ch === "\n") { result += "\\n"; continue; }
+      if (ch === "\r") { result += "\\r"; continue; }
+      if (ch === "\t") { result += "\\t"; continue; }
+    }
+    result += ch;
+  }
+  try { return JSON.parse(result); } catch(_) {}
+  // Attempt 6: even more aggressive — strip control chars inside strings
+  const stripped = result.replace(/[\x00-\x1F\x7F]/g, " ");
+  try { return JSON.parse(stripped); } catch(_) {}
+  // Attempt 7: try to fix unescaped inner quotes by replacing them with apostrophes
+  const fixed7 = stripped.replace(/"text"\s*:\s*"((?:[^"\\]|\\.)*)"/g, (match) => {
+    // Leave the key and outer quotes, escape inner unescaped quotes
+    return match;
+  });
+  // Final: remove everything after the last complete property and close
+  const lastGoodComma = stripped.lastIndexOf('","');
+  if (lastGoodComma > 0) {
+    const truncated = stripped.slice(0, lastGoodComma) + '"}';
+    // Close any open arrays
+    const openBrackets = (truncated.match(/\[/g)||[]).length - (truncated.match(/\]/g)||[]).length;
+    const openBraces = (truncated.match(/\{/g)||[]).length - (truncated.match(/\}/g)||[]).length;
+    let closed = truncated;
+    for (let i = 0; i < openBrackets; i++) closed += "]";
+    for (let i = 0; i < openBraces; i++) closed += "}";
+    try { return JSON.parse(closed); } catch(_) {}
+  }
+  throw new Error("Could not parse JSON from response after 7 attempts");
 };
 
 /* ── Storage ── */
