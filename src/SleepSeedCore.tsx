@@ -2318,7 +2318,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
           <div className="cast-title">Meet the Characters</div>
           <div className="cast-sub">in tonight's story…</div>
           <div className="cast-grid">
-            {book.allChars.map(c => (
+            {(book.allChars||[]).map(c => (
               <div className="cast-char" key={c.id}>
                 <div className="cast-av">
                   {c.photo
@@ -2376,7 +2376,8 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
     }
 
     if(!isAdv && pageIdx>=2 && pageIdx<=1+(book.pages?.length||0)) {
-      return <StoryPage pg={book.pages[pageIdx-2]} pgNum={pageIdx-1} refrain={book.refrain} />;
+      const pg = book.pages?.[pageIdx-2];
+      if(pg) return <StoryPage pg={pg} pgNum={pageIdx-1} refrain={book.refrain} />;
     }
 
     // ── The End page ──
@@ -3419,7 +3420,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </div>
               <button className="ctrl-btn fresh" onClick={async()=>{
                 try {
-                  const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance);
+                  const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,Array.isArray(lessons)?lessons.join("|"):lessons,adventure,storyLen,heroGender,heroClassify,storyGuidance);
                   await sDel(`book_${s}`);
                 } catch(_) {}
                 window.speechSynthesis?.cancel();
