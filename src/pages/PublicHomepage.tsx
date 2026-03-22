@@ -191,8 +191,8 @@ const CSS = `
 .nc-live-dot{width:5px;height:5px;border-radius:50%;background:var(--amber);animation:pulse 2s ease-in-out infinite}
 .nc-card{background:#F4EFE2;border-radius:4px;box-shadow:0 18px 56px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.05);overflow:hidden;max-width:330px;transform:rotate(-1.5deg);transition:transform .3s}
 .nc-card:hover{transform:rotate(0deg) scale(1.02)}
-.nc-img{height:280px;position:relative;overflow:hidden;background:linear-gradient(135deg,#080A14,#0E0A20);display:flex;align-items:center;justify-content:center}
-.nc-img img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block}
+.nc-img{aspect-ratio:4/5;position:relative;overflow:hidden;background:linear-gradient(135deg,#080A14,#0E0A20);display:flex;align-items:center;justify-content:center}
+.nc-img img{width:100%;height:100%;object-fit:cover;object-position:center center;display:block}
 .nc-img-overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.48) 0%,transparent 55%);pointer-events:none}
 .nc-img-moon{width:50px;height:50px;border-radius:50%;background:#F5B84C;position:relative;overflow:hidden;animation:moon-glow 3.5s ease-in-out infinite}
 .nc-img-moon-sh{position:absolute;width:48px;height:48px;border-radius:50%;background:#06080E;top:-7px;left:-11px}
