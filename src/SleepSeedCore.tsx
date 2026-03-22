@@ -1,8 +1,9 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import SleepSeedLibrary from "./sleepseed-library";
 import { buildStoryPrompt } from "./sleepseed-prompts";
 import { StoryFeedback, RereadCheck } from "./StoryFeedback";
 import { saveStory as dbSaveStory, saveNightCard as dbSaveNightCard } from "./lib/storage";
+import { getSceneByVibe } from "./lib/storyScenes";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Cormorant+Garamond:ital,wght@1,600&family=Patrick+Hand&family=Nunito:wght@400;600;700&family=Kalam:wght@400;700&display=swap');`;
 
@@ -203,14 +204,11 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .img-dot.done{border-color:rgba(76,200,144,.6);background:rgba(76,200,144,.12)}
 @keyframes dotPulse{0%,100%{opacity:.5}50%{opacity:1}}
 .err-box{background:rgba(192,64,48,.14);border:1px solid rgba(192,64,48,.28);border-radius:10px;padding:10px 14px;font-size:13px;color:#f09080;margin-bottom:14px}
-.book-shell{width:100%;max-width:500px;position:relative;animation:fup .4s cubic-bezier(.16,1,.3,1) both}
+.book-shell{width:100%;max-width:500px;animation:fup .4s cubic-bezier(.16,1,.3,1) both}
 .book-3d{border-radius:18px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.7);
   height:520px;position:relative;background:#0e1428;cursor:pointer}
-.bpage{position:absolute;inset:0;width:100%;height:100%}
-.pg-fwd{animation:pageFwd .32s cubic-bezier(.25,.46,.45,.94) both}
-.pg-bwd{animation:pageBwd .32s cubic-bezier(.25,.46,.45,.94) both}
-@keyframes pageFwd{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
-@keyframes pageBwd{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+.bpage{position:absolute;inset:0;width:100%;height:100%;animation:pageFade .3s ease both}
+@keyframes pageFade{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
 .pinset{position:absolute;inset:10px;border:1px solid rgba(212,160,48,.1);border-radius:8px;pointer-events:none;z-index:2}
 .cover-bg{background:linear-gradient(160deg,#0a0f28,#14204a,#0e1830)}
 .cover-lay{height:100%;display:flex;flex-direction:column}
@@ -309,9 +307,9 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
   background:rgba(0,0,0,.5);font-family:'Fraunces',serif;font-size:72px;font-weight:700;
   color:var(--gold3);animation:countPop .4s ease}
 @keyframes countPop{from{transform:scale(1.8);opacity:0}to{transform:scale(1);opacity:1}}
-.polaroid{background:#faf8f2;border-radius:4px;padding:16px 16px 32px;
-  box-shadow:0 16px 60px rgba(0,0,0,.6),0 4px 20px rgba(0,0,0,.4);transform:rotate(-1.5deg);
-  max-width:min(85vw,380px);margin:0 auto;animation:polaroidIn 1.2s cubic-bezier(.16,1,.3,1) both}
+.polaroid{background:#faf8f2;border-radius:4px;padding:14px 14px 28px;
+  box-shadow:0 8px 40px rgba(0,0,0,.5);transform:rotate(-2deg);
+  max-width:320px;margin:0 auto;animation:polaroidIn 1.2s cubic-bezier(.16,1,.3,1) both}
 @keyframes polaroidIn{from{opacity:0;transform:scale(.75) rotate(-10deg)}to{opacity:1;transform:scale(1) rotate(-2deg)}}
 .polaroid-photo{width:100%;aspect-ratio:4/3;border-radius:2px;overflow:hidden;
   background:linear-gradient(135deg,#1a1428,#2a1f3d);margin-bottom:14px}
@@ -328,34 +326,6 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .polaroid-meta{font-size:9px;color:#a08a5a;animation:fadeUp .5s ease 1.4s both}
 .polaroid-brand{font-family:'Fraunces',serif;font-size:10px;color:#c0a870;margin-top:4px;
   animation:fadeUp .5s ease 1.6s both}
-/* ── Story reveal screen ── */
-.reveal-screen{position:fixed;inset:0;z-index:200;background:#060b18;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:revealIn .6s ease both}
-@keyframes revealIn{from{opacity:0}to{opacity:1}}
-.reveal-moon{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 34% 32%,#fdf0c0,#e2c050,#b07818);box-shadow:0 0 60px 20px rgba(210,170,50,.25);margin-bottom:20px;animation:revealMoon 1s ease .2s both}
-@keyframes revealMoon{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
-.reveal-ready{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(212,160,48,.6);margin-bottom:12px;animation:revealText .6s ease .6s both;font-family:'Fraunces',serif}
-@keyframes revealText{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.reveal-title{font-family:'Fraunces',serif;font-size:clamp(22px,5vw,32px);font-weight:700;font-style:italic;color:var(--gold3);text-align:center;line-height:1.3;max-width:340px;padding:0 20px;margin-bottom:8px;animation:revealText .6s ease .9s both}
-.reveal-for{font-size:13px;color:rgba(212,160,48,.5);margin-bottom:28px;animation:revealText .6s ease 1.1s both;font-family:'Fraunces',serif}
-.reveal-btn{background:linear-gradient(135deg,#a87818,#d4a030);color:#180e00;border:none;border-radius:14px;padding:16px 40px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;cursor:pointer;animation:revealText .6s ease 1.5s both;transition:all .2s;box-shadow:0 4px 24px rgba(170,130,30,.35)}
-.reveal-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(170,130,30,.5)}
-.reveal-stars{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.reveal-star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d) ease-in-out infinite var(--dl)}
-/* ── Collapsed toolbar ── */
-.rd-toolbar-collapsed{position:absolute;bottom:12px;right:12px;z-index:10}
-.rd-dots-btn{height:32px;padding:0 12px;border-radius:16px;background:rgba(6,11,24,.85);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:all .2s;font-family:'Nunito',sans-serif;font-weight:700}
-.rd-dots-btn:hover{background:rgba(6,11,24,.95);color:var(--cream)}
-.rd-expanded{position:absolute;bottom:44px;right:0;background:rgba(6,11,24,.95);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:4px;min-width:160px;backdrop-filter:blur(16px);animation:fup .2s ease}
-.rd-exp-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:none;background:transparent;color:rgba(244,239,232,.6);font-size:12px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;white-space:nowrap}
-.rd-exp-btn:hover{background:rgba(255,255,255,.06);color:var(--cream)}
-/* ── Night Card seal screen ── */
-.seal-screen{position:fixed;inset:0;z-index:200;background:#060b18;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:revealIn .6s ease both;text-align:center;padding:32px}
-.seal-star{font-size:48px;animation:sealStar 1s ease .3s both}
-@keyframes sealStar{from{transform:scale(0) rotate(-180deg);opacity:0}to{transform:scale(1) rotate(0deg);opacity:1}}
-.seal-title{font-family:'Fraunces',serif;font-size:clamp(20px,4.5vw,28px);font-weight:700;color:var(--cream);margin:16px 0 6px;animation:revealText .6s ease .8s both}
-.seal-name{font-family:'Fraunces',serif;font-size:clamp(18px,4vw,24px);font-style:italic;color:var(--gold2);animation:revealText .6s ease 1s both}
-.seal-sub{font-size:12px;color:rgba(212,160,48,.45);margin-top:16px;animation:revealText .6s ease 1.3s both}
-.seal-dismiss{background:transparent;border:none;color:rgba(255,255,255,.2);font-size:11px;cursor:pointer;margin-top:24px;animation:revealText .6s ease 1.8s both;font-family:'Nunito',sans-serif}
 .end-msg{font-family:'Kalam',cursive;font-size:14px;color:var(--ui);text-align:center;line-height:1.9}
 .illo-slot{position:absolute;inset:0}
 .shimmer{position:absolute;inset:0;background:linear-gradient(110deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.09) 50%,rgba(255,255,255,.04) 75%);
@@ -704,7 +674,7 @@ TONE: Intelligent, funny, and emotionally honest. Not condescending. The best mo
 
 BEDTIME GUARD: No matter how sophisticated the structure, this is still a bedtime story. The emotional complexity earns its place only if it resolves completely and lands in warmth and sleep. A 9-year-old reading this at 9pm should feel satisfied, seen, and sleepy — not stimulated or unsettled.`},
 ];
-const CHAR_ICONS = {hero:"⭐",friend:"👫",sibling:"👶",parent:"🧑‍🍼",pet:"🐾",toy:"🧸",other:"✨"};
+const CHAR_ICONS = {hero:"⭐",friend:"👫",sibling:"👶",parent:"🧑‍🍼",pet:"🐾",toy:"🧸"};
 const BONDING_QUESTIONS = [
   "If you could be any animal for one day, what would you be?",
   "What's the silliest dream you can remember?",
@@ -805,60 +775,14 @@ const illoUrlTracked = (prompt, seed, w=480, h=220, gender="") => {
 
 const extractJSON = (text) => {
   let s = text.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim();
-  // Attempt 1: direct parse
   try { return JSON.parse(s); } catch(_) {}
-  // Extract JSON block
   const start = s.indexOf("{");
   const end = s.lastIndexOf("}");
   if(start===-1||end<=start) throw new Error("No JSON found in response");
-  let block = s.slice(start,end+1);
-  // Attempt 2: extracted block
+  const block = s.slice(start,end+1);
   try { return JSON.parse(block); } catch(_) {}
-  // Attempt 3: fix trailing commas
-  block = block.replace(/,(\s*[}\]])/g,"$1");
-  try { return JSON.parse(block); } catch(_) {}
-  // Attempt 4: replace smart quotes
-  block = block.replace(/[\u201C\u201D\u2033]/g,'"').replace(/[\u2018\u2019\u2032]/g,"'");
-  try { return JSON.parse(block); } catch(_) {}
-  // Attempt 5: aggressive — escape all problematic characters inside string values
-  // Walk char-by-char to find unescaped newlines/tabs inside strings
-  let result = "";
-  let inStr = false;
-  let escaped = false;
-  for (let i = 0; i < block.length; i++) {
-    const ch = block[i];
-    if (escaped) { result += ch; escaped = false; continue; }
-    if (ch === "\\") { result += ch; escaped = true; continue; }
-    if (ch === '"') { inStr = !inStr; result += ch; continue; }
-    if (inStr) {
-      if (ch === "\n") { result += "\\n"; continue; }
-      if (ch === "\r") { result += "\\r"; continue; }
-      if (ch === "\t") { result += "\\t"; continue; }
-    }
-    result += ch;
-  }
-  try { return JSON.parse(result); } catch(_) {}
-  // Attempt 6: even more aggressive — strip control chars inside strings
-  const stripped = result.replace(/[\x00-\x1F\x7F]/g, " ");
-  try { return JSON.parse(stripped); } catch(_) {}
-  // Attempt 7: try to fix unescaped inner quotes by replacing them with apostrophes
-  const fixed7 = stripped.replace(/"text"\s*:\s*"((?:[^"\\]|\\.)*)"/g, (match) => {
-    // Leave the key and outer quotes, escape inner unescaped quotes
-    return match;
-  });
-  // Final: remove everything after the last complete property and close
-  const lastGoodComma = stripped.lastIndexOf('","');
-  if (lastGoodComma > 0) {
-    const truncated = stripped.slice(0, lastGoodComma) + '"}';
-    // Close any open arrays
-    const openBrackets = (truncated.match(/\[/g)||[]).length - (truncated.match(/\]/g)||[]).length;
-    const openBraces = (truncated.match(/\{/g)||[]).length - (truncated.match(/\}/g)||[]).length;
-    let closed = truncated;
-    for (let i = 0; i < openBrackets; i++) closed += "]";
-    for (let i = 0; i < openBraces; i++) closed += "}";
-    try { return JSON.parse(closed); } catch(_) {}
-  }
-  throw new Error("Could not parse JSON from response after 7 attempts");
+  const fixed = block.replace(/,(\s*[}\]])/g,"$1");
+  return JSON.parse(fixed);
 };
 
 /* ── Storage ── */
@@ -1049,362 +973,6 @@ const DG_SPARKS = [
   [220,65,"#86efac",1.2,"2.3s","-0.7s"],[156,88,"#fde68a",1,"1.8s","-1.1s"],
 ];
 
-const DreamIllo = () => (
-  <div style={{position:"absolute",inset:0,overflow:"hidden",background:"#04091a"}}>
-    <svg viewBox="0 0 400 190" xmlns="http://www.w3.org/2000/svg"
-         preserveAspectRatio="xMidYMid slice"
-         style={{width:"100%",height:"100%",display:"block"}}>
-      <defs>
-        <style>{`
-          .dg-st{animation:dgTwinkle var(--d,2s) ease-in-out infinite var(--dl,0s)}
-          .dg-gw{animation:dgGlow var(--d,3s) ease-in-out infinite var(--dl,0s)}
-          .dg-bb{animation:dgBob var(--d,5s) ease-in-out infinite var(--dl,0s)}
-          .dg-f1{animation:dgFF1 4.5s ease-in-out infinite}
-          .dg-f2{animation:dgFF2 5.5s ease-in-out infinite}
-          .dg-sp{animation:dgSP var(--d,2s) ease-in-out infinite var(--dl,0s)}
-          .dg-sm{animation:dgSmk 2s ease-out infinite var(--dl,0s)}
-          @keyframes dgTwinkle{0%,100%{opacity:.06;transform:scale(.55)}50%{opacity:1;transform:scale(1.3)}}
-          @keyframes dgGlow{0%,100%{opacity:.28}50%{opacity:.92}}
-          @keyframes dgBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-          @keyframes dgFF1{0%,100%{transform:translate(0,0)}30%{transform:translate(5px,-9px)}70%{transform:translate(-4px,-5px)}}
-          @keyframes dgFF2{0%,100%{transform:translate(0,0)}33%{transform:translate(-6px,-8px)}66%{transform:translate(4px,-11px)}}
-          @keyframes dgSP{0%,100%{opacity:0;transform:scale(0)}40%,60%{opacity:1;transform:scale(1)}}
-          @keyframes dgSmk{0%{opacity:0;transform:translate(0,0) scale(.8)}45%{opacity:.4}100%{opacity:0;transform:translate(0,-14px) scale(2.2)}}
-        `}</style>
-        <linearGradient id="dg-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#04091a"/><stop offset="100%" stopColor="#0c1830"/>
-        </linearGradient>
-        <radialGradient id="dg-fg1" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#86efac" stopOpacity=".65"/>
-          <stop offset="100%" stopColor="#86efac" stopOpacity="0"/>
-        </radialGradient>
-        <radialGradient id="dg-fg2" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#e879f9" stopOpacity=".55"/>
-          <stop offset="100%" stopColor="#e879f9" stopOpacity="0"/>
-        </radialGradient>
-        <radialGradient id="dg-vig" cx="50%" cy="50%" r="70%">
-          <stop offset="0%" stopColor="transparent"/>
-          <stop offset="100%" stopColor="#04091a" stopOpacity=".48"/>
-        </radialGradient>
-      </defs>
-
-      {/* Sky */}
-      <rect width="400" height="190" fill="url(#dg-sky)"/>
-
-      {/* Stars */}
-      {DG_STARS.map(([x,y,r],i) => (
-        <circle key={i} cx={x} cy={y} r={r} fill="white" className="dg-st"
-          style={{"--d":`${(2+((i*73)%30)/10).toFixed(1)}s`,"--dl":`-${((i*47)%40)/10}s`}}/>
-      ))}
-
-      {/* Moon glow halos */}
-      <circle cx="344" cy="26" r="38" fill="#fde68a" opacity="0.07" className="dg-gw" style={{"--d":"4s","--dl":"0s"}}/>
-      <circle cx="344" cy="26" r="25" fill="#fde68a" opacity="0.1" className="dg-gw" style={{"--d":"4s","--dl":"1s"}}/>
-      {/* Moon */}
-      <circle cx="344" cy="26" r="17" fill="#fef3c0"/>
-      <circle cx="338" cy="21" r="3" fill="#f0de88" opacity="0.4"/>
-      <circle cx="349" cy="30" r="2" fill="#f0de88" opacity="0.3"/>
-      <circle cx="342" cy="31" r="1.5" fill="#f0de88" opacity="0.28"/>
-
-      {/* Far hills */}
-      <path d="M0 154 Q40 131 80 146 Q120 126 160 139 Q200 119 240 135 Q280 117 320 131 Q355 119 400 129 L400 190 L0 190Z" fill="#060d1c"/>
-      {/* Near ground */}
-      <path d="M0 169 Q50 156 100 164 Q150 153 200 161 Q250 151 300 159 Q350 152 400 158 L400 190 L0 190Z" fill="#080f22"/>
-
-      {/* Window */}
-      <rect x="20" y="52" width="46" height="72" rx="23" fill="#0b1833" stroke="#243258" strokeWidth="2.5"/>
-      <line x1="43" y1="52" x2="43" y2="124" stroke="#243258" strokeWidth="1.5"/>
-      <line x1="20" y1="90" x2="66" y2="90" stroke="#243258" strokeWidth="1.5"/>
-      <rect x="21" y="53" width="44" height="70" rx="22" fill="#fde68a" opacity="0.033"/>
-      {/* Curtains */}
-      <path d="M15 47 Q20 72 15 127 Q27 111 26 87 Q28 66 22 49Z" fill="#1c2e6a" opacity="0.88"/>
-      <path d="M71 47 Q66 72 71 127 Q59 111 60 87 Q58 66 64 49Z" fill="#1c2e6a" opacity="0.88"/>
-      <ellipse cx="23" cy="88" rx="4" ry="6" fill="#28388a" opacity="0.7"/>
-      <ellipse cx="63" cy="88" rx="4" ry="6" fill="#28388a" opacity="0.7"/>
-
-      {/* Floor shadow */}
-      <rect x="0" y="174" width="400" height="16" fill="#050b18" opacity="0.6"/>
-
-      {/* === BED === */}
-      {/* Posts */}
-      <rect x="137" y="100" width="11" height="78" rx="3" fill="#3e1e07"/>
-      <rect x="252" y="100" width="11" height="78" rx="3" fill="#3e1e07"/>
-      <circle cx="142" cy="99" r="7.5" fill="#4e2808"/>
-      <circle cx="258" cy="99" r="7.5" fill="#4e2808"/>
-      {/* Headboard */}
-      <rect x="148" y="107" width="104" height="40" rx="10" fill="#5c2c08"/>
-      <rect x="153" y="111" width="94" height="32" rx="7" fill="#6e3810"/>
-      <path d="M155 111 Q200 102 245 111" fill="none" stroke="#7e4418" strokeWidth="2"/>
-      {/* Foot legs */}
-      <rect x="137" y="156" width="11" height="32" rx="3" fill="#3e1e07"/>
-      <rect x="252" y="156" width="11" height="32" rx="3" fill="#3e1e07"/>
-      {/* Mattress */}
-      <rect x="135" y="141" width="130" height="34" rx="6" fill="#1c2c58"/>
-      {/* Blanket */}
-      <path d="M135 147 Q200 141 265 147 L265 175 Q200 179 135 175Z" fill="#1a307a"/>
-      {/* Quilt vertical lines */}
-      {[152,165,178,191,204,217,230,243,256].map((x,i) => (
-        <line key={`ql${i}`} x1={x} y1={148} x2={x} y2={175} stroke="#233990" strokeWidth="1" opacity="0.5"/>
-      ))}
-      {/* Quilt horizontal lines */}
-      {[155,163,170].map((y,i) => (
-        <path key={`qh${i}`} d={`M135 ${y} Q200 ${y-2} 265 ${y}`} fill="none" stroke="#233990" strokeWidth="1" opacity="0.5"/>
-      ))}
-      {/* Quilt star motifs */}
-      {[[157,157],[181,166],[205,157],[229,166],[250,159]].map(([x,y],i) => (
-        <text key={`qs${i}`} x={x} y={y} fontSize="7" fill="#2d4ca0" opacity="0.65" textAnchor="middle">✦</text>
-      ))}
-      {/* Pillow */}
-      <ellipse cx="200" cy="147" rx="37" ry="9" fill="#d8d2c0"/>
-      <ellipse cx="200" cy="145" rx="35" ry="7" fill="#eeead8"/>
-      <line x1="177" y1="145" x2="223" y2="145" stroke="#d0c8b4" strokeWidth="1" opacity="0.48"/>
-
-      {/* === CHILD READING === */}
-      {/* Arms */}
-      <path d="M188 145 Q183 152 180 158" stroke="#e8b878" strokeWidth="6" strokeLinecap="round" fill="none"/>
-      <path d="M212 145 Q217 152 220 158" stroke="#e8b878" strokeWidth="6" strokeLinecap="round" fill="none"/>
-      {/* Head */}
-      <circle cx="200" cy="136" r="12" fill="#f0c898"/>
-      {/* Hair */}
-      <path d="M188 132 Q196 122 204 122 Q213 122 214 129 Q212 125 204 124 Q196 124 188 131Z" fill="#6a3608"/>
-      <path d="M188 130 Q190 125 196 124" fill="none" stroke="#5a2808" strokeWidth="1.5" strokeLinecap="round"/>
-      {/* Ears */}
-      <circle cx="188" cy="136" r="4.5" fill="#e8a868"/>
-      <circle cx="212" cy="136" r="4.5" fill="#e8a868"/>
-      <circle cx="188" cy="136" r="3" fill="#f0c898"/>
-      <circle cx="212" cy="136" r="3" fill="#f0c898"/>
-      {/* Eyes looking down at book */}
-      <ellipse cx="196" cy="137" rx="2.2" ry="1.4" fill="#3a2010"/>
-      <ellipse cx="204" cy="137" rx="2.2" ry="1.4" fill="#3a2010"/>
-      <path d="M193.5 135.5 Q196 134.5 198.5 135.5" fill="none" stroke="#3a2010" strokeWidth="0.8"/>
-      <path d="M201.5 135.5 Q204 134.5 206.5 135.5" fill="none" stroke="#3a2010" strokeWidth="0.8"/>
-      {/* Nose */}
-      <path d="M199 140.5 Q200 142 201 140.5" fill="none" stroke="#c8886a" strokeWidth="1.2" strokeLinecap="round"/>
-      {/* Smile */}
-      <path d="M196.5 143 Q200 145.5 203.5 143" fill="none" stroke="#c07858" strokeWidth="1.3" strokeLinecap="round"/>
-      {/* Cheek blush */}
-      <circle cx="192" cy="140" r="3.5" fill="#f0a0a0" opacity="0.3"/>
-      <circle cx="208" cy="140" r="3.5" fill="#f0a0a0" opacity="0.3"/>
-
-      {/* === GLOWING BOOK === */}
-      <ellipse cx="200" cy="162" rx="34" ry="15" fill="#fef3c0" opacity="0.16" className="dg-gw" style={{"--d":"2.5s","--dl":"0s"}}/>
-      <ellipse cx="200" cy="161" rx="22" ry="9" fill="#fef3c0" opacity="0.2" className="dg-gw" style={{"--d":"2.5s","--dl":"0.5s"}}/>
-      {/* Pages */}
-      <path d="M181 153 Q191 147 200 150 L200 166 Q191 163 181 167Z" fill="#fef5e0"/>
-      <path d="M219 153 Q209 147 200 150 L200 166 Q209 163 219 167Z" fill="#f5e8ce"/>
-      {/* Page text lines */}
-      {[154,158,162].map((y,i) => (
-        <line key={`pl${i}`} x1={183+i} y1={y} x2={197} y2={y-0.5} stroke="#d4c4a0" strokeWidth="0.8" opacity="0.62"/>
-      ))}
-      {[154,158,162].map((y,i) => (
-        <line key={`pr${i}`} x1={217-i} y1={y} x2={203} y2={y-0.5} stroke="#c4b490" strokeWidth="0.8" opacity="0.62"/>
-      ))}
-      {/* Spine */}
-      <line x1="200" y1="150" x2="200" y2="166" stroke="#c4a870" strokeWidth="2"/>
-      {/* Light rays from book */}
-      <line x1="200" y1="147" x2="200" y2="137" stroke="#fde68a" strokeWidth="1.2" opacity="0.2"/>
-      <line x1="190" y1="149" x2="184" y2="139" stroke="#fde68a" strokeWidth="0.9" opacity="0.14"/>
-      <line x1="210" y1="149" x2="216" y2="139" stroke="#fde68a" strokeWidth="0.9" opacity="0.14"/>
-
-      {/* === DRAGON (left floor, curled, bobbing) === */}
-      <g className="dg-bb" style={{"--d":"6.5s","--dl":"0s"}}>
-        {/* Tail */}
-        <path d="M30 183 Q20 175 18 183 Q16 191 29 189 Q41 187 48 179" fill="none" stroke="#389058" strokeWidth="7" strokeLinecap="round"/>
-        <path d="M48 179 Q53 172 57 177 Q55 183 48 181Z" fill="#28784a"/>
-        {/* Body */}
-        <ellipse cx="74" cy="173" rx="26" ry="15" fill="#3d9060"/>
-        {/* Belly */}
-        <ellipse cx="74" cy="176" rx="16" ry="9.5" fill="#78c898" opacity="0.72"/>
-        {/* Back spines */}
-        {[0,1,2,3].map(i => (
-          <path key={`ds${i}`} d={`M${60+i*8} ${167-i*0.5} L${59+i*8} ${159-i*2} L${63+i*8} ${165-i*0.5}Z`} fill="#28784a"/>
-        ))}
-        {/* Wing */}
-        <path d="M58 161 Q43 147 50 159 Q55 165 60 168Z" fill="#2d7048" opacity="0.82"/>
-        <path d="M58 161 Q63 147 65 158 Q63 164 61 168Z" fill="#2d7048" opacity="0.55"/>
-        {/* Neck */}
-        <ellipse cx="88" cy="162" rx="11" ry="9" fill="#3d9060"/>
-        {/* Head */}
-        <ellipse cx="97" cy="153" rx="14" ry="11" fill="#3d9060"/>
-        {/* Snout */}
-        <ellipse cx="108" cy="155" rx="6.5" ry="5.5" fill="#4aaa70"/>
-        <ellipse cx="111" cy="153.5" rx="1.3" ry="1" fill="#2d6845"/>
-        {/* Eye */}
-        <circle cx="99" cy="149" r="4" fill="#fde068"/>
-        <circle cx="99" cy="149" r="2.5" fill="#1a3a1a"/>
-        <circle cx="99.8" cy="148.2" r="0.9" fill="white"/>
-        <ellipse cx="99" cy="149" rx="0.7" ry="2.3" fill="#0d200d"/>
-        {/* Horns */}
-        <path d="M90 145 L87 138 L93 143Z" fill="#2d7048"/>
-        <path d="M98 144 L97 137 L101 142Z" fill="#2d7048"/>
-        {/* Smoke puffs */}
-        <circle cx="116" cy="150" r="3.5" fill="#b8ccb8" className="dg-sm" style={{"--dl":"0s"}}/>
-        <circle cx="120" cy="147" r="3" fill="#b8ccb8" className="dg-sm" style={{"--dl":"0.6s"}}/>
-        <circle cx="124" cy="145" r="2.5" fill="#b8ccb8" className="dg-sm" style={{"--dl":"1.2s"}}/>
-      </g>
-
-      {/* === OWL (right bedpost, bobbing) === */}
-      <g className="dg-bb" style={{"--d":"5s","--dl":"1.2s"}} transform="translate(258, 90)">
-        {/* Wings */}
-        <path d="M-11 -1 Q-17 6 -13 13 Q-6 7 -9 2Z" fill="#6b3e18"/>
-        <path d="M11 -1 Q17 6 13 13 Q6 7 9 2Z" fill="#6b3e18"/>
-        {/* Body */}
-        <ellipse cx="0" cy="5" rx="10" ry="12" fill="#8b5e28"/>
-        {/* Belly */}
-        <ellipse cx="0" cy="9" rx="6" ry="8" fill="#d4a840"/>
-        {[-2,0,2,4,6].map((y,i) => (
-          <path key={`ob${i}`} d={`M-4.5 ${y+9} Q0 ${y+10} 4.5 ${y+9}`} fill="none" stroke="#b88820" strokeWidth="0.9" opacity="0.45"/>
-        ))}
-        {/* Head */}
-        <circle cx="0" cy="-8" r="10.5" fill="#8b5e28"/>
-        <ellipse cx="0" cy="-7" rx="8" ry="7.5" fill="#c49038" opacity="0.33"/>
-        {/* Ear tufts */}
-        <path d="M-7 -17 L-10 -24 L-3 -18Z" fill="#6b3e18"/>
-        <path d="M7 -17 L10 -24 L3 -18Z" fill="#6b3e18"/>
-        {/* Eyes */}
-        <circle cx="-3.5" cy="-8.5" r="5" fill="#fde068"/>
-        <circle cx="3.5" cy="-8.5" r="5" fill="#fde068"/>
-        <circle cx="-3.5" cy="-8.5" r="3.2" fill="#1a100a"/>
-        <circle cx="3.5" cy="-8.5" r="3.2" fill="#1a100a"/>
-        <circle cx="-2.4" cy="-9.5" r="1.1" fill="white"/>
-        <circle cx="4.6" cy="-9.5" r="1.1" fill="white"/>
-        {/* Beak */}
-        <path d="M-1.5 -5.5 L0 -3.5 L1.5 -5.5 Q0 -4.5 -1.5 -5.5Z" fill="#d4a030"/>
-        {/* Feet on post */}
-        <path d="M-5 18 L-7 25 M-2 18 L-2 26 M2 18 L4 25 M5 18 L7 25" stroke="#d4a030" strokeWidth="1.8" strokeLinecap="round"/>
-      </g>
-
-      {/* === FAIRY 1 (left, green-gold, floating) === */}
-      <g className="dg-f1">
-        <g transform="translate(86, 62)">
-          <circle cx="0" cy="0" r="17" fill="url(#dg-fg1)" className="dg-gw" style={{"--d":"2.2s","--dl":"0s"}}/>
-          {/* Wings */}
-          <ellipse cx="-12" cy="-4" rx="11" ry="5.5" fill="#bbf7d0" opacity="0.58" transform="rotate(-28,-12,-4)"/>
-          <ellipse cx="12" cy="-4" rx="11" ry="5.5" fill="#bbf7d0" opacity="0.58" transform="rotate(28,12,-4)"/>
-          <ellipse cx="-9" cy="5" rx="8" ry="4.5" fill="#bbf7d0" opacity="0.44" transform="rotate(22,-9,5)"/>
-          <ellipse cx="9" cy="5" rx="8" ry="4.5" fill="#bbf7d0" opacity="0.44" transform="rotate(-22,9,5)"/>
-          <path d="M0 -2 Q-7 -5 -12 -4" fill="none" stroke="#86efac" strokeWidth="0.7" opacity="0.5"/>
-          <path d="M0 -2 Q7 -5 12 -4" fill="none" stroke="#86efac" strokeWidth="0.7" opacity="0.5"/>
-          {/* Dress */}
-          <path d="M-3.5 2 Q0 9 3.5 2 Q2 12 0 14 Q-2 12 -3.5 2Z" fill="#a7f3d0"/>
-          <ellipse cx="0" cy="1" rx="3.5" ry="4.5" fill="#d1fae5"/>
-          {/* Head */}
-          <circle cx="0" cy="-6.5" r="5.5" fill="#fcd7aa"/>
-          {/* Hair */}
-          <path d="M-5.5 -8.5 Q0 -15 5.5 -8.5 Q3 -12 0 -12 Q-3 -12 -5.5 -8.5Z" fill="#fde68a"/>
-          <path d="M-5.5 -9 Q-7 -5 -5 -1" fill="none" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round"/>
-          {/* Eyes */}
-          <circle cx="-1.8" cy="-6.5" r="1.3" fill="#2a1808"/>
-          <circle cx="1.8" cy="-6.5" r="1.3" fill="#2a1808"/>
-          <circle cx="-1.3" cy="-7" r="0.4" fill="white"/>
-          <circle cx="2.3" cy="-7" r="0.4" fill="white"/>
-          {/* Smile */}
-          <path d="M-1.5 -4.5 Q0 -3 1.5 -4.5" fill="none" stroke="#c07858" strokeWidth="0.8" strokeLinecap="round"/>
-          {/* Wand */}
-          <line x1="4.5" y1="1" x2="17" y2="-12" stroke="#fde68a" strokeWidth="1.3" strokeLinecap="round"/>
-          <circle cx="17" cy="-12" r="3.5" fill="#fde068" className="dg-sp" style={{"--d":"1.3s","--dl":"0s"}}/>
-          <path d="M14.5 -14.5 L17 -9 L19.5 -14.5 L17 -17Z" fill="#fde068" opacity="0.7"/>
-          {/* Sparkle trail */}
-          <circle cx="24" cy="-17" r="2" fill="#86efac" className="dg-sp" style={{"--d":"1.6s","--dl":"0.2s"}}/>
-          <circle cx="29" cy="-11" r="1.5" fill="#fde068" className="dg-sp" style={{"--d":"1.6s","--dl":"0.55s"}}/>
-          <circle cx="26" cy="-4" r="1.2" fill="#86efac" className="dg-sp" style={{"--d":"1.6s","--dl":"0.9s"}}/>
-          <circle cx="20" cy="-2" r="1" fill="#fde068" className="dg-sp" style={{"--d":"1.6s","--dl":"1.2s"}}/>
-        </g>
-      </g>
-
-      {/* === FAIRY 2 (right, purple, floating) === */}
-      <g className="dg-f2">
-        <g transform="translate(309, 44)">
-          <circle cx="0" cy="0" r="15" fill="url(#dg-fg2)" className="dg-gw" style={{"--d":"2.5s","--dl":"0.9s"}}/>
-          {/* Wings */}
-          <ellipse cx="-11" cy="-4" rx="10" ry="5" fill="#f5d0fe" opacity="0.58" transform="rotate(-22,-11,-4)"/>
-          <ellipse cx="11" cy="-4" rx="10" ry="5" fill="#f5d0fe" opacity="0.58" transform="rotate(22,11,-4)"/>
-          <ellipse cx="-8.5" cy="4.5" rx="7.5" ry="4" fill="#f5d0fe" opacity="0.44" transform="rotate(22,-8.5,4.5)"/>
-          <ellipse cx="8.5" cy="4.5" rx="7.5" ry="4" fill="#f5d0fe" opacity="0.44" transform="rotate(-22,8.5,4.5)"/>
-          {/* Dress */}
-          <path d="M-3 2.5 Q0 9 3 2.5 Q1.5 12 0 13 Q-1.5 12 -3 2.5Z" fill="#e879f9" opacity="0.8"/>
-          <ellipse cx="0" cy="1.5" rx="3.2" ry="4.2" fill="#fae8ff"/>
-          {/* Head */}
-          <circle cx="0" cy="-6" r="5" fill="#fcd7aa"/>
-          {/* Hair */}
-          <path d="M-5 -8 Q0 -13 5 -8 Q3 -11 0 -11 Q-3 -11 -5 -8Z" fill="#8b1a8b"/>
-          <path d="M-5 -8.5 Q-7.5 -4 -5.5 0" fill="none" stroke="#7a1570" strokeWidth="1.5" strokeLinecap="round"/>
-          {/* Eyes */}
-          <circle cx="-1.8" cy="-6" r="1.2" fill="#2a1808"/>
-          <circle cx="1.8" cy="-6" r="1.2" fill="#2a1808"/>
-          {/* Wand pointing left */}
-          <line x1="-4.5" y1="1.5" x2="-17" y2="-9" stroke="#fde68a" strokeWidth="1.3" strokeLinecap="round"/>
-          <circle cx="-17" cy="-9" r="3.5" fill="#e879f9" className="dg-sp" style={{"--d":"1.4s","--dl":"0.35s"}}/>
-          <path d="M-14.5 -11.5 L-17 -6 L-19.5 -11.5 L-17 -14Z" fill="#e879f9" opacity="0.7"/>
-          {/* Sparkle trail */}
-          <circle cx="-24" cy="-7" r="1.8" fill="#f5d0fe" className="dg-sp" style={{"--d":"1.6s","--dl":"0.65s"}}/>
-          <circle cx="-22" cy="-15" r="1.3" fill="#e879f9" className="dg-sp" style={{"--d":"1.6s","--dl":"1s"}}/>
-          <circle cx="-28" cy="-13" r="1" fill="#f5d0fe" className="dg-sp" style={{"--d":"1.6s","--dl":"1.35s"}}/>
-        </g>
-      </g>
-
-      {/* === BUNNY (right of bed, bobbing) === */}
-      <g className="dg-bb" style={{"--d":"4.8s","--dl":"0.7s"}} transform="translate(330, 162)">
-        {/* Body */}
-        <ellipse cx="0" cy="0" rx="13" ry="11" fill="#e8e2da"/>
-        {/* Cotton tail */}
-        <circle cx="11" cy="2" r="4.5" fill="white" opacity="0.9"/>
-        {/* Belly */}
-        <ellipse cx="-1" cy="3" rx="8" ry="7" fill="#f5f0ec"/>
-        {/* Head */}
-        <circle cx="-2" cy="-14" r="10.5" fill="#e8e2da"/>
-        {/* Ears */}
-        <ellipse cx="-7.5" cy="-26" rx="3.5" ry="9.5" fill="#e8e2da"/>
-        <ellipse cx="-7.5" cy="-26" rx="1.8" ry="7.5" fill="#f8c0cc" opacity="0.65"/>
-        <ellipse cx="3.5" cy="-27" rx="3.5" ry="10" fill="#e8e2da"/>
-        <ellipse cx="3.5" cy="-27" rx="1.8" ry="8" fill="#f8c0cc" opacity="0.65"/>
-        {/* Eyes */}
-        <circle cx="-6" cy="-15" r="2.8" fill="#f08090"/>
-        <circle cx="-6" cy="-15" r="1.7" fill="#2a0a0a"/>
-        <circle cx="-5.2" cy="-15.7" r="0.6" fill="white"/>
-        <circle cx="2" cy="-15" r="2.8" fill="#f08090"/>
-        <circle cx="2" cy="-15" r="1.7" fill="#2a0a0a"/>
-        <circle cx="2.8" cy="-15.7" r="0.6" fill="white"/>
-        {/* Nose */}
-        <ellipse cx="-2" cy="-10.5" rx="1.6" ry="1.1" fill="#f080a0"/>
-        {/* Mouth */}
-        <path d="M-2 -9.5 Q-4.5 -7.5 -5.5 -8.5" fill="none" stroke="#c87898" strokeWidth="0.9" strokeLinecap="round"/>
-        <path d="M-2 -9.5 Q0.5 -7.5 1.5 -8.5" fill="none" stroke="#c87898" strokeWidth="0.9" strokeLinecap="round"/>
-        {/* Whiskers */}
-        <line x1="-10" y1="-12" x2="-4" y2="-11.5" stroke="#c0b0a8" strokeWidth="0.8" opacity="0.65"/>
-        <line x1="-10" y1="-10.5" x2="-4" y2="-10.5" stroke="#c0b0a8" strokeWidth="0.8" opacity="0.65"/>
-        <line x1="2" y1="-11.5" x2="8" y2="-12" stroke="#c0b0a8" strokeWidth="0.8" opacity="0.65"/>
-        <line x1="2" y1="-10.5" x2="8" y2="-10" stroke="#c0b0a8" strokeWidth="0.8" opacity="0.65"/>
-        {/* Paws */}
-        <ellipse cx="-8" cy="9" rx="5.5" ry="3.5" fill="#e8e2da"/>
-        <ellipse cx="7" cy="9.5" rx="5.5" ry="3.5" fill="#e8e2da"/>
-      </g>
-
-      {/* === MUSHROOMS (left ground) === */}
-      <g transform="translate(107, 171)">
-        <rect x="-3" y="-9" width="6" height="11" rx="1.5" fill="#d4c0a0"/>
-        <ellipse cx="0" cy="-10" rx="11" ry="5.5" fill="#c03030"/>
-        <circle cx="-4.5" cy="-11" r="2" fill="white" opacity="0.8"/>
-        <circle cx="1" cy="-13" r="1.5" fill="white" opacity="0.8"/>
-        <circle cx="5.5" cy="-11" r="1.8" fill="white" opacity="0.8"/>
-      </g>
-      <g transform="translate(122, 175)">
-        <rect x="-2" y="-7" width="4" height="9" rx="1" fill="#c8b090"/>
-        <ellipse cx="0" cy="-7.5" rx="7" ry="4" fill="#e04040"/>
-        <circle cx="-3" cy="-8.5" r="1.3" fill="white" opacity="0.75"/>
-        <circle cx="2" cy="-9.5" r="1" fill="white" opacity="0.75"/>
-      </g>
-
-      {/* === FLOATING SPARKLES throughout scene === */}
-      {DG_SPARKS.map(([x,y,c,r,d,dl],i) => (
-        <circle key={`sp${i}`} cx={x} cy={y} r={r} fill={c} className="dg-sp" style={{"--d":d,"--dl":dl}}/>
-      ))}
-
-      {/* Vignette */}
-      <rect width="400" height="190" fill="url(#dg-vig)"/>
-    </svg>
-  </div>
-);
 
 const ClassifySelect = ({value,onChange,className,style}) => (
   <select className={className||"char-cls-sel"} style={style} value={value} onChange={onChange}>
@@ -1490,7 +1058,6 @@ export default function SleepSeed({
   const [isReading,      setIsReading]      = useState(false);
   const [sparkles,       setSparkles]       = useState([]);
   const [cachedChars,    setCachedChars]    = useState({});
-  const [savedCharacters, setSavedCharacters] = useState<any[]>([]);
   const [imgLoaded,      setImgLoaded]      = useState({});
   const [memories,       setMemories]       = useState([]);
   const [voiceId,        setVoiceId]        = useState(null); // EL cloned voice
@@ -1519,8 +1086,6 @@ export default function SleepSeed({
   const [viewingNightCard, setViewingNightCard] = useState<any>(null); // Night Card detail view
   const [styleDna,         setStyleDna]         = useState<any>(null); // Style DNA for feedback
   const [showFeedback,     setShowFeedback]     = useState(false);     // StoryFeedback sheet visible
-  const [showToolbar,      setShowToolbar]      = useState(false);     // collapsed toolbar expanded
-  const [showSeal,         setShowSeal]         = useState(false);     // Night Card seal screen
 
   const totalPagesRef = useRef(0);
   const fileRefs      = useRef({});
@@ -1531,12 +1096,6 @@ export default function SleepSeed({
   const voiceIdRef       = useRef<string|null>(null); // always-current cloned voice ID
   const speakELRef       = useRef<any>(null);          // always-current speakTextEL fn
   const speakTextRef     = useRef<any>(null);          // always-current speakText fn
-  const speechKeepAlive  = useRef<any>(null);          // Chrome speech keepalive interval
-  const pageDirRef       = useRef<'fwd'|'bwd'>('fwd');  // page turn direction for animation
-  const ambientCtxRef    = useRef<AudioContext|null>(null);
-  const ambientGainRef   = useRef<GainNode|null>(null);
-  const ambientSrcRef    = useRef<AudioBufferSourceNode|null>(null);
-  const [ambientOn,      setAmbientOn]      = useState(false);
   const ncVideoRef       = useRef<HTMLVideoElement>(null);
   const ncStreamRef      = useRef<MediaStream|null>(null);
 
@@ -1555,15 +1114,9 @@ export default function SleepSeed({
     // Use user-scoped keys for memories and nightcards to prevent cross-user data leakage
     sGet("memories", userId).then(s => { if(s?.items) setMemories(s.items); });
     sGet("nightcards", userId).then(s => { if(s?.items) setNightCards(s.items); });
-    sGet("style_dna", userId).then(s => { if(s) setStyleDna(s); });
-    sGet("voice_id", userId).then(s => { if(s?.id) setVoiceId(s.id); });
-    sGet("onboarded", userId).then(s => { if(s?.v) setHasSeenOnboard(true); });
-    // Load saved characters for the "who's in the story" picker
-    if(userId) {
-      import('./lib/storage').then(({getCharacters}) => {
-        getCharacters(userId).then(chars => setSavedCharacters(chars));
-      });
-    }
+    sGet("style_dna").then(s => { if(s) setStyleDna(s); });
+    sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); });
+    sGet("onboarded").then(s => { if(s?.v) setHasSeenOnboard(true); });
   },[userId]);
 
   // Open directly to book stage when a saved story is passed in
@@ -1664,18 +1217,7 @@ export default function SleepSeed({
   }, [builderChoices, heroName]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
-  // Stop ambient sound when leaving the book
   useEffect(() => {
-    if(stage !== 'book' && ambientOn) {
-      ambientSrcRef.current?.stop(); ambientSrcRef.current=null;
-      ambientCtxRef.current?.close(); ambientCtxRef.current=null;
-      ambientGainRef.current=null;
-      setAmbientOn(false);
-    }
-  }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if(speechKeepAlive.current){ clearInterval(speechKeepAlive.current); speechKeepAlive.current=null; }
     if("speechSynthesis" in window) window.speechSynthesis.cancel();
     if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current = null; }
     if(autoReadRef.current) {
@@ -1718,7 +1260,6 @@ export default function SleepSeed({
       if(voice) utt.voice = voice;
 
       utt.onend = () => {
-        if(speechKeepAlive.current){ clearInterval(speechKeepAlive.current); speechKeepAlive.current=null; }
         const isLast = pageIdx >= totalPagesRef.current - 1;
         const pause  = SleepUtils.getPostPagePause(pageProgress);
         if(autoReadRef.current) {
@@ -1726,15 +1267,9 @@ export default function SleepSeed({
           else setTimeout(() => goPageRef.current?.(1), pause);
         } else { setIsReading(false); }
       };
-      utt.onerror = () => { if(speechKeepAlive.current){ clearInterval(speechKeepAlive.current); speechKeepAlive.current=null; } autoReadRef.current = false; setIsReading(false); };
+      utt.onerror = () => { autoReadRef.current = false; setIsReading(false); };
       setIsReading(true);
       window.speechSynthesis.speak(utt);
-      // Chrome bug: speechSynthesis silently stops after ~15s. Keep it alive.
-      if(speechKeepAlive.current) clearInterval(speechKeepAlive.current);
-      speechKeepAlive.current = setInterval(()=>{
-        if(!window.speechSynthesis.speaking){ clearInterval(speechKeepAlive.current); speechKeepAlive.current=null; return; }
-        window.speechSynthesis.pause(); window.speechSynthesis.resume();
-      }, 10000);
     };
 
     const voices = window.speechSynthesis.getVoices();
@@ -1787,7 +1322,6 @@ export default function SleepSeed({
 
   const toggleRead = useCallback((text, pageProgress=0.5) => {
     if(isReading) {
-      if(speechKeepAlive.current){ clearInterval(speechKeepAlive.current); speechKeepAlive.current=null; }
       window.speechSynthesis.cancel();
       if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
       autoReadRef.current = false;
@@ -1798,57 +1332,6 @@ export default function SleepSeed({
       else speakText(text, pageProgress);
     }
   },[isReading, speakText, speakTextEL, voiceId, selectedVoiceId]);
-
-  // ── Ambient sound (cozy night) ──────────────────────────────────────
-  const toggleAmbient = useCallback(() => {
-    if(ambientOn) {
-      // Fade out
-      if(ambientGainRef.current) {
-        const g = ambientGainRef.current;
-        g.gain.setTargetAtTime(0, g.context.currentTime, 0.5);
-        setTimeout(() => {
-          ambientSrcRef.current?.stop();
-          ambientSrcRef.current = null;
-          ambientCtxRef.current?.close();
-          ambientCtxRef.current = null;
-          ambientGainRef.current = null;
-        }, 1500);
-      }
-      setAmbientOn(false);
-      return;
-    }
-    try {
-      const ctx = new AudioContext();
-      ambientCtxRef.current = ctx;
-      // Generate 4 seconds of soft brown noise, looped
-      const len = ctx.sampleRate * 4;
-      const buf = ctx.createBuffer(2, len, ctx.sampleRate);
-      for(let ch=0; ch<2; ch++) {
-        const data = buf.getChannelData(ch);
-        let last = 0;
-        for(let i=0; i<len; i++) {
-          const white = Math.random() * 2 - 1;
-          last = (last + (0.02 * white)) / 1.02; // brown noise
-          data[i] = last * 3.5; // normalize
-        }
-      }
-      const src = ctx.createBufferSource();
-      src.buffer = buf;
-      src.loop = true;
-      const gain = ctx.createGain();
-      gain.gain.value = 0;
-      gain.gain.setTargetAtTime(0.12, ctx.currentTime, 0.8); // fade in
-      // Low-pass filter for extra softness
-      const lpf = ctx.createBiquadFilter();
-      lpf.type = 'lowpass';
-      lpf.frequency.value = 400;
-      src.connect(lpf).connect(gain).connect(ctx.destination);
-      src.start();
-      ambientSrcRef.current = src;
-      ambientGainRef.current = gain;
-      setAmbientOn(true);
-    } catch(e) { console.error("Ambient sound error:", e); }
-  }, [ambientOn]);
 
   // ── Voice input for story guidance ──────────────────────────────────
   const startListening = useCallback(() => {
@@ -1909,7 +1392,7 @@ export default function SleepSeed({
         if(voiceId) await elDeleteVoice(voiceId);
         const newId = await elCloneVoice(file);
         setVoiceId(newId);
-        await sSet("voice_id", { id: newId }, userId);
+        await sSet("voice_id", { id: newId });
         setVcStage("ready");
       } catch(err) {
         setVcError((err as any).message || "Upload failed. Please try again.");
@@ -1933,7 +1416,7 @@ export default function SleepSeed({
       try { mediaRecRef.current.stop(); mediaRecRef.current.stream.getTracks().forEach(t => t.stop()); } catch(_) {}
     }
     if(voiceId) await elDeleteVoice(voiceId);
-    await sDel("voice_id", userId);
+    await sDel("voice_id");
     setVoiceId(null);
     setVcStage("idle");
     setVcSeconds(0);
@@ -2359,41 +1842,36 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
       try {
         const v2Key = `ss2_nightcards_${userId}`;
         const existing = JSON.parse(localStorage.getItem(v2Key) || "[]");
-        // Collect character IDs from all sources
-        const ncCharIds: string[] = cardData.characterIds?.length ? [...cardData.characterIds] : [];
-        if (preloadedCharacter?.id && !ncCharIds.includes(preloadedCharacter.id)) ncCharIds.push(preloadedCharacter.id);
-        if (preloadedCharacter?.id && !ncCharIds.includes(preloadedCharacter.id)) ncCharIds.push(preloadedCharacter.id);
-
         const v2Entry = {
           id: entry.id, userId,
           heroName: entry.heroName || cardData.heroName || "",
-          storyTitle: entry.storyTitle || cardData.storyTitle || "",
-          characterIds: ncCharIds,
-          headline: entry.headline || cardData.headline || "",
-          quote: entry.quote || cardData.quote || cardData.bondingA || "",
-          memory_line: entry.memory_line || cardData.memory_line || "",
-          bondingQuestion: entry.bondingQuestion || entry.bondingQ || cardData.bondingQuestion || cardData.bondingQ || "",
-          bondingAnswer: entry.bondingAnswer || entry.bondingA || cardData.bondingAnswer || cardData.bondingA || "",
-          gratitude: entry.gratitude || cardData.gratitude || "",
-          extra: entry.extra || cardData.extra || "",
-          photo: entry.photo || cardData.photo || null,
-          emoji: entry.emoji || cardData.emoji || "🌙",
+          storyTitle: entry.storyTitle || "",
+          characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
+          headline: entry.headline || "",
+          quote: entry.quote || cardData.bondingA || "",
+          memory_line: entry.memory_line || "",
+          bondingQuestion: entry.bondingQ || "",
+          bondingAnswer: entry.bondingA || "",
+          gratitude: entry.gratitudeA || "",
+          extra: entry.extraA || "",
+          photo: entry.photo || null,
+          emoji: entry.emoji || "🌙",
           date: entry.date
         };
         localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
         // ── Save to Supabase so dashboard reads it ──
         await dbSaveNightCard({
           id: entry.id, userId,
-          heroName: v2Entry.heroName,
-          storyTitle: v2Entry.storyTitle,
-          characterIds: ncCharIds,
-          headline: v2Entry.headline,
-          quote: v2Entry.quote,
-          memory_line: v2Entry.memory_line || undefined,
-          bondingQuestion: v2Entry.bondingQuestion || undefined,
-          bondingAnswer: v2Entry.bondingAnswer || undefined,
-          gratitude: v2Entry.gratitude || undefined,
-          extra: v2Entry.extra || undefined,
+          heroName: entry.heroName || cardData.heroName || "",
+          storyTitle: entry.storyTitle || entry.storyTitle || "",
+          characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
+          headline: entry.headline || "",
+          quote: entry.quote || cardData.bondingA || "",
+          memory_line: entry.memory_line || undefined,
+          bondingQuestion: entry.bondingQ || undefined,
+          bondingAnswer: entry.bondingA || undefined,
+          gratitude: entry.gratitudeA || undefined,
+          extra: entry.extraA || undefined,
           photo: entry.photo || undefined,
           emoji: entry.emoji || "🌙",
           date: entry.date,
@@ -2406,8 +1884,8 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
   const deleteNightCard = useCallback(async (id) => {
     const next = nightCards.filter(c => c.id!==id);
     setNightCards(next);
-    await sSet("nightcards",{items:next},userId);
-  },[nightCards,userId]);
+    await sSet("nightcards",{items:next});
+  },[nightCards]);
 
   /* ══ GENERATE ══ */
   const generate = async (overrides:any={}) => {
@@ -2652,27 +2130,15 @@ ${resolvedAdv
 Return ONLY this exact JSON object. No extra text, no markdown, no explanation:
 ${resolvedAdv ? advSchema : simpleSchema}`;
 
-      let raw, story;
-      for (let attempt = 0; attempt < 2; attempt++) {
-        try {
-          raw = await callClaude(
-            [{role:"user",content:storyPrompt}],
-            promptSystem,
-            8000
-          );
-          story = extractJSON(raw);
-          if (story?.title) break;
-        } catch (parseErr) {
-          if (attempt === 0) {
-            console.warn("[SleepSeed] Story parse failed, retrying...", parseErr);
-            setGen(g => ({...g,label:"Polishing the story…",progress:42}));
-            continue;
-          }
-          throw parseErr;
-        }
-      }
+      const raw = await callClaude(
+        [{role:"user",content:storyPrompt}],
+        promptSystem,
+        6000
+      );
 
-      if(!story?.title) throw new Error("Response missing title");
+      const story = extractJSON(raw);
+
+      if(!story.title) throw new Error("Response missing title");
       if(!resolvedAdv && (!Array.isArray(story.pages)||story.pages.length===0)) throw new Error("Response missing pages array");
       if(resolvedAdv && (!Array.isArray(story.setup_pages)||!Array.isArray(story.path_a)||!Array.isArray(story.path_b))) throw new Error("Response missing adventure paths");
 
@@ -2734,7 +2200,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       setBook(bookData); setPageIdx(0);
       setGen(g => ({...g,stepIdx:3,progress:94,label:"Enjoy your story!",dots:[...dots]}));
       await new Promise(r => setTimeout(r,200));
-      setStage("reveal");
+      setStage("book");
       sSet(bKey,bookData).catch(()=>{});
 
       // ── Auto-save story to library ────────────────────────────────────
@@ -2742,13 +2208,15 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
     } catch(e) {
       console.error("SleepSeed error:",e);
-      console.error("SleepSeed raw error message:", e?.message);
       const msg = e.message||"Something went wrong";
-      const userMsg = msg.includes("ANTHROPIC_KEY")
-        ? "API key not set — check your Vercel environment variables."
-        : "The story world needs a moment — everything you wrote is saved.";
+      const isParseErr = msg.toLowerCase().includes("json")||msg.toLowerCase().includes("parse")||msg.toLowerCase().includes("missing");
+      const userMsg = isParseErr
+        ? "The story response was incomplete — your settings are saved. Tap Try Again."
+        : msg.includes("ANTHROPIC_KEY")
+          ? "API key not set — check your Vercel environment variables."
+          : "Something went wrong — your settings are saved. Tap Try Again.";
       setError(userMsg);
-      setLastErrStage(stage==="builder" ? "builder" : "home");
+      setLastErrStage(stage==="builder" ? "builder" : "quick");
       setStage("error");
     }
   };
@@ -2767,12 +2235,11 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
   const goPage = (dir) => {
     if(dir>0&&onChoicePg&&!chosenPath) return;
-    pageDirRef.current = dir > 0 ? 'fwd' : 'bwd';
     setPageIdx(p => Math.max(0,Math.min(totalPages-1,p+dir)));
   };
   goPageRef.current = goPage;
 
-  const handleChoice = (path) => { pageDirRef.current='fwd'; setChosenPath(path); setPageIdx(choicePgIdx+1); };
+  const handleChoice = (path) => { setChosenPath(path); setPageIdx(choicePgIdx+1); };
 
   const getCurrentPageText = () => {
     if(!book) return "";
@@ -2791,13 +2258,21 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
   const isLastPage  = pageIdx===totalPages-1;
   const isStoryPage = book&&pageIdx>=2&&!onChoicePg&&!isLastPage;
 
+  /* ── Dynamic scene: pick once per book, based on seed + vibe ── */
+  const storySceneSeed = book ? (parseInt(strHash(book.title + (book.heroName||'')), 36) || 0) : 0;
+  const storyVibe = storyMood || (storyBrief2 ? storyBrief2.split(' ')[0].toLowerCase() : '');
+  const StoryScene = book ? getSceneByVibe(storySceneSeed, storyVibe) : null;
+
   /* ── Story page ── */
   const StoryPage = ({pg,pgNum,refrain}) => (
     <div className="bpage story-bg">
       <div className="pinset" />
       <div className="story-lay">
         <div className="story-illo">
-          <DreamIllo />
+          {pg?.imgUrl
+            ? <Illo url={pg.imgUrl} loaded={imgReady(pg.imgUrl)} />
+            : StoryScene ? <StoryScene /> : null
+          }
         </div>
         <div className="story-txt-col">
           <div className="s-pgnum">Page {pgNum}</div>
@@ -2821,7 +2296,10 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
         <div className="pinset" style={{borderColor:"rgba(212,160,48,.15)"}} />
         <div className="cover-lay">
           <div className="cover-art">
-            <DreamIllo />
+            {book.coverUrl
+              ? <Illo url={book.coverUrl} loaded={imgReady(book.coverUrl)} />
+              : StoryScene ? <StoryScene /> : null
+            }
           </div>
           <div className="cover-bot">
             <div className="c-stars">✦ ★ ✦</div>
@@ -3060,12 +2538,12 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 styleDna={styleDna}
                 onAnswer={(updatedDna) => {
                   setStyleDna(updatedDna);
-                  sSet("style_dna", updatedDna, userId).catch(()=>{});
+                  sSet("style_dna", updatedDna).catch(()=>{});
                 }}
                 onDismiss={() => {
                   const updated = {...styleDna, pendingRereadChecks: (styleDna.pendingRereadChecks||[]).slice(1)};
                   setStyleDna(updated);
-                  sSet("style_dna", updated, userId).catch(()=>{});
+                  sSet("style_dna", updated).catch(()=>{});
                 }}
               />
             )}
@@ -3115,7 +2593,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                   setHeroName(e.target.value);
                   if(!hasSeenOnboard && e.target.value.trim().length >= 1) {
                     setHasSeenOnboard(true);
-                    sSet("onboarded",{v:true},userId);
+                    sSet("onboarded",{v:true});
                   }
                 }} maxLength={20}
                 style={{marginBottom:heroName.trim().length<2?6:10,textAlign:"center",
@@ -3563,22 +3041,6 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                   <div className="section-label" style={{marginBottom:8}}>👥 Who's in the story with {heroName}?</div>
                   {extraChars.length<4 && (
                     <div style={{marginBottom:extraChars.length?10:0}}>
-                      {/* Saved characters */}
-                      {savedCharacters.filter(sc => sc.name !== heroName).length > 0 && (
-                        <div style={{marginBottom:8}}>
-                          <div style={{fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--dimmer)',marginBottom:6}}>Your characters</div>
-                          <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-                            {savedCharacters.filter(sc => sc.name !== heroName && !extraChars.some(ec => ec._savedId === sc.id)).map(sc => (
-                              <button key={sc.id} className="char-add-pill" style={{borderColor:'rgba(212,160,48,.25)',background:'rgba(212,160,48,.06)'}}
-                                onClick={()=>setExtraChars(cs=>[...cs,{...newChar(), _savedId:sc.id, name:sc.name, type:sc.type==='human'?'friend':sc.type==='animal'?'pet':sc.type==='stuffy'?'toy':sc.type||'friend', note:sc.weirdDetail||sc.currentSituation||'', classify:sc.type||''}])}>
-                                <span className="char-add-pill-icon">{sc.emoji||'⭐'}</span>
-                                <span>+ {sc.name}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {/* Generic types + Other */}
                       <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                         {CHAR_TYPES.map(t => (
                           <button key={t.value} className="char-add-pill"
@@ -3587,11 +3049,6 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                             <span>+ {t.label}</span>
                           </button>
                         ))}
-                        <button className="char-add-pill"
-                          onClick={()=>setExtraChars(cs=>[...cs,{...newChar(),type:"other"}])}>
-                          <span className="char-add-pill-icon">✨</span>
-                          <span>+ Other</span>
-                        </button>
                       </div>
                     </div>
                   )}
@@ -3871,61 +3328,26 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
           </div>
         )}
 
-        {/* STORY REVEAL */}
-        {stage==="reveal" && book && (
-          <div className="reveal-screen" onClick={()=>{setStage("book");}}>
-            <div className="reveal-stars">
-              {Array.from({length:30},(_,i) => (
-                <div key={i} className="reveal-star" style={{
-                  top:`${Math.random()*100}%`,left:`${Math.random()*100}%`,
-                  width:Math.random()*2+0.5,height:Math.random()*2+0.5,
-                  '--d':`${Math.random()*3+2}s`,'--dl':`-${Math.random()*4}s`,
-                  '--lo':(Math.random()*.15+.05).toFixed(2),'--hi':(Math.random()*.5+.2).toFixed(2),
-                } as any} />
-              ))}
-            </div>
-            <div className="reveal-moon" />
-            <div className="reveal-ready">Your story is ready</div>
-            <div className="reveal-title">{book.title}</div>
-            <div className="reveal-for">A bedtime story for {book.heroName}</div>
-            <button className="reveal-btn" onClick={(e)=>{e.stopPropagation();setStage("book");}}>
-              Begin reading ✦
-            </button>
-          </div>
-        )}
-
-        {/* NIGHT CARD SEAL */}
-        {showSeal && (
-          <div className="seal-screen" onClick={()=>setShowSeal(false)}>
-            <div className="seal-star">✦</div>
-            <div className="seal-title">Tonight's star is saved</div>
-            <div className="seal-name">Sleep well, {book?.heroName} ✦</div>
-            <div className="seal-sub">This night is kept forever</div>
-            <button className="seal-dismiss" onClick={()=>setShowSeal(false)}>continue →</button>
-          </div>
-        )}
-
         {/* ERROR RECOVERY */}
         {stage==="error" && (
           <div className="screen" style={{maxWidth:420}}>
             <div className="card" style={{textAlign:"center",padding:24}}>
-              <div style={{fontSize:36,marginBottom:12}}>✦</div>
-              <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:"var(--cream)",marginBottom:8}}>The story world needs a moment</div>
+              <div style={{fontSize:36,marginBottom:12}}>😔</div>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:"var(--cream)",marginBottom:8}}>Something went wrong</div>
               <div style={{fontSize:12,color:"var(--dim)",marginBottom:6,lineHeight:1.7}}>{error}</div>
               <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:20,lineHeight:1.6}}>
-                Everything you wrote is saved. Tap below to try again.
+                Don't worry — all your story settings are saved.
               </div>
               <button className="btn" style={{marginBottom:10}} onClick={()=>{
                 setError("");
-                hasAutoGenRef.current = false;
-                generate({storyBrief1, storyBrief2, realLifeCtx});
+                setStage(lastErrStage||"quick");
               }}>
                 ✨ Try again
               </button>
               <button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={()=>{
                 setError(""); setStage("home");
               }}>
-                ← Start over
+                ← Back to home
               </button>
             </div>
           </div>
@@ -3954,13 +3376,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
             </div>
 
             <div className="book-3d" onClick={addSparkle}>
-              {/* Reading progress bar */}
-              <div style={{position:'absolute',top:0,left:0,right:0,height:3,zIndex:5,background:'rgba(255,255,255,.06)',borderRadius:'18px 18px 0 0',overflow:'hidden'}}>
-                <div style={{height:'100%',width:`${totalPages>1?((pageIdx/(totalPages-1))*100):0}%`,background:'linear-gradient(90deg,rgba(212,160,48,.4),rgba(212,160,48,.8))',borderRadius:3,transition:'width .4s ease'}} />
-              </div>
-              <div key={`pg-${pageIdx}-${chosenPath||''}`} className={`pg-${pageDirRef.current}`} style={{position:'absolute',inset:0}}>
-                {renderPage()}
-              </div>
+              {renderPage()}
               {sparkles.map(sp => (
                 <div key={sp.id} className="spark-ring" style={{left:sp.x,top:sp.y}}>
                   {Array.from({length:8},(_,i) => {
@@ -3993,33 +3409,32 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </button>
             </div>
 
-            {/* Collapsed toolbar — immersive reading */}
-            <div className="rd-toolbar-collapsed">
-              {/* Read aloud button always visible */}
-              <button style={{width:36,height:36,borderRadius:'50%',background:isReading?'rgba(212,160,48,.2)':'rgba(6,11,24,.85)',border:`1px solid ${isReading?'rgba(212,160,48,.4)':'rgba(255,255,255,.12)'}`,color:isReading?'var(--gold2)':'rgba(255,255,255,.5)',fontSize:14,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(10px)',marginBottom:6}}
+            <div className="ctrl-bar">
+              <button className={`ctrl-btn read${isReading?" active":""}`}
                 onClick={()=>{ const prog=totalPages>1?pageIdx/(totalPages-1):0.5; toggleRead(pageIdx===0?`${book.title}. A bedtime story for ${book.heroName}.`:getCurrentPageText(),prog); }}>
-                {isReading ? '⏸' : '🔊'}
+                {isReading ? "⏸ Pause" : (selectedVoiceId||voiceId) ? `🔊 ${(PRESET_VOICES.find(v=>v.id===selectedVoiceId)||{name:voiceId?"My Voice":"Read"}).name}` : "🔊 Read aloud"}
               </button>
-              <button className="rd-dots-btn" onClick={()=>setShowToolbar(!showToolbar)} style={{fontSize:11,letterSpacing:'.02em'}}>{showToolbar ? '✕' : '☰'}<span style={{fontSize:9,marginLeft:3,opacity:.7}}>More</span></button>
-              {showToolbar && (
-                <div className="rd-expanded" onClick={e=>e.stopPropagation()}>
-                  <button className="rd-exp-btn" onClick={toggleAmbient} style={ambientOn?{color:'var(--gold2)',background:'rgba(212,160,48,.08)'}:{}}>
-                    {ambientOn ? '🌧 Cozy Night · On' : '🌧 Cozy Night'}
-                  </button>
-                  <button className="rd-exp-btn" onClick={()=>{setShowVoicePicker(true);setShowToolbar(false);}}>🎤 Choose Voice</button>
-                  <button className="rd-exp-btn" onClick={()=>{shareStory();setShowToolbar(false);}}>📤 Share</button>
-                  <button className="rd-exp-btn" onClick={()=>{downloadStory();setShowToolbar(false);}}>📄 Download PDF</button>
-                  <button className="rd-exp-btn" onClick={async()=>{
-                    try { const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance); await sDel(`book_${s}`); } catch(_) {}
-                    window.speechSynthesis?.cancel();
-                    if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
-                    autoReadRef.current = false;
-                    setStoryContext(""); setLessonContext(""); setTodayPrompt(""); setStoryBrief1(""); setStoryBrief2(""); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(true); setBriefStep2Open(false);
-                    setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
-                  }}>🔄 New Story</button>
-                  <div style={{padding:'6px 12px',fontSize:10,color:'rgba(76,200,144,.6)'}}>✓ Auto-saved</div>
-                </div>
-              )}
+              <div className="ctrl-btn" style={{cursor:"default",background:"rgba(76,200,144,.08)",borderColor:"rgba(76,200,144,.25)",color:"var(--green2)",fontSize:11}}>
+                ✓ Auto-saved
+              </div>
+              <button className="ctrl-btn fresh" onClick={async()=>{
+                try {
+                  const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,lesson,adventure,storyLen,heroGender,heroClassify,storyGuidance);
+                  await sDel(`book_${s}`);
+                } catch(_) {}
+                window.speechSynthesis?.cancel();
+                if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
+                autoReadRef.current = false;
+                setStoryContext(""); setLessonContext(""); setTodayPrompt(""); setStoryBrief1(""); setStoryBrief2(""); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(true); setBriefStep2Open(false);
+                setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
+              }}>🔄 New</button>
+              <button className="ctrl-btn dl" onClick={downloadStory}>📄 Download</button>
+              <button className="ctrl-btn" style={{background:"rgba(100,160,255,.1)",borderColor:"rgba(100,160,255,.25)",color:"#a8c8ff"}}
+                onClick={shareStory}>📤 Share</button>
+              <button className={`ctrl-btn vc-btn${(selectedVoiceId||voiceId)?" active":""}`}
+                onClick={()=>setShowVoicePicker(true)}>
+                🎤 {selectedVoiceId ? (PRESET_VOICES.find(v=>v.id===selectedVoiceId)?.name||"Voice") : voiceId ? "My Voice ✓" : "Choose Voice"}
+              </button>
             </div>
 
             {/* ── Voice Picker Modal ── */}
@@ -4428,10 +3843,8 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                           heroName:book.heroName, storyTitle:book.title,
                           refrain:book.refrain||"",
                           bondingQ:ncBondingQ, bondingA:ncBondingA,
-                          bondingQuestion:ncBondingQ, bondingAnswer:ncBondingA,
                           gratitude:ncGratitude, extra:ncExtra,
                           photo:ncPhoto,
-                          characterIds: preloadedCharacter?.id ? [preloadedCharacter.id] : [],
                           ...ncResult,
                         };
                         try { await saveNightCard(ncData); } catch(_) {}
@@ -4444,15 +3857,14 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                             ? {...m, bookData:updatedBook} : m
                         );
                         setMemories(updatedMemories);
-                        try { await sSet("memories",{items:updatedMemories},userId); } catch(_) {}
+                        try { await sSet("memories",{items:updatedMemories}); } catch(_) {}
                         // Update cache
                         try {
                           const s = makeStorySeed(book.heroName,theme,extraChars,occasion,occasionCustom,
                             Array.isArray(lessons)?lessons.join("|"):lessons,adventure,storyLen,heroGender,heroClassify,storyGuidance);
                           sSet(`book_${s}`,updatedBook).catch(()=>{});
                         } catch(_) {}
-                        setShowSeal(true);
-                        setTimeout(()=>{ setShowSeal(false); setStage("book"); setPageIdx(totalPages-1); }, 3500);
+                        setStage("book"); setPageIdx(totalPages-1);
                       }}>
                         ✓ Save &amp; Done
                       </button>
@@ -4738,7 +4150,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
         styleDna={styleDna}
         onFeedback={(updatedDna) => {
           setStyleDna(updatedDna);
-          sSet("style_dna", updatedDna, userId).catch(()=>{});
+          sSet("style_dna", updatedDna).catch(()=>{});
         }}
         onClose={() => setShowFeedback(false)}
         visible={showFeedback}
