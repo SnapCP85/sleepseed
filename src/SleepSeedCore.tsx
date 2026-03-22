@@ -204,7 +204,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .img-dot.done{border-color:rgba(76,200,144,.6);background:rgba(76,200,144,.12)}
 @keyframes dotPulse{0%,100%{opacity:.5}50%{opacity:1}}
 .err-box{background:rgba(192,64,48,.14);border:1px solid rgba(192,64,48,.28);border-radius:10px;padding:10px 14px;font-size:13px;color:#f09080;margin-bottom:14px}
-.book-shell{width:100%;max-width:500px;animation:fup .4s cubic-bezier(.16,1,.3,1) both}
+.book-shell{width:100%;max-width:500px;position:relative;animation:fup .4s cubic-bezier(.16,1,.3,1) both}
 .book-3d{border-radius:18px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.7);
   height:520px;position:relative;background:#0e1428;cursor:pointer}
 .bpage{position:absolute;inset:0;width:100%;height:100%;animation:pageFade .3s ease both}
@@ -348,19 +348,13 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .dot.on{background:var(--gold2);transform:scale(1.35)}
 .auto-bar{height:3px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-top:6px;transition:opacity .3s}
 .auto-fill{height:100%;background:var(--gold2);border-radius:99px;transition:width .12s linear}
-.ctrl-bar{display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap}
-.ctrl-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;cursor:pointer;
-  font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;transition:all .2s;border:1.5px solid}
-.ctrl-btn.read{background:rgba(212,160,48,.1);border-color:rgba(212,160,48,.28);color:var(--gold2)}
-.ctrl-btn.read.active{background:rgba(212,160,48,.24);border-color:var(--gold2)}
-.ctrl-btn.save{background:rgba(100,130,220,.07);border-color:rgba(100,130,220,.24);color:var(--ui)}
-.ctrl-btn.fresh{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.11);color:var(--dim)}
-.ctrl-btn.dl{background:rgba(100,180,255,.07);border-color:rgba(100,180,255,.28);color:rgba(140,200,255,.9)}
-.ctrl-btn.dl:hover{background:rgba(100,180,255,.15)}
-.ctrl-btn.vc-btn{background:rgba(240,100,120,.07);border-color:rgba(240,100,120,.32);color:rgba(240,140,150,.9)}
-.ctrl-btn.vc-btn:hover{background:rgba(240,100,120,.18)}
-.ctrl-btn.vc-btn.active{background:rgba(240,100,120,.2);border-color:rgba(240,100,120,.7)}
-.ctrl-btn:hover{opacity:.85}
+/* ── Collapsed toolbar ── */
+.rd-toolbar-collapsed{position:absolute;bottom:12px;right:12px;z-index:10}
+.rd-dots-btn{height:32px;padding:0 12px;border-radius:16px;background:rgba(6,11,24,.85);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:all .2s;font-family:'Nunito',sans-serif;font-weight:700}
+.rd-dots-btn:hover{background:rgba(6,11,24,.95);color:var(--cream)}
+.rd-expanded{position:absolute;bottom:44px;right:0;background:rgba(6,11,24,.95);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:4px;min-width:160px;backdrop-filter:blur(16px);animation:fup .2s ease}
+.rd-exp-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:none;background:transparent;color:rgba(244,239,232,.6);font-size:12px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;white-space:nowrap}
+.rd-exp-btn:hover{background:rgba(255,255,255,.06);color:var(--cream)}
 .snd-bar{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;flex-wrap:wrap}
 .snd-tog{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;cursor:pointer;
   background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);font-family:'Nunito',sans-serif;
@@ -1110,6 +1104,8 @@ export default function SleepSeed({
   const [viewingNightCard, setViewingNightCard] = useState<any>(null); // Night Card detail view
   const [styleDna,         setStyleDna]         = useState<any>(null); // Style DNA for feedback
   const [showFeedback,     setShowFeedback]     = useState(false);     // StoryFeedback sheet visible
+  const [showToolbar,      setShowToolbar]      = useState(false);     // collapsed toolbar expanded
+  const [ambientOn,        setAmbientOn]        = useState(false);     // cozy night ambient sound
 
   const totalPagesRef = useRef(0);
   const fileRefs      = useRef({});
@@ -1120,6 +1116,9 @@ export default function SleepSeed({
   const voiceIdRef       = useRef<string|null>(null); // always-current cloned voice ID
   const speakELRef       = useRef<any>(null);          // always-current speakTextEL fn
   const speakTextRef     = useRef<any>(null);          // always-current speakText fn
+  const ambientCtxRef    = useRef<AudioContext|null>(null);
+  const ambientGainRef   = useRef<GainNode|null>(null);
+  const ambientSrcRef    = useRef<AudioBufferSourceNode|null>(null);
   const ncVideoRef       = useRef<HTMLVideoElement>(null);
   const ncStreamRef      = useRef<MediaStream|null>(null);
 
@@ -1356,6 +1355,56 @@ export default function SleepSeed({
       else speakText(text, pageProgress);
     }
   },[isReading, speakText, speakTextEL, voiceId, selectedVoiceId]);
+
+  // ── Ambient sound (cozy night) ──────────────────────────────────────
+  const toggleAmbient = useCallback(() => {
+    if(ambientOn) {
+      if(ambientGainRef.current) {
+        const g = ambientGainRef.current;
+        g.gain.setTargetAtTime(0, g.context.currentTime, 0.5);
+        setTimeout(() => {
+          ambientSrcRef.current?.stop(); ambientSrcRef.current=null;
+          ambientCtxRef.current?.close(); ambientCtxRef.current=null;
+          ambientGainRef.current=null;
+        }, 1500);
+      }
+      setAmbientOn(false);
+      return;
+    }
+    try {
+      const ctx = new AudioContext();
+      ambientCtxRef.current = ctx;
+      const len = ctx.sampleRate * 4;
+      const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+      for(let ch=0; ch<2; ch++) {
+        const data = buf.getChannelData(ch);
+        let last = 0;
+        for(let i=0; i<len; i++) { const white = Math.random()*2-1; last=(last+(0.02*white))/1.02; data[i]=last*3.5; }
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf; src.loop = true;
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      gain.gain.setTargetAtTime(0.12, ctx.currentTime, 0.8);
+      const lpf = ctx.createBiquadFilter();
+      lpf.type = 'lowpass'; lpf.frequency.value = 400;
+      src.connect(lpf).connect(gain).connect(ctx.destination);
+      src.start();
+      ambientSrcRef.current = src;
+      ambientGainRef.current = gain;
+      setAmbientOn(true);
+    } catch(e) { console.error("Ambient sound error:", e); }
+  }, [ambientOn]);
+
+  // Stop ambient when leaving the book
+  useEffect(() => {
+    if(stage !== 'book' && ambientOn) {
+      ambientSrcRef.current?.stop(); ambientSrcRef.current=null;
+      ambientCtxRef.current?.close(); ambientCtxRef.current=null;
+      ambientGainRef.current=null;
+      setAmbientOn(false);
+    }
+  }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Voice input for story guidance ──────────────────────────────────
   const startListening = useCallback(() => {
@@ -3397,6 +3446,10 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
             </div>
 
             <div className="book-3d" onClick={addSparkle}>
+              {/* Reading progress bar */}
+              <div style={{position:'absolute',top:0,left:0,right:0,height:3,zIndex:5,background:'rgba(255,255,255,.06)',borderRadius:'18px 18px 0 0',overflow:'hidden'}}>
+                <div style={{height:'100%',width:`${totalPages>1?((pageIdx/(totalPages-1))*100):0}%`,background:'linear-gradient(90deg,rgba(212,160,48,.4),rgba(212,160,48,.8))',borderRadius:3,transition:'width .4s ease'}} />
+              </div>
               {renderPage()}
               {sparkles.map(sp => (
                 <div key={sp.id} className="spark-ring" style={{left:sp.x,top:sp.y}}>
@@ -3430,32 +3483,33 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </button>
             </div>
 
-            <div className="ctrl-bar">
-              <button className={`ctrl-btn read${isReading?" active":""}`}
+            {/* Collapsed toolbar — immersive reading */}
+            <div className="rd-toolbar-collapsed">
+              {/* Read aloud button always visible */}
+              <button style={{width:36,height:36,borderRadius:'50%',background:isReading?'rgba(212,160,48,.2)':'rgba(6,11,24,.85)',border:`1px solid ${isReading?'rgba(212,160,48,.4)':'rgba(255,255,255,.12)'}`,color:isReading?'var(--gold2)':'rgba(255,255,255,.5)',fontSize:14,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(10px)',marginBottom:6}}
                 onClick={()=>{ const prog=totalPages>1?pageIdx/(totalPages-1):0.5; toggleRead(pageIdx===0?`${book.title}. A bedtime story for ${book.heroName}.`:getCurrentPageText(),prog); }}>
-                {isReading ? "⏸ Pause" : (selectedVoiceId||voiceId) ? `🔊 ${(PRESET_VOICES.find(v=>v.id===selectedVoiceId)||{name:voiceId?"My Voice":"Read"}).name}` : "🔊 Read aloud"}
+                {isReading ? '⏸' : '🔊'}
               </button>
-              <div className="ctrl-btn" style={{cursor:"default",background:"rgba(76,200,144,.08)",borderColor:"rgba(76,200,144,.25)",color:"var(--green2)",fontSize:11}}>
-                ✓ Auto-saved
-              </div>
-              <button className="ctrl-btn fresh" onClick={async()=>{
-                try {
-                  const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,Array.isArray(lessons)?lessons.join("|"):lessons,adventure,storyLen,heroGender,heroClassify,storyGuidance);
-                  await sDel(`book_${s}`);
-                } catch(_) {}
-                window.speechSynthesis?.cancel();
-                if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
-                autoReadRef.current = false;
-                setStoryContext(""); setLessonContext(""); setTodayPrompt(""); setStoryBrief1(""); setStoryBrief2(""); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(true); setBriefStep2Open(false);
-                setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
-              }}>🔄 New</button>
-              <button className="ctrl-btn dl" onClick={downloadStory}>📄 Download</button>
-              <button className="ctrl-btn" style={{background:"rgba(100,160,255,.1)",borderColor:"rgba(100,160,255,.25)",color:"#a8c8ff"}}
-                onClick={shareStory}>📤 Share</button>
-              <button className={`ctrl-btn vc-btn${(selectedVoiceId||voiceId)?" active":""}`}
-                onClick={()=>setShowVoicePicker(true)}>
-                🎤 {selectedVoiceId ? (PRESET_VOICES.find(v=>v.id===selectedVoiceId)?.name||"Voice") : voiceId ? "My Voice ✓" : "Choose Voice"}
-              </button>
+              <button className="rd-dots-btn" onClick={()=>setShowToolbar(!showToolbar)} style={{fontSize:11,letterSpacing:'.02em'}}>{showToolbar ? '✕' : '☰'}<span style={{fontSize:9,marginLeft:3,opacity:.7}}>More</span></button>
+              {showToolbar && (
+                <div className="rd-expanded" onClick={e=>e.stopPropagation()}>
+                  <button className="rd-exp-btn" onClick={toggleAmbient} style={ambientOn?{color:'var(--gold2)',background:'rgba(212,160,48,.08)'}:{}}>
+                    {ambientOn ? '🌧 Cozy Night · On' : '🌧 Cozy Night'}
+                  </button>
+                  <button className="rd-exp-btn" onClick={()=>{setShowVoicePicker(true);setShowToolbar(false);}}>🎤 Choose Voice</button>
+                  <button className="rd-exp-btn" onClick={()=>{shareStory();setShowToolbar(false);}}>📤 Share</button>
+                  <button className="rd-exp-btn" onClick={()=>{downloadStory();setShowToolbar(false);}}>📄 Download PDF</button>
+                  <button className="rd-exp-btn" onClick={async()=>{
+                    try { const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,Array.isArray(lessons)?lessons.join("|"):lessons,adventure,storyLen,heroGender,heroClassify,storyGuidance); await sDel(`book_${s}`); } catch(_) {}
+                    window.speechSynthesis?.cancel();
+                    if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
+                    autoReadRef.current = false;
+                    setStoryContext(""); setLessonContext(""); setTodayPrompt(""); setStoryBrief1(""); setStoryBrief2(""); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(true); setBriefStep2Open(false);
+                    setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
+                  }}>🔄 New Story</button>
+                  <div style={{padding:'6px 12px',fontSize:10,color:'rgba(76,200,144,.6)'}}>✓ Auto-saved</div>
+                </div>
+              )}
             </div>
 
             {/* ── Voice Picker Modal ── */}
