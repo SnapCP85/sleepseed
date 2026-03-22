@@ -2200,7 +2200,7 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
         // Collect character IDs from all sources
         const ncCharIds: string[] = cardData.characterIds?.length ? [...cardData.characterIds] : [];
         if (preloadedCharacter?.id && !ncCharIds.includes(preloadedCharacter.id)) ncCharIds.push(preloadedCharacter.id);
-        if (selectedCharId && !ncCharIds.includes(selectedCharId)) ncCharIds.push(selectedCharId);
+        if (preloadedCharacter?.id && !ncCharIds.includes(preloadedCharacter.id)) ncCharIds.push(preloadedCharacter.id);
 
         const v2Entry = {
           id: entry.id, userId,
@@ -4195,7 +4195,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                           bondingQuestion:ncBondingQ, bondingAnswer:ncBondingA,
                           gratitude:ncGratitude, extra:ncExtra,
                           photo:ncPhoto,
-                          characterIds: preloadedCharacter?.id ? [preloadedCharacter.id] : (selectedCharId ? [selectedCharId] : []),
+                          characterIds: preloadedCharacter?.id ? [preloadedCharacter.id] : [],
                           ...ncResult,
                         };
                         try { await saveNightCard(ncData); } catch(_) {}
