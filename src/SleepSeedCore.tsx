@@ -2197,36 +2197,41 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
       try {
         const v2Key = `ss2_nightcards_${userId}`;
         const existing = JSON.parse(localStorage.getItem(v2Key) || "[]");
+        // Collect character IDs from all sources
+        const ncCharIds: string[] = cardData.characterIds?.length ? [...cardData.characterIds] : [];
+        if (preloadedCharacter?.id && !ncCharIds.includes(preloadedCharacter.id)) ncCharIds.push(preloadedCharacter.id);
+        if (selectedCharId && !ncCharIds.includes(selectedCharId)) ncCharIds.push(selectedCharId);
+
         const v2Entry = {
           id: entry.id, userId,
           heroName: entry.heroName || cardData.heroName || "",
-          storyTitle: entry.storyTitle || "",
-          characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
-          headline: entry.headline || "",
-          quote: entry.quote || cardData.bondingA || "",
-          memory_line: entry.memory_line || "",
-          bondingQuestion: entry.bondingQ || "",
-          bondingAnswer: entry.bondingA || "",
-          gratitude: entry.gratitudeA || "",
-          extra: entry.extraA || "",
-          photo: entry.photo || null,
-          emoji: entry.emoji || "🌙",
+          storyTitle: entry.storyTitle || cardData.storyTitle || "",
+          characterIds: ncCharIds,
+          headline: entry.headline || cardData.headline || "",
+          quote: entry.quote || cardData.quote || cardData.bondingA || "",
+          memory_line: entry.memory_line || cardData.memory_line || "",
+          bondingQuestion: entry.bondingQuestion || entry.bondingQ || cardData.bondingQuestion || cardData.bondingQ || "",
+          bondingAnswer: entry.bondingAnswer || entry.bondingA || cardData.bondingAnswer || cardData.bondingA || "",
+          gratitude: entry.gratitude || cardData.gratitude || "",
+          extra: entry.extra || cardData.extra || "",
+          photo: entry.photo || cardData.photo || null,
+          emoji: entry.emoji || cardData.emoji || "🌙",
           date: entry.date
         };
         localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
         // ── Save to Supabase so dashboard reads it ──
         await dbSaveNightCard({
           id: entry.id, userId,
-          heroName: entry.heroName || cardData.heroName || "",
-          storyTitle: entry.storyTitle || entry.storyTitle || "",
-          characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
-          headline: entry.headline || "",
-          quote: entry.quote || cardData.bondingA || "",
-          memory_line: entry.memory_line || undefined,
-          bondingQuestion: entry.bondingQ || undefined,
-          bondingAnswer: entry.bondingA || undefined,
-          gratitude: entry.gratitudeA || undefined,
-          extra: entry.extraA || undefined,
+          heroName: v2Entry.heroName,
+          storyTitle: v2Entry.storyTitle,
+          characterIds: ncCharIds,
+          headline: v2Entry.headline,
+          quote: v2Entry.quote,
+          memory_line: v2Entry.memory_line || undefined,
+          bondingQuestion: v2Entry.bondingQuestion || undefined,
+          bondingAnswer: v2Entry.bondingAnswer || undefined,
+          gratitude: v2Entry.gratitude || undefined,
+          extra: v2Entry.extra || undefined,
           photo: entry.photo || undefined,
           emoji: entry.emoji || "🌙",
           date: entry.date,
@@ -4187,8 +4192,10 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                           heroName:book.heroName, storyTitle:book.title,
                           refrain:book.refrain||"",
                           bondingQ:ncBondingQ, bondingA:ncBondingA,
+                          bondingQuestion:ncBondingQ, bondingAnswer:ncBondingA,
                           gratitude:ncGratitude, extra:ncExtra,
                           photo:ncPhoto,
+                          characterIds: preloadedCharacter?.id ? [preloadedCharacter.id] : (selectedCharId ? [selectedCharId] : []),
                           ...ncResult,
                         };
                         try { await saveNightCard(ncData); } catch(_) {}
