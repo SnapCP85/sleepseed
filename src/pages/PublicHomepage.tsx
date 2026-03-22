@@ -685,22 +685,22 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp, onNi
           <h2 className="story-sec-h fu d1">Not a template. <em>Her story.</em></h2>
           <p className="story-sec-sub fu d2">Written in seconds from what she told you tonight. Her name. Her dog. The spelling test she was terrified about. Her world.</p>
           <div className="book fu d2">
-            <div className="book-kicker">Tonight's story · Age 6 · Brave &amp; warm · ~4 minutes aloud</div>
-            <div className="book-title">The <span className="book-hero-name">Adina</span> Who Faced the Dragon</div>
+            <div className="book-kicker">Tonight's story · Age 6 · Brave &amp; silly · ~4 minutes aloud</div>
+            <div className="book-title"><span className="book-hero-name">Adina</span> and the Midnight Dragon</div>
             <div className="book-tags">
               <span className="book-tag">⚡ Brave</span>
-              <span className="book-tag">💛 Warm</span>
+              <span className="book-tag">🤪 Silly</span>
               <span className="book-tag">🌙 Bedtime</span>
             </div>
             <p className="book-p">
-              <span className="cn">Adina</span>'s tummy felt like it was full of tangled string. Tomorrow was the spelling test. She had studied seventeen times. She had written every word three times each. But still — what if her brain forgot everything the moment she sat down?
+              <span className="cn">Adina</span> heard it again. A sort of rumbling, grumbly, hiccupy sound — coming from underneath her bed. She pulled the covers up to her nose. Then she pulled them back down. Because <span className="cn">Adina</span> was the kind of person who always, <em>always</em> looked.
             </p>
             <p className="book-p">
-              She pulled her pencil case toward her. Inside it: a rubber eraser shaped like a small dragon, which she'd named <em>Biscuit</em>, which she'd carried to every hard thing since she was four. Biscuit had been there for the wobbly tooth. Biscuit had been there for the big swim.
+              Under the bed was a dragon. It was about the size of a cat, it was the colour of a thunderstorm, and it was crying. Big, fat, shimmery tears that rolled off its snout and turned into tiny stars on the carpet. "Oh no," whispered <span className="cn">Adina</span>. "What happened to you?"
             </p>
             <div className="book-refrain">
-              "You already know the words," said Biscuit, in a voice like very small thunder.<br />
-              "You just need to remember you know them."
+              "I'm too small," sniffed the dragon. "Everyone says I'm too small to fly."<br />
+              <span className="cn">Adina</span> sat down next to it. "I know that feeling," she said quietly.
             </div>
             {/* AUDIO PLAYER */}
             <div className="audio-player">
@@ -709,9 +709,9 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp, onNi
               </button>
               <div className="audio-info">
                 <div className="audio-label">Read aloud by SleepSeed</div>
-                <div className="audio-title-line">The Adina Who Faced the Dragon</div>
+                <div className="audio-title-line">Adina and the Midnight Dragon</div>
                 <div className="audio-note">
-                  {audioPlaying ? 'Playing — The Adina Who Faced the Dragon ✦' : 'Tap to hear Adina\'s story ✦'}
+                  {audioPlaying ? 'Playing — Adina and the Midnight Dragon ✦' : 'Tap to hear Adina\'s story ✦'}
                 </div>
               </div>
               <div className="audio-waves">
