@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './AppContext';
 import PublicHomepage from './pages/PublicHomepage';
 import Auth from './pages/Auth';
-import OnboardingWelcome from './pages/OnboardingWelcome';
-import OnboardingTour from './pages/OnboardingTour';
-import OnboardingNightCard from './pages/OnboardingNightCard';
 import UserDashboard from './pages/UserDashboard';
+import OnboardingFlow from './pages/OnboardingFlow';
+import ReadyStateDashboard from './pages/ReadyStateDashboard';
+import type { OnboardingResult } from './pages/OnboardingFlow';
 import UserProfile from './pages/UserProfile';
 import RitualStarter from './pages/RitualStarter';
 import StoryHandoff from './pages/StoryHandoff';
@@ -18,7 +18,9 @@ import SleepSeedCore from './SleepSeedCore';
 import SharedStoryViewer from './pages/SharedStoryViewer';
 import CharacterDetail from './features/characters/CharacterDetail';
 import Hatchery from './pages/Hatchery';
-import type { Character, HatchedCreature } from './lib/types';
+import { saveCharacter, saveNightCard } from './lib/storage';
+import { saveHatchedCreature, createEgg } from './lib/hatchery';
+import type { Character, HatchedCreature, SavedNightCard } from './lib/types';
 
 const NAV_CSS = `
 .anav{display:flex;align-items:center;gap:0;padding:0 5%;height:50px;border-bottom:1px solid rgba(232,151,42,.12);background:rgba(8,12,24,.97);position:sticky;top:0;z-index:20;backdrop-filter:blur(20px);font-family:'Plus Jakarta Sans',system-ui,sans-serif}
@@ -109,38 +111,39 @@ function AppInner() {
   };
 
   // Handle onboarding completion — save character, creature, egg, night card
-  const handleOnboardingComplete = async (result: any) => {
+  const handleOnboardingComplete = async (result: OnboardingResult) => {
     if (!user) return;
+
+    // Each save is independent — don't let one failure block others
+    try { await saveCharacter(result.character); }
+    catch (e) { console.error('[onboarding] saveCharacter failed:', e); }
+
+    try { await saveHatchedCreature(result.creature); }
+    catch (e) { console.error('[onboarding] saveHatchedCreature failed:', e); }
+
+    try { await createEgg(user.id, result.character.id, result.creature.creatureType, 2); }
+    catch (e) { console.error('[onboarding] createEgg failed:', e); }
+
     try {
-      const { saveCharacter, saveNightCard } = await import('./lib/storage');
-      const { saveHatchedCreature, createEgg } = await import('./lib/hatchery');
+      const nightCard: SavedNightCard = {
+        id: crypto.randomUUID?.() || `${Date.now()}`,
+        userId: user.id,
+        heroName: result.character.name,
+        storyTitle: 'Night 1',
+        characterIds: [result.character.id],
+        headline: `The night ${result.creature.name} arrived.`,
+        quote: result.dreamAnswer,
+        memory_line: `${result.character.name} said it so quietly — like they already knew.`,
+        emoji: result.creature.creatureEmoji,
+        date: new Date().toISOString(),
+        isOrigin: true,
+        photo: result.photoDataUrl,
+      };
+      await saveNightCard(nightCard);
+    } catch (e) { console.error('[onboarding] saveNightCard failed:', e); }
 
-      // 1. Save the character
-      if (result.character) await saveCharacter(result.character);
-
-      // 2. Save the hatched creature
-      if (result.creature) await saveHatchedCreature(result.creature);
-
-      // 3. Create the next egg (week 2, since week 1 creature just hatched)
-      if (result.character && result.creature) {
-        await createEgg(user.id, result.character.id, result.creature.creatureType, 2);
-      }
-
-      // 4. Save the origin night card
-      if (result.nightCard) {
-        await saveNightCard({
-          ...result.nightCard,
-          userId: user.id,
-          isOrigin: true,
-          quote: result.dreamAnswer ?? '',
-        });
-      }
-    } catch (e) {
-      console.error('[onboarding] save error:', e);
-    }
-
-    // 5-7. Always run these even if saves failed
-    if (result.creature) setCompanionCreature(result.creature);
+    // Always finish — set creature, flag, navigate
+    setCompanionCreature(result.creature);
     try { localStorage.setItem(`sleepseed_onboarding_${user.id}`, '1'); } catch {}
     setView('dashboard');
   };
@@ -168,17 +171,21 @@ function AppInner() {
 
   if (view === 'auth') return <Auth />;
 
-  // Onboarding views — persist across tab switches
-  const isOnboardingView = ['onboarding-welcome','onboarding-tour','onboarding-night0'].includes(view);
-  if (isOnboardingView && user) {
-    try { localStorage.setItem(`ss_onboarding_step_${user.id}`, view); } catch {}
-  }
-  if (view === 'onboarding-welcome') return <OnboardingWelcome />;
-  if (view === 'onboarding-tour')    return <OnboardingTour />;
-  if (view === 'onboarding-night0')  return <OnboardingNightCard />;
+  // Legacy onboarding routes — redirect to dashboard
+  if (view === 'onboarding-welcome') { setView('dashboard'); return null; }
+  if (view === 'onboarding-tour')    { setView('dashboard'); return null; }
+  if (view === 'onboarding-night0')  { setView('dashboard'); return null; }
+
+  // New onboarding flow
+  if (view === 'onboarding') return (
+    <OnboardingFlow onComplete={handleOnboardingComplete} />
+  );
 
   if (view === 'dashboard') {
-    // Skip walkthrough — dashboard has "Take a quick tour" for new users
+    // Show ReadyStateDashboard if onboarding not complete
+    if (user && !user.isGuest && !onboardingDone) {
+      return <ReadyStateDashboard onBegin={() => setView('onboarding')} />;
+    }
     return <UserDashboard onSignUp={goAuth} onReadStory={openSavedStory} />;
   }
 

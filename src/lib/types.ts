@@ -81,17 +81,16 @@ export interface HatchedCreature {
   userId: string;
   characterId: string;
   name: string;
-  creatureType: string;
+  creatureType: string;    // matches CREATURES[id].id
   creatureEmoji: string;
   color: string;
   rarity: CreatureRarity;
   personalityTraits: string[];
-  dreamAnswer: string;
-  parentSecret: string;
-  photoUrl?: string;
-  weekNumber: number;
+  dreamAnswer: string;     // the night card dream question answer
+  parentSecret: string;    // the weirdDetail / parent's secret
   hatchedAt: string;
-  createdAt?: string;
+  photoUrl?: string;       // the family photo from onboarding
+  weekNumber: number;
 }
 
 export interface HatcheryEgg {

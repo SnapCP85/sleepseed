@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useApp } from '../AppContext';
-import type { SavedNightCard, Character, HatcheryEgg } from '../lib/types';
+import type { SavedNightCard, Character, HatcheryEgg, HatchedCreature } from '../lib/types';
 import { hasSupabase } from '../lib/supabase';
-import { getActiveEgg, createEgg } from '../lib/hatchery';
+import { getActiveEgg, createEgg, getAllHatchedCreatures } from '../lib/hatchery';
 import { CREATURES } from '../lib/creatures';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -349,6 +349,20 @@ const CSS=`
 .dash-empty-sub{font-size:12.5px;color:rgba(244,239,232,.38);margin-bottom:13px;line-height:1.65;font-weight:300}
 .dash-empty-btn{background:var(--amber);border:none;border-radius:50px;padding:10px 22px;font-size:13px;font-weight:600;color:#120800;cursor:pointer;font-family:inherit}
 
+/* ── CREATURE CARD ── */
+.dash-creature{border-radius:22px;padding:16px 18px;position:relative;overflow:hidden;margin-bottom:11px;transition:all .3s}
+.dash-creature-inner{display:flex;align-items:center;gap:14px}
+.dash-creature-emoji{font-size:48px;line-height:1;animation:flt 3.5s ease-in-out infinite;transition:opacity .6s;cursor:pointer;flex-shrink:0}
+.dash-creature-emoji.asleep{opacity:.4;animation:none}
+.dash-creature-info{flex:1}
+.dash-creature-name{font-size:15px;font-weight:800;margin-bottom:2px}
+.dash-creature-type{font-size:9px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.dash-creature-speech{font-family:var(--serif);font-size:13px;font-style:italic;line-height:1.5;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);transition:all .4s}
+.dash-creature-tap{font-size:9.5px;color:rgba(255,255,255,.18);margin-top:6px;text-align:center;font-weight:600}
+.dash-creature-egg2{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);margin-top:10px}
+.dash-creature-egg2-emoji{font-size:28px;flex-shrink:0}
+.dash-creature-egg2-text{font-size:11px;color:rgba(244,239,232,.3);line-height:1.5;font-weight:300}
+
 @media(max-width:600px){.dash-pods{gap:8px}.dash-pod{min-width:80px}.dash-u-egg-row{flex-direction:column;text-align:center}}
 `;
 
@@ -434,6 +448,8 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const[storyCount,setStoryCount]=useState(0);
   const[lastStory,setLastStory]=useState<any>(null);
   const[activeEgg,setActiveEgg]=useState<HatcheryEgg|null>(null);
+  const[hatchedCreature,setHatchedCreature]=useState<HatchedCreature|null>(null);
+  const[creatureAsleep,setCreatureAsleep]=useState(false);
   const missTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
   const isGuest=!!user?.isGuest;
 
@@ -460,6 +476,10 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
         else if(chars.length>0){setSelectedCharacters([chars[0]]);setWeekViewId(chars[0].id);}
         setLoading(false);
       });
+    });
+    // Load hatched creatures
+    if(hasSupabase) getAllHatchedCreatures(user.id).then(creatures=>{
+      if(creatures.length>0) setHatchedCreature(creatures[0]);
     });
   },[user]); // eslint-disable-line
 
@@ -522,6 +542,11 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
 
   const today=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toUpperCase();
   const hasAnyNights=allCards.length>0;
+
+  function putToBed(){
+    if(creatureAsleep) return;
+    setCreatureAsleep(true);
+  }
 
   function toggleChild(c:Character){
     const ids=selectedCharacters.map(x=>x.id);
@@ -710,6 +735,40 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
               <div className="dash-pod-add-ico">+</div>
               <div className="dash-pod-add-lbl">Add child</div>
             </div>
+          </div>
+        )}
+
+        {/* creature companion card */}
+        {hatchedCreature&&(
+          <div className="dash-creature" style={{
+            background:`linear-gradient(145deg,${hatchedCreature.color}08,${hatchedCreature.color}03)`,
+            border:`1.5px solid ${hatchedCreature.color}30`,
+          }}>
+            <div className="dash-creature-inner">
+              <div className={`dash-creature-emoji${creatureAsleep?' asleep':''}`} onClick={putToBed}>
+                {hatchedCreature.creatureEmoji}
+              </div>
+              <div className="dash-creature-info">
+                <div className="dash-creature-name" style={{color:hatchedCreature.color}}>{hatchedCreature.name}</div>
+                <div className="dash-creature-type" style={{color:`${hatchedCreature.color}80`}}>{hatchedCreature.creatureType}</div>
+                <div className="dash-creature-speech" style={{color:`${hatchedCreature.color}cc`}}>
+                  {creatureAsleep
+                    ?'Sweet dreams. See you tomorrow. 🌙'
+                    :hatchedCreature.dreamAnswer
+                      ?`${hatchedCreature.name} dreams about ${hatchedCreature.dreamAnswer}`
+                      :`${hatchedCreature.name} is happy to see you tonight`}
+                </div>
+              </div>
+            </div>
+            {!creatureAsleep&&<div className="dash-creature-tap">tap {hatchedCreature.name} to put to bed</div>}
+            {activeEgg&&(
+              <div className="dash-creature-egg2">
+                <div className="dash-creature-egg2-emoji">🥚</div>
+                <div className="dash-creature-egg2-text">
+                  Week {activeEgg.weekNumber} egg · Come back tomorrow to crack it further
+                </div>
+              </div>
+            )}
           </div>
         )}
 

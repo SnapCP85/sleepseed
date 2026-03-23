@@ -2,10 +2,6 @@ import { supabase } from './supabase';
 import type { HatchedCreature, HatcheryEgg } from './types';
 import { getCreature } from './creatures';
 
-function uid(): string {
-  return Math.random().toString(36).slice(2,10) + Date.now().toString(36);
-}
-
 const dbToCreature = (row: any): HatchedCreature => ({
   id:                row.id,
   userId:            row.user_id,
@@ -18,10 +14,9 @@ const dbToCreature = (row: any): HatchedCreature => ({
   personalityTraits: row.personality_traits ?? [],
   dreamAnswer:       row.dream_answer ?? '',
   parentSecret:      row.parent_secret ?? '',
+  hatchedAt:         row.hatched_at,
   photoUrl:          row.photo_url ?? undefined,
   weekNumber:        row.week_number ?? 1,
-  hatchedAt:         row.hatched_at,
-  createdAt:         row.created_at,
 });
 
 const dbToEgg = (row: any): HatcheryEgg => ({
@@ -57,8 +52,7 @@ export const getHatchedCreatures = async (userId: string, characterId: string): 
 };
 
 export const saveHatchedCreature = async (c: HatchedCreature): Promise<void> => {
-  const { error } = await supabase.from('hatched_creatures').upsert({
-    id:                 c.id,
+  const row: any = {
     user_id:            c.userId,
     character_id:       c.characterId,
     name:               c.name,
@@ -72,7 +66,10 @@ export const saveHatchedCreature = async (c: HatchedCreature): Promise<void> => 
     photo_url:          c.photoUrl ?? null,
     week_number:        c.weekNumber,
     hatched_at:         c.hatchedAt,
-  });
+  };
+  // Only include id if it looks like a valid uuid (contains dashes)
+  if (c.id && c.id.includes('-')) row.id = c.id;
+  const { error } = await supabase.from('hatched_creatures').insert(row);
   if (error) console.error('saveHatchedCreature:', error);
 };
 
@@ -94,8 +91,7 @@ export const createEgg = async (
   weekNumber: number
 ): Promise<HatcheryEgg> => {
   const def = getCreature(creatureType);
-  const row = {
-    id:             uid(),
+  const insertRow = {
     user_id:        userId,
     character_id:   characterId,
     creature_type:  def.id,
@@ -104,9 +100,15 @@ export const createEgg = async (
     started_at:     new Date().toISOString(),
     created_at:     new Date().toISOString(),
   };
-  const { error } = await supabase.from('hatchery_eggs').upsert(row);
+  const { data, error } = await supabase
+    .from('hatchery_eggs')
+    .upsert(insertRow, { onConflict: 'user_id,character_id' })
+    .select()
+    .single();
   if (error) console.error('createEgg:', error);
-  return dbToEgg(row);
+  if (data) return dbToEgg(data);
+  // Fallback: return a local version with placeholder id
+  return dbToEgg({ ...insertRow, id: 'pending' });
 };
 
 export const deleteEgg = async (userId: string, characterId: string): Promise<void> => {
