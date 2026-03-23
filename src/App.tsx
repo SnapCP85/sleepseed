@@ -60,6 +60,51 @@ function AppNav({ currentView, onNav }: { currentView: string; onNav: (v: string
   );
 }
 
+const TABS_CSS = `
+.btabs{display:flex;background:rgba(8,12,24,.97);border-top:1px solid rgba(232,151,42,.07);padding:8px 0 6px;position:fixed;bottom:0;left:0;right:0;z-index:20;backdrop-filter:blur(16px)}
+.btab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 0;-webkit-tap-highlight-color:transparent}
+.btab-ico{font-size:20px;line-height:1}
+.btab-lbl{font-size:9px;font-weight:700;letter-spacing:.02em}
+.btab.on .btab-lbl{color:#F5B84C}
+.btab:not(.on) .btab-lbl{color:rgba(255,255,255,.4)}
+.btab:not(.on) .btab-ico{opacity:.5}
+.btab-create{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:-18px}
+.btab-create-btn{width:50px;height:50px;border-radius:50%;background:linear-gradient(145deg,#a06010,#F5B84C 50%,#a06010);display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 16px rgba(200,130,20,.4),0 0 0 3px rgba(8,12,24,.97);transition:transform .18s,filter .15s}
+.btab-create-btn:hover{transform:scale(1.08);filter:brightness(1.1)}
+.btab-create-btn:active{transform:scale(.93)}
+.btab-create-lbl{font-size:9px;font-weight:700;letter-spacing:.02em;color:#F5B84C;margin-top:1px}
+`;
+
+function BottomTabs({ current, onNav }: { current: string; onNav: (v: string) => void }) {
+  return (
+    <>
+      <style>{TABS_CSS}</style>
+      <div className="btabs">
+        <div className={`btab${current==='dashboard'?' on':''}`} onClick={()=>onNav('dashboard')}>
+          <div className="btab-ico">🏠</div>
+          <div className="btab-lbl">Home</div>
+        </div>
+        <div className={`btab${current==='story-library'?' on':''}`} onClick={()=>onNav('story-library')}>
+          <div className="btab-ico">📖</div>
+          <div className="btab-lbl">Stories</div>
+        </div>
+        <div className="btab-create" onClick={()=>onNav('story-configure')}>
+          <div className="btab-create-btn">✨</div>
+          <div className="btab-create-lbl">Create</div>
+        </div>
+        <div className={`btab${current==='hatchery'?' on':''}`} onClick={()=>onNav('hatchery')}>
+          <div className="btab-ico">🥚</div>
+          <div className="btab-lbl">Hatchery</div>
+        </div>
+        <div className={`btab${current==='nightcard-library'?' on':''}`} onClick={()=>onNav('nightcard-library')}>
+          <div className="btab-ico">🌙</div>
+          <div className="btab-lbl">Night Cards</div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function AppInner() {
   const {
     user, view, setView, logout,
@@ -240,22 +285,26 @@ function AppInner() {
   );
 
   if (view === 'story-library') return (
-    <><AppNav currentView="story-library" onNav={handleNav} />
+    <div style={{paddingBottom:70}}>
     <StoryLibrary
       userId={user!.id}
       onBack={goDashboard}
       onReadStory={openSavedStory}
       onCreateStory={() => setView('ritual-starter')}
-    /></>
+    />
+    <BottomTabs current="story-library" onNav={v=>setView(v as any)} />
+    </div>
   );
 
   if (view === 'nightcard-library') return (
-    <><AppNav currentView="nightcard-library" onNav={handleNav} />
+    <div style={{paddingBottom:70}}>
     <NightCardLibrary
       userId={user!.id}
       onBack={goDashboard}
       filterCharacterId={nightCardFilter}
-    /></>
+    />
+    <BottomTabs current="nightcard-library" onNav={v=>setView(v as any)} />
+    </div>
   );
 
   if ((view as string) === 'character-detail' && viewingCharacter) return (

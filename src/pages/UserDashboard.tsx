@@ -91,8 +91,8 @@ const CSS=`
   --mono:'DM Mono',monospace;
 }
 .dash{min-height:100vh;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;padding-bottom:24px}
-@keyframes twk{0%,100%{opacity:.05}50%{opacity:.5}}
-@keyframes twk2{0%,100%{opacity:.22}60%{opacity:.04}}
+@keyframes twk{0%,100%{opacity:.15}50%{opacity:.85}}
+@keyframes twk2{0%,100%{opacity:.35}60%{opacity:.1}}
 @keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @keyframes pring{0%,100%{box-shadow:0 0 0 2px rgba(232,151,42,.55)}50%{box-shadow:0 0 0 8px rgba(232,151,42,0)}}
 @keyframes pring-t{0%,100%{box-shadow:0 0 0 2px rgba(29,158,117,.55)}50%{box-shadow:0 0 0 8px rgba(29,158,117,0)}}
@@ -105,9 +105,16 @@ const CSS=`
 @keyframes miss-fade{0%{opacity:0;transform:translateY(-4px)}15%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0}}
 
 .dash-stars{position:fixed;inset:0;pointer-events:none;z-index:0}
-.dash-star{position:absolute;border-radius:50%;background:#EEE8FF;animation:twk var(--d,3s) var(--dl,0s) ease-in-out infinite}
-.dash-star2{position:absolute;border-radius:50%;background:#C8C0B0;animation:twk2 var(--d,4.5s) var(--dl,0s) ease-in-out infinite}
-.dash-shoot{position:absolute;height:1.5px;background:linear-gradient(90deg,#F5B84C,transparent);border-radius:1px;animation:shoot 3s ease-out infinite;animation-delay:9s;opacity:0;top:55px;left:80px;transform:rotate(18deg)}
+.dash-star{position:absolute;border-radius:50%;background:#fff;animation:twk var(--d,3s) var(--dl,0s) ease-in-out infinite}
+.dash-star2{position:absolute;border-radius:50%;background:#E8D8FF;animation:twk2 var(--d,4.5s) var(--dl,0s) ease-in-out infinite}
+.dash-star3{position:absolute;border-radius:50%;background:#fde68a;animation:twk var(--d,2.5s) var(--dl,0s) ease-in-out infinite}
+.dash-shoot{position:absolute;height:1.5px;border-radius:1px;pointer-events:none;opacity:0}
+@keyframes shoot1{0%{opacity:.9;width:70px;transform:translate(0,0) rotate(22deg)}100%{opacity:0;width:2px;transform:translate(120px,55px) rotate(22deg)}}
+@keyframes shoot2{0%{opacity:.8;width:55px;transform:translate(0,0) rotate(-15deg)}100%{opacity:0;width:2px;transform:translate(-90px,70px) rotate(-15deg)}}
+@keyframes shoot3{0%{opacity:.85;width:60px;transform:translate(0,0) rotate(35deg)}100%{opacity:0;width:2px;transform:translate(100px,80px) rotate(35deg)}}
+.dash-shoot1{background:linear-gradient(90deg,#F5B84C,#fde68a,transparent);animation:shoot1 2.5s ease-out infinite;animation-delay:4s;top:12%;left:15%}
+.dash-shoot2{background:linear-gradient(90deg,#b48cff,#E8D8FF,transparent);animation:shoot2 3s ease-out infinite;animation-delay:11s;top:8%;right:10%}
+.dash-shoot3{background:linear-gradient(90deg,#5DCAA5,#80FFD0,transparent);animation:shoot3 2.8s ease-out infinite;animation-delay:18s;top:22%;left:55%}
 .dash-sky{position:fixed;top:0;left:0;right:0;height:300px;background:linear-gradient(180deg,#050916 0%,#080C18 100%);z-index:0;pointer-events:none}
 .dash-moon-pos{position:fixed;top:68px;right:24px;z-index:2;pointer-events:none}
 .dash-moon-glow{position:absolute;width:52px;height:52px;border-radius:50%;background:rgba(245,184,76,.07);top:-9px;left:-9px}
@@ -375,16 +382,52 @@ const CSS=`
 .dash-hatch-sub{font-size:13px;color:rgba(244,239,232,.4);line-height:1.6;margin-bottom:16px}
 .dash-hatch-btn{padding:14px 28px;border:none;border-radius:16px;font-size:16px;font-weight:800;cursor:pointer;font-family:var(--sans);background:linear-gradient(135deg,#0a7a50,#14d890 50%,#0a7a50);color:#041a0c;box-shadow:0 6px 24px rgba(20,200,130,.3)}
 
+/* ── SPEECH BUBBLE ── */
+.dash-bubble{position:relative;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px 16px;margin:12px auto 0;max-width:320px}
+.dash-bubble::before{content:'';position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:14px;height:14px;background:rgba(255,255,255,.04);border-left:1px solid rgba(255,255,255,.08);border-top:1px solid rgba(255,255,255,.08);transform:translateX(-50%) rotate(45deg);border-radius:2px}
+.dash-bubble-text{font-family:var(--serif);font-size:16px;font-style:italic;line-height:1.55;text-align:center}
+
+/* ── SLEEPING ZZZ ── */
+@keyframes zzz{0%{opacity:0;transform:translateY(0) scale(.6)}40%{opacity:.6}100%{opacity:0;transform:translateY(-28px) scale(1)}}
+.dash-zzz{position:absolute;font-size:14px;font-weight:800;animation:zzz 2.5s ease-out infinite;pointer-events:none}
+
+/* ── TRAIT PILLS ── */
+.dash-traits{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:6px;position:relative;z-index:2}
+.dash-trait{padding:2px 10px;border-radius:50px;font-size:9px;font-weight:700;letter-spacing:.03em}
+
+/* ── SCENE EGG ── */
+.dash-scene-egg{cursor:pointer;transition:transform .2s}
+.dash-scene-egg:hover{transform:scale(1.08)}
+
+/* ── BOTTOM TAB BAR ── */
+.dash-tabs{display:flex;background:rgba(8,12,24,.97);border-top:1px solid rgba(232,151,42,.07);padding:8px 0 6px;position:fixed;bottom:0;left:0;right:0;z-index:20;backdrop-filter:blur(16px)}
+.dash-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 0;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.dash-tab-ico{font-size:20px;line-height:1}
+.dash-tab-lbl{font-size:9px;font-weight:700;letter-spacing:.02em}
+.dash-tab.on .dash-tab-lbl{color:var(--amber2)}
+.dash-tab:not(.on) .dash-tab-lbl{color:rgba(255,255,255,.4)}
+.dash-tab:not(.on) .dash-tab-ico{opacity:.5}
+.dash-tab-create{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:-18px}
+.dash-tab-create-btn{width:50px;height:50px;border-radius:50%;background:linear-gradient(145deg,#a06010,#F5B84C 50%,#a06010);display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 16px rgba(200,130,20,.4),0 0 0 3px rgba(8,12,24,.97);transition:transform .18s,filter .15s}
+.dash-tab-create-btn:hover{transform:scale(1.08);filter:brightness(1.1)}
+.dash-tab-create-btn:active{transform:scale(.93)}
+.dash-tab-create-lbl{font-size:9px;font-weight:700;letter-spacing:.02em;color:var(--amber2);margin-top:1px}
+
+/* ── ADVENTURE BUTTON ── */
+.dash-adventure{background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s;margin-bottom:10px}
+.dash-adventure:hover{background:rgba(255,255,255,.06);transform:translateY(-1px)}
+
 @media(max-width:600px){.dash-pods{gap:8px}.dash-pod{min-width:80px}.dash-u-egg-row{flex-direction:column;text-align:center}}
 `;
 
 // ── stars ─────────────────────────────────────────────────────────────────────
 
-const STARS=Array.from({length:26},(_,i)=>({
-  id:i,x:Math.random()*100,y:Math.random()*36,
-  size:Math.random()<.4?3:2,
-  d:(2.5+Math.random()*2.5).toFixed(1)+'s',
-  dl:(Math.random()*3).toFixed(1)+'s',t:Math.random()<.5?1:2,
+const STARS=Array.from({length:45},(_,i)=>({
+  id:i,x:Math.random()*100,y:Math.random()*50,
+  size:Math.random()<.2?4:Math.random()<.5?3:2,
+  d:(2+Math.random()*3).toFixed(1)+'s',
+  dl:(Math.random()*4).toFixed(1)+'s',
+  t:Math.random()<.4?1:Math.random()<.75?2:3,
 }));
 
 // ── SVG nav icons ─────────────────────────────────────────────────────────────
@@ -641,14 +684,31 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const cardBdr  =isMulti?'1.5px solid #1D9E75':'1.5px solid var(--amber)';
   const subText  =isMulti?'One story tonight — saved to both profiles':"Ask them — write or speak what they say";
 
-  // creature speech based on time of day
+  // personality-driven creature speech
   const creatureSpeech = useMemo(()=>{
     if(!hatchedCreature) return '';
     const n = hatchedCreature.name;
-    if(tonightDone) return `Sweet dreams… see you tomorrow 🌙`;
-    if(hour<12) return `${n} had the best dream last night…`;
-    if(hour<17) return `${n} wonders what story you'll tell tonight!`;
-    return `${n} is ready! Let's do the ritual!`;
+    const traits = hatchedCreature.personalityTraits || [];
+    if(tonightDone) return `${n} is fast asleep… sweet dreams 🌙`;
+
+    // trait-based messages for different times
+    const has = (t:string)=>traits.includes(t);
+    if(hour<12){
+      if(has('dreamy')) return `${n} had the most wonderful dream last night…`;
+      if(has('adventurous')) return `${n} is already planning today's adventure!`;
+      if(has('creative')) return `${n} has been drawing something for you all morning…`;
+      return `${n} had the best dream last night…`;
+    }
+    if(hour<17){
+      if(has('curious')) return `${n} has so many questions about today!`;
+      if(has('kind')) return `${n} saved you the best spot — right here.`;
+      if(has('brave')) return `${n} isn't scared of anything. Well, maybe bedtime.`;
+      return `${n} wonders what story you'll tell tonight!`;
+    }
+    if(has('brave')) return `${n} is not scared of the dark — are you? Let's go!`;
+    if(has('gentle')) return `${n} is waiting quietly for you. Come sit close.`;
+    if(has('silly')) return `${n} has been practising silly faces all day for you!`;
+    return `${n} is ready! Let's begin tonight's adventure!`;
   },[hatchedCreature,tonightDone,hour]);
 
   // ── LOADING ─────────────────────────────────────────────────────────────────
@@ -660,7 +720,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
       <div className="dash-sky"/>
       <div className="dash-stars">
         {STARS.map(s=>(
-          <div key={s.id} className={s.t===1?'dash-star':'dash-star2'}
+          <div key={s.id} className={s.t===1?'dash-star':s.t===2?'dash-star2':'dash-star3'}
             style={{left:`${s.x}%`,top:`${s.y}%`,width:s.size,height:s.size,'--d':s.d,'--dl':s.dl} as any}/>
         ))}
       </div>
@@ -699,26 +759,27 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
 
   // ── FULL RENDER ──────────────────────────────────────────────────────────────
   return(
-    <div className="dash">
+    <div className="dash" style={{paddingBottom:70}}>
       <style>{CSS}</style>
       <div className="dash-sky"/>
       <div className="dash-stars">
         {STARS.map(s=>(
-          <div key={s.id} className={s.t===1?'dash-star':'dash-star2'}
+          <div key={s.id} className={s.t===1?'dash-star':s.t===2?'dash-star2':'dash-star3'}
             style={{left:`${s.x}%`,top:`${s.y}%`,width:s.size,height:s.size,'--d':s.d,'--dl':s.dl} as any}/>
         ))}
-        <div className="dash-shoot"/>
+        <div className="dash-shoot dash-shoot1"/>
+        <div className="dash-shoot dash-shoot2"/>
+        <div className="dash-shoot dash-shoot3"/>
       </div>
 
-      {/* ── SLIM NAV ── */}
+      {/* ── TOP NAV — logo + child switcher ── */}
       <nav className="dash-nav">
         <div className="dash-logo">
           <div className="dash-logo-moon"><div className="dash-logo-moon-sh"/></div>
           SleepSeed
         </div>
         <div className="dash-nav-tabs">
-          {/* child switcher */}
-          {familyChars.map(c=>{
+          {familyChars.length>1&&familyChars.map(c=>{
             const isOn=primary?.id===c.id;
             return(
               <div key={c.id} className={`dash-ntab${isOn?' on':''}`} onClick={()=>{setSelectedCharacters([c]);setWeekViewId(c.id);}}>
@@ -727,15 +788,17 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
               </div>
             );
           })}
-          {/* add child — same style as child tabs */}
           <div className="dash-ntab" onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
             <div style={{fontSize:14,color:'rgba(255,255,255,.2)',lineHeight:'20px'}}>+</div>
             <div className="dash-ntab-lbl">Add</div>
           </div>
-          <div className="dash-ntab" onClick={()=>setView('user-profile')}>
-            <div className="dash-ntab-ico"><IconProfile on={false}/></div>
-            <div className="dash-ntab-lbl">Profile</div>
-          </div>
+        </div>
+        <div onClick={()=>setView('user-profile')} style={{
+          width:34,height:34,borderRadius:'50%',background:'rgba(245,184,76,.08)',border:'1.5px solid rgba(245,184,76,.2)',
+          display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0,marginLeft:6,
+          transition:'all .2s',
+        }}>
+          <IconProfile on={false}/>
         </div>
       </nav>
 
@@ -747,41 +810,71 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
           </div>
         )}
 
-        {/* ── COMPANION SCENE — the hero of the dashboard ── */}
-        {hatchedCreature?(
-          <div style={{textAlign:'center',padding:'28px 0 8px',position:'relative'}}>
-            {/* ambient glow */}
-            <div style={{position:'absolute',left:'50%',top:'30%',transform:'translate(-50%,-50%)',width:200,height:200,borderRadius:'50%',background:`radial-gradient(circle,${hatchedCreature.color}15,transparent 70%)`,animation:'twk 4s ease-in-out infinite',pointerEvents:'none'}}/>
+        {/* ── GREETING ── */}
+        {!isGuest&&(
+          <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',padding:'14px 0 0'}}>
+            <div style={{fontFamily:'var(--serif)',fontSize:18,fontWeight:700,color:'var(--cream)',lineHeight:1.3}}>
+              {greetWord}{user.displayName?`, ${user.displayName}`:''} <span style={{fontSize:14,opacity:.5}}>{tonightDone?'🌙':'✦'}</span>
+            </div>
+            <div style={{fontSize:9,color:'rgba(244,239,232,.2)',fontFamily:'var(--mono)'}}>{today}</div>
+          </div>
+        )}
 
-            {/* creature */}
-            <div style={{fontSize:tonightDone?90:110,lineHeight:1,animation:'flt 3.5s ease-in-out infinite',filter:`drop-shadow(0 8px 28px ${hatchedCreature.color}40)`,opacity:tonightDone?.45:1,transition:'opacity .8s',position:'relative',zIndex:2,cursor:'pointer'}}
-              onClick={()=>{if(tonightDone)putToBed();}}>
-              {hatchedCreature.creatureEmoji}
+        {/* ══════════════════════════════════════════════════════
+            COMPANION SCENE — creature + egg side by side
+        ══════════════════════════════════════════════════════ */}
+        {hatchedCreature?(
+          <div style={{textAlign:'center',padding:'24px 0 0',position:'relative'}}>
+            {/* ambient glow — bright neon */}
+            <div style={{position:'absolute',left:'50%',top:'25%',transform:'translate(-50%,-50%)',width:260,height:260,borderRadius:'50%',background:`radial-gradient(circle,${hatchedCreature.color}${tonightDone?'10':'28'},${hatchedCreature.color}${tonightDone?'05':'10'},transparent 70%)`,animation:'twk 4s ease-in-out infinite',pointerEvents:'none'}}/>
+
+            {/* creature + egg scene */}
+            <div style={{display:'flex',alignItems:'flex-end',justifyContent:'center',gap:tonightDone?0:16,position:'relative',zIndex:2}}>
+              {/* egg companion — left side, tappable */}
+              {activeEgg&&!tonightDone&&(
+                <div className="dash-scene-egg" onClick={()=>setView('hatchery')} style={{marginBottom:8}}>
+                  <CrackingEgg stage={eggStage} size={48}/>
+                </div>
+              )}
+
+              {/* creature — center hero */}
+              <div style={{position:'relative'}}>
+                <div style={{fontSize:tonightDone?88:110,lineHeight:1,animation:tonightDone?'none':'flt 3.5s ease-in-out infinite',filter:`drop-shadow(0 0 20px ${hatchedCreature.color}${tonightDone?'15':'60'}) drop-shadow(0 8px 30px ${hatchedCreature.color}${tonightDone?'10':'35'})`,opacity:tonightDone?.35:1,transition:'all .8s',transform:tonightDone?'rotate(8deg)':'none'}}>
+                  {hatchedCreature.creatureEmoji}
+                </div>
+                {/* sleeping zzz */}
+                {tonightDone&&(
+                  <>
+                    <div className="dash-zzz" style={{top:-8,right:-4,animationDelay:'0s',color:`${hatchedCreature.color}50`}}>z</div>
+                    <div className="dash-zzz" style={{top:-16,right:8,animationDelay:'.8s',fontSize:11,color:`${hatchedCreature.color}35`}}>z</div>
+                    <div className="dash-zzz" style={{top:-6,right:16,animationDelay:'1.6s',fontSize:10,color:`${hatchedCreature.color}25`}}>z</div>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* name */}
-            <div style={{fontFamily:'var(--serif)',fontSize:26,fontWeight:700,color:hatchedCreature.color,marginTop:8,position:'relative',zIndex:2}}>
+            <div style={{fontFamily:'var(--serif)',fontSize:28,fontWeight:700,color:hatchedCreature.color,marginTop:6,position:'relative',zIndex:2,textShadow:`0 0 20px ${hatchedCreature.color}40,0 0 40px ${hatchedCreature.color}20`}}>
               {hatchedCreature.name}
             </div>
 
-            {/* speech bubble */}
-            <div style={{fontFamily:'var(--serif)',fontSize:14,fontStyle:'italic',color:`${hatchedCreature.color}aa`,lineHeight:1.55,marginTop:6,padding:'0 20px',position:'relative',zIndex:2}}>
-              "{creatureSpeech}"
-            </div>
-
-            {/* egg beside creature */}
-            {activeEgg&&!tonightDone&&(
-              <div style={{display:'inline-flex',alignItems:'center',gap:8,marginTop:14,padding:'6px 14px',borderRadius:50,background:'rgba(245,184,76,.06)',border:'1px solid rgba(245,184,76,.12)',cursor:'pointer',position:'relative',zIndex:2}}
-                onClick={()=>setView('hatchery')}>
-                <CrackingEgg stage={eggStage} size={28}/>
-                <span style={{fontSize:11,fontWeight:700,color:'rgba(245,184,76,.55)',fontFamily:'var(--mono)'}}>
-                  {eggStage>=7?'Ready to hatch!':` ${eggStage}/7 cracks`}
-                </span>
+            {/* personality traits */}
+            {hatchedCreature.personalityTraits.length>0&&(
+              <div className="dash-traits">
+                {hatchedCreature.personalityTraits.map(t=>(
+                  <div key={t} className="dash-trait" style={{background:`${hatchedCreature.color}10`,color:`${hatchedCreature.color}88`,border:`1px solid ${hatchedCreature.color}18`}}>{t}</div>
+                ))}
               </div>
             )}
+
+            {/* speech bubble — real bubble shape */}
+            <div className="dash-bubble" style={{borderColor:`${hatchedCreature.color}20`,background:`${hatchedCreature.color}08`}}>
+              <div className="dash-bubble-text" style={{color:`${hatchedCreature.color}${tonightDone?'77':'dd'}`}}>
+                "{creatureSpeech}"
+              </div>
+            </div>
           </div>
         ):(
-          /* no creature yet — empty state */
           <div style={{textAlign:'center',padding:'40px 0 16px'}}>
             <div style={{fontSize:80,animation:'flt 3s ease-in-out infinite',filter:'drop-shadow(0 0 16px rgba(245,184,76,.3))'}}>🥚</div>
             <div style={{fontFamily:'var(--serif)',fontSize:20,fontWeight:700,color:'var(--amber2)',marginTop:12}}>Your adventure begins tonight</div>
@@ -789,80 +882,89 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
           </div>
         )}
 
-        {/* ── THE RITUAL BUTTON / DONE STATE ── */}
+        {/* ══════════════════════════════════════════════════════
+            ACTIONS
+        ══════════════════════════════════════════════════════ */}
         {tonightDone?(
-          /* unified goodnight + egg card */
-          <div style={{
-            background:'linear-gradient(170deg,rgba(245,184,76,.05),rgba(8,12,32,.98))',
-            border:'1.5px solid rgba(245,184,76,.15)',
-            borderRadius:24,padding:'20px 20px 22px',textAlign:'center',
-            marginTop:12,marginBottom:14,position:'relative',overflow:'hidden',
-          }}>
-            {/* top shine */}
-            <div style={{position:'absolute',top:0,left:0,right:0,height:1.5,background:'linear-gradient(90deg,transparent,rgba(245,184,76,.3),transparent)'}}/>
+          <>
+            {/* unified goodnight + egg card */}
+            <div style={{
+              background:'linear-gradient(170deg,rgba(245,184,76,.04),rgba(8,12,32,.98))',
+              border:'1.5px solid rgba(245,184,76,.12)',
+              borderRadius:22,padding:'18px 18px 20px',textAlign:'center',
+              marginTop:16,marginBottom:12,position:'relative',overflow:'hidden',
+            }}>
+              <div style={{position:'absolute',top:0,left:0,right:0,height:1.5,background:'linear-gradient(90deg,transparent,rgba(245,184,76,.25),transparent)'}}/>
 
-            {/* ritual complete label */}
-            <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:12}}>
-              <div style={{width:4,height:4,borderRadius:'50%',background:'var(--teal)',animation:'twk 2s ease-in-out infinite'}}/>
-              <span style={{fontSize:9,fontFamily:'var(--mono)',letterSpacing:'.12em',textTransform:'uppercase',color:'rgba(93,202,165,.6)'}}>ritual complete</span>
-              <div style={{width:4,height:4,borderRadius:'50%',background:'var(--teal)',animation:'twk 2s ease-in-out infinite'}}/>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:10}}>
+                <div style={{width:4,height:4,borderRadius:'50%',background:'var(--teal)',animation:'twk 2s ease-in-out infinite'}}/>
+                <span style={{fontSize:9,fontFamily:'var(--mono)',letterSpacing:'.12em',textTransform:'uppercase',color:'rgba(93,202,165,.55)'}}>ritual complete</span>
+                <div style={{width:4,height:4,borderRadius:'50%',background:'var(--teal)',animation:'twk 2s ease-in-out infinite'}}/>
+              </div>
+
+              <div style={{fontFamily:'var(--serif)',fontSize:15,color:'var(--cream)',lineHeight:1.4,marginBottom:14}}>
+                Tonight's star is saved. Sleep well{primary?`, ${primary.name}`:''}.
+              </div>
+
+              <div style={{height:1,background:'linear-gradient(90deg,transparent,rgba(245,184,76,.1),transparent)',margin:'0 0 14px'}}/>
+
+              {activeEgg&&(
+                <>
+                  {/* egg with layered glow */}
+                  <div style={{position:'relative',display:'inline-block',marginBottom:14}}>
+                    <div style={{position:'absolute',inset:-30,borderRadius:'50%',background:'radial-gradient(circle,rgba(245,184,76,.12),rgba(245,184,76,.04),transparent 70%)',animation:'twk 3s ease-in-out infinite',pointerEvents:'none'}}/>
+                    <div style={{position:'absolute',inset:-16,borderRadius:'50%',background:'radial-gradient(circle,rgba(245,184,76,.06),transparent 65%)',animation:'twk 4.5s ease-in-out infinite',animationDelay:'-1.5s',pointerEvents:'none'}}/>
+                    <div style={{animation:'flt 3s ease-in-out infinite'}}>
+                      <CrackingEgg stage={eggStage} size={100}/>
+                    </div>
+                  </div>
+
+                  {/* 7 night circles — bigger, more presence */}
+                  <div style={{display:'flex',justifyContent:'center',gap:8,marginBottom:12}}>
+                    {Array.from({length:7},(_,i)=>{
+                      const done=i<eggStage;const isNext=i===eggStage;
+                      return(
+                        <div key={i} style={{
+                          width:38,height:38,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
+                          fontSize:done?16:15,
+                          background:done?'rgba(245,184,76,.18)':isNext?'rgba(245,184,76,.1)':'rgba(245,184,76,.04)',
+                          border:done?'2.5px solid rgba(245,184,76,.55)':isNext?'2.5px dashed rgba(245,184,76,.4)':'2px dashed rgba(245,184,76,.15)',
+                          boxShadow:done?`0 0 10px rgba(245,184,76,.2)`:isNext?'0 0 12px rgba(245,184,76,.2)':'none',
+                          transition:'all .3s',
+                        }}>{done?'⭐':isNext?'✦':'🥚'}</div>
+                      );
+                    })}
+                  </div>
+
+                  {/* night label */}
+                  <div style={{fontSize:11,fontFamily:'var(--mono)',color:'rgba(245,184,76,.55)',letterSpacing:'.06em',marginBottom:12,fontWeight:700}}>
+                    Night {eggStage} of 7 ✦
+                  </div>
+
+                  {/* motivational text */}
+                  <div style={{fontFamily:'var(--serif)',fontSize:14,fontStyle:'italic',color:'rgba(244,239,232,.4)',lineHeight:1.65,padding:'0 6px'}}>
+                    {eggStage>=7?'All 7 cracks are here — ready to hatch!':'Every night you do the ritual, the egg cracks a little more. After 7 nights, a new mystery companion will arrive!'}
+                  </div>
+                </>
+              )}
+
+              <div style={{display:'inline-flex',alignItems:'center',gap:5,marginTop:10,padding:'4px 12px',borderRadius:50,background:'rgba(29,158,117,.08)',border:'1px solid rgba(29,158,117,.12)',fontSize:10,fontWeight:700,color:'var(--teal2)'}}>
+                ✦ {glow} nights strong
+              </div>
             </div>
 
-            {/* tonight message */}
-            <div style={{fontFamily:'var(--serif)',fontSize:15,color:'var(--cream)',lineHeight:1.4,marginBottom:14}}>
-              Tonight's star is saved. Sleep well{primary?`, ${primary.name}`:''}.
-            </div>
-
-            {/* divider */}
-            <div style={{height:1,background:'linear-gradient(90deg,transparent,rgba(245,184,76,.12),transparent)',margin:'0 0 16px'}}/>
-
-            {/* egg — big, golden, center */}
-            {activeEgg&&(
-              <>
-                <div style={{position:'relative',display:'inline-block',marginBottom:12}}>
-                  <div style={{position:'absolute',inset:-20,borderRadius:'50%',background:'radial-gradient(circle,rgba(245,184,76,.1),transparent 70%)',animation:'twk 3.5s ease-in-out infinite',pointerEvents:'none'}}/>
-                  <CrackingEgg stage={eggStage} size={90}/>
+            {/* re-read tonight's story */}
+            {lastStory&&lastStory.bookData&&onReadStory&&(
+              <div className="dash-adventure" onClick={()=>onReadStory(lastStory.bookData)}>
+                <div style={{fontSize:24}}>📖</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:700,color:'var(--cream)'}}>Read tonight's story again</div>
+                  <div style={{fontSize:11,color:'rgba(244,239,232,.35)',marginTop:1}}>{lastStory.title}</div>
                 </div>
-
-                {/* 7 stars row */}
-                <div style={{display:'flex',justifyContent:'center',gap:7,marginBottom:12}}>
-                  {Array.from({length:7},(_,i)=>{
-                    const done=i<eggStage;
-                    const isNext=i===eggStage;
-                    return(
-                      <div key={i} style={{
-                        width:32,height:32,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
-                        fontSize:done?14:13,
-                        background:done?'rgba(245,184,76,.15)':isNext?'rgba(245,184,76,.08)':'rgba(245,184,76,.04)',
-                        border:done?'2px solid rgba(245,184,76,.5)':isNext?'2px dashed rgba(245,184,76,.4)':'1.5px dashed rgba(245,184,76,.18)',
-                        boxShadow:isNext?'0 0 10px rgba(245,184,76,.15)':'none',
-                        transition:'all .3s',
-                      }}>
-                        {done?'⭐':isNext?'✦':'🥚'}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* night count */}
-                <div style={{fontSize:10,fontFamily:'var(--mono)',color:'rgba(245,184,76,.5)',letterSpacing:'.06em',marginBottom:12}}>
-                  Night {eggStage} of 7 ✦
-                </div>
-
-                {/* motivational text */}
-                <div style={{fontFamily:'var(--serif)',fontSize:14,fontStyle:'italic',color:'rgba(244,239,232,.4)',lineHeight:1.65,padding:'0 10px',marginBottom:6}}>
-                  {eggStage>=7
-                    ?'All 7 cracks are here — your egg is ready to hatch!'
-                    :'Every night you do the ritual, the egg cracks a little more. After 7 nights, a new mystery companion will arrive!'}
-                </div>
-              </>
+                <div style={{fontSize:16,color:'rgba(255,255,255,.2)'}}>→</div>
+              </div>
             )}
-
-            {/* streak badge */}
-            <div style={{display:'inline-flex',alignItems:'center',gap:5,marginTop:8,padding:'4px 12px',borderRadius:50,background:'rgba(29,158,117,.08)',border:'1px solid rgba(29,158,117,.15)',fontSize:10,fontWeight:700,color:'var(--teal2)'}}>
-              ✦ {glow} nights strong
-            </div>
-          </div>
+          </>
         ):(
           <>
           {familyChars.length>0?(
@@ -895,12 +997,10 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
             </button>
           )}
 
-          {/* ── EGG PROGRESS — 7 circles, game-like (pre-ritual only) ── */}
           {activeEgg&&(
-            <div style={{display:'flex',justifyContent:'center',gap:6,margin:'10px 0 16px'}}>
+            <div style={{display:'flex',justifyContent:'center',gap:6,margin:'10px 0 12px'}}>
               {Array.from({length:7},(_,i)=>{
-                const done=i<eggStage;
-                const isTonight=i===eggStage;
+                const done=i<eggStage;const isTonight=i===eggStage;
                 return(
                   <div key={i} style={{
                     width:34,height:34,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:done?14:13,
@@ -908,53 +1008,51 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
                     border:done?'2px solid rgba(245,184,76,.5)':isTonight?'2px solid rgba(245,184,76,.35)':'1.5px dashed rgba(245,184,76,.18)',
                     boxShadow:isTonight?'0 0 12px rgba(245,184,76,.25)':'none',
                     animation:isTonight?'pring 2.5s ease-in-out infinite':'none',
-                    transition:'all .3s',
-                  }}>
-                    {done?'⭐':isTonight?'✦':'🥚'}
-                  </div>
+                  }}>{done?'⭐':isTonight?'✦':'🥚'}</div>
                 );
               })}
             </div>
           )}
+
+          {/* re-read shortcut */}
+          {lastStory&&lastStory.bookData&&onReadStory&&(
+            <div className="dash-adventure" onClick={()=>onReadStory(lastStory.bookData)}>
+              <div style={{fontSize:24}}>📖</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:700,color:'var(--cream)'}}>Re-read {lastStory.title}</div>
+                <div style={{fontSize:11,color:'rgba(244,239,232,.3)',marginTop:1}}>Your last adventure</div>
+              </div>
+              <div style={{fontSize:16,color:'rgba(255,255,255,.2)'}}>→</div>
+            </div>
+          )}
           </>
         )}
+      </div>
 
-        {/* ── QUICK ACTIONS — compact ── */}
-        <div style={{display:'flex',gap:8,marginBottom:14}}>
-          <div className="dash-ys-card dash-ys-library" style={{flex:1}} onClick={()=>setView('story-library')}>
-            <div className="dash-ys-icon">📖</div>
-            <div className="dash-ys-title">My Stories</div>
-            <div className="dash-ys-stat">{storyCount>0?`${storyCount} saved`:'None yet'}</div>
-          </div>
-          <div className="dash-ys-card dash-ys-nc" style={{flex:1}} onClick={()=>setView('nightcard-library')}>
-            <div className="dash-ys-icon">🌙</div>
-            <div className="dash-ys-title">My Memories</div>
-            <div className="dash-ys-stat">{allCards.filter(c=>!c.isOrigin).length>0?`${allCards.filter(c=>!c.isOrigin).length} saved`:'None yet'}</div>
-          </div>
-          <div className="dash-ys-card" style={{flex:1,background:'linear-gradient(145deg,rgba(96,232,176,.1),rgba(20,120,90,.05))',border:'1px solid rgba(96,232,176,.15)'}} onClick={()=>setView('hatchery')}>
-            <div className="dash-ys-icon">🥚</div>
-            <div className="dash-ys-title">Hatchery</div>
-            <div className="dash-ys-stat">{hatchedCreature?'Visit':'Locked'}</div>
-          </div>
+      {/* ══════════════════════════════════════════════════════
+          BOTTOM TAB BAR
+      ══════════════════════════════════════════════════════ */}
+      <div className="dash-tabs">
+        <div className="dash-tab on">
+          <div className="dash-tab-ico"><IconHome on={true}/></div>
+          <div className="dash-tab-lbl">Home</div>
         </div>
-
-        {/* ── CREATE A STORY — fun, any time ── */}
-        {familyChars.length>0&&(
-          <div style={{textAlign:'center',paddingBottom:12}}>
-            <button style={{background:'linear-gradient(135deg,rgba(232,151,42,.08),rgba(232,151,42,.03))',border:'1.5px solid rgba(232,151,42,.18)',borderRadius:50,padding:'10px 24px',color:'rgba(245,184,76,.7)',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'var(--sans)',transition:'all .2s',display:'inline-flex',alignItems:'center',gap:6}}
-              onClick={()=>setView('story-configure' as any)}>
-              ✨ Create a story for fun
-            </button>
-          </div>
-        )}
-
-        {/* ── RE-READ SHORTCUT ── */}
-        {lastStory&&lastStory.bookData&&onReadStory&&!tonightDone&&(
-          <div className="dash-ly" style={{cursor:'pointer',marginBottom:8}} onClick={()=>onReadStory(lastStory.bookData)}>
-            <div className="dash-ly-ico">📖</div>
-            <div className="dash-ly-text">Re-read <em>{lastStory.title}</em> →</div>
-          </div>
-        )}
+        <div className="dash-tab" onClick={()=>setView('story-library')}>
+          <div className="dash-tab-ico"><IconStories on={false}/></div>
+          <div className="dash-tab-lbl">Stories</div>
+        </div>
+        <div className="dash-tab-create" onClick={()=>setView('story-configure' as any)}>
+          <div className="dash-tab-create-btn">✨</div>
+          <div className="dash-tab-create-lbl">Create</div>
+        </div>
+        <div className="dash-tab" onClick={()=>setView('hatchery')}>
+          <div className="dash-tab-ico"><span style={{fontSize:18}}>🥚</span></div>
+          <div className="dash-tab-lbl">Hatchery</div>
+        </div>
+        <div className="dash-tab" onClick={()=>setView('nightcard-library')}>
+          <div className="dash-tab-ico"><span style={{fontSize:18}}>🌙</span></div>
+          <div className="dash-tab-lbl">Night Cards</div>
+        </div>
       </div>
 
       {/* night card modal */}
