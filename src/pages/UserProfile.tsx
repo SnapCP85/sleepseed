@@ -110,7 +110,7 @@ export default function UserProfile() {
           {characters.length === 0 ? (
             <>
               <div className="up-empty">Save your child's details once — used in every story automatically.</div>
-              <button className="up-add-btn" onClick={() => { setEditingCharacter(null); setView('character-builder'); }}>
+              <button className="up-add-btn" onClick={() => { setEditingCharacter(null); setView('onboarding'); }}>
                 + Create first character
               </button>
             </>
@@ -126,7 +126,7 @@ export default function UserProfile() {
                   <div className="up-char-nm">{c.name}</div>
                 </div>
               ))}
-              <div className="up-char-chip up-char-add" onClick={() => { setEditingCharacter(null); setView('character-builder'); }}>
+              <div className="up-char-chip up-char-add" onClick={() => { setEditingCharacter(null); setView('onboarding'); }}>
                 <div className="up-char-av"><span style={{ fontSize: 18 }}>+</span></div>
                 <div className="up-char-nm">Add</div>
               </div>

@@ -100,7 +100,7 @@ function AppInner() {
     setPreloadedBook(null);
     setView('story-builder');
   };
-  const goNewCharacter  = () => { setEditingCharacter(null); setView('character-builder'); };
+  const goNewCharacter  = () => { setEditingCharacter(null); setView('onboarding'); };
   const goEditCharacter = (c: Character) => { setEditingCharacter(c); setView('character-builder'); };
   const goNightCards    = (filterId?: string) => { setNightCardFilter(filterId); setView('nightcard-library'); };
   const goStoryLibrary  = () => setView('story-library');

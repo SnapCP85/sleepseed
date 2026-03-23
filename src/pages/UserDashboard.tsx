@@ -363,6 +363,18 @@ const CSS=`
 .dash-creature-egg2-emoji{font-size:28px;flex-shrink:0}
 .dash-creature-egg2-text{font-size:11px;color:rgba(244,239,232,.3);line-height:1.5;font-weight:300}
 
+/* ── CRACKING EGG ── */
+@keyframes eggRock{0%,100%{transform:rotate(0)}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
+@keyframes eggGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(245,184,76,.2))}50%{filter:drop-shadow(0 0 22px rgba(245,184,76,.55))}}
+@keyframes hatchBurst{0%{transform:scale(1)}30%{transform:scale(1.15) rotate(3deg)}60%{transform:scale(1.08) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}
+.dash-egg-svg{animation:eggRock 2.5s ease-in-out infinite,eggGlow 3s ease-in-out infinite}
+.dash-hatch-modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.88);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;animation:fadein .3s ease}
+.dash-hatch-inner{text-align:center;animation:fadein .4s ease-out;max-width:340px;padding:20px}
+.dash-hatch-creature{font-size:88px;animation:hatchBurst .6s ease-out;display:inline-block;margin-bottom:16px}
+.dash-hatch-title{font-family:var(--serif);font-size:22px;color:var(--cream);margin-bottom:6px;line-height:1.3}
+.dash-hatch-sub{font-size:13px;color:rgba(244,239,232,.4);line-height:1.6;margin-bottom:16px}
+.dash-hatch-btn{padding:14px 28px;border:none;border-radius:16px;font-size:16px;font-weight:800;cursor:pointer;font-family:var(--sans);background:linear-gradient(135deg,#0a7a50,#14d890 50%,#0a7a50);color:#041a0c;box-shadow:0 6px 24px rgba(20,200,130,.3)}
+
 @media(max-width:600px){.dash-pods{gap:8px}.dash-pod{min-width:80px}.dash-u-egg-row{flex-direction:column;text-align:center}}
 `;
 
@@ -376,6 +388,52 @@ const STARS=Array.from({length:26},(_,i)=>({
 }));
 
 // ── SVG nav icons ─────────────────────────────────────────────────────────────
+
+// ── Cracking Egg SVG — cracks increase with stage (0-7) ─────────────────────
+
+function CrackingEgg({stage,size=80}:{stage:number;size?:number}){
+  // Each crack path only renders when stage >= its threshold
+  const cracks = [
+    {d:'M45 30L42 42',min:1},
+    {d:'M42 42L47 52',min:1},
+    {d:'M50 48L55 58L52 65',min:2},
+    {d:'M35 50L30 60',min:3},
+    {d:'M47 52L42 62L45 70',min:3},
+    {d:'M55 38L60 48L56 55',min:4},
+    {d:'M30 60L28 68',min:5},
+    {d:'M60 48L65 55L62 65',min:5},
+    {d:'M38 65L35 75L40 80',min:6},
+    {d:'M56 55L60 65L55 75',min:6},
+    {d:'M42 62L38 72L42 80',min:7},
+    {d:'M52 65L58 75',min:7},
+  ];
+  const glowIntensity = Math.min(stage/7,.9);
+  return(
+    <svg width={size} height={Math.round(size*1.22)} viewBox="0 0 90 110" className="dash-egg-svg">
+      <defs>
+        <radialGradient id="eg" cx="38%" cy="32%" r="68%">
+          <stop offset="0%" stopColor="#fef9e8"/>
+          <stop offset="55%" stopColor="#f0d060"/>
+          <stop offset="100%" stopColor="#b07010"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="45" cy="57" rx="38" ry="48" fill="#fde68a" opacity={.08+glowIntensity*.12}/>
+      <path d="M45 6C68 6 78 34 78 55 78 80 63 103 45 103 27 103 12 80 12 55 12 34 22 6 45 6Z"
+        fill="url(#eg)" stroke="#a07018" strokeWidth=".8"/>
+      {cracks.filter(c=>stage>=c.min).map((c,i)=>(
+        <path key={i} d={c.d} stroke={stage>=7?'#14d890':'#9a7010'}
+          strokeWidth={stage>=7?2.2:1.6} fill="none" strokeLinecap="round"
+          opacity={stage>=7?1:.6+((stage-c.min)/7)*.4}/>
+      ))}
+      {stage>=6&&(
+        <g style={{animation:'twk 1.8s ease-in-out infinite'}}>
+          <circle cx="57" cy="44" r="2" fill={stage>=7?'#14d890':'#fde68a'}/>
+          <circle cx="37" cy="22" r="1.5" fill={stage>=7?'#14d890':'#fde68a'}/>
+        </g>
+      )}
+    </svg>
+  );
+}
 
 function IconHome({on}:{on:boolean}){
   const c=on?'#E8972A':'rgba(255,255,255,.22)';
@@ -450,6 +508,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const[activeEgg,setActiveEgg]=useState<HatcheryEgg|null>(null);
   const[hatchedCreature,setHatchedCreature]=useState<HatchedCreature|null>(null);
   const[creatureAsleep,setCreatureAsleep]=useState(false);
+  const[showHatchModal,setShowHatchModal]=useState(false);
   const missTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
   const isGuest=!!user?.isGuest;
 
@@ -697,7 +756,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
           <div className="dash-empty-cta">
             <div className="dash-empty-h">Welcome to SleepSeed ✦</div>
             <div className="dash-empty-sub">Start by creating your first child character — they'll star in every story.</div>
-            <button className="dash-empty-btn" onClick={()=>{setEditingCharacter(null);setView('character-builder');}}>
+            <button className="dash-empty-btn" onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
               + Create first character
             </button>
           </div>
@@ -731,7 +790,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
                 </div>
               );
             })}
-            <div className="dash-pod-add" onClick={()=>{setEditingCharacter(null);setView('character-builder');}}>
+            <div className="dash-pod-add" onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
               <div className="dash-pod-add-ico">+</div>
               <div className="dash-pod-add-lbl">Add child</div>
             </div>
@@ -880,34 +939,35 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
               <div className="dash-dr-badge">✦ {glow} nights strong</div>
             </div>
 
-            {/* Done state card 2: egg placeholder */}
-            <div className="dash-done-egg">
+            {/* Done state card 2: egg with cracks */}
+            <div className="dash-done-egg" onClick={()=>{if(eggStage>=7)setShowHatchModal(true);}}>
               <div className="dash-de-hd">
-                <div className="dash-de-title">{activeEgg?.creatureEmoji??'🥚'} {activeEgg?activeEgg.creatureType:'Your Hatchling'}</div>
-                <div className="dash-de-badge"><span style={{width:5,height:5,borderRadius:'50%',background:'#60E8B0',display:'inline-block',animation:'twk 1.5s ease-in-out infinite'}}/> new crack!</div>
+                <div className="dash-de-title">{eggStage>=7?'🎉 Ready to hatch!':'🥚 Your Egg'}</div>
+                <div className="dash-de-badge"><span style={{width:5,height:5,borderRadius:'50%',background:eggStage>=7?'#F5B84C':'#60E8B0',display:'inline-block',animation:'twk 1.5s ease-in-out infinite'}}/> {eggStage>=7?'tap to hatch!':'new crack!'}</div>
               </div>
               <div className="dash-de-body">
                 <div className="dash-de-egg">
                   <div className="dash-de-halo"/>
-                  <div className="dash-de-emoji">{activeEgg?.creatureEmoji??'🥚'}</div>
+                  <CrackingEgg stage={eggStage} size={60}/>
                 </div>
                 <div className="dash-de-right">
-                  <div className="dash-de-hint">"Night {eggStage} of 7 — a new crack appeared tonight… something warm is glowing inside"</div>
-                  {/* 7-dot week trail */}
-                  <div className="dash-u-trail">
-                    {week.map((n,i)=>{
-                      const isTodayDone=n.state==='complete'&&n.date.toISOString().split('T')[0]===todayStr;
-                      let cls='future';
-                      if(n.state==='complete'&&isTodayDone) cls='tonight-done';
-                      else if(n.state==='complete') cls='done';
-                      else if(n.state==='missed') cls='missed';
-                      return(
-                        <div key={i} className={`dash-u-trail-item ${cls}`}>
-                          <div className={`dash-u-td ${cls}`}>{cls==='done'||cls==='tonight-done'?'★':''}</div>
-                          <div className="dash-u-tl">{n.label}</div>
-                        </div>
-                      );
-                    })}
+                  <div className="dash-de-hint">
+                    {eggStage>=7
+                      ?"All 7 cracks are here — your egg is glowing! Tap to see who's inside."
+                      :`"Night ${eggStage} of 7 — a new crack appeared tonight… something warm is glowing inside"`}
+                  </div>
+                  {/* 7-egg progress row */}
+                  <div style={{display:'flex',gap:4,marginTop:8}}>
+                    {Array.from({length:7},(_,i)=>(
+                      <div key={i} style={{
+                        width:24,height:24,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,
+                        background:i<eggStage?'rgba(245,184,76,.12)':'rgba(255,255,255,.03)',
+                        border:i<eggStage?'1.5px solid rgba(245,184,76,.4)':'1px solid rgba(255,255,255,.06)',
+                        opacity:i<eggStage?1:.3,
+                      }}>
+                        {i<eggStage?'⭐':'·'}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -927,15 +987,15 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
                 {isMulti?`tonight's ritual · ${selectedCharacters.length} children`:"tonight's ritual"}
               </div>
               <div className="dash-u-eye-right" style={{color:lblColor}}>
-                {activeEgg?`${activeEgg.creatureEmoji} ${activeEgg.creatureType}`:`night ${glow+1}`}
+                {activeEgg?`🥚 ${eggStage}/7`:`night ${glow+1}`}
               </div>
             </div>
 
-            {/* egg placeholder row */}
+            {/* egg row — shows cracking egg SVG */}
             <div className="dash-u-egg-row">
               <div className="dash-u-egg-fig">
                 <div className="dash-u-egg-halo" style={{background:`radial-gradient(circle,${isMulti?'rgba(96,232,176,.16)':'rgba(245,184,76,.16)'},transparent 70%)`}}/>
-                <div className="dash-u-egg-emoji">{activeEgg?.creatureEmoji??'🥚'}</div>
+                <CrackingEgg stage={eggStage} size={72}/>
               </div>
               <div className="dash-u-clue">
                 <div className="dash-u-clue-kick" style={{color:isMulti?'rgba(96,232,176,.45)':'rgba(245,184,76,.45)'}}>
@@ -974,7 +1034,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
               </div>
               {familyChars.length===0?(
                 <button className="dash-u-btn" style={{background:'linear-gradient(145deg,#a06010,#F5B84C 48%,#a06010)',boxShadow:'0 8px 30px rgba(200,130,20,.42)'}}
-                  onClick={()=>{setEditingCharacter(null);setView('character-builder');}}>
+                  onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
                   <span className="dash-u-btn-ico">✨</span>
                   <span className="dash-u-btn-texts">
                     <span className="dash-u-btn-title" style={{color:'#080200'}}>Create your first character</span>
@@ -1000,11 +1060,11 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
 
         {/* ── HATCHERY PLACEHOLDER ── */}
         <div className="dash-hatch-ph" style={{cursor:'pointer'}} onClick={()=>setView('hatchery')}>
-          <div className="dash-hatch-emoji">{activeEgg?.creatureEmoji??'🏠'}</div>
+          <div className="dash-hatch-emoji">🥚</div>
           <div className="dash-hatch-info">
             <div className="dash-hatch-label">Your Hatchery</div>
-            <div className="dash-hatch-name">{activeEgg?`${activeEgg.creatureType} · Week ${activeEgg.weekNumber}`:'View your creatures'}</div>
-            <div className="dash-hatch-sub">{activeEgg?`${eggStage} of 7 nights · ${7-eggStage} to hatch ✦`:'Complete rituals to hatch creatures ✦'}</div>
+            <div className="dash-hatch-name">{activeEgg?`${eggStage} of 7 cracks · Week ${activeEgg.weekNumber}`:'View your companions'}</div>
+            <div className="dash-hatch-sub">{activeEgg&&eggStage<7?`${7-eggStage} more night${7-eggStage!==1?'s':''} to hatch ✦`:activeEgg&&eggStage>=7?'Ready to hatch! ✦':'Complete rituals to hatch creatures ✦'}</div>
           </div>
         </div>
 
@@ -1112,6 +1172,26 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
               </>)}
               {!modalCard.quote&&!modalCard.bondingQuestion&&<div className="dash-nc-modal-fv">{modalCard.memory_line||'A night to remember ✦'}</div>}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* hatch modal — triggered when eggStage >= 7 */}
+      {showHatchModal&&activeEgg&&(
+        <div className="dash-hatch-modal" onClick={()=>setShowHatchModal(false)}>
+          <div className="dash-hatch-inner" onClick={e=>e.stopPropagation()}>
+            <div className="dash-hatch-creature" style={{filter:`drop-shadow(0 8px 28px ${activeEgg.creatureEmoji?'rgba(245,184,76,.4)':'rgba(96,232,176,.4)'})`}}>
+              {activeEgg.creatureEmoji}
+            </div>
+            <div className="dash-hatch-title">
+              A new companion has hatched!
+            </div>
+            <div className="dash-hatch-sub">
+              Complete the ritual to name them and welcome them home.
+            </div>
+            <button className="dash-hatch-btn" onClick={()=>{setShowHatchModal(false);startRitual();}}>
+              Begin tonight's ritual ✦
+            </button>
           </div>
         </div>
       )}
