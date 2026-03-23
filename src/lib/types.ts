@@ -137,4 +137,5 @@ export type AppView =
   | 'story-library'       // my stories
   | 'nightcard-library'  // my night cards
   | 'onboarding'         // onboarding flow
+  | 'first-night'        // post-onboarding choice screen
   | 'hatchery';          // hatchery screen

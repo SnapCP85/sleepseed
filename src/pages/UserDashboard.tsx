@@ -641,6 +641,16 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const cardBdr  =isMulti?'1.5px solid #1D9E75':'1.5px solid var(--amber)';
   const subText  =isMulti?'One story tonight — saved to both profiles':"Ask them — write or speak what they say";
 
+  // creature speech based on time of day
+  const creatureSpeech = useMemo(()=>{
+    if(!hatchedCreature) return '';
+    const n = hatchedCreature.name;
+    if(tonightDone) return `Sweet dreams… see you tomorrow 🌙`;
+    if(hour<12) return `${n} had the best dream last night…`;
+    if(hour<17) return `${n} wonders what story you'll tell tonight!`;
+    return `${n} is ready! Let's do the ritual!`;
+  },[hatchedCreature,tonightDone,hour]);
+
   // ── LOADING ─────────────────────────────────────────────────────────────────
   if(!user) return null;
 
@@ -699,457 +709,250 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
         ))}
         <div className="dash-shoot"/>
       </div>
-      <div className="dash-moon-pos">
-        <div className="dash-moon-glow"/>
-        <div className="dash-moon"><div className="dash-moon-sh"/></div>
-      </div>
 
-      {/* ── TOP NAV ── */}
+      {/* ── SLIM NAV ── */}
       <nav className="dash-nav">
         <div className="dash-logo">
           <div className="dash-logo-moon"><div className="dash-logo-moon-sh"/></div>
           SleepSeed
         </div>
         <div className="dash-nav-tabs">
-          {[
-            {k:'home',   label:'Home',    Icon:IconHome,    view:'dashboard'},
-            {k:'stories',label:'Stories', Icon:IconStories, view:'story-library'},
-            {k:'cards',  label:'Cards',   Icon:IconCards,   view:'nightcard-library'},
-            {k:'profile',label:'Profile', Icon:IconProfile, view:'user-profile'},
-          ].map(({k,label,Icon,view:v})=>(
-            <div key={k} className={`dash-ntab ${k==='home'?'on':''}`} onClick={()=>setView(v as any)}>
-              <div className="dash-ntab-ico"><Icon on={k==='home'}/></div>
-              <div className="dash-ntab-lbl">{label}</div>
-            </div>
-          ))}
+          {/* child switcher */}
+          {familyChars.map(c=>{
+            const isOn=primary?.id===c.id;
+            return(
+              <div key={c.id} className={`dash-ntab${isOn?' on':''}`} onClick={()=>{setSelectedCharacters([c]);setWeekViewId(c.id);}}>
+                <div style={{fontSize:16}}>{c.photo?<img src={c.photo} style={{width:20,height:20,borderRadius:'50%',objectFit:'cover'}} alt=""/>:c.emoji}</div>
+                <div className="dash-ntab-lbl">{c.name}</div>
+              </div>
+            );
+          })}
+          {/* add child — same style as child tabs */}
+          <div className="dash-ntab" onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
+            <div style={{fontSize:14,color:'rgba(255,255,255,.2)',lineHeight:'20px'}}>+</div>
+            <div className="dash-ntab-lbl">Add</div>
+          </div>
+          <div className="dash-ntab" onClick={()=>setView('user-profile')}>
+            <div className="dash-ntab-ico"><IconProfile on={false}/></div>
+            <div className="dash-ntab-lbl">Profile</div>
+          </div>
         </div>
       </nav>
 
       <div className="dash-inner">
         {isGuest&&(
-          <div className="dash-guest" style={{marginTop:18}}>
-            <div className="dash-guest-t">You're in <strong>guest mode.</strong> Stories won't be saved.</div>
+          <div className="dash-guest" style={{marginTop:14}}>
+            <div className="dash-guest-t">You're in <strong>guest mode.</strong></div>
             <button className="dash-guest-btn" onClick={onSignUp}>Save my stories →</button>
           </div>
         )}
 
-        {/* greeting */}
-        <div className="dash-greet-row">
-          <div className="dash-greet">
-            {greetWord}{!isGuest&&user.displayName?`, ${user.displayName}`:''}.{' '}
-            <em className={greetSuffix==='done'?'done':''}>{greetEmText}</em>
-          </div>
-          <div className="dash-date">{today}</div>
-        </div>
+        {/* ── COMPANION SCENE — the hero of the dashboard ── */}
+        {hatchedCreature?(
+          <div style={{textAlign:'center',padding:'28px 0 8px',position:'relative'}}>
+            {/* ambient glow */}
+            <div style={{position:'absolute',left:'50%',top:'30%',transform:'translate(-50%,-50%)',width:200,height:200,borderRadius:'50%',background:`radial-gradient(circle,${hatchedCreature.color}15,transparent 70%)`,animation:'twk 4s ease-in-out infinite',pointerEvents:'none'}}/>
 
-        {/* first-time welcome card */}
-        {isNewUser&&!isGuest&&(
-          <div className="dash-ft-card">
-            <div className="dash-ft-title">Welcome to SleepSeed.<br/>Let's get <em>started.</em></div>
-            <div className="dash-ft-sub">Add your child, then begin tonight's ritual — your first story is minutes away.</div>
-            <button className="dash-ft-btn" onClick={()=>setView('onboarding-tour')}>Take a quick tour →</button>
-          </div>
-        )}
-
-        {/* empty state — no characters at all */}
-        {characters.length===0&&(
-          <div className="dash-empty-cta">
-            <div className="dash-empty-h">Welcome to SleepSeed ✦</div>
-            <div className="dash-empty-sub">Start by creating your first child character — they'll star in every story.</div>
-            <button className="dash-empty-btn" onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
-              + Create first character
-            </button>
-          </div>
-        )}
-
-        {/* character pods */}
-        {familyChars.length>0&&(
-          <div className="dash-pods" style={{marginBottom:6}}>
-            {familyChars.map((c,ci)=>{
-              const idx=selectedCharacters.findIndex(x=>x.id===c.id);
-              const isOn=idx>=0;
-              const isTeal=idx===1;
-              const podColor=isTeal?'#60E8B0':'#F5B84C';
-              const podShadow=isTeal?'rgba(96,232,176,.2)':'rgba(245,184,76,.2)';
-              const podInset=isTeal?'rgba(96,232,176,.08)':'rgba(245,184,76,.1)';
-              const podName=isTeal?'#80FFCC':'#FFE080';
-              const charGlow=calculateGlow(allCards,c.id);
-              return(
-                <div key={c.id} className={`dash-pod${isOn?' on':''}`}
-                  style={isOn?{'--pod-shadow':podShadow,'--pod-inset':podInset,'--pod-name':podName,borderColor:podColor,background:isTeal?'linear-gradient(155deg,rgba(96,232,176,.12),rgba(20,120,90,.07))':'linear-gradient(155deg,rgba(245,184,76,.12),rgba(180,100,10,.07))'} as any:{}}
-                  onClick={()=>toggleChild(c)}>
-                  <div className="dash-pod-glow" style={{background:`radial-gradient(ellipse,${podShadow},transparent 70%)`}} />
-                  <div className="dash-pod-check" style={{background:podColor,color:isTeal?'#020e08':'#0a0300'}}>✓</div>
-                  <div className="dash-pod-emoji">
-                    {c.photo
-                      ?<div style={{width:44,height:44,borderRadius:'50%',overflow:'hidden'}}><img src={c.photo} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/></div>
-                      :<span>{c.emoji}</span>}
-                  </div>
-                  <div className="dash-pod-name">{c.name}</div>
-                  <div className="dash-pod-streak">⭐ {charGlow} night{charGlow!==1?'s':''}</div>
-                </div>
-              );
-            })}
-            <div className="dash-pod-add" onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
-              <div className="dash-pod-add-ico">+</div>
-              <div className="dash-pod-add-lbl">Add child</div>
+            {/* creature */}
+            <div style={{fontSize:tonightDone?90:110,lineHeight:1,animation:'flt 3.5s ease-in-out infinite',filter:`drop-shadow(0 8px 28px ${hatchedCreature.color}40)`,opacity:tonightDone?.45:1,transition:'opacity .8s',position:'relative',zIndex:2,cursor:'pointer'}}
+              onClick={()=>{if(tonightDone)putToBed();}}>
+              {hatchedCreature.creatureEmoji}
             </div>
-          </div>
-        )}
 
-        {/* creature companion card */}
-        {hatchedCreature&&(
-          <div className="dash-creature" style={{
-            background:`linear-gradient(145deg,${hatchedCreature.color}08,${hatchedCreature.color}03)`,
-            border:`1.5px solid ${hatchedCreature.color}30`,
-          }}>
-            <div className="dash-creature-inner">
-              <div className={`dash-creature-emoji${creatureAsleep?' asleep':''}`} onClick={putToBed}>
-                {hatchedCreature.creatureEmoji}
-              </div>
-              <div className="dash-creature-info">
-                <div className="dash-creature-name" style={{color:hatchedCreature.color}}>{hatchedCreature.name}</div>
-                <div className="dash-creature-type" style={{color:`${hatchedCreature.color}80`}}>{hatchedCreature.creatureType}</div>
-                <div className="dash-creature-speech" style={{color:`${hatchedCreature.color}cc`}}>
-                  {creatureAsleep
-                    ?'Sweet dreams. See you tomorrow. 🌙'
-                    :hatchedCreature.dreamAnswer
-                      ?`${hatchedCreature.name} dreams about ${hatchedCreature.dreamAnswer}`
-                      :`${hatchedCreature.name} is happy to see you tonight`}
-                </div>
-              </div>
+            {/* name */}
+            <div style={{fontFamily:'var(--serif)',fontSize:26,fontWeight:700,color:hatchedCreature.color,marginTop:8,position:'relative',zIndex:2}}>
+              {hatchedCreature.name}
             </div>
-            {!creatureAsleep&&<div className="dash-creature-tap">tap {hatchedCreature.name} to put to bed</div>}
-            {activeEgg&&(
-              <div className="dash-creature-egg2">
-                <div className="dash-creature-egg2-emoji">🥚</div>
-                <div className="dash-creature-egg2-text">
-                  Week {activeEgg.weekNumber} egg · Come back tomorrow to crack it further
-                </div>
+
+            {/* speech bubble */}
+            <div style={{fontFamily:'var(--serif)',fontSize:14,fontStyle:'italic',color:`${hatchedCreature.color}aa`,lineHeight:1.55,marginTop:6,padding:'0 20px',position:'relative',zIndex:2}}>
+              "{creatureSpeech}"
+            </div>
+
+            {/* egg beside creature */}
+            {activeEgg&&!tonightDone&&(
+              <div style={{display:'inline-flex',alignItems:'center',gap:8,marginTop:14,padding:'6px 14px',borderRadius:50,background:'rgba(245,184,76,.06)',border:'1px solid rgba(245,184,76,.12)',cursor:'pointer',position:'relative',zIndex:2}}
+                onClick={()=>setView('hatchery')}>
+                <CrackingEgg stage={eggStage} size={28}/>
+                <span style={{fontSize:11,fontWeight:700,color:'rgba(245,184,76,.55)',fontFamily:'var(--mono)'}}>
+                  {eggStage>=7?'Ready to hatch!':` ${eggStage}/7 cracks`}
+                </span>
               </div>
             )}
           </div>
-        )}
-
-        {/* first night welcome OR glow card */}
-        {weekChild&&(
-          !hasAnyNights
-          ?(
-            <div className="dash-first-night">
-              <div className="dash-fn-icon">✦</div>
-              <div className="dash-fn-title">Plant your first seed tonight</div>
-              <div className="dash-fn-sub">Complete tonight's story and your constellation will begin to glow. Every night adds a new star to your sky.</div>
-            </div>
-          ):(
-            <div className="dash-glow-card">
-              <div className="dash-gc-top">
-                <div>
-                  <div className="dash-const-name">
-                    ✦ {constName}{constComplete?' · complete!':''}
-                  </div>
-                  <ConstellationSvg filled={weekDone} complete={constComplete}/>
-                </div>
-                <div className="dash-gc-right">
-                  <div className="dash-gnum">{glow}</div>
-                  <div className="dash-glbl">
-                    {isMulti?`${weekChild.name}'s glow`:'night glow'}
-                  </div>
-                </div>
-              </div>
-              <div className="dash-gc-metrics">
-                <div className="dash-gc-metric">
-                  <div className="dash-gc-metric-lbl">this week</div>
-                  <div className={`dash-gc-metric-val ${weekDone===7?'teal':''}`}>
-                    {weekDone} / 7{weekDone===7?' ✦':''}
-                  </div>
-                  <div className="dash-gc-metric-bar">
-                    <div className={`dash-gc-metric-fill ${weekDone===7?'teal':''}`}
-                      style={{width:`${glowPct}%`}}/>
-                  </div>
-                </div>
-                <div className="dash-gc-metric">
-                  <div className="dash-gc-metric-lbl">
-                    {isMulti?`${selectedCharacters.find(c=>c.id!==weekViewId)?.name||'other'}'s glow`:'to next ✦'}
-                  </div>
-                  {isMulti?(()=>{
-                    const other=selectedCharacters.find(c=>c.id!==weekViewId);
-                    const otherGlow=other?calculateGlow(allCards,other.id):0;
-                    return<>
-                      <div className="dash-gc-metric-val teal">{otherGlow} nights</div>
-                      <div className="dash-gc-metric-bar">
-                        <div className="dash-gc-metric-fill teal" style={{width:`${Math.min(100,Math.round((otherGlow%7)/7*100))}%`}}/>
-                      </div>
-                    </>;
-                  })():(
-                    <>
-                      <div className="dash-gc-metric-val">
-                        {toNextConst===0?'complete!':toNextConst===1?'1 night':`${toNextConst} nights`}
-                      </div>
-                      <div className="dash-gc-metric-bar">
-                        <div className="dash-gc-metric-fill teal"
-                          style={{width:`${Math.min(100,Math.round(((7-toNextConst)/7)*100))}%`}}/>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          )
-        )}
-
-        {/* re-read last story shortcut */}
-        {lastStory&&lastStory.bookData&&onReadStory&&!tonightDone&&(
-          <div className="dash-ly" style={{cursor:'pointer',marginBottom:8}} onClick={()=>onReadStory(lastStory.bookData)}>
-            <div className="dash-ly-ico">📖</div>
-            <div className="dash-ly-text">
-              Re-read <em>{lastStory.title}</em> →
-            </div>
-          </div>
-        )}
-
-        {/* last year banner */}
-        {lyCard&&(
-          <div className="dash-ly" onClick={()=>setModalCard(lyCard)}>
-            <div className="dash-ly-ico">✦</div>
-            <div className="dash-ly-text">
-              One year ago tonight, {lyCard.heroName} said:{' '}
-              <em>"{lyCard.quote||lyCard.bondingAnswer||lyCard.memory_line||'…'}"</em>
-            </div>
-          </div>
-        )}
-
-        {/* ── TONIGHT CARD — unified ritual card ── */}
-        {tonightDone?(
-          <>
-            {/* Done state card 1: ritual complete */}
-            <div className="dash-done-ritual">
-              <div className="dash-dr-lbl">
-                <div className="dash-dr-dot"/><span className="dash-dr-lbl-text">ritual complete</span><div className="dash-dr-dot"/>
-              </div>
-              <div className="dash-dr-star">★</div>
-              <div className="dash-dr-title">
-                Tonight's star is saved.<br/>
-                Sleep well, <span className="dash-dr-name">{primary?.name}.</span>
-              </div>
-              {(tonightCard?.quote||tonightCard?.bondingAnswer)&&(
-                <div className="dash-dr-quote">
-                  "{tonightCard.quote||tonightCard.bondingAnswer}"
-                </div>
-              )}
-              <div className="dash-dr-badge">✦ {glow} nights strong</div>
-            </div>
-
-            {/* Done state card 2: egg with cracks */}
-            <div className="dash-done-egg" onClick={()=>{if(eggStage>=7)setShowHatchModal(true);}}>
-              <div className="dash-de-hd">
-                <div className="dash-de-title">{eggStage>=7?'🎉 Ready to hatch!':'🥚 Your Egg'}</div>
-                <div className="dash-de-badge"><span style={{width:5,height:5,borderRadius:'50%',background:eggStage>=7?'#F5B84C':'#60E8B0',display:'inline-block',animation:'twk 1.5s ease-in-out infinite'}}/> {eggStage>=7?'tap to hatch!':'new crack!'}</div>
-              </div>
-              <div className="dash-de-body">
-                <div className="dash-de-egg">
-                  <div className="dash-de-halo"/>
-                  <CrackingEgg stage={eggStage} size={60}/>
-                </div>
-                <div className="dash-de-right">
-                  <div className="dash-de-hint">
-                    {eggStage>=7
-                      ?"All 7 cracks are here — your egg is glowing! Tap to see who's inside."
-                      :`"Night ${eggStage} of 7 — a new crack appeared tonight… something warm is glowing inside"`}
-                  </div>
-                  {/* 7-egg progress row */}
-                  <div style={{display:'flex',gap:4,marginTop:8}}>
-                    {Array.from({length:7},(_,i)=>(
-                      <div key={i} style={{
-                        width:24,height:24,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,
-                        background:i<eggStage?'rgba(245,184,76,.12)':'rgba(255,255,255,.03)',
-                        border:i<eggStage?'1.5px solid rgba(245,184,76,.4)':'1px solid rgba(255,255,255,.06)',
-                        opacity:i<eggStage?1:.3,
-                      }}>
-                        {i<eggStage?'⭐':'·'}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
         ):(
-          <div className="dash-ucard" style={{border:cardBdr,opacity:familyChars.length===0?.6:1,cursor:familyChars.length===0?'default':'pointer'}} onClick={()=>{if(familyChars.length>0)startRitual();}}>
-            {/* ambient sparkles */}
-            <div className="dash-ucard-spark" style={{width:3,height:3,top:18,right:22,'--d':'2.5s','--dl':'0s'} as any}/>
-            <div className="dash-ucard-spark" style={{width:2,height:2,top:42,right:38,'--d':'3.2s','--dl':'1.2s'} as any}/>
-            <div className="dash-ucard-spark" style={{width:2.5,height:2.5,bottom:30,right:16,'--d':'2.8s','--dl':'.5s'} as any}/>
+          /* no creature yet — empty state */
+          <div style={{textAlign:'center',padding:'40px 0 16px'}}>
+            <div style={{fontSize:80,animation:'flt 3s ease-in-out infinite',filter:'drop-shadow(0 0 16px rgba(245,184,76,.3))'}}>🥚</div>
+            <div style={{fontFamily:'var(--serif)',fontSize:20,fontWeight:700,color:'var(--amber2)',marginTop:12}}>Your adventure begins tonight</div>
+            <div style={{fontSize:13,color:'rgba(244,239,232,.35)',marginTop:4}}>Create your first character to get started.</div>
+          </div>
+        )}
 
-            {/* eyebrow */}
-            <div className="dash-u-eye">
-              <div className="dash-u-dot" style={{background:dotColor}}/>
-              <div className="dash-u-eye-text" style={{color:lblColor}}>
-                {isMulti?`tonight's ritual · ${selectedCharacters.length} children`:"tonight's ritual"}
-              </div>
-              <div className="dash-u-eye-right" style={{color:lblColor}}>
-                {activeEgg?`🥚 ${eggStage}/7`:`night ${glow+1}`}
-              </div>
+        {/* ── THE RITUAL BUTTON / DONE STATE ── */}
+        {tonightDone?(
+          /* unified goodnight + egg card */
+          <div style={{
+            background:'linear-gradient(170deg,rgba(245,184,76,.05),rgba(8,12,32,.98))',
+            border:'1.5px solid rgba(245,184,76,.15)',
+            borderRadius:24,padding:'20px 20px 22px',textAlign:'center',
+            marginTop:12,marginBottom:14,position:'relative',overflow:'hidden',
+          }}>
+            {/* top shine */}
+            <div style={{position:'absolute',top:0,left:0,right:0,height:1.5,background:'linear-gradient(90deg,transparent,rgba(245,184,76,.3),transparent)'}}/>
+
+            {/* ritual complete label */}
+            <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:12}}>
+              <div style={{width:4,height:4,borderRadius:'50%',background:'var(--teal)',animation:'twk 2s ease-in-out infinite'}}/>
+              <span style={{fontSize:9,fontFamily:'var(--mono)',letterSpacing:'.12em',textTransform:'uppercase',color:'rgba(93,202,165,.6)'}}>ritual complete</span>
+              <div style={{width:4,height:4,borderRadius:'50%',background:'var(--teal)',animation:'twk 2s ease-in-out infinite'}}/>
             </div>
 
-            {/* egg row — shows cracking egg SVG */}
-            <div className="dash-u-egg-row">
-              <div className="dash-u-egg-fig">
-                <div className="dash-u-egg-halo" style={{background:`radial-gradient(circle,${isMulti?'rgba(96,232,176,.16)':'rgba(245,184,76,.16)'},transparent 70%)`}}/>
-                <CrackingEgg stage={eggStage} size={72}/>
-              </div>
-              <div className="dash-u-clue">
-                <div className="dash-u-clue-kick" style={{color:isMulti?'rgba(96,232,176,.45)':'rgba(245,184,76,.45)'}}>
-                  {activeEgg?`night ${eggStage} of 7`:'your hatchling'}
+            {/* tonight message */}
+            <div style={{fontFamily:'var(--serif)',fontSize:15,color:'var(--cream)',lineHeight:1.4,marginBottom:14}}>
+              Tonight's star is saved. Sleep well{primary?`, ${primary.name}`:''}.
+            </div>
+
+            {/* divider */}
+            <div style={{height:1,background:'linear-gradient(90deg,transparent,rgba(245,184,76,.12),transparent)',margin:'0 0 16px'}}/>
+
+            {/* egg — big, golden, center */}
+            {activeEgg&&(
+              <>
+                <div style={{position:'relative',display:'inline-block',marginBottom:12}}>
+                  <div style={{position:'absolute',inset:-20,borderRadius:'50%',background:'radial-gradient(circle,rgba(245,184,76,.1),transparent 70%)',animation:'twk 3.5s ease-in-out infinite',pointerEvents:'none'}}/>
+                  <CrackingEgg stage={eggStage} size={90}/>
                 </div>
-                <div className="dash-u-clue-text" style={{color:isMulti?'rgba(96,232,176,.85)':'rgba(245,184,76,.85)'}}>
-                  "Your hatchling is waiting… complete tonight's ritual to see what happens next"
-                </div>
-                {/* 7-dot trail */}
-                <div className="dash-u-trail">
-                  {week.map((n,i)=>{
-                    const isTodayDone=n.state==='complete'&&n.date.toISOString().split('T')[0]===todayStr;
-                    let cls='future';
-                    if(n.state==='complete'&&isTodayDone) cls='tonight-done';
-                    else if(n.state==='complete') cls='done';
-                    else if(n.state==='tonight') cls='tonight';
-                    else if(n.state==='missed') cls='missed';
+
+                {/* 7 stars row */}
+                <div style={{display:'flex',justifyContent:'center',gap:7,marginBottom:12}}>
+                  {Array.from({length:7},(_,i)=>{
+                    const done=i<eggStage;
+                    const isNext=i===eggStage;
                     return(
-                      <div key={i} className={`dash-u-trail-item ${cls}`}>
-                        <div className={`dash-u-td ${cls}`}>{cls==='done'||cls==='tonight-done'?'★':cls==='tonight'?'✦':''}</div>
-                        <div className="dash-u-tl">{n.label}</div>
+                      <div key={i} style={{
+                        width:32,height:32,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
+                        fontSize:done?14:13,
+                        background:done?'rgba(245,184,76,.15)':isNext?'rgba(245,184,76,.08)':'rgba(245,184,76,.04)',
+                        border:done?'2px solid rgba(245,184,76,.5)':isNext?'2px dashed rgba(245,184,76,.4)':'1.5px dashed rgba(245,184,76,.18)',
+                        boxShadow:isNext?'0 0 10px rgba(245,184,76,.15)':'none',
+                        transition:'all .3s',
+                      }}>
+                        {done?'⭐':isNext?'✦':'🥚'}
                       </div>
                     );
                   })}
                 </div>
-              </div>
-            </div>
 
-            {/* question + button */}
-            <div className="dash-u-bottom" onClick={e=>e.stopPropagation()}>
-              <div className="dash-u-q">
-                {familyChars.length===0&&'Create a family character to get started'}
-                {familyChars.length>0&&selectedCharacters.length===1&&<>What happened in <span className="cn-a">{primary?.name}'s</span> world today?</>}
-                {familyChars.length>0&&selectedCharacters.length===2&&<>What happened in <span className="cn-a">{primary?.name}</span>{' '}<span style={{color:'rgba(255,255,255,.3)',fontSize:'0.82em',fontStyle:'normal'}}>&</span>{' '}<span className="cn-t">{secondary?.name}'s</span> world today?</>}
-                {familyChars.length>0&&selectedCharacters.length>2&&<>{buildPromptText(selectedCharacters)}</>}
-              </div>
-              {familyChars.length===0?(
-                <button className="dash-u-btn" style={{background:'linear-gradient(145deg,#a06010,#F5B84C 48%,#a06010)',boxShadow:'0 8px 30px rgba(200,130,20,.42)'}}
-                  onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
-                  <span className="dash-u-btn-ico">✨</span>
-                  <span className="dash-u-btn-texts">
-                    <span className="dash-u-btn-title" style={{color:'#080200'}}>Create your first character</span>
-                    <span className="dash-u-btn-sub" style={{color:'rgba(8,2,0,.5)'}}>They'll star in every story</span>
-                  </span>
-                  <span className="dash-u-btn-arr" style={{color:'rgba(8,2,0,.38)'}}>→</span>
-                </button>
-              ):(
-                <button className="dash-u-btn" style={{background:isMulti?'linear-gradient(145deg,#0a7a50,#14d890 48%,#0a7a50)':'linear-gradient(145deg,#a06010,#F5B84C 48%,#a06010)',boxShadow:isMulti?'0 8px 30px rgba(20,200,130,.35)':'0 8px 30px rgba(200,130,20,.42)'}}
-                  onClick={()=>startRitual()}
-                  disabled={selectedCharacters.length===0}>
-                  <span className="dash-u-btn-ico">🌙</span>
-                  <span className="dash-u-btn-texts">
-                    <span className="dash-u-btn-title" style={{color:isMulti?'#041a0c':'#080200'}}>Begin tonight's ritual ✦</span>
-                    <span className="dash-u-btn-sub" style={{color:isMulti?'rgba(4,26,16,.5)':'rgba(8,2,0,.5)'}}>{subText}</span>
-                  </span>
-                  <span className="dash-u-btn-arr" style={{color:isMulti?'rgba(4,26,16,.38)':'rgba(8,2,0,.38)'}}>→</span>
-                </button>
-              )}
+                {/* night count */}
+                <div style={{fontSize:10,fontFamily:'var(--mono)',color:'rgba(245,184,76,.5)',letterSpacing:'.06em',marginBottom:12}}>
+                  Night {eggStage} of 7 ✦
+                </div>
+
+                {/* motivational text */}
+                <div style={{fontFamily:'var(--serif)',fontSize:14,fontStyle:'italic',color:'rgba(244,239,232,.4)',lineHeight:1.65,padding:'0 10px',marginBottom:6}}>
+                  {eggStage>=7
+                    ?'All 7 cracks are here — your egg is ready to hatch!'
+                    :'Every night you do the ritual, the egg cracks a little more. After 7 nights, a new mystery companion will arrive!'}
+                </div>
+              </>
+            )}
+
+            {/* streak badge */}
+            <div style={{display:'inline-flex',alignItems:'center',gap:5,marginTop:8,padding:'4px 12px',borderRadius:50,background:'rgba(29,158,117,.08)',border:'1px solid rgba(29,158,117,.15)',fontSize:10,fontWeight:700,color:'var(--teal2)'}}>
+              ✦ {glow} nights strong
             </div>
           </div>
-        )}
+        ):(
+          <>
+          {familyChars.length>0?(
+            <button className="dash-u-btn" style={{
+              width:'100%',marginTop:16,marginBottom:6,
+              background:'linear-gradient(145deg,#a06010,#F5B84C 48%,#a06010)',
+              boxShadow:'0 8px 30px rgba(200,130,20,.42)',
+            }} onClick={()=>startRitual()}>
+              <span className="dash-u-btn-ico">🌙</span>
+              <span className="dash-u-btn-texts">
+                <span className="dash-u-btn-title" style={{color:'#080200'}}>Begin tonight's story ✦</span>
+                <span className="dash-u-btn-sub" style={{color:'rgba(8,2,0,.5)'}}>
+                  {activeEgg?`Night ${eggStage+1} · ${7-eggStage} crack${7-eggStage!==1?'s':''} to go`:'A new adventure awaits'}
+                </span>
+              </span>
+              <span className="dash-u-btn-arr" style={{color:'rgba(8,2,0,.38)'}}>→</span>
+            </button>
+          ):(
+            <button className="dash-u-btn" style={{
+              width:'100%',marginTop:16,marginBottom:6,
+              background:'linear-gradient(145deg,#a06010,#F5B84C 48%,#a06010)',
+              boxShadow:'0 8px 30px rgba(200,130,20,.42)',
+            }} onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
+              <span className="dash-u-btn-ico">✨</span>
+              <span className="dash-u-btn-texts">
+                <span className="dash-u-btn-title" style={{color:'#080200'}}>Start your first adventure</span>
+                <span className="dash-u-btn-sub" style={{color:'rgba(8,2,0,.5)'}}>Create a character and hatch your first creature</span>
+              </span>
+              <span className="dash-u-btn-arr" style={{color:'rgba(8,2,0,.38)'}}>→</span>
+            </button>
+          )}
 
-        {/* ── HATCHERY PLACEHOLDER ── */}
-        <div className="dash-hatch-ph" style={{cursor:'pointer'}} onClick={()=>setView('hatchery')}>
-          <div className="dash-hatch-emoji">🥚</div>
-          <div className="dash-hatch-info">
-            <div className="dash-hatch-label">Your Hatchery</div>
-            <div className="dash-hatch-name">{activeEgg?`${eggStage} of 7 cracks · Week ${activeEgg.weekNumber}`:'View your companions'}</div>
-            <div className="dash-hatch-sub">{activeEgg&&eggStage<7?`${7-eggStage} more night${7-eggStage!==1?'s':''} to hatch ✦`:activeEgg&&eggStage>=7?'Ready to hatch! ✦':'Complete rituals to hatch creatures ✦'}</div>
-          </div>
-        </div>
-
-        {/* ── THREE ACTION CARDS ── */}
-        <div className="dash-ys-wrap">
-          <div className="dash-ys-card dash-ys-create" onClick={()=>setView('story-configure' as any)}>
-            <div className="dash-ys-icon">✨</div>
-            <div className="dash-ys-title">New Story</div>
-            <div className="dash-ys-stat">Any story, any time</div>
-          </div>
-          <div className="dash-ys-card dash-ys-library" onClick={()=>setView('story-library')}>
-            <div className="dash-ys-icon">📚</div>
-            <div className="dash-ys-title">Our Stories</div>
-            <div className="dash-ys-stat">{storyCount>0?`${storyCount} ${storyCount===1?'story':'stories'} saved`:'No stories yet'}</div>
-          </div>
-          <div className="dash-ys-card dash-ys-nc" onClick={()=>setView('nightcard-library')}>
-            <div className="dash-ys-icon">🌙</div>
-            <div className="dash-ys-title">Memories</div>
-            <div className="dash-ys-stat">{allCards.filter(c=>!c.isOrigin).length>0?`${allCards.filter(c=>!c.isOrigin).length} cards saved`:'Start saving'}</div>
-          </div>
-        </div>
-
-        {/* this week */}
-        {weekChild&&hasAnyNights&&(
-          <div className="dash-week">
-            <div className="dash-week-hd">
-              <div className="dash-week-title">
-                {isMulti?`${weekChild.name}'s week`:'this week'}
-              </div>
-              <div className="dash-week-right">
-                {isMulti&&(()=>{
-                  const other=selectedCharacters.find(c=>c.id!==weekViewId);
-                  return other?(
-                    <div className="dash-week-toggle" onClick={()=>setWeekViewId(other.id)}>
-                      <div className="dash-week-tav" style={{background:avatarBg(other.color),color:other.color}}>
-                        {other.photo
-                          ?<img src={other.photo} style={{width:'100%',height:'100%',objectFit:'cover'}} alt=""/>
-                          :other.emoji}
-                      </div>
-                      <div className="dash-week-tname" style={{color:other.color}}>{other.name}'s week →</div>
-                    </div>
-                  ):null;
-                })()}
-                <button className="dash-week-lnk" onClick={()=>setView('nightcard-library')}>view all →</button>
-              </div>
-            </div>
-            <div className="dash-nights">
-              {week.map((n,i)=>{
-                const isTodayDone=n.state==='complete'&&n.date.toISOString().split('T')[0]===todayStr;
+          {/* ── EGG PROGRESS — 7 circles, game-like (pre-ritual only) ── */}
+          {activeEgg&&(
+            <div style={{display:'flex',justifyContent:'center',gap:6,margin:'10px 0 16px'}}>
+              {Array.from({length:7},(_,i)=>{
+                const done=i<eggStage;
+                const isTonight=i===eggStage;
                 return(
-                  <div key={i}
-                    className={`dash-night ${n.state==='complete'||n.state==='missed'?'tappable':''}`}
-                    onClick={()=>{
-                      if(n.state==='complete'&&n.card) setModalCard(n.card);
-                      else if(n.state==='missed') showMiss(i);
-                    }}>
-                    <div className={`dash-nc ${
-                      n.state==='complete'&&isTodayDone?'dash-nc-tonight-done'
-                      :n.state==='complete'?'dash-nc-done'
-                      :n.state==='missed'?'dash-nc-missed'
-                      :n.state==='tonight'?'dash-nc-tonight'
-                      :'dash-nc-future'
-                    }`}>
-                      {n.state==='complete'&&isTodayDone&&(
-                        <><span style={{color:'var(--teal)',textShadow:'0 0 8px rgba(29,158,117,.7)'}}>★</span>
-                        <div className="dash-nc-badge dash-nc-badge-teal">♥</div></>
-                      )}
-                      {n.state==='complete'&&!isTodayDone&&(
-                        <><span style={{color:'#B07808',textShadow:'0 0 8px rgba(176,120,8,.7)'}}>★</span>
-                        {n.card&&<div className="dash-nc-badge dash-nc-badge-gold">♥</div>}</>
-                      )}
-                      {n.state==='tonight'&&<span style={{color:'var(--amber)'}}>✦</span>}
-                      {missTooltip===i&&<div className="dash-miss-tooltip">The story world held a light for you ✦</div>}
-                    </div>
-                    <div className={`dash-nd ${
-                      n.state==='complete'&&isTodayDone?'dash-nd-tdone'
-                      :n.state==='complete'?'dash-nd-done'
-                      :n.state==='missed'?'dash-nd-missed'
-                      :n.state==='tonight'?'dash-nd-tonight'
-                      :'dash-nd-future'
-                    }`}>{n.label}</div>
+                  <div key={i} style={{
+                    width:34,height:34,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:done?14:13,
+                    background:done?'rgba(245,184,76,.15)':isTonight?'rgba(245,184,76,.08)':'rgba(245,184,76,.04)',
+                    border:done?'2px solid rgba(245,184,76,.5)':isTonight?'2px solid rgba(245,184,76,.35)':'1.5px dashed rgba(245,184,76,.18)',
+                    boxShadow:isTonight?'0 0 12px rgba(245,184,76,.25)':'none',
+                    animation:isTonight?'pring 2.5s ease-in-out infinite':'none',
+                    transition:'all .3s',
+                  }}>
+                    {done?'⭐':isTonight?'✦':'🥚'}
                   </div>
                 );
               })}
             </div>
+          )}
+          </>
+        )}
+
+        {/* ── QUICK ACTIONS — compact ── */}
+        <div style={{display:'flex',gap:8,marginBottom:14}}>
+          <div className="dash-ys-card dash-ys-library" style={{flex:1}} onClick={()=>setView('story-library')}>
+            <div className="dash-ys-icon">📖</div>
+            <div className="dash-ys-title">My Stories</div>
+            <div className="dash-ys-stat">{storyCount>0?`${storyCount} saved`:'None yet'}</div>
+          </div>
+          <div className="dash-ys-card dash-ys-nc" style={{flex:1}} onClick={()=>setView('nightcard-library')}>
+            <div className="dash-ys-icon">🌙</div>
+            <div className="dash-ys-title">My Memories</div>
+            <div className="dash-ys-stat">{allCards.filter(c=>!c.isOrigin).length>0?`${allCards.filter(c=>!c.isOrigin).length} saved`:'None yet'}</div>
+          </div>
+          <div className="dash-ys-card" style={{flex:1,background:'linear-gradient(145deg,rgba(96,232,176,.1),rgba(20,120,90,.05))',border:'1px solid rgba(96,232,176,.15)'}} onClick={()=>setView('hatchery')}>
+            <div className="dash-ys-icon">🥚</div>
+            <div className="dash-ys-title">Hatchery</div>
+            <div className="dash-ys-stat">{hatchedCreature?'Visit':'Locked'}</div>
+          </div>
+        </div>
+
+        {/* ── CREATE A STORY — fun, any time ── */}
+        {familyChars.length>0&&(
+          <div style={{textAlign:'center',paddingBottom:12}}>
+            <button style={{background:'linear-gradient(135deg,rgba(232,151,42,.08),rgba(232,151,42,.03))',border:'1.5px solid rgba(232,151,42,.18)',borderRadius:50,padding:'10px 24px',color:'rgba(245,184,76,.7)',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'var(--sans)',transition:'all .2s',display:'inline-flex',alignItems:'center',gap:6}}
+              onClick={()=>setView('story-configure' as any)}>
+              ✨ Create a story for fun
+            </button>
+          </div>
+        )}
+
+        {/* ── RE-READ SHORTCUT ── */}
+        {lastStory&&lastStory.bookData&&onReadStory&&!tonightDone&&(
+          <div className="dash-ly" style={{cursor:'pointer',marginBottom:8}} onClick={()=>onReadStory(lastStory.bookData)}>
+            <div className="dash-ly-ico">📖</div>
+            <div className="dash-ly-text">Re-read <em>{lastStory.title}</em> →</div>
           </div>
         )}
       </div>
@@ -1176,19 +979,13 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
         </div>
       )}
 
-      {/* hatch modal — triggered when eggStage >= 7 */}
+      {/* hatch modal */}
       {showHatchModal&&activeEgg&&(
         <div className="dash-hatch-modal" onClick={()=>setShowHatchModal(false)}>
           <div className="dash-hatch-inner" onClick={e=>e.stopPropagation()}>
-            <div className="dash-hatch-creature" style={{filter:`drop-shadow(0 8px 28px ${activeEgg.creatureEmoji?'rgba(245,184,76,.4)':'rgba(96,232,176,.4)'})`}}>
-              {activeEgg.creatureEmoji}
-            </div>
-            <div className="dash-hatch-title">
-              A new companion has hatched!
-            </div>
-            <div className="dash-hatch-sub">
-              Complete the ritual to name them and welcome them home.
-            </div>
+            <div className="dash-hatch-creature">{activeEgg.creatureEmoji}</div>
+            <div className="dash-hatch-title">A new companion has hatched!</div>
+            <div className="dash-hatch-sub">Complete the ritual to name them and welcome them home.</div>
             <button className="dash-hatch-btn" onClick={()=>{setShowHatchModal(false);startRitual();}}>
               Begin tonight's ritual ✦
             </button>

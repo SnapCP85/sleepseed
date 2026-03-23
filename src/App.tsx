@@ -18,6 +18,7 @@ import SleepSeedCore from './SleepSeedCore';
 import SharedStoryViewer from './pages/SharedStoryViewer';
 import CharacterDetail from './features/characters/CharacterDetail';
 import Hatchery from './pages/Hatchery';
+import FirstNight from './pages/FirstNight';
 import { saveCharacter, saveNightCard } from './lib/storage';
 import { saveHatchedCreature, createEgg } from './lib/hatchery';
 import type { Character, HatchedCreature, SavedNightCard } from './lib/types';
@@ -63,14 +64,15 @@ function AppInner() {
   const {
     user, view, setView, logout,
     selectedCharacter, setSelectedCharacter,
-    selectedCharacters,
-    ritualSeed, ritualMood,
+    selectedCharacters, setSelectedCharacters,
+    ritualSeed, ritualMood, setRitualSeed,
     builderChoices,
     editingCharacter, setEditingCharacter,
     companionCreature, setCompanionCreature,
   } = useApp();
 
   const [preloadedBook,      setPreloadedBook]      = useState<any>(null);
+  const [lastOnboardingResult, setLastOnboardingResult] = useState<OnboardingResult|null>(null);
   const [nightCardFilter,    setNightCardFilter]    = useState<string | undefined>(undefined);
   const [viewingCharacter,   setViewingCharacter]   = useState<Character | null>(null);
 
@@ -142,10 +144,11 @@ function AppInner() {
       await saveNightCard(nightCard);
     } catch (e) { console.error('[onboarding] saveNightCard failed:', e); }
 
-    // Always finish — set creature, flag, navigate
+    // Always finish — set creature, flag, navigate to first-night choice
     setCompanionCreature(result.creature);
+    setLastOnboardingResult(result);
     try { localStorage.setItem(`sleepseed_onboarding_${user.id}`, '1'); } catch {}
-    setView('dashboard');
+    setView('first-night');
   };
 
   // Read a saved story directly — sets preloadedBook then routes to story-builder
@@ -188,6 +191,25 @@ function AppInner() {
     }
     return <UserDashboard onSignUp={goAuth} onReadStory={openSavedStory} />;
   }
+
+  if (view === 'first-night' && lastOnboardingResult) return (
+    <FirstNight
+      creature={lastOnboardingResult.creature}
+      character={lastOnboardingResult.character}
+      onStory={() => {
+        setSelectedCharacters([lastOnboardingResult.character]);
+        setSelectedCharacter(lastOnboardingResult.character);
+        setRitualSeed('');
+        // Skip the ritual intro tutorial — they just completed onboarding
+        try { localStorage.setItem('rs_intro_seen_v1', '1'); } catch {}
+        setView('ritual-starter');
+      }}
+      onSleep={() => {
+        setView('dashboard');
+      }}
+    />
+  );
+  if (view === 'first-night') { setView('dashboard'); return null; }
 
   if (view === 'hatchery') return <Hatchery user={user!} onBack={goDashboard} />;
   if (view === 'ritual-starter') return <RitualStarter />;

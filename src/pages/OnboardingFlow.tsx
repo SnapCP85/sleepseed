@@ -264,10 +264,10 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     if (!hatched) setHoldProgress(0);
   }, [hatched]);
 
-  // Step 9: start camera — store stream, then setCameraReady triggers video render,
+  // Step 10: start camera — store stream, then setCameraReady triggers video render,
   // then a second effect hooks the stream to the <video> element once it exists.
   useEffect(() => {
-    if (step !== 9 || photoTaken) return;
+    if (step !== 10 || photoTaken) return;
     let cancelled = false;
     navigator.mediaDevices?.getUserMedia({ video: { facingMode: 'user' }, audio: false })
       .then(stream => {
@@ -388,15 +388,12 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     setTimeout(() => {
       setShowFlash(false);
       setPhotoTaken(true);
-      if (creature) {
-        setCreatureName(creature.nameSuggestions[0] || 'Luna');
-      }
     }, 400);
   }, [photoTaken, creature, cameraReady, creatureScale, creaturePos]);
 
-  // Step 13: assemble and complete (fires after step 12 CTA)
+  // Step 14: assemble and complete (fires after step 13 CTA)
   useEffect(() => {
-    if (step !== 13 || !user || !creature) return;
+    if (step !== 14 || !user || !creature) return;
 
     const charId = crypto.randomUUID?.() || uid();
     const character: Character = {
@@ -442,7 +439,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   const dots = (
     <div className="ob-dots">
-      {Array.from({length:13},(_,i) => (
+      {Array.from({length:15},(_,i) => (
         <div key={i} className={`ob-dot ${i<step?'ob-dot-done':i===step?'ob-dot-cur':'ob-dot-future'}`}/>
       ))}
     </div>
@@ -600,10 +597,13 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     </div>
   );
 
-  // Step 5 — The Story
+  // ── STEP 5 — Story Begins (2 pages only) ─────────────────────────────────
   if (step === 5) {
-    const pages = storyPages(creature?.emoji||'🥚', creature?.name||'creature', childName);
-    const pg = pages[storyPage];
+    const introPages = [
+      {emoji:'🌙',text:`One quiet night, a small golden egg appeared at the foot of ${childName}'s bed. It was warm to the touch, and it hummed.`},
+      {emoji:'🥚',text:`The egg rocked gently. A tiny crack appeared, glowing amber. Something inside was waking up…`},
+    ];
+    const pg = introPages[storyPage];
     return (
       <div className="ob">
         <style>{CSS}</style>
@@ -611,23 +611,16 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         {dots}
         <div className="ob-content" style={{paddingTop:20}}>
           <div className="ob-story-page" key={storyPage}>
-            <div className="ob-story-emoji" onClick={() => {
-              if (pg?.tap) {
-                // egg tap interaction on page 3
-              }
-            }}>{pg?.emoji}</div>
+            <div className="ob-story-emoji">{pg?.emoji}</div>
             <div className="ob-story-text">{pg?.text}</div>
-            <div className="ob-story-tap">
-              {storyPage < pages.length - 1 ? 'tap to continue' : ''}
-            </div>
           </div>
-          {storyPage < pages.length - 1 ? (
-            <button className="ob-cta ob-cta-amber" onClick={() => setStoryPage(storyPage+1)}>
+          {storyPage < 1 ? (
+            <button className="ob-cta ob-cta-amber" onClick={() => setStoryPage(1)}>
               Continue
             </button>
           ) : (
-            <button className="ob-cta ob-cta-amber" onClick={next}>
-              What happens next?
+            <button className="ob-cta ob-cta-amber" onClick={()=>setStep(6)}>
+              What's inside? →
             </button>
           )}
         </div>
@@ -635,20 +628,125 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     );
   }
 
-  // Step 6 — Night Card
-  if (step === 6) return (
+  // ── STEP 6 — Hold to Hatch ─────────────────────────────────────────────────
+  if (step === 6) {
+    const dashoffset = 283 - (283 * holdProgress / 100);
+    return (
+      <div className="ob">
+        <style>{CSS}</style>
+        {starField}
+        {dots}
+        <div className="ob-content" style={{paddingTop:20}}>
+          {!hatched ? (
+            <>
+              <div className="ob-title">Something is waking up…</div>
+              <div className="ob-sub">Hold the egg and find out who's inside.</div>
+              <div className="ob-hold-wrap">
+                <div className="ob-hold-ring"
+                  onMouseDown={startHold} onMouseUp={stopHold} onMouseLeave={stopHold}
+                  onTouchStart={startHold} onTouchEnd={stopHold}>
+                  <svg viewBox="0 0 100 100">
+                    <circle className="ob-hold-ring-bg" cx="50" cy="50" r="45"/>
+                    <circle className="ob-hold-ring-fill" cx="50" cy="50" r="45"
+                      style={{strokeDashoffset:dashoffset}}/>
+                  </svg>
+                  <div className="ob-hold-emoji">🥚</div>
+                </div>
+                <div className="ob-hold-label">Hold to hatch…</div>
+              </div>
+            </>
+          ) : (
+            <div className="ob-hatch-celeb">
+              <div className="ob-hatch-emoji">{creature?.emoji}</div>
+              <div className="ob-hatch-name" style={{color:creature?.color}}>
+                It's a {creature?.name}!
+              </div>
+              <div className="ob-sub">Your creature is here. What will you call them?</div>
+              <button className="ob-cta ob-cta-teal" onClick={next}>
+                Name your creature →
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── STEP 7 — Naming ───────────────────────────────────────────────────────
+  if (step === 7) return (
+    <div className="ob">
+      <style>{CSS}</style>
+      {starField}
+      {dots}
+      <div className="ob-content" style={{paddingTop:20,display:'flex',flexDirection:'column',alignItems:'center'}}>
+        <div style={{fontSize:80,animation:'obFloat 3s ease-in-out infinite',filter:`drop-shadow(0 6px 24px ${creature?.color||'#F5B84C'}50)`,marginBottom:16}}>
+          {creature?.emoji}
+        </div>
+        <div className="ob-title" style={{fontSize:30,color:'#F5B84C'}}>What's their name?</div>
+        <div className="ob-sub">{childName} gets to choose.</div>
+        <input className="ob-input" style={{textAlign:'center',fontSize:22}} placeholder="Type a name…"
+          value={creatureName} onChange={e => setCreatureName(e.target.value)} autoFocus />
+        {creature && (
+          <div className="ob-chips" style={{marginTop:10,justifyContent:'center'}}>
+            {creature.nameSuggestions.map(n => (
+              <div key={n} className={`ob-chip${creatureName===n?' on':''}`}
+                onClick={() => setCreatureName(n)}>{n}</div>
+            ))}
+          </div>
+        )}
+        <button className="ob-cta ob-cta-amber" disabled={creatureName.length<2}
+          onClick={next} style={{marginTop:20}}>
+          That's their name! →
+        </button>
+      </div>
+    </div>
+  );
+
+  // ── STEP 8 — Story Resumes (uses child's chosen name) ─────────────────────
+  if (step === 8) {
+    const resumePages = [
+      {emoji:creature?.emoji||'✨',text:`And then — a nose. Two bright eyes. ${creatureName} tumbled out, looked straight at ${childName}, and smiled.`},
+      {emoji:'✨',text:`"I've been waiting for you," ${creatureName} whispered. "Every night you tell a story, I grow a little stronger."`},
+    ];
+    const resumeIdx = storyPage > 1 ? storyPage - 2 : 0;
+    return (
+      <div className="ob">
+        <style>{CSS}</style>
+        {starField}
+        {dots}
+        <div className="ob-content" style={{paddingTop:20}}>
+          <div className="ob-story-page" key={resumeIdx}>
+            <div className="ob-story-emoji">{resumePages[resumeIdx]?.emoji}</div>
+            <div className="ob-story-text">{resumePages[resumeIdx]?.text}</div>
+          </div>
+          {resumeIdx < 1 ? (
+            <button className="ob-cta ob-cta-amber" onClick={() => setStoryPage(3)}>
+              Continue
+            </button>
+          ) : (
+            <button className="ob-cta ob-cta-amber" onClick={next}>
+              Before we continue, let's capture this moment! →
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── STEP 9 — Night Card ───────────────────────────────────────────────────
+  if (step === 9) return (
     <div className="ob">
       <style>{CSS}</style>
       {starField}
       {dots}
       <div className="ob-content" style={{paddingTop:20}}>
         <div className="ob-title">
-          The first night card
+          {creatureName}'s first night card
         </div>
         <div className="ob-sub">
-          What do you think {creature?.name || 'your creature'} dreams about on their very first night?
+          What do you think {creatureName} dreams about on their very first night?
         </div>
-        <textarea className="ob-textarea" placeholder={`${creature?.name || 'They'} dream about...`}
+        <textarea className="ob-textarea" placeholder={`${creatureName} dreams about…`}
           value={dreamAnswer} onChange={e => setDreamAnswer(e.target.value)} rows={3} />
         <div style={{fontSize:12,color:'rgba(255,255,255,.3)',textAlign:'center',marginTop:14,marginBottom:4,fontWeight:700}}>How does tonight feel?</div>
         <div className="ob-moods">
@@ -668,82 +766,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     </div>
   );
 
-  // Step 7 — Hold to Hatch
-  if (step === 7) {
-    const dashoffset = 283 - (283 * holdProgress / 100);
-    return (
-      <div className="ob">
-        <style>{CSS}</style>
-        {starField}
-        {dots}
-        <div className="ob-content" style={{paddingTop:20}}>
-          {!hatched ? (
-            <>
-              <div className="ob-title">Time to hatch</div>
-              <div className="ob-sub">Hold the egg until it cracks open.</div>
-              <div className="ob-hold-wrap">
-                <div className="ob-hold-ring"
-                  onMouseDown={startHold} onMouseUp={stopHold} onMouseLeave={stopHold}
-                  onTouchStart={startHold} onTouchEnd={stopHold}>
-                  <svg viewBox="0 0 100 100">
-                    <circle className="ob-hold-ring-bg" cx="50" cy="50" r="45"/>
-                    <circle className="ob-hold-ring-fill" cx="50" cy="50" r="45"
-                      style={{strokeDashoffset:dashoffset}}/>
-                  </svg>
-                  <div className="ob-hold-emoji">🥚</div>
-                </div>
-                <div className="ob-hold-label">Hold to hatch...</div>
-              </div>
-            </>
-          ) : (
-            <div className="ob-hatch-celeb">
-              <div className="ob-hatch-emoji">{creature?.emoji}</div>
-              <div className="ob-hatch-name" style={{color:creature?.color}}>
-                {creature?.name} has arrived!
-              </div>
-              <div className="ob-sub">Your creature is here. What will you call them?</div>
-              <button className="ob-cta ob-cta-teal" onClick={next}>
-                Name your creature
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // ── STEP 8 — Naming ──────────────────────────────────────────────────────
-  if (step === 8) return (
-    <div className="ob">
-      <style>{CSS}</style>
-      {starField}
-      {dots}
-      <div className="ob-content" style={{paddingTop:20,display:'flex',flexDirection:'column',alignItems:'center'}}>
-        <div style={{fontSize:80,animation:'obFloat 3s ease-in-out infinite',filter:`drop-shadow(0 6px 24px ${creature?.color||'#F5B84C'}50)`,marginBottom:16}}>
-          {creature?.emoji}
-        </div>
-        <div className="ob-title" style={{fontSize:30,color:'#F5B84C'}}>What's their name?</div>
-        <div className="ob-sub">{childName} gets to choose.</div>
-        <input className="ob-input" style={{textAlign:'center',fontSize:22}} placeholder="Type a name..."
-          value={creatureName} onChange={e => setCreatureName(e.target.value)} autoFocus />
-        {creature && (
-          <div className="ob-chips" style={{marginTop:10,justifyContent:'center'}}>
-            {creature.nameSuggestions.map(n => (
-              <div key={n} className={`ob-chip${creatureName===n?' on':''}`}
-                onClick={() => setCreatureName(n)}>{n}</div>
-            ))}
-          </div>
-        )}
-        <button className="ob-cta ob-cta-amber" disabled={creatureName.length<2}
-          onClick={next} style={{marginTop:20}}>
-          That's their name! →
-        </button>
-      </div>
-    </div>
-  );
-
-  // ── STEP 9 — Photo Together ────────────────────────────────────────────────
-  if (step === 9) return (
+  // ── STEP 10 — Photo Together ───────────────────────────────────────────────
+  if (step === 10) return (
     <div className="ob">
       <style>{CSS}</style>
       {starField}
@@ -808,38 +832,84 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     </div>
   );
 
-  // ── STEP 10 — The Ritual Explained ─────────────────────────────────────────
-  if (step === 10) return (
+  // ── STEP 11 — The Ritual Explained ─────────────────────────────────────────
+  if (step === 11) return (
     <div className="ob">
       <style>{CSS}</style>
       {starField}
       {dots}
       <div className="ob-content" style={{paddingTop:20}}>
+        {/* creature floating */}
         <div style={{textAlign:'center',marginBottom:16}}>
-          <div style={{fontSize:64,animation:'obFloat 3s ease-in-out infinite',filter:`drop-shadow(0 4px 18px ${creature?.color||'#F5B84C'}45)`,display:'inline-block'}}>
+          <div style={{fontSize:72,animation:'obFloat 3s ease-in-out infinite',filter:`drop-shadow(0 6px 22px ${creature?.color||'#F5B84C'}45)`,display:'inline-block'}}>
             {creature?.emoji}
           </div>
         </div>
 
         {/* speech bubble */}
-        <div style={{background:'rgba(255,255,255,.04)',border:'1.5px solid rgba(255,255,255,.08)',borderRadius:18,padding:'16px 18px',marginBottom:20,position:'relative'}}>
-          <div style={{fontSize:10,fontFamily:"'DM Mono',monospace",letterSpacing:'.08em',textTransform:'uppercase',color:'rgba(245,184,76,.5)',marginBottom:8}}>
+        <div style={{background:`${creature?.color||'#F5B84C'}08`,border:`1.5px solid ${creature?.color||'#F5B84C'}18`,borderRadius:20,padding:'18px 20px',marginBottom:20,position:'relative'}}>
+          <div style={{fontSize:10,fontFamily:"'DM Mono',monospace",letterSpacing:'.08em',textTransform:'uppercase',color:`${creature?.color||'#F5B84C'}70`,marginBottom:8}}>
             {creatureName} says:
           </div>
-          <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontStyle:'italic',color:'rgba(244,239,232,.75)',lineHeight:1.65}}>
-            "Come back every night and I'll find you a new friend. Each time you do the ritual, the egg cracks a little more. Seven nights… and something new hatches. 🥚"
+          <div style={{fontFamily:"'Fraunces',serif",fontSize:17,fontStyle:'italic',color:'rgba(244,239,232,.8)',lineHeight:1.7}}>
+            "Come back every night and I'll join you on your adventures. Together we'll explore new worlds, meet new friends, learn important lessons, and both grow a little stronger each time. That's how the magic works."
           </div>
         </div>
 
-        {/* egg progress row */}
-        <div style={{display:'flex',gap:6,justifyContent:'center',marginBottom:8}}>
+        <div style={{textAlign:'center',fontFamily:"'Fraunces',serif",fontSize:14,fontStyle:'italic',color:'rgba(244,239,232,.35)',lineHeight:1.6,marginBottom:16,padding:'0 10px'}}>
+          Every night you come back, {creatureName} remembers.
+        </div>
+
+        <button className="ob-cta ob-cta-amber" onClick={next}>
+          What else did {creatureName} bring? →
+        </button>
+      </div>
+    </div>
+  );
+
+  // ── STEP 12 — Egg Surprise ────────────────────────────────────────────────
+  if (step === 12) return (
+    <div className="ob" style={{background:'radial-gradient(ellipse 130% 65% at 50% 0%,#080620 0%,#030312 50%,#020210 100%)'}}>
+      <style>{CSS}</style>
+      {starField}
+      {dots}
+      <div className="ob-content" style={{paddingTop:24,display:'flex',flexDirection:'column',alignItems:'center'}}>
+        <div style={{fontSize:11,fontFamily:"'DM Mono',monospace",letterSpacing:'.14em',textTransform:'uppercase',color:'rgba(245,184,76,.7)',marginBottom:16,fontWeight:800}}>
+          ✦ WAIT — WHAT'S THIS?
+        </div>
+
+        {/* egg with sparkles */}
+        <div style={{position:'relative',marginBottom:16}}>
+          {[{t:10,l:18,s:4,d:'2.2s',dl:'0s'},{t:6,l:78,s:3,d:'2.8s',dl:'.4s'},{t:42,l:8,s:3,d:'2.5s',dl:'.8s'},{t:38,l:88,s:4,d:'3s',dl:'.2s'},{t:68,l:28,s:3,d:'2.4s',dl:'1.2s'},{t:62,l:72,s:3,d:'2.7s',dl:'.6s'},{t:20,l:50,s:3,d:'2s',dl:'.3s'},{t:55,l:50,s:4,d:'2.6s',dl:'1s'}].map((p,i) => (
+            <div key={i} style={{position:'absolute',top:`${p.t}%`,left:`${p.l}%`,width:p.s,height:p.s,borderRadius:'50%',background:'#F5B84C',animation:`obTwk ${p.d} ${p.dl} ease-in-out infinite`,pointerEvents:'none'}}/>
+          ))}
+          <div style={{fontSize:96,animation:'obRock 2.5s ease-in-out infinite',filter:'drop-shadow(0 0 24px rgba(245,184,76,.4))',position:'relative',zIndex:2}}>
+            🥚
+          </div>
+        </div>
+
+        <div className="ob-title" style={{fontSize:26}}>{creatureName} brought you something!</div>
+
+        {/* explanation — child-friendly, exciting */}
+        <div style={{fontFamily:"'Fraunces',serif",fontSize:15,fontStyle:'italic',color:'rgba(244,239,232,.55)',lineHeight:1.7,textAlign:'center',margin:'8px 0 18px',padding:'0 8px'}}>
+          It's another egg! {creatureName} found it on the way here. Nobody knows what's inside yet… but here's the secret:
+        </div>
+
+        {/* the mechanic explained */}
+        <div style={{background:'rgba(245,184,76,.05)',border:'1.5px solid rgba(245,184,76,.14)',borderRadius:18,padding:'16px 18px',marginBottom:16,textAlign:'center',width:'100%'}}>
+          <div style={{fontFamily:"'Fraunces',serif",fontSize:15,color:'rgba(244,239,232,.7)',lineHeight:1.65,fontStyle:'italic'}}>
+            Every night you come back and do the bedtime ritual, the egg cracks a little more. After 7 nights — it hatches into a brand new friend!
+          </div>
+        </div>
+
+        {/* 7-egg progress row */}
+        <div style={{display:'flex',gap:6,justifyContent:'center',marginBottom:6}}>
           {Array.from({length:7},(_,i) => (
             <div key={i} style={{
-              width:32,height:32,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,
-              background:i===0?'rgba(245,184,76,.15)':'rgba(255,255,255,.03)',
-              border:i===0?'2px solid #F5B84C':'1.5px solid rgba(255,255,255,.06)',
+              width:32,height:32,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:i===0?14:13,
+              background:i===0?'rgba(245,184,76,.15)':'rgba(245,184,76,.04)',
+              border:i===0?'2px solid #F5B84C':'1.5px dashed rgba(245,184,76,.2)',
               boxShadow:i===0?'0 0 12px rgba(245,184,76,.3)':'none',
-              opacity:i===0?1:.25,
             }}>
               {i===0?'⭐':'🥚'}
             </div>
@@ -849,60 +919,22 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           Night 1 of 7 ✦
         </div>
 
-        <div style={{textAlign:'center',fontFamily:"'Fraunces',serif",fontSize:14,fontStyle:'italic',color:'rgba(244,239,232,.35)',lineHeight:1.6,marginBottom:8}}>
-          Every night you come back, the egg remembers.
+        {/* mystery silhouette */}
+        <div style={{position:'relative',width:90,height:90,margin:'0 auto 10px'}}>
+          <div style={{position:'absolute',inset:0,borderRadius:'50%',background:'radial-gradient(circle,rgba(180,140,255,.14),rgba(100,80,200,.05),transparent 70%)',filter:'blur(14px)'}}/>
+          <div style={{position:'absolute',inset:'15%',borderRadius:'50%',background:'radial-gradient(circle,rgba(245,184,76,.1),transparent 70%)',filter:'blur(10px)',animation:'obPulse 4s ease-in-out infinite'}}/>
         </div>
-
-        <button className="ob-cta ob-cta-amber" onClick={next}>
-          Show me the new egg! →
-        </button>
-      </div>
-    </div>
-  );
-
-  // ── STEP 11 — Week 2 Egg Reveal ───────────────────────────────────────────
-  if (step === 11) return (
-    <div className="ob" style={{background:'radial-gradient(ellipse 130% 65% at 50% 0%,#080620 0%,#030312 50%,#020210 100%)'}}>
-      <style>{CSS}</style>
-      {starField}
-      {dots}
-      <div className="ob-content" style={{paddingTop:24,display:'flex',flexDirection:'column',alignItems:'center'}}>
-        <div style={{fontSize:10,fontFamily:"'DM Mono',monospace",letterSpacing:'.14em',textTransform:'uppercase',color:'rgba(245,184,76,.6)',marginBottom:16}}>
-          ✦ a new egg appeared
-        </div>
-
-        {/* egg with sparkles */}
-        <div style={{position:'relative',marginBottom:20}}>
-          {/* sparkle particles — CSS only */}
-          {[{t:12,l:20,s:4,d:'2.2s',dl:'0s'},{t:8,l:75,s:3,d:'2.8s',dl:'.4s'},{t:45,l:10,s:3,d:'2.5s',dl:'.8s'},{t:40,l:85,s:4,d:'3s',dl:'.2s'},{t:65,l:30,s:3,d:'2.4s',dl:'1.2s'},{t:60,l:70,s:3,d:'2.7s',dl:'.6s'}].map((p,i) => (
-            <div key={i} style={{position:'absolute',top:`${p.t}%`,left:`${p.l}%`,width:p.s,height:p.s,borderRadius:'50%',background:'#F5B84C',animation:`obTwk ${p.d} ${p.dl} ease-in-out infinite`,pointerEvents:'none'}}/>
-          ))}
-          <div style={{fontSize:88,animation:'obRock 2.5s ease-in-out infinite',filter:'drop-shadow(0 0 20px rgba(245,184,76,.35))',position:'relative',zIndex:2}}>
-            🥚
-          </div>
-        </div>
-
-        <div className="ob-title" style={{fontSize:28}}>Something is already waiting inside…</div>
-        <div style={{fontFamily:"'Fraunces',serif",fontSize:14,fontStyle:'italic',color:'rgba(244,239,232,.4)',lineHeight:1.65,textAlign:'center',margin:'8px 0 20px',padding:'0 12px'}}>
-          It appeared the moment {creatureName} hatched.<br/>Come back tomorrow night to crack it further.
-        </div>
-
-        {/* mystery silhouette — CSS only */}
-        <div style={{position:'relative',width:100,height:100,margin:'0 auto 16px'}}>
-          <div style={{position:'absolute',inset:0,borderRadius:'50%',background:'radial-gradient(circle,rgba(180,140,255,.12),rgba(100,80,200,.04),transparent 70%)',filter:'blur(12px)'}}/>
-          <div style={{position:'absolute',inset:'15%',borderRadius:'50%',background:'radial-gradient(circle,rgba(245,184,76,.08),transparent 70%)',filter:'blur(8px)',animation:'obPulse 4s ease-in-out infinite'}}/>
-        </div>
-        <div style={{fontSize:12,color:'rgba(255,255,255,.2)',fontStyle:'italic',marginBottom:16}}>What could it be…?</div>
+        <div style={{fontSize:13,color:'rgba(255,255,255,.25)',fontStyle:'italic',marginBottom:18}}>Who could it be…?</div>
 
         <button className="ob-cta ob-cta-teal" onClick={next}>
-          I'll be back tomorrow 🌙
+          I'll be back tomorrow! 🌙
         </button>
       </div>
     </div>
   );
 
-  // ── STEP 12 — Parent's Quiet Moment ────────────────────────────────────────
-  if (step === 12) return (
+  // ── STEP 13 — Parent's Quiet Moment ────────────────────────────────────────
+  if (step === 13) return (
     <div className="ob ob-parent-bg">
       <style>{CSS}</style>
       {starField}
@@ -965,7 +997,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     </div>
   );
 
-  // ── STEP 13 — triggers onComplete via useEffect ────────────────────────────
+  // ── STEP 14 — triggers onComplete via useEffect ────────────────────────────
   return (
     <div className="ob">
       <style>{CSS}</style>
