@@ -3,12 +3,29 @@
 // Function signatures match the old localStorage version exactly.
 
 import { supabase } from './supabase';
-import type { Character, SavedStory, SavedNightCard } from './types';
+import type { Character, SavedStory, SavedNightCard, LibraryStory, UserProfile } from './types';
 
 // ── Utility ───────────────────────────────────────────────────────────────────
 
 export const uid = () =>
   Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+
+function strHash(s: string): string {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++)
+    h = (h * 33) ^ s.charCodeAt(i);
+  return (h >>> 0).toString(36);
+}
+
+function generateLibrarySlug(title: string): string {
+  const base = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .slice(0, 50);
+  const suffix = strHash(title + Date.now()).slice(0, 4);
+  return `${base}-${suffix}`;
+}
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
@@ -143,6 +160,13 @@ const dbToStory = (row: any): SavedStory => ({
   id: row.id, userId: row.user_id, title: row.title, heroName: row.hero_name,
   characterIds: row.character_ids ?? [], refrain: row.refrain, date: row.date,
   occasion: row.occasion, bookData: row.book_data,
+  ageGroup: row.age_group ?? undefined, vibe: row.vibe ?? undefined,
+  theme: row.theme ?? undefined, mood: row.mood ?? undefined,
+  storyStyle: row.story_style ?? undefined, storyLength: row.story_length ?? undefined,
+  lessons: row.lessons ?? undefined, isPublic: row.is_public ?? false,
+  librarySlug: row.library_slug ?? undefined, thumbsUp: row.thumbs_up ?? 0,
+  thumbsDown: row.thumbs_down ?? 0, readCount: row.read_count ?? 0,
+  isStaffPick: row.is_staff_pick ?? false,
 });
 
 export const getStories = async (userId: string): Promise<SavedStory[]> => {
@@ -164,11 +188,19 @@ export const saveStory = async (s: SavedStory): Promise<void> => {
   const existing = lsGet<SavedStory>(LS_STORIES(s.userId)).filter(x => x.id !== s.id);
   lsSet(LS_STORIES(s.userId), [s, ...existing]);
   try {
-    await supabase.from('stories').upsert({
+    const row: any = {
       id: s.id, user_id: s.userId, title: s.title, hero_name: s.heroName,
       character_ids: s.characterIds ?? [], refrain: s.refrain ?? null,
       date: s.date, occasion: s.occasion ?? null, book_data: s.bookData,
-    });
+    };
+    if (s.ageGroup !== undefined) row.age_group = s.ageGroup;
+    if (s.vibe !== undefined) row.vibe = s.vibe;
+    if (s.theme !== undefined) row.theme = s.theme;
+    if (s.mood !== undefined) row.mood = s.mood;
+    if (s.storyStyle !== undefined) row.story_style = s.storyStyle;
+    if (s.storyLength !== undefined) row.story_length = s.storyLength;
+    if (s.lessons !== undefined) row.lessons = s.lessons;
+    await supabase.from('stories').upsert(row);
   } catch {}
 };
 
@@ -251,6 +283,345 @@ export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
 export const deleteNightCard = async (userId: string, cardId: string): Promise<void> => {
   lsSet(LS_CARDS(userId), lsGet<SavedNightCard>(LS_CARDS(userId)).filter(c => c.id !== cardId));
   try { await supabase.from('night_cards').delete().eq('id', cardId).eq('user_id', userId); } catch {}
+};
+
+// ── Library: DB row mapper ────────────────────────────────────────────────
+
+const dbToLibraryStory = (row: any): LibraryStory => ({
+  id: row.id,
+  userId: row.user_id,
+  title: row.title,
+  heroName: row.hero_name,
+  characterIds: row.character_ids ?? [],
+  refrain: row.refrain ?? undefined,
+  date: row.date,
+  occasion: row.occasion ?? undefined,
+  bookData: row.book_data ?? undefined,
+  isPublic: row.is_public ?? false,
+  librarySlug: row.library_slug ?? '',
+  ageGroup: row.age_group ?? undefined,
+  vibe: row.vibe ?? undefined,
+  theme: row.theme ?? undefined,
+  mood: row.mood ?? undefined,
+  storyStyle: row.story_style ?? undefined,
+  storyLength: row.story_length ?? undefined,
+  lessons: row.lessons ?? undefined,
+  submittedAt: row.submitted_at ?? undefined,
+  thumbsUp: row.thumbs_up ?? 0,
+  thumbsDown: row.thumbs_down ?? 0,
+  readCount: row.read_count ?? 0,
+  conversionCount: row.conversion_count ?? 0,
+  isStaffPick: row.is_staff_pick ?? false,
+  isBookOfDay: row.is_book_of_day ?? false,
+  bookOfDayDate: row.book_of_day_date ?? undefined,
+  submitterDisplayName: row.profiles?.display_name ?? undefined,
+  submitterRefCode: row.profiles?.ref_code ?? undefined,
+});
+
+const LIBRARY_LIST_COLS = 'id,user_id,title,hero_name,character_ids,refrain,date,occasion,is_public,library_slug,age_group,vibe,theme,mood,story_style,story_length,lessons,submitted_at,thumbs_up,thumbs_down,read_count,conversion_count,is_staff_pick,is_book_of_day,book_of_day_date,profiles(display_name,ref_code)';
+const LIBRARY_FULL_COLS = LIBRARY_LIST_COLS + ',book_data';
+
+// ── Library: queries ─────────────────────────────────────────────────────
+
+export const getLibraryStories = async (filters?: {
+  ageGroup?: string;
+  vibe?: string;
+  mood?: string;
+  isStaffPick?: boolean;
+  search?: string;
+  limit?: number;
+  offset?: number;
+  orderBy?: 'recent' | 'popular' | 'thumbs';
+}): Promise<LibraryStory[]> => {
+  let q = supabase.from('stories').select(LIBRARY_LIST_COLS).eq('is_public', true);
+  if (filters?.ageGroup) q = q.eq('age_group', filters.ageGroup);
+  if (filters?.vibe) q = q.eq('vibe', filters.vibe);
+  if (filters?.mood) q = q.eq('mood', filters.mood);
+  if (filters?.isStaffPick) q = q.eq('is_staff_pick', true);
+  if (filters?.search) q = q.or(`title.ilike.%${filters.search}%,hero_name.ilike.%${filters.search}%`);
+  const orderCol = filters?.orderBy === 'popular' ? 'read_count' : filters?.orderBy === 'thumbs' ? 'thumbs_up' : 'submitted_at';
+  q = q.order(orderCol, { ascending: false, nullsFirst: false });
+  const limit = Math.min(filters?.limit ?? 20, 50);
+  q = q.range(filters?.offset ?? 0, (filters?.offset ?? 0) + limit - 1);
+  const { data, error } = await q;
+  if (error) { console.error('[library] getLibraryStories:', error); return []; }
+  return (data ?? []).map(dbToLibraryStory);
+};
+
+export const getLibraryStoryBySlug = async (slug: string): Promise<LibraryStory | null> => {
+  const { data, error } = await supabase
+    .from('stories')
+    .select(LIBRARY_FULL_COLS)
+    .eq('library_slug', slug)
+    .eq('is_public', true)
+    .single();
+  if (error || !data) return null;
+  const story = dbToLibraryStory(data);
+  if (story.bookData) {
+    delete story.bookData.parentNote;
+    delete story.bookData.nightCard;
+  }
+  supabase.from('stories')
+    .update({ read_count: (story.readCount || 0) + 1 })
+    .eq('id', story.id)
+    .then(() => {});
+  return story;
+};
+
+export const getBookOfDay = async (): Promise<LibraryStory | null> => {
+  const today = new Date().toISOString().split('T')[0];
+  const { data } = await supabase
+    .from('stories')
+    .select(LIBRARY_FULL_COLS)
+    .eq('is_book_of_day', true)
+    .eq('book_of_day_date', today)
+    .single();
+  if (data) {
+    const story = dbToLibraryStory(data);
+    if (story.bookData) { delete story.bookData.parentNote; delete story.bookData.nightCard; }
+    return story;
+  }
+  const { data: fallback } = await supabase
+    .from('stories')
+    .select(LIBRARY_FULL_COLS)
+    .eq('is_book_of_day', true)
+    .order('book_of_day_date', { ascending: false })
+    .limit(1)
+    .single();
+  if (!fallback) return null;
+  const story = dbToLibraryStory(fallback);
+  if (story.bookData) { delete story.bookData.parentNote; delete story.bookData.nightCard; }
+  return story;
+};
+
+export const getFeaturedLibraryStories = async (limit = 5): Promise<LibraryStory[]> => {
+  const { data: picks } = await supabase
+    .from('stories')
+    .select(LIBRARY_LIST_COLS)
+    .eq('is_public', true)
+    .eq('is_staff_pick', true)
+    .order('thumbs_up', { ascending: false })
+    .limit(limit);
+  const results = (picks ?? []).map(dbToLibraryStory);
+  if (results.length >= limit) return results.slice(0, limit);
+  const pickIds = results.map(s => s.id);
+  const remaining = limit - results.length;
+  let q2 = supabase
+    .from('stories')
+    .select(LIBRARY_LIST_COLS)
+    .eq('is_public', true)
+    .order('thumbs_up', { ascending: false })
+    .limit(remaining);
+  if (pickIds.length > 0) q2 = q2.not('id', 'in', `(${pickIds.join(',')})`);
+  const { data: popular } = await q2;
+  return [...results, ...(popular ?? []).map(dbToLibraryStory)].slice(0, limit);
+};
+
+// ── Library: submission ──────────────────────────────────────────────────
+
+export const submitStoryToLibrary = async (
+  storyId: string,
+  userId: string,
+  metadata: {
+    ageGroup?: string;
+    vibe?: string;
+    theme?: string;
+    mood?: string;
+    storyStyle?: string;
+    storyLength?: string;
+    lessons?: string[];
+  }
+): Promise<{ slug: string }> => {
+  const { data: existing } = await supabase
+    .from('stories')
+    .select('title, is_public, library_slug')
+    .eq('id', storyId)
+    .eq('user_id', userId)
+    .single();
+  if (!existing) throw new Error('Story not found');
+  if (existing.is_public && existing.library_slug) return { slug: existing.library_slug };
+  const slug = generateLibrarySlug(existing.title);
+  const row: any = {
+    is_public: true,
+    library_slug: slug,
+    submitted_at: new Date().toISOString(),
+  };
+  if (metadata.ageGroup) row.age_group = metadata.ageGroup;
+  if (metadata.vibe) row.vibe = metadata.vibe;
+  if (metadata.theme) row.theme = metadata.theme;
+  if (metadata.mood) row.mood = metadata.mood;
+  if (metadata.storyStyle) row.story_style = metadata.storyStyle;
+  if (metadata.storyLength) row.story_length = metadata.storyLength;
+  if (metadata.lessons) row.lessons = metadata.lessons;
+  const { error } = await supabase.from('stories').update(row).eq('id', storyId).eq('user_id', userId);
+  if (error) throw error;
+  return { slug };
+};
+
+export const removeStoryFromLibrary = async (storyId: string, userId: string): Promise<void> => {
+  await supabase.from('stories').update({ is_public: false }).eq('id', storyId).eq('user_id', userId);
+};
+
+// ── Library: voting ──────────────────────────────────────────────────────
+
+export const voteOnStory = async (
+  storyId: string,
+  vote: 1 | -1,
+  voteNote?: string,
+  userId?: string,
+  sessionId?: string,
+): Promise<void> => {
+  const row: any = { story_id: storyId, vote };
+  if (userId) row.user_id = userId;
+  if (sessionId && !userId) row.session_id = sessionId;
+  if (voteNote) row.vote_note = voteNote;
+  await supabase.from('story_votes').upsert(row, {
+    onConflict: userId ? 'story_id,user_id' : 'story_id,session_id',
+  });
+  const { data: votes } = await supabase.from('story_votes').select('vote').eq('story_id', storyId);
+  const up = (votes ?? []).filter((v: any) => v.vote === 1).length;
+  const down = (votes ?? []).filter((v: any) => v.vote === -1).length;
+  await supabase.from('stories').update({ thumbs_up: up, thumbs_down: down }).eq('id', storyId);
+};
+
+export const getUserVote = async (
+  storyId: string,
+  userId?: string,
+  sessionId?: string,
+): Promise<1 | -1 | null> => {
+  if (userId) {
+    const { data } = await supabase.from('story_votes').select('vote').eq('story_id', storyId).eq('user_id', userId).single();
+    return (data?.vote as 1 | -1) ?? null;
+  }
+  if (sessionId) {
+    const { data } = await supabase.from('story_votes').select('vote').eq('story_id', storyId).eq('session_id', sessionId).single();
+    return (data?.vote as 1 | -1) ?? null;
+  }
+  return null;
+};
+
+// ── Library: favourites ──────────────────────────────────────────────────
+
+export const addToFavourites = async (userId: string, storyId: string): Promise<void> => {
+  await supabase.from('library_favourites').upsert(
+    { user_id: userId, story_id: storyId },
+    { onConflict: 'user_id,story_id' },
+  );
+};
+
+export const removeFromFavourites = async (userId: string, storyId: string): Promise<void> => {
+  await supabase.from('library_favourites').delete().eq('user_id', userId).eq('story_id', storyId);
+};
+
+export const getFavourites = async (userId: string): Promise<LibraryStory[]> => {
+  const { data, error } = await supabase
+    .from('library_favourites')
+    .select('story_id, saved_at, stories!inner(id,user_id,title,hero_name,character_ids,refrain,date,occasion,is_public,library_slug,age_group,vibe,theme,mood,story_style,story_length,lessons,submitted_at,thumbs_up,thumbs_down,read_count,conversion_count,is_staff_pick,is_book_of_day,book_of_day_date)')
+    .eq('user_id', userId)
+    .order('saved_at', { ascending: false });
+  if (error || !data) return [];
+  return data
+    .filter((r: any) => r.stories)
+    .map((r: any) => dbToLibraryStory(r.stories));
+};
+
+export const isFavourited = async (userId: string, storyId: string): Promise<boolean> => {
+  const { data } = await supabase
+    .from('library_favourites')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('story_id', storyId)
+    .single();
+  return !!data;
+};
+
+// ── Library: attribution ─────────────────────────────────────────────────
+
+export const recordStoryRead = async (
+  storyId: string,
+  options: { refCode?: string; userId?: string; sessionId?: string },
+): Promise<void> => {
+  const row: any = { story_id: storyId };
+  if (options.userId) row.reader_user_id = options.userId;
+  if (options.sessionId) row.session_id = options.sessionId;
+  if (options.refCode) {
+    row.ref_code = options.refCode;
+    const { data: referrer } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('ref_code', options.refCode)
+      .single();
+    if (referrer) row.referrer_user_id = referrer.id;
+  }
+  supabase.from('story_reads').insert(row).then(() => {});
+};
+
+export const recordConversion = async (sessionId: string): Promise<void> => {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+  const { data: read } = await supabase
+    .from('story_reads')
+    .select('id, story_id, referrer_user_id')
+    .eq('session_id', sessionId)
+    .not('ref_code', 'is', null)
+    .gte('read_at', sevenDaysAgo)
+    .order('read_at', { ascending: false })
+    .limit(1)
+    .single();
+  if (!read) return;
+  await supabase.from('story_reads').update({ converted_to_paid: true }).eq('id', read.id);
+  if (read.referrer_user_id) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('conversion_count, rewards_months_earned')
+      .eq('id', read.referrer_user_id)
+      .single();
+    if (profile) {
+      const newCount = (profile.conversion_count ?? 0) + 1;
+      let newRewards = profile.rewards_months_earned ?? 0;
+      if (newCount >= 25 && (profile.conversion_count ?? 0) < 25) newRewards += 6;
+      else if (newCount >= 5 && (profile.conversion_count ?? 0) < 5) newRewards += 1;
+      await supabase.from('profiles').update({
+        conversion_count: newCount,
+        rewards_months_earned: newRewards,
+      }).eq('id', read.referrer_user_id);
+    }
+  }
+};
+
+// ── User profile ─────────────────────────────────────────────────────────
+
+export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, display_name, is_subscribed, ref_code, rewards_months_earned, conversion_count')
+    .eq('id', userId)
+    .single();
+  if (error || !data) return null;
+  return {
+    id: data.id,
+    displayName: data.display_name ?? '',
+    isSubscribed: data.is_subscribed ?? false,
+    refCode: data.ref_code ?? null,
+    rewardsMonthsEarned: data.rewards_months_earned ?? 0,
+    conversionCount: data.conversion_count ?? 0,
+  };
+};
+
+export const generateRefCode = async (userId: string): Promise<string> => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  for (let attempt = 0; attempt < 5; attempt++) {
+    let code = '';
+    for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    const { error } = await supabase.from('profiles').update({ ref_code: code }).eq('id', userId);
+    if (!error) return code;
+  }
+  throw new Error('Failed to generate unique ref code');
+};
+
+export const ensureRefCode = async (userId: string): Promise<string> => {
+  const profile = await getUserProfile(userId);
+  if (profile?.refCode) return profile.refCode;
+  return generateRefCode(userId);
 };
 
 // ── Legacy stubs (kept so nothing breaks) ────────────────────────────────────

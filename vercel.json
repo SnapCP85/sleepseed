@@ -2,12 +2,22 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "rewrites": [
+    { "source": "/stories/:slug", "destination": "/?library=:slug" },
+    { "source": "/stories", "destination": "/?view=library" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" }
+  ],
   "functions": {
     "api/claude.js":  { "maxDuration": 60 },
     "api/tts.js":     { "maxDuration": 30 },
     "api/clone.js":   { "maxDuration": 30 },
-    "api/health.js":  { "maxDuration": 10 }
+    "api/health.js":      { "maxDuration": 10 },
+    "api/book-of-day.js": { "maxDuration": 60 }
   },
+  "crons": [{
+    "path": "/api/book-of-day",
+    "schedule": "0 6 * * *"
+  }],
   "headers": [
     {
       "source": "/sw.js",

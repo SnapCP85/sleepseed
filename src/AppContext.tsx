@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import type { User, AppView, Character, BuilderChoices, HatchedCreature } from './lib/types';
 import { supabase } from './lib/supabase';
-import { signOut as sbSignOut } from './lib/storage';
+import { signOut as sbSignOut, getUserProfile } from './lib/storage';
 import { migrateLocalStorageToSupabase } from './lib/migrateLocalStorage';
 
 interface AppCtx {
@@ -27,6 +27,12 @@ interface AppCtx {
   setPendingSaveCharacter: (c: Partial<Character> | null) => void;
   companionCreature: HatchedCreature | null;
   setCompanionCreature: (c: HatchedCreature | null) => void;
+  libraryStorySlug: string | null;
+  setLibraryStorySlug: (s: string | null) => void;
+  isSubscribed: boolean;
+  setIsSubscribed: (v: boolean) => void;
+  refCode: string | null;
+  setRefCode: (v: string | null) => void;
 }
 
 const Ctx = createContext<AppCtx>({} as AppCtx);
@@ -57,41 +63,72 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [editingCharacter,      setEditingCharacter]      = useState<Character | null>(null);
   const [pendingSaveCharacter,  setPendingSaveCharacter]  = useState<Partial<Character> | null>(null);
   const [companionCreature,    setCompanionCreature]    = useState<HatchedCreature | null>(null);
+  const [libraryStorySlug,    setLibraryStorySlug]    = useState<string | null>(null);
+  const [isSubscribed,        setIsSubscribed]        = useState(false);
+  const [refCode,             setRefCode]             = useState<string | null>(null);
+
+  const profileLoadedRef = useRef<string | null>(null);
+  const migrationDoneRef = useRef<string | null>(null);
+
+  const loadProfile = (userId: string) => {
+    if (profileLoadedRef.current === userId) return;
+    profileLoadedRef.current = userId;
+    getUserProfile(userId).then(profile => {
+      if (profile) {
+        setIsSubscribed(profile.isSubscribed);
+        setRefCode(profile.refCode);
+      }
+    }).catch(() => { profileLoadedRef.current = null; });
+  };
+
+  const runMigration = (userId: string) => {
+    if (migrationDoneRef.current === userId) return;
+    migrationDoneRef.current = userId;
+    migrateLocalStorageToSupabase(userId).catch(e =>
+      console.warn('[AppContext] Migration error:', e)
+    );
+  };
+
+  const handleSession = (session: any, isInitial: boolean) => {
+    if (session?.user) {
+      const u = toAppUser(session.user);
+      setUser(u);
+      if (!session.user.is_anonymous) {
+        // Only navigate to dashboard if not on a URL-driven or active view
+        const params = new URLSearchParams(window.location.search);
+        const isUrlDriven = params.get('view') === 'library' || params.get('library') || params.get('s');
+        if (!isUrlDriven) {
+          if (isInitial || viewRef.current === 'public' || viewRef.current === 'auth') {
+            setView('dashboard');
+          }
+        }
+        loadProfile(session.user.id);
+        runMigration(session.user.id);
+      } else {
+        if (viewRef.current === 'auth') setView('dashboard');
+      }
+    } else {
+      setUser(null);
+      setIsSubscribed(false);
+      setRefCode(null);
+      profileLoadedRef.current = null;
+      migrationDoneRef.current = null;
+      setView('public');
+    }
+    setAuthLoading(false);
+  };
 
   useEffect(() => {
-    // Check existing session on mount
+    // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        const u = toAppUser(session.user);
-        setUser(u);
-        setView('dashboard');
-        // Run one-time migration for real (non-guest) users
-        if (!session.user.is_anonymous) {
-          migrateLocalStorageToSupabase(session.user.id).catch(e =>
-            console.warn('[AppContext] Migration error:', e)
-          );
-        }
-      }
-      setAuthLoading(false);
+      handleSession(session, true);
     });
 
-    // Listen for auth changes (sign in, sign out, token refresh)
+    // Listen for changes (sign in, sign out, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        const u = toAppUser(session.user);
-        setUser(u);
-        if (viewRef.current === 'public' || viewRef.current === 'auth') setView('dashboard');
-        // Run one-time migration for real (non-guest) users
-        if (!session.user.is_anonymous) {
-          migrateLocalStorageToSupabase(session.user.id).catch(e =>
-            console.warn('[AppContext] Migration error:', e)
-          );
-        }
-      } else {
-        setUser(null);
-        setView('public');
-      }
-      setAuthLoading(false);
+      // Skip INITIAL_SESSION — we already handled it above
+      if (_event === 'INITIAL_SESSION') return;
+      handleSession(session, false);
     });
 
     return () => subscription.unsubscribe();
@@ -122,6 +159,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       editingCharacter, setEditingCharacter,
       pendingSaveCharacter, setPendingSaveCharacter,
       companionCreature, setCompanionCreature,
+      libraryStorySlug, setLibraryStorySlug,
+      isSubscribed, setIsSubscribed,
+      refCode, setRefCode,
     }}>
       {children}
     </Ctx.Provider>

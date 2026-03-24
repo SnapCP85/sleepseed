@@ -87,43 +87,45 @@ export default function FirstNight({ creature, character, onStory, onSleep }: Fi
           {creature.name} is ready!
         </div>
         <div className="fn-sub">
-          It's your first night together. What would you like to do?
+          Your first adventure is in the books! What's next?
         </div>
 
-        {/* Option 1: Story */}
+        {/* Option 1: Story — DOMINANT */}
         <button className="fn-option" style={{
-          background:`linear-gradient(145deg,${creature.color}12,${creature.color}06)`,
-          border:`1.5px solid ${creature.color}28`,
+          background:`linear-gradient(145deg,${creature.color}18,${creature.color}0a)`,
+          border:`2px solid ${creature.color}40`,
           color:'#F4EFE8',
+          padding:'24px 20px',
+          boxShadow:`0 8px 32px ${creature.color}20`,
         }} onClick={onStory}>
-          <div className="fn-opt-ico">📖</div>
+          <div className="fn-opt-ico" style={{fontSize:42}}>📖</div>
           <div className="fn-opt-texts">
-            <div className="fn-opt-title" style={{color:creature.color}}>
-              Read a story with {creature.name}
+            <div className="fn-opt-title" style={{color:creature.color,fontSize:20}}>
+              Create another story with {creature.name}!
             </div>
             <div className="fn-opt-sub">
-              Go on your first adventure together tonight
+              Go on a new adventure tonight ✦
             </div>
           </div>
-          <div style={{fontSize:20,color:`${creature.color}50`,flexShrink:0}}>→</div>
+          <div style={{fontSize:24,color:`${creature.color}60`,flexShrink:0}}>→</div>
         </button>
 
-        {/* Option 2: Sleep */}
+        {/* Option 2: Sleep — secondary */}
         <button className="fn-option" style={{
-          background:'linear-gradient(145deg,rgba(29,158,117,.08),rgba(29,158,117,.03))',
-          border:'1.5px solid rgba(29,158,117,.2)',
+          background:'rgba(255,255,255,.02)',
+          border:'1px solid rgba(255,255,255,.06)',
           color:'#F4EFE8',
+          padding:'14px 20px',
         }} onClick={handleSleep}>
-          <div className="fn-opt-ico">🌙</div>
+          <div className="fn-opt-ico" style={{fontSize:24}}>🌙</div>
           <div className="fn-opt-texts">
-            <div className="fn-opt-title" style={{color:'#5DCAA5'}}>
+            <div className="fn-opt-title" style={{color:'rgba(255,255,255,.4)',fontSize:14}}>
               Tuck {creature.name} into bed
             </div>
-            <div className="fn-opt-sub">
+            <div className="fn-opt-sub" style={{opacity:.3}}>
               Say goodnight — you'll see each other tomorrow
             </div>
           </div>
-          <div style={{fontSize:20,color:'rgba(93,202,165,.4)',flexShrink:0}}>→</div>
         </button>
       </div>
     </div>

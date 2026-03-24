@@ -563,27 +563,26 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
     return (now-created)<10*60*1000;
   },[user?.createdAt]);
 
+  const userId = user?.id;
   useEffect(()=>{
-    if(!user) return;
+    if(!userId) return;
     import('../lib/storage').then(({getCharacters,getNightCards,getStories})=>{
-      Promise.all([getCharacters(user.id),getNightCards(user.id),getStories(user.id)]).then(([chars,cards,stories])=>{
+      Promise.all([getCharacters(userId),getNightCards(userId),getStories(userId)]).then(([chars,cards,stories])=>{
         setCharacters(chars);setAllCards(cards);setStoryCount(stories.length);
         if(stories.length>0){
           const sorted=[...stories].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
           setLastStory(sorted[0]);
         }
-        // Auto-select family characters (isFamily or human type as default)
         const familyChars=chars.filter(c=>c.isFamily===true||(c.isFamily===undefined&&c.type==='human'));
         if(familyChars.length>0){setSelectedCharacters([familyChars[0]]);setWeekViewId(familyChars[0].id);}
         else if(chars.length>0){setSelectedCharacters([chars[0]]);setWeekViewId(chars[0].id);}
         setLoading(false);
       });
     });
-    // Load hatched creatures
-    if(hasSupabase) getAllHatchedCreatures(user.id).then(creatures=>{
+    if(hasSupabase) getAllHatchedCreatures(userId).then(creatures=>{
       if(creatures.length>0) setHatchedCreature(creatures[0]);
     });
-  },[user]); // eslint-disable-line
+  },[userId]); // eslint-disable-line
 
   // Family characters appear in the ritual dashboard tab row
   // Treat human-type characters as family by default when isFamily isn't explicitly set
@@ -759,232 +758,175 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
 
   // ── FULL RENDER ──────────────────────────────────────────────────────────────
   return(
-    <div className="dash" style={{paddingBottom:70}}>
+    <div className="dash">
       <style>{CSS}</style>
       <div className="dash-sky"/>
       <div className="dash-stars">
-        {STARS.map(s=>(
+        {STARS.slice(0,20).map(s=>(
           <div key={s.id} className={s.t===1?'dash-star':s.t===2?'dash-star2':'dash-star3'}
             style={{left:`${s.x}%`,top:`${s.y}%`,width:s.size,height:s.size,'--d':s.d,'--dl':s.dl} as any}/>
         ))}
-        <div className="dash-shoot dash-shoot1"/>
-        <div className="dash-shoot dash-shoot2"/>
-        <div className="dash-shoot dash-shoot3"/>
       </div>
 
-      {/* ── TOP NAV — logo + child switcher ── */}
+      {/* ── SLIM NAV ── */}
       <nav className="dash-nav">
         <div className="dash-logo">
           <div className="dash-logo-moon"><div className="dash-logo-moon-sh"/></div>
           SleepSeed
         </div>
-        <div className="dash-nav-tabs">
-          {familyChars.length>1&&familyChars.map(c=>{
-            const isOn=primary?.id===c.id;
-            return(
-              <div key={c.id} className={`dash-ntab${isOn?' on':''}`} onClick={()=>{setSelectedCharacters([c]);setWeekViewId(c.id);}}>
-                <div style={{fontSize:16}}>{c.photo?<img src={c.photo} style={{width:20,height:20,borderRadius:'50%',objectFit:'cover'}} alt=""/>:c.emoji}</div>
-                <div className="dash-ntab-lbl">{c.name}</div>
-              </div>
-            );
-          })}
-          <div className="dash-ntab" onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
-            <div style={{fontSize:14,color:'rgba(255,255,255,.2)',lineHeight:'20px'}}>+</div>
-            <div className="dash-ntab-lbl">Add</div>
-          </div>
-        </div>
-        <div onClick={()=>setView('user-profile')} style={{
-          width:34,height:34,borderRadius:'50%',background:'rgba(245,184,76,.08)',border:'1.5px solid rgba(245,184,76,.2)',
-          display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0,marginLeft:6,
-          transition:'all .2s',
-        }}>
-          <IconProfile on={false}/>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          {familyChars.length>1&&(
+            <div style={{display:'flex',gap:4,background:'rgba(255,255,255,.04)',borderRadius:20,padding:3,border:'1px solid rgba(255,255,255,.06)'}}>
+              {familyChars.map(c=>{
+                const isOn=primary?.id===c.id;
+                return(
+                  <div key={c.id} onClick={()=>{setSelectedCharacters([c]);setWeekViewId(c.id);}}
+                    style={{padding:'4px 12px',borderRadius:16,fontSize:11,fontWeight:700,cursor:'pointer',
+                      transition:'all .18s',fontFamily:'var(--sans)',
+                      background:isOn?'rgba(245,184,76,.12)':'transparent',
+                      color:isOn?'var(--amber2)':'rgba(255,255,255,.3)',
+                      border:isOn?'1px solid rgba(245,184,76,.25)':'1px solid transparent'}}>
+                    {c.name}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <div style={{fontSize:9,color:'rgba(244,239,232,.18)',fontFamily:'var(--mono)'}}>{today}</div>
         </div>
       </nav>
 
       <div className="dash-inner">
+
+        {/* ═══════════════════════════════════════════════════
+            GUEST EXPERIENCE — conversion-focused landing
+        ═══════════════════════════════════════════════════ */}
         {isGuest&&(
-          <div className="dash-guest" style={{marginTop:14}}>
-            <div className="dash-guest-t">You're in <strong>guest mode.</strong></div>
-            <button className="dash-guest-btn" onClick={onSignUp}>Save my stories →</button>
-          </div>
-        )}
-
-        {/* ── GREETING ── */}
-        {!isGuest&&(
-          <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',padding:'14px 0 0'}}>
-            <div style={{fontFamily:'var(--serif)',fontSize:18,fontWeight:700,color:'var(--cream)',lineHeight:1.3}}>
-              {greetWord}{user.displayName?`, ${user.displayName}`:''} <span style={{fontSize:14,opacity:.5}}>{tonightDone?'🌙':'✦'}</span>
-            </div>
-            <div style={{fontSize:9,color:'rgba(244,239,232,.2)',fontFamily:'var(--mono)'}}>{today}</div>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════════════
-            COMPANION SCENE — creature + egg side by side
-        ══════════════════════════════════════════════════════ */}
-        {hatchedCreature?(
-          <div style={{textAlign:'center',padding:'24px 0 0',position:'relative'}}>
-            {/* ambient glow — bright neon */}
-            <div style={{position:'absolute',left:'50%',top:'25%',transform:'translate(-50%,-50%)',width:260,height:260,borderRadius:'50%',background:`radial-gradient(circle,${hatchedCreature.color}${tonightDone?'10':'28'},${hatchedCreature.color}${tonightDone?'05':'10'},transparent 70%)`,animation:'twk 4s ease-in-out infinite',pointerEvents:'none'}}/>
-
-            {/* creature + egg scene */}
-            <div style={{display:'flex',alignItems:'flex-end',justifyContent:'center',gap:tonightDone?0:16,position:'relative',zIndex:2}}>
-              {/* egg companion — left side, tappable */}
-              {activeEgg&&!tonightDone&&(
-                <div className="dash-scene-egg" onClick={()=>setView('hatchery')} style={{marginBottom:8}}>
-                  <CrackingEgg stage={eggStage} size={48}/>
-                </div>
-              )}
-
-              {/* creature — center hero */}
-              <div style={{position:'relative'}}>
-                <div style={{fontSize:tonightDone?88:110,lineHeight:1,animation:tonightDone?'none':'flt 3.5s ease-in-out infinite',filter:`drop-shadow(0 0 20px ${hatchedCreature.color}${tonightDone?'15':'60'}) drop-shadow(0 8px 30px ${hatchedCreature.color}${tonightDone?'10':'35'})`,opacity:tonightDone?.35:1,transition:'all .8s',transform:tonightDone?'rotate(8deg)':'none'}}>
-                  {hatchedCreature.creatureEmoji}
-                </div>
-                {/* sleeping zzz */}
-                {tonightDone&&(
-                  <>
-                    <div className="dash-zzz" style={{top:-8,right:-4,animationDelay:'0s',color:`${hatchedCreature.color}50`}}>z</div>
-                    <div className="dash-zzz" style={{top:-16,right:8,animationDelay:'.8s',fontSize:11,color:`${hatchedCreature.color}35`}}>z</div>
-                    <div className="dash-zzz" style={{top:-6,right:16,animationDelay:'1.6s',fontSize:10,color:`${hatchedCreature.color}25`}}>z</div>
-                  </>
-                )}
+          <div style={{padding:'20px 0 0'}}>
+            {/* Hero */}
+            <div style={{textAlign:'center',marginBottom:20}}>
+              <div style={{fontSize:48,marginBottom:12,animation:'flt 3.5s ease-in-out infinite',
+                filter:'drop-shadow(0 0 16px rgba(245,184,76,.3))'}}>🌙</div>
+              <div style={{fontFamily:'var(--serif)',fontSize:22,fontWeight:700,color:'var(--cream)',lineHeight:1.3,marginBottom:6}}>
+                Tonight could be the night<br/><em style={{color:'var(--amber2)'}}>bedtime changes forever.</em>
+              </div>
+              <div style={{fontSize:13,color:'rgba(244,239,232,.35)',lineHeight:1.65}}>
+                A personalised bedtime story starring your child — written in 60 seconds.
               </div>
             </div>
 
-            {/* name */}
-            <div style={{fontFamily:'var(--serif)',fontSize:28,fontWeight:700,color:hatchedCreature.color,marginTop:6,position:'relative',zIndex:2,textShadow:`0 0 20px ${hatchedCreature.color}40,0 0 40px ${hatchedCreature.color}20`}}>
-              {hatchedCreature.name}
-            </div>
-
-            {/* personality traits */}
-            {hatchedCreature.personalityTraits.length>0&&(
-              <div className="dash-traits">
-                {hatchedCreature.personalityTraits.map(t=>(
-                  <div key={t} className="dash-trait" style={{background:`${hatchedCreature.color}10`,color:`${hatchedCreature.color}88`,border:`1px solid ${hatchedCreature.color}18`}}>{t}</div>
-                ))}
-              </div>
-            )}
-
-            {/* speech bubble — real bubble shape */}
-            <div className="dash-bubble" style={{borderColor:`${hatchedCreature.color}20`,background:`${hatchedCreature.color}08`}}>
-              <div className="dash-bubble-text" style={{color:`${hatchedCreature.color}${tonightDone?'77':'dd'}`}}>
-                "{creatureSpeech}"
-              </div>
-            </div>
-          </div>
-        ):(
-          <div style={{textAlign:'center',padding:'40px 0 16px'}}>
-            <div style={{fontSize:80,animation:'flt 3s ease-in-out infinite',filter:'drop-shadow(0 0 16px rgba(245,184,76,.3))'}}>🥚</div>
-            <div style={{fontFamily:'var(--serif)',fontSize:20,fontWeight:700,color:'var(--amber2)',marginTop:12}}>Your adventure begins tonight</div>
-            <div style={{fontSize:13,color:'rgba(244,239,232,.35)',marginTop:4}}>Create your first character to get started.</div>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════════════
-            ACTIONS
-        ══════════════════════════════════════════════════════ */}
-        {tonightDone?(
-          <>
-            {/* unified goodnight + egg card */}
-            <div style={{
-              background:'linear-gradient(170deg,rgba(245,184,76,.04),rgba(8,12,32,.98))',
-              border:'1.5px solid rgba(245,184,76,.12)',
-              borderRadius:22,padding:'18px 18px 20px',textAlign:'center',
-              marginTop:16,marginBottom:12,position:'relative',overflow:'hidden',
-            }}>
-              <div style={{position:'absolute',top:0,left:0,right:0,height:1.5,background:'linear-gradient(90deg,transparent,rgba(245,184,76,.25),transparent)'}}/>
-
-              <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:10}}>
-                <div style={{width:4,height:4,borderRadius:'50%',background:'var(--teal)',animation:'twk 2s ease-in-out infinite'}}/>
-                <span style={{fontSize:9,fontFamily:'var(--mono)',letterSpacing:'.12em',textTransform:'uppercase',color:'rgba(93,202,165,.55)'}}>ritual complete</span>
-                <div style={{width:4,height:4,borderRadius:'50%',background:'var(--teal)',animation:'twk 2s ease-in-out infinite'}}/>
-              </div>
-
-              <div style={{fontFamily:'var(--serif)',fontSize:15,color:'var(--cream)',lineHeight:1.4,marginBottom:14}}>
-                Tonight's star is saved. Sleep well{primary?`, ${primary.name}`:''}.
-              </div>
-
-              <div style={{height:1,background:'linear-gradient(90deg,transparent,rgba(245,184,76,.1),transparent)',margin:'0 0 14px'}}/>
-
-              {activeEgg&&(
-                <>
-                  {/* egg with layered glow */}
-                  <div style={{position:'relative',display:'inline-block',marginBottom:14}}>
-                    <div style={{position:'absolute',inset:-30,borderRadius:'50%',background:'radial-gradient(circle,rgba(245,184,76,.12),rgba(245,184,76,.04),transparent 70%)',animation:'twk 3s ease-in-out infinite',pointerEvents:'none'}}/>
-                    <div style={{position:'absolute',inset:-16,borderRadius:'50%',background:'radial-gradient(circle,rgba(245,184,76,.06),transparent 65%)',animation:'twk 4.5s ease-in-out infinite',animationDelay:'-1.5s',pointerEvents:'none'}}/>
-                    <div style={{animation:'flt 3s ease-in-out infinite'}}>
-                      <CrackingEgg stage={eggStage} size={100}/>
-                    </div>
-                  </div>
-
-                  {/* 7 night circles — bigger, more presence */}
-                  <div style={{display:'flex',justifyContent:'center',gap:8,marginBottom:12}}>
-                    {Array.from({length:7},(_,i)=>{
-                      const done=i<eggStage;const isNext=i===eggStage;
-                      return(
-                        <div key={i} style={{
-                          width:38,height:38,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
-                          fontSize:done?16:15,
-                          background:done?'rgba(245,184,76,.18)':isNext?'rgba(245,184,76,.1)':'rgba(245,184,76,.04)',
-                          border:done?'2.5px solid rgba(245,184,76,.55)':isNext?'2.5px dashed rgba(245,184,76,.4)':'2px dashed rgba(245,184,76,.15)',
-                          boxShadow:done?`0 0 10px rgba(245,184,76,.2)`:isNext?'0 0 12px rgba(245,184,76,.2)':'none',
-                          transition:'all .3s',
-                        }}>{done?'⭐':isNext?'✦':'🥚'}</div>
-                      );
-                    })}
-                  </div>
-
-                  {/* night label */}
-                  <div style={{fontSize:11,fontFamily:'var(--mono)',color:'rgba(245,184,76,.55)',letterSpacing:'.06em',marginBottom:12,fontWeight:700}}>
-                    Night {eggStage} of 7 ✦
-                  </div>
-
-                  {/* motivational text */}
-                  <div style={{fontFamily:'var(--serif)',fontSize:14,fontStyle:'italic',color:'rgba(244,239,232,.4)',lineHeight:1.65,padding:'0 6px'}}>
-                    {eggStage>=7?'All 7 cracks are here — ready to hatch!':'Every night you do the ritual, the egg cracks a little more. After 7 nights, a new mystery companion will arrive!'}
-                  </div>
-                </>
-              )}
-
-              <div style={{display:'inline-flex',alignItems:'center',gap:5,marginTop:10,padding:'4px 12px',borderRadius:50,background:'rgba(29,158,117,.08)',border:'1px solid rgba(29,158,117,.12)',fontSize:10,fontWeight:700,color:'var(--teal2)'}}>
-                ✦ {glow} nights strong
-              </div>
-            </div>
-
-            {/* re-read tonight's story */}
-            {lastStory&&lastStory.bookData&&onReadStory&&(
-              <div className="dash-adventure" onClick={()=>onReadStory(lastStory.bookData)}>
-                <div style={{fontSize:24}}>📖</div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:13,fontWeight:700,color:'var(--cream)'}}>Read tonight's story again</div>
-                  <div style={{fontSize:11,color:'rgba(244,239,232,.35)',marginTop:1}}>{lastStory.title}</div>
-                </div>
-                <div style={{fontSize:16,color:'rgba(255,255,255,.2)'}}>→</div>
-              </div>
-            )}
-          </>
-        ):(
-          <>
-          {familyChars.length>0?(
+            {/* Primary CTA */}
             <button className="dash-u-btn" style={{
-              width:'100%',marginTop:16,marginBottom:6,
+              width:'100%',marginBottom:20,
+              background:'linear-gradient(145deg,#a06010,#F5B84C 48%,#a06010)',
+              boxShadow:'0 8px 30px rgba(200,130,20,.42)',
+            }} onClick={()=>setView('story-configure' as any)}>
+              <span className="dash-u-btn-ico">✨</span>
+              <span className="dash-u-btn-texts">
+                <span className="dash-u-btn-title" style={{color:'#080200'}}>Try your first story</span>
+                <span className="dash-u-btn-sub" style={{color:'rgba(8,2,0,.5)'}}>See the magic — no signup needed</span>
+              </span>
+              <span className="dash-u-btn-arr" style={{color:'rgba(8,2,0,.38)'}}>→</span>
+            </button>
+
+            {/* How it works */}
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:9,fontFamily:'var(--mono)',letterSpacing:'.1em',textTransform:'uppercase',
+                color:'rgba(245,184,76,.4)',marginBottom:12,fontWeight:600}}>How it works</div>
+              {[
+                {ico:'🌙',title:'You share a moment from today',sub:"What happened at school? What made them laugh? What's on their mind?"},
+                {ico:'✨',title:'We write their bedtime story',sub:'AI crafts a unique story starring your child — with their name, their world, their feelings.'},
+                {ico:'🥚',title:'A creature companion hatches',sub:'Do the ritual 7 nights in a row and a mystery creature arrives — theirs to keep forever.'},
+              ].map((step,i)=>(
+                <div key={i} style={{display:'flex',gap:12,marginBottom:14,alignItems:'flex-start'}}>
+                  <div style={{fontSize:24,lineHeight:1,flexShrink:0,marginTop:2}}>{step.ico}</div>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:700,color:'var(--cream)',marginBottom:2}}>{step.title}</div>
+                    <div style={{fontSize:11,color:'rgba(244,239,232,.35)',lineHeight:1.6}}>{step.sub}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Social proof */}
+            <div style={{
+              background:'rgba(245,184,76,.04)',border:'1px solid rgba(245,184,76,.12)',
+              borderRadius:16,padding:'14px 16px',marginBottom:20,
+            }}>
+              <div style={{fontFamily:'var(--serif)',fontSize:13,fontStyle:'italic',color:'rgba(244,239,232,.55)',lineHeight:1.65,marginBottom:8}}>
+                "My daughter won't go to bed without checking on her egg first. Bedtime went from something I dreaded to the best twenty minutes of our day."
+              </div>
+              <div style={{fontSize:10,color:'rgba(244,239,232,.25)',fontFamily:'var(--mono)'}}>
+                Sarah M. · Mum of two
+              </div>
+            </div>
+
+            {/* Secondary CTA — create account */}
+            <div style={{
+              background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',
+              borderRadius:16,padding:'16px 18px',textAlign:'center',marginBottom:16,
+            }}>
+              <div style={{fontSize:13,fontWeight:700,color:'var(--cream)',marginBottom:4}}>Ready to keep your stories?</div>
+              <div style={{fontSize:11,color:'rgba(244,239,232,.3)',lineHeight:1.6,marginBottom:12}}>
+                Create a free account to save every story, build your creature collection, and unlock Night Cards.
+              </div>
+              <button style={{
+                background:'rgba(245,184,76,.1)',border:'1px solid rgba(245,184,76,.25)',
+                borderRadius:50,padding:'10px 24px',fontSize:13,fontWeight:600,
+                color:'var(--amber2)',cursor:'pointer',fontFamily:'var(--sans)',transition:'all .18s',
+              }} onClick={onSignUp}>
+                Create free account →
+              </button>
+            </div>
+
+            {/* Discover link */}
+            <div style={{textAlign:'center',marginBottom:8}}>
+              <button style={{background:'none',border:'none',color:'rgba(244,239,232,.25)',fontSize:12,
+                cursor:'pointer',fontFamily:'var(--sans)',transition:'color .15s'}}
+                onClick={()=>setView('library')}>
+                Or browse stories from other families →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════
+            SECTION 1: GREETING + PRIMARY ACTION (logged-in users)
+            Always above the fold. The #1 thing they came for.
+        ═══════════════════════════════════════════════════ */}
+        {!isGuest&&(
+          <div style={{padding:'16px 0 0'}}>
+            <div style={{fontFamily:'var(--serif)',fontSize:20,fontWeight:700,color:'var(--cream)',lineHeight:1.3}}>
+              {greetWord}{user.displayName?`, ${user.displayName}`:''}.
+            </div>
+            {primary&&(
+              <div style={{fontSize:12,color:'rgba(244,239,232,.35)',marginTop:2,fontFamily:'var(--sans)'}}>
+                {primary.name}'s bedtime{activeEgg?` · Night ${eggStage+1} of 7`:''}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── THE BUTTON — always visible, never buried ── */}
+        {!tonightDone&&(
+          familyChars.length>0?(
+            <button className="dash-u-btn" style={{
+              width:'100%',marginTop:14,marginBottom:0,
               background:'linear-gradient(145deg,#a06010,#F5B84C 48%,#a06010)',
               boxShadow:'0 8px 30px rgba(200,130,20,.42)',
             }} onClick={()=>startRitual()}>
               <span className="dash-u-btn-ico">🌙</span>
               <span className="dash-u-btn-texts">
-                <span className="dash-u-btn-title" style={{color:'#080200'}}>Begin tonight's story ✦</span>
+                <span className="dash-u-btn-title" style={{color:'#080200'}}>Begin tonight's story</span>
                 <span className="dash-u-btn-sub" style={{color:'rgba(8,2,0,.5)'}}>
-                  {activeEgg?`Night ${eggStage+1} · ${7-eggStage} crack${7-eggStage!==1?'s':''} to go`:'A new adventure awaits'}
+                  {activeEgg?`${7-eggStage} night${7-eggStage!==1?'s':''} until your egg hatches`:'A new adventure awaits'}
                 </span>
               </span>
               <span className="dash-u-btn-arr" style={{color:'rgba(8,2,0,.38)'}}>→</span>
             </button>
           ):(
             <button className="dash-u-btn" style={{
-              width:'100%',marginTop:16,marginBottom:6,
+              width:'100%',marginTop:14,marginBottom:0,
               background:'linear-gradient(145deg,#a06010,#F5B84C 48%,#a06010)',
               boxShadow:'0 8px 30px rgba(200,130,20,.42)',
             }} onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
@@ -995,74 +937,209 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
               </span>
               <span className="dash-u-btn-arr" style={{color:'rgba(8,2,0,.38)'}}>→</span>
             </button>
-          )}
+          )
+        )}
 
-          {activeEgg&&(
-            <div style={{display:'flex',justifyContent:'center',gap:6,margin:'10px 0 12px'}}>
+        {/* ═══════════════════════════════════════════════════
+            SECTION 2: COMPANION — compact, charming, not huge
+        ═══════════════════════════════════════════════════ */}
+        {hatchedCreature&&(
+          <div style={{
+            display:'flex',alignItems:'center',gap:14,
+            padding:'14px 16px',marginTop:12,
+            background:`${hatchedCreature.color}06`,
+            border:`1px solid ${hatchedCreature.color}15`,
+            borderRadius:18,position:'relative',overflow:'hidden',
+          }}>
+            {/* creature emoji — compact */}
+            <div style={{position:'relative',flexShrink:0}}>
+              <div style={{
+                fontSize:tonightDone?40:52,lineHeight:1,
+                animation:tonightDone?'none':'flt 3.5s ease-in-out infinite',
+                filter:`drop-shadow(0 0 12px ${hatchedCreature.color}${tonightDone?'15':'50'})`,
+                opacity:tonightDone?.4:1,transition:'all .6s',
+                transform:tonightDone?'rotate(8deg)':'none',
+              }}>
+                {hatchedCreature.creatureEmoji}
+              </div>
+              {tonightDone&&(
+                <div className="dash-zzz" style={{top:-6,right:-2,animationDelay:'0s',color:`${hatchedCreature.color}40`,fontSize:11}}>z</div>
+              )}
+            </div>
+
+            {/* speech + name */}
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:3}}>
+                <div style={{fontFamily:'var(--serif)',fontSize:15,fontWeight:700,color:hatchedCreature.color}}>
+                  {hatchedCreature.name}
+                </div>
+                {hatchedCreature.personalityTraits[0]&&(
+                  <div style={{fontSize:8,padding:'1px 7px',borderRadius:50,background:`${hatchedCreature.color}10`,
+                    border:`1px solid ${hatchedCreature.color}18`,color:`${hatchedCreature.color}77`}}>
+                    {hatchedCreature.personalityTraits[0]}
+                  </div>
+                )}
+              </div>
+              <div style={{fontFamily:'var(--serif)',fontSize:12,fontStyle:'italic',
+                color:`${hatchedCreature.color}${tonightDone?'66':'bb'}`,lineHeight:1.5}}>
+                "{creatureSpeech}"
+              </div>
+            </div>
+
+            {/* egg — tiny, beside creature */}
+            {activeEgg&&!tonightDone&&(
+              <div onClick={()=>setView('hatchery')} style={{cursor:'pointer',flexShrink:0}}>
+                <CrackingEgg stage={eggStage} size={36}/>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* no creature yet — compact empty state */}
+        {!hatchedCreature&&familyChars.length===0&&(
+          <div style={{textAlign:'center',padding:'28px 0 8px'}}>
+            <div style={{fontSize:52,animation:'flt 3s ease-in-out infinite',filter:'drop-shadow(0 0 12px rgba(245,184,76,.25))'}}>🥚</div>
+            <div style={{fontFamily:'var(--serif)',fontSize:16,fontWeight:700,color:'var(--amber2)',marginTop:8}}>Your adventure begins tonight</div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════
+            SECTION 3: EGG PROGRESS — inline dots
+        ═══════════════════════════════════════════════════ */}
+        {activeEgg&&(
+          <div style={{
+            display:'flex',alignItems:'center',gap:10,
+            padding:'12px 16px',marginTop:10,
+            background:'rgba(255,255,255,.016)',border:'1px solid rgba(255,255,255,.04)',
+            borderRadius:14,
+          }}>
+            <div style={{fontSize:9,color:'rgba(245,184,76,.5)',fontFamily:'var(--mono)',fontWeight:700,flexShrink:0,letterSpacing:'.04em'}}>
+              EGG
+            </div>
+            <div style={{display:'flex',gap:5,flex:1,justifyContent:'center'}}>
               {Array.from({length:7},(_,i)=>{
-                const done=i<eggStage;const isTonight=i===eggStage;
+                const done=i<eggStage;const isTonight=i===eggStage&&!tonightDone;
                 return(
                   <div key={i} style={{
-                    width:34,height:34,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:done?14:13,
-                    background:done?'rgba(245,184,76,.15)':isTonight?'rgba(245,184,76,.08)':'rgba(245,184,76,.04)',
-                    border:done?'2px solid rgba(245,184,76,.5)':isTonight?'2px solid rgba(245,184,76,.35)':'1.5px dashed rgba(245,184,76,.18)',
-                    boxShadow:isTonight?'0 0 12px rgba(245,184,76,.25)':'none',
+                    width:28,height:28,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
+                    fontSize:done?12:11,transition:'all .3s',
+                    background:done?'rgba(245,184,76,.15)':isTonight?'rgba(245,184,76,.08)':'rgba(245,184,76,.03)',
+                    border:done?'2px solid rgba(245,184,76,.5)':isTonight?'2px solid rgba(245,184,76,.35)':'1.5px dashed rgba(245,184,76,.12)',
+                    boxShadow:isTonight?'0 0 10px rgba(245,184,76,.2)':'none',
                     animation:isTonight?'pring 2.5s ease-in-out infinite':'none',
-                  }}>{done?'⭐':isTonight?'✦':'🥚'}</div>
+                  }}>{done?'⭐':isTonight?'✦':'·'}</div>
                 );
               })}
             </div>
-          )}
-
-          {/* re-read shortcut */}
-          {lastStory&&lastStory.bookData&&onReadStory&&(
-            <div className="dash-adventure" onClick={()=>onReadStory(lastStory.bookData)}>
-              <div style={{fontSize:24}}>📖</div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:13,fontWeight:700,color:'var(--cream)'}}>Re-read {lastStory.title}</div>
-                <div style={{fontSize:11,color:'rgba(244,239,232,.3)',marginTop:1}}>Your last adventure</div>
-              </div>
-              <div style={{fontSize:16,color:'rgba(255,255,255,.2)'}}>→</div>
+            <div style={{fontSize:10,color:'rgba(245,184,76,.4)',fontFamily:'var(--mono)',fontWeight:700,flexShrink:0}}>
+              {eggStage}/7
             </div>
-          )}
-          </>
+          </div>
         )}
+
+        {/* ═══════════════════════════════════════════════════
+            SECTION 4: DONE STATE — compact celebration
+        ═══════════════════════════════════════════════════ */}
+        {tonightDone&&(
+          <div style={{
+            background:'linear-gradient(170deg,rgba(29,158,117,.06),rgba(8,12,32,.98))',
+            border:'1.5px solid rgba(29,158,117,.2)',
+            borderRadius:18,padding:'16px 18px',textAlign:'center',
+            marginTop:12,position:'relative',overflow:'hidden',
+          }}>
+            <div style={{position:'absolute',top:0,left:0,right:0,height:1.5,background:'linear-gradient(90deg,transparent,rgba(93,202,165,.35),transparent)'}}/>
+
+            <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:6}}>
+              <div style={{width:4,height:4,borderRadius:'50%',background:'var(--teal)',animation:'twk 2s ease-in-out infinite'}}/>
+              <span style={{fontSize:9,fontFamily:'var(--mono)',letterSpacing:'.12em',textTransform:'uppercase',color:'rgba(93,202,165,.6)'}}>tonight complete</span>
+              <div style={{width:4,height:4,borderRadius:'50%',background:'var(--teal)',animation:'twk 2s ease-in-out infinite'}}/>
+            </div>
+
+            <div style={{fontFamily:'var(--serif)',fontSize:15,color:'var(--cream)',lineHeight:1.4,marginBottom:8}}>
+              Sweet dreams{primary?`, ${primary.name}`:''}.
+            </div>
+
+            <div style={{display:'inline-flex',alignItems:'center',gap:5,padding:'4px 12px',borderRadius:50,
+              background:'rgba(29,158,117,.08)',border:'1px solid rgba(29,158,117,.15)',fontSize:10,fontWeight:700,color:'var(--teal2)'}}>
+              {glow} night{glow!==1?'s':''} strong
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════
+            SECTION 5: RE-READ SHORTCUT
+        ═══════════════════════════════════════════════════ */}
+        {lastStory&&lastStory.bookData&&onReadStory&&(
+          <div className="dash-adventure" style={{marginTop:10}} onClick={()=>onReadStory(lastStory.bookData)}>
+            <div style={{fontSize:22}}>📖</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:12,fontWeight:700,color:'var(--cream)'}}>{tonightDone?'Read tonight\'s story again':'Re-read'} {lastStory.title}</div>
+              <div style={{fontSize:10,color:'rgba(244,239,232,.28)',marginTop:1}}>{tonightDone?'':'Your last adventure'}</div>
+            </div>
+            <div style={{fontSize:16,color:'rgba(255,255,255,.15)'}}>→</div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════
+            SECTION 6: THIS WEEK — compact strip
+        ═══════════════════════════════════════════════════ */}
+        {week.length>0&&hasAnyNights&&(
+          <div style={{
+            padding:'12px 16px',marginTop:10,
+            background:'rgba(255,255,255,.016)',border:'1px solid rgba(255,255,255,.04)',
+            borderRadius:14,
+          }}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+              <div style={{fontSize:9,color:'rgba(255,255,255,.18)',fontFamily:'var(--mono)',fontWeight:600,letterSpacing:'.06em',textTransform:'uppercase'}}>
+                This week
+              </div>
+              <div style={{fontSize:9,color:'rgba(245,184,76,.4)',fontFamily:'var(--mono)',fontWeight:700}}>
+                {weekDone}/7 nights
+              </div>
+            </div>
+            <div style={{display:'flex',justifyContent:'space-between'}}>
+              {week.map((n,i)=>{
+                const isDone=n.state==='complete';
+                const isTonight=n.state==='tonight';
+                const isMissed=n.state==='missed';
+                return(
+                  <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3,flex:1,
+                    cursor:isDone&&n.card?'pointer':'default'}}
+                    onClick={()=>isDone&&n.card?setModalCard(n.card):isMissed?showMiss(i):null}>
+                    <div style={{
+                      width:30,height:30,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
+                      fontSize:isDone?12:10,position:'relative',transition:'all .15s',
+                      background:isDone?'rgba(245,184,76,.12)':isTonight?(tonightDone?'rgba(29,158,117,.1)':'rgba(245,184,76,.06)'):'rgba(255,255,255,.02)',
+                      border:isDone?'2px solid rgba(245,184,76,.4)':isTonight?(tonightDone?'2px solid rgba(29,158,117,.4)':'2px solid rgba(245,184,76,.3)')
+                        :isMissed?'1.5px dashed rgba(255,255,255,.06)':'.5px solid rgba(255,255,255,.04)',
+                      boxShadow:isTonight&&!tonightDone?'0 0 8px rgba(245,184,76,.2)':'none',
+                    }}>
+                      {isDone?'⭐':isTonight?(tonightDone?'✓':'✦'):'·'}
+                    </div>
+                    <div style={{fontSize:8,fontWeight:600,fontFamily:'var(--mono)',
+                      color:isDone?'rgba(245,184,76,.45)':isTonight?(tonightDone?'rgba(93,202,165,.5)':'rgba(245,184,76,.5)'):'rgba(255,255,255,.08)'}}>
+                      {n.label}
+                    </div>
+                    {missTooltip===i&&isMissed&&(
+                      <div className="dash-miss-tooltip">missed this night</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
       </div>
 
-      {/* ══════════════════════════════════════════════════════
-          BOTTOM TAB BAR
-      ══════════════════════════════════════════════════════ */}
-      <div className="dash-tabs">
-        <div className="dash-tab on">
-          <div className="dash-tab-ico"><IconHome on={true}/></div>
-          <div className="dash-tab-lbl">Home</div>
-        </div>
-        <div className="dash-tab" onClick={()=>setView('story-library')}>
-          <div className="dash-tab-ico"><IconStories on={false}/></div>
-          <div className="dash-tab-lbl">Stories</div>
-        </div>
-        <div className="dash-tab-create" onClick={()=>setView('story-configure' as any)}>
-          <div className="dash-tab-create-btn">✨</div>
-          <div className="dash-tab-create-lbl">Create</div>
-        </div>
-        <div className="dash-tab" onClick={()=>setView('hatchery')}>
-          <div className="dash-tab-ico"><span style={{fontSize:18}}>🥚</span></div>
-          <div className="dash-tab-lbl">Hatchery</div>
-        </div>
-        <div className="dash-tab" onClick={()=>setView('nightcard-library')}>
-          <div className="dash-tab-ico"><span style={{fontSize:18}}>🌙</span></div>
-          <div className="dash-tab-lbl">Night Cards</div>
-        </div>
-      </div>
-
-      {/* night card modal */}
+      {/* ── MODALS (kept from original) ── */}
       {modalCard&&(
         <div className="dash-nc-modal-bg" onClick={()=>setModalCard(null)}>
           <div className="dash-nc-modal" onClick={e=>e.stopPropagation()}>
             <div className="dash-nc-modal-top">
-              <div className="dash-nc-modal-lbl">✦ Night Card</div>
+              <div className="dash-nc-modal-lbl">Night Card</div>
               <div className="dash-nc-modal-date">{modalCard.date?.split('T')[0]}</div>
-              <button className="dash-nc-modal-close" onClick={()=>setModalCard(null)}>×</button>
+              <button className="dash-nc-modal-close" onClick={()=>setModalCard(null)}>x</button>
             </div>
             <div className="dash-nc-modal-body">
               {modalCard.storyTitle&&<><div className="dash-nc-modal-fl">Story</div><div className="dash-nc-modal-fv">{modalCard.storyTitle}</div></>}
@@ -1071,13 +1148,12 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
                 <div className="dash-nc-modal-q">"{modalCard.bondingQuestion}"</div>
                 {modalCard.bondingAnswer&&<div className="dash-nc-modal-a">{modalCard.bondingAnswer}</div>}
               </>)}
-              {!modalCard.quote&&!modalCard.bondingQuestion&&<div className="dash-nc-modal-fv">{modalCard.memory_line||'A night to remember ✦'}</div>}
+              {!modalCard.quote&&!modalCard.bondingQuestion&&<div className="dash-nc-modal-fv">{modalCard.memory_line||'A night to remember'}</div>}
             </div>
           </div>
         </div>
       )}
 
-      {/* hatch modal */}
       {showHatchModal&&activeEgg&&(
         <div className="dash-hatch-modal" onClick={()=>setShowHatchModal(false)}>
           <div className="dash-hatch-inner" onClick={e=>e.stopPropagation()}>
@@ -1085,7 +1161,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
             <div className="dash-hatch-title">A new companion has hatched!</div>
             <div className="dash-hatch-sub">Complete the ritual to name them and welcome them home.</div>
             <button className="dash-hatch-btn" onClick={()=>{setShowHatchModal(false);startRitual();}}>
-              Begin tonight's ritual ✦
+              Begin tonight's ritual
             </button>
           </div>
         </div>

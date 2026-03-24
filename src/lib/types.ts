@@ -6,6 +6,8 @@ export interface User {
   displayName: string;
   createdAt: string;
   isGuest?: boolean;
+  isSubscribed?: boolean;
+  refCode?: string;
 }
 
 // ── Character ─────────────────────────────────────────────────────────────────
@@ -49,6 +51,80 @@ export interface SavedStory {
   date: string;
   occasion?: string;
   bookData: any;                // full book object from the existing engine
+  ageGroup?: string;
+  vibe?: string;
+  theme?: string;
+  mood?: string;
+  storyStyle?: string;
+  storyLength?: string;
+  lessons?: string[];
+  isPublic?: boolean;
+  librarySlug?: string;
+  thumbsUp?: number;
+  thumbsDown?: number;
+  readCount?: number;
+  isStaffPick?: boolean;
+}
+
+// ── Library story (public, returned from library queries) ────────────────
+export interface LibraryStory {
+  id: string;
+  userId: string;
+  title: string;
+  heroName: string;
+  characterIds: string[];
+  refrain?: string;
+  date: string;
+  occasion?: string;
+  bookData?: any;        // only populated for single story fetch
+  isPublic: boolean;
+  librarySlug: string;
+  ageGroup?: string;
+  vibe?: string;
+  theme?: string;
+  mood?: string;
+  storyStyle?: string;
+  storyLength?: string;
+  lessons?: string[];
+  submittedAt?: string;
+  thumbsUp: number;
+  thumbsDown: number;
+  readCount: number;
+  conversionCount: number;
+  isStaffPick: boolean;
+  isBookOfDay: boolean;
+  bookOfDayDate?: string;
+  submitterDisplayName?: string;
+  submitterRefCode?: string;
+}
+
+// ── Story vote ───────────────────────────────────────────────────────────
+export interface StoryVote {
+  id: string;
+  storyId: string;
+  userId?: string;
+  sessionId?: string;
+  vote: 1 | -1;
+  voteNote?: string;
+  createdAt: string;
+}
+
+// ── Library favourite ────────────────────────────────────────────────────
+export interface LibraryFavourite {
+  id: string;
+  userId: string;
+  storyId: string;
+  savedAt: string;
+}
+
+// ── User profile (from profiles table) ───────────────────────────────────
+export interface UserProfile {
+  id: string;
+  displayName: string;
+  isSubscribed: boolean;
+  refCode: string | null;
+  rewardsMonthsEarned: number;
+  conversionCount: number;
 }
 
 // ── Night Card (saved) ────────────────────────────────────────────────────────
@@ -136,6 +212,9 @@ export type AppView =
   | 'character-builder'   // create/edit a character
   | 'story-library'       // my stories
   | 'nightcard-library'  // my night cards
-  | 'onboarding'         // onboarding flow
+  | 'parent-setup'       // parent onboarding (3 screens, adult)
+  | 'onboarding'         // kid onboarding flow (magical)
   | 'first-night'        // post-onboarding choice screen
-  | 'hatchery';          // hatchery screen
+  | 'hatchery'           // hatchery screen
+  | 'library'            // public story library
+  | 'library-story';     // single library story reader

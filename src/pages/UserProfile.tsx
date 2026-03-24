@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../AppContext';
 import { getCharacters, getStories, getNightCards } from '../lib/storage';
+import { supabase } from '../lib/supabase';
 import type { Character, SavedStory, SavedNightCard } from '../lib/types';
 
 const CSS = `
@@ -65,7 +66,7 @@ const CSS = `
 const ROTS = [-2.1, 1.4, -0.8, 2.2, -1.6, 0.9, -2.8, 1.1];
 
 export default function UserProfile() {
-  const { user, logout, setView, setEditingCharacter } = useApp();
+  const { user, logout, setView, setEditingCharacter, isSubscribed, setIsSubscribed } = useApp();
   const [characters, setCharacters] = useState<Character[]>([]);
   const [stories,    setStories]    = useState<SavedStory[]>([]);
   const [nightCards, setNightCards] = useState<SavedNightCard[]>([]);
@@ -210,31 +211,29 @@ export default function UserProfile() {
           </div>
         </div>
 
+        {/* Dev subscription toggle */}
+        <div className="up-section" style={{border:'2px solid rgba(255,60,60,.3)',borderRadius:14,padding:14,background:'rgba(255,60,60,.03)'}}>
+          <div style={{fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'rgba(255,60,60,.6)',marginBottom:8,fontFamily:'var(--mono)'}}>
+            DEV ONLY
+          </div>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <div style={{fontSize:12,color:'rgba(244,239,232,.5)'}}>
+              Subscription: <strong style={{color:isSubscribed?'#14d890':'rgba(244,239,232,.3)'}}>{isSubscribed ? 'Paid' : 'Free'}</strong>
+            </div>
+            <button style={{padding:'6px 14px',borderRadius:8,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',
+              color:'rgba(244,239,232,.5)',fontSize:11,cursor:'pointer',fontFamily:'var(--sans)'}}
+              onClick={async()=>{
+                const next = !isSubscribed;
+                setIsSubscribed(next);
+                try { await supabase.from('profiles').update({is_subscribed:next}).eq('id',user.id); } catch{}
+              }}>
+              Toggle
+            </button>
+          </div>
+        </div>
+
       </div>
 
-      {/* bottom nav */}
-      <div style={{display:'flex',background:'rgba(8,12,24,.97)',borderTop:'1px solid rgba(232,151,42,.07)',padding:'8px 0 6px',position:'fixed',bottom:0,left:0,right:0,zIndex:20,backdropFilter:'blur(16px)'}}>
-        <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,cursor:'pointer',padding:'2px 0'}} onClick={()=>setView('dashboard')}>
-          <div style={{fontSize:20,opacity:.5}}>🏠</div>
-          <div style={{fontSize:9,fontWeight:700,color:'rgba(255,255,255,.4)'}}>Home</div>
-        </div>
-        <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,cursor:'pointer',padding:'2px 0'}} onClick={()=>setView('story-library')}>
-          <div style={{fontSize:20,opacity:.5}}>📖</div>
-          <div style={{fontSize:9,fontWeight:700,color:'rgba(255,255,255,.4)'}}>Stories</div>
-        </div>
-        <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,cursor:'pointer',marginTop:-18}} onClick={()=>setView('story-configure' as any)}>
-          <div style={{width:50,height:50,borderRadius:'50%',background:'linear-gradient(145deg,#a06010,#F5B84C 50%,#a06010)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,boxShadow:'0 4px 16px rgba(200,130,20,.4),0 0 0 3px rgba(8,12,24,.97)'}}>✨</div>
-          <div style={{fontSize:9,fontWeight:700,color:'#F5B84C',marginTop:1}}>Create</div>
-        </div>
-        <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,cursor:'pointer',padding:'2px 0'}} onClick={()=>setView('hatchery')}>
-          <div style={{fontSize:20,opacity:.5}}>🥚</div>
-          <div style={{fontSize:9,fontWeight:700,color:'rgba(255,255,255,.4)'}}>Hatchery</div>
-        </div>
-        <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,cursor:'pointer',padding:'2px 0'}} onClick={()=>setView('nightcard-library')}>
-          <div style={{fontSize:20,opacity:.5}}>🌙</div>
-          <div style={{fontSize:9,fontWeight:700,color:'rgba(255,255,255,.4)'}}>Night Cards</div>
-        </div>
-      </div>
     </div>
   );
 }

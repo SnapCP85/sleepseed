@@ -5,7 +5,9 @@ import Auth from './pages/Auth';
 import UserDashboard from './pages/UserDashboard';
 import OnboardingFlow from './pages/OnboardingFlow';
 import ReadyStateDashboard from './pages/ReadyStateDashboard';
-import type { OnboardingResult } from './pages/OnboardingFlow';
+import ParentSetup from './pages/ParentSetup';
+import type { ParentSetupResult } from './pages/ParentSetup';
+import type { OnboardingResult, ChildProfile } from './pages/OnboardingFlow';
 import UserProfile from './pages/UserProfile';
 import RitualStarter from './pages/RitualStarter';
 import StoryHandoff from './pages/StoryHandoff';
@@ -16,10 +18,12 @@ import StoryLibrary from './features/stories/StoryLibrary';
 import NightCardLibrary from './features/nightcards/NightCardLibrary';
 import SleepSeedCore from './SleepSeedCore';
 import SharedStoryViewer from './pages/SharedStoryViewer';
+import LibraryHome from './pages/LibraryHome';
+import LibraryStoryReader from './pages/LibraryStoryReader';
 import CharacterDetail from './features/characters/CharacterDetail';
 import Hatchery from './pages/Hatchery';
 import FirstNight from './pages/FirstNight';
-import { saveCharacter, saveNightCard } from './lib/storage';
+import { saveCharacter, saveNightCard, saveStory } from './lib/storage';
 import { saveHatchedCreature, createEgg } from './lib/hatchery';
 import type { Character, HatchedCreature, SavedNightCard } from './lib/types';
 
@@ -61,44 +65,76 @@ function AppNav({ currentView, onNav }: { currentView: string; onNav: (v: string
 }
 
 const TABS_CSS = `
-.btabs{display:flex;background:rgba(8,12,24,.97);border-top:1px solid rgba(232,151,42,.07);padding:8px 0 6px;position:fixed;bottom:0;left:0;right:0;z-index:20;backdrop-filter:blur(16px)}
-.btab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 0;-webkit-tap-highlight-color:transparent}
-.btab-ico{font-size:20px;line-height:1}
-.btab-lbl{font-size:9px;font-weight:700;letter-spacing:.02em}
+.btabs{display:flex;align-items:flex-end;background:rgba(6,10,20,.97);border-top:1px solid rgba(245,184,76,.06);padding:6px 0 max(6px,env(safe-area-inset-bottom));position:fixed;bottom:0;left:0;right:0;z-index:20;backdrop-filter:blur(20px)}
+.btab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 0 2px;-webkit-tap-highlight-color:transparent;transition:all .2s}
+.btab-ico{width:24px;height:24px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.btab-ico svg{transition:all .2s}
+.btab:not(.on) .btab-ico svg{opacity:.35}
+.btab.on .btab-ico svg{opacity:1;filter:drop-shadow(0 0 6px rgba(245,184,76,.4))}
+.btab-lbl{font-size:10px;font-weight:700;letter-spacing:.03em;font-family:'Plus Jakarta Sans',system-ui,sans-serif;transition:color .2s}
 .btab.on .btab-lbl{color:#F5B84C}
-.btab:not(.on) .btab-lbl{color:rgba(255,255,255,.4)}
-.btab:not(.on) .btab-ico{opacity:.5}
-.btab-create{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:-18px}
-.btab-create-btn{width:50px;height:50px;border-radius:50%;background:linear-gradient(145deg,#a06010,#F5B84C 50%,#a06010);display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 16px rgba(200,130,20,.4),0 0 0 3px rgba(8,12,24,.97);transition:transform .18s,filter .15s}
+.btab:not(.on) .btab-lbl{color:rgba(255,255,255,.28)}
+.btab:hover{transform:scale(1.08)}
+.btab:hover:not(.on) .btab-ico svg{opacity:.6}
+.btab:hover:not(.on) .btab-lbl{color:rgba(255,255,255,.5)}
+.btab:active{transform:scale(.92)}
+.btab-create{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:-22px}
+.btab-create-btn{width:52px;height:52px;border-radius:50%;background:linear-gradient(145deg,#a06010,#F5B84C 50%,#a06010);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(200,130,20,.45),0 0 0 3px rgba(6,10,20,.97);transition:transform .18s,filter .15s}
+.btab-create-btn svg{width:24px;height:24px}
 .btab-create-btn:hover{transform:scale(1.08);filter:brightness(1.1)}
-.btab-create-btn:active{transform:scale(.93)}
-.btab-create-lbl{font-size:9px;font-weight:700;letter-spacing:.02em;color:#F5B84C;margin-top:1px}
+.btab-create-btn:active{transform:scale(.9)}
+.btab-create-lbl{font-size:10px;font-weight:700;letter-spacing:.03em;color:#F5B84C;margin-top:1px;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
 `;
 
+const DiscoverIcon = ({ active }: { active: boolean }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="9"
+      stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.8"
+      fill={active ? 'rgba(245,184,76,.08)' : 'none'} />
+    <path d="M14.5 9.5l-1.2 3.8-3.8 1.2 1.2-3.8 3.8-1.2Z"
+      stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.5" strokeLinejoin="round"
+      fill={active ? 'rgba(245,184,76,.25)' : 'none'} />
+    <circle cx="12" cy="12" r="1.2" fill={active ? '#F5B84C' : '#F4EFE8'} />
+  </svg>
+);
+
+const MyStuffIcon = ({ active }: { active: boolean }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="8" r="4"
+      stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.8"
+      fill={active ? 'rgba(245,184,76,.15)' : 'none'} />
+    <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"
+      stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.8" strokeLinecap="round" />
+    <path d="M15 3.5l1.5 1L18 3"
+      stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const CreateIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 3l2.1 6.5H21l-5.6 4 2.2 6.5L12 16l-5.6 4 2.2-6.5L3 9.5h6.9L12 3Z"
+      fill="#120800" stroke="#120800" strokeWidth="1" strokeLinejoin="round" />
+  </svg>
+);
+
 function BottomTabs({ current, onNav }: { current: string; onNav: (v: string) => void }) {
+  const isLib = current === 'library';
+  const isMe = current === 'user-profile';
   return (
     <>
       <style>{TABS_CSS}</style>
       <div className="btabs">
-        <div className={`btab${current==='dashboard'?' on':''}`} onClick={()=>onNav('dashboard')}>
-          <div className="btab-ico">🏠</div>
-          <div className="btab-lbl">Home</div>
-        </div>
-        <div className={`btab${current==='story-library'?' on':''}`} onClick={()=>onNav('story-library')}>
-          <div className="btab-ico">📖</div>
-          <div className="btab-lbl">Stories</div>
+        <div className={`btab${isLib?' on':''}`} onClick={()=>onNav('library')}>
+          <div className="btab-ico"><DiscoverIcon active={isLib} /></div>
+          <div className="btab-lbl">Discover</div>
         </div>
         <div className="btab-create" onClick={()=>onNav('story-configure')}>
-          <div className="btab-create-btn">✨</div>
+          <div className="btab-create-btn"><CreateIcon /></div>
           <div className="btab-create-lbl">Create</div>
         </div>
-        <div className={`btab${current==='hatchery'?' on':''}`} onClick={()=>onNav('hatchery')}>
-          <div className="btab-ico">🥚</div>
-          <div className="btab-lbl">Hatchery</div>
-        </div>
-        <div className={`btab${current==='nightcard-library'?' on':''}`} onClick={()=>onNav('nightcard-library')}>
-          <div className="btab-ico">🌙</div>
-          <div className="btab-lbl">Night Cards</div>
+        <div className={`btab${isMe?' on':''}`} onClick={()=>onNav('user-profile')}>
+          <div className="btab-ico"><MyStuffIcon active={isMe} /></div>
+          <div className="btab-lbl">My Stuff</div>
         </div>
       </div>
     </>
@@ -114,21 +150,65 @@ function AppInner() {
     builderChoices,
     editingCharacter, setEditingCharacter,
     companionCreature, setCompanionCreature,
+    libraryStorySlug, setLibraryStorySlug,
   } = useApp();
 
   const [preloadedBook,      setPreloadedBook]      = useState<any>(null);
   const [lastOnboardingResult, setLastOnboardingResult] = useState<OnboardingResult|null>(null);
+  const [parentSetupData,   setParentSetupData]   = useState<ParentSetupResult|null>(() => {
+    // Load from localStorage if available
+    if (!user) return null;
+    try {
+      const stored = localStorage.getItem(`sleepseed_child_profile_${user.id}`);
+      return stored ? JSON.parse(stored) : null;
+    } catch { return null; }
+  });
   const [nightCardFilter,    setNightCardFilter]    = useState<string | undefined>(undefined);
   const [viewingCharacter,   setViewingCharacter]   = useState<Character | null>(null);
 
-  // Check for shared story link on mount
+  // Check for shared story / library links on mount
   const [isSharedStory, setIsSharedStory] = useState(false);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('s')) setIsSharedStory(true);
+    if (params.get('s')) { setIsSharedStory(true); return; }
+
+    const librarySlug = params.get('library');
+    if (librarySlug) { setLibraryStorySlug(librarySlug); setView('library-story'); return; }
+
+    if (params.get('view') === 'library') { setView('library'); return; }
+
+    const ref = params.get('ref');
+    if (ref) { try { sessionStorage.setItem('sleepseed_ref', ref); } catch {} }
+
+    if (!sessionStorage.getItem('sleepseed_sid')) {
+      const sid = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      try { sessionStorage.setItem('sleepseed_sid', sid); } catch {}
+    }
   }, []);
 
   if (isSharedStory) return <SharedStoryViewer />;
+
+  // ── Test mode: ?test=onboarding bypasses auth ──────────────────────────────
+  const [testMode] = useState(() => new URLSearchParams(window.location.search).get('test') === 'onboarding');
+  const [testPhase, setTestPhase] = useState<'parent'|'child'|'done'>('parent');
+  const [testChildProfile, setTestChildProfile] = useState<ParentSetupResult|null>(null);
+  if (testMode) {
+    if (testPhase === 'parent') return (
+      <ParentSetup displayName="Greg" onComplete={(result) => { setTestChildProfile(result); setTestPhase('child'); }} />
+    );
+    if (testPhase === 'child') return (
+      <OnboardingFlow childProfile={testChildProfile} onComplete={(result) => { console.log('[test] Onboarding complete:', result); setTestPhase('done'); }} />
+    );
+    return (
+      <div style={{minHeight:'100vh',background:'#080C18',color:'#F4EFE8',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',fontFamily:'system-ui',gap:16,padding:24,textAlign:'center'}}>
+        <div style={{fontSize:48}}>✅</div>
+        <div style={{fontSize:24,fontWeight:700}}>Onboarding test complete!</div>
+        <div style={{fontSize:14,color:'rgba(244,239,232,.5)'}}>Check console for the full result object.</div>
+        <button onClick={() => { setTestPhase('parent'); setTestChildProfile(null); }} style={{marginTop:16,padding:'12px 28px',borderRadius:12,background:'#E8972A',color:'#1A1420',border:'none',fontSize:14,fontWeight:700,cursor:'pointer'}}>Run again</button>
+        <button onClick={() => { window.location.href = window.location.pathname; }} style={{padding:'10px 24px',borderRadius:12,background:'rgba(255,255,255,.06)',color:'rgba(244,239,232,.5)',border:'1px solid rgba(255,255,255,.08)',fontSize:13,cursor:'pointer'}}>Exit test mode</button>
+      </div>
+    );
+  }
 
   // Load companion creature for story builder
   useEffect(() => {
@@ -172,15 +252,16 @@ function AppInner() {
     catch (e) { console.error('[onboarding] createEgg failed:', e); }
 
     try {
+      const fs = result.firstStory;
       const nightCard: SavedNightCard = {
         id: crypto.randomUUID?.() || `${Date.now()}`,
         userId: user.id,
         heroName: result.character.name,
-        storyTitle: 'Night 1',
+        storyTitle: fs?.title || 'Night 1',
         characterIds: [result.character.id],
-        headline: `The night ${result.creature.name} arrived.`,
-        quote: result.dreamAnswer,
-        memory_line: `${result.character.name} said it so quietly — like they already knew.`,
+        headline: fs?.headline || `The night ${result.creature.name} arrived.`,
+        quote: fs?.quote || result.dreamAnswer,
+        memory_line: fs?.memoryLine || `${result.character.name} said it so quietly — like they already knew.`,
         emoji: result.creature.creatureEmoji,
         date: new Date().toISOString(),
         isOrigin: true,
@@ -188,6 +269,26 @@ function AppInner() {
       };
       await saveNightCard(nightCard);
     } catch (e) { console.error('[onboarding] saveNightCard failed:', e); }
+
+    // Save first story to library
+    if (result.firstStory) {
+      try {
+        await saveStory({
+          id: crypto.randomUUID?.() || `story_${Date.now()}`,
+          userId: user.id,
+          title: result.firstStory.title,
+          heroName: result.character.name,
+          characterIds: [result.character.id],
+          date: new Date().toISOString(),
+          bookData: {
+            title: result.firstStory.title,
+            pages: result.firstStory.text.split('\n\n').filter(Boolean).map(p => ({ text: p })),
+            creatureName: result.creature.name,
+            creatureEmoji: result.creature.creatureEmoji,
+          },
+        });
+      } catch (e) { console.error('[onboarding] saveStory failed:', e); }
+    }
 
     // Always finish — set creature, flag, navigate to first-night choice
     setCompanionCreature(result.creature);
@@ -202,10 +303,39 @@ function AppInner() {
     setView('story-builder');
   };
 
-  // User-scoped onboarding flag
+  // User-scoped flags
   const onboardingDone = typeof localStorage !== 'undefined' && user
     ? !!localStorage.getItem(`sleepseed_onboarding_${user.id}`)
     : false;
+  const parentSetupDone = typeof localStorage !== 'undefined' && user
+    ? !!localStorage.getItem(`sleepseed_parent_setup_${user.id}`)
+    : false;
+
+  // Handle parent setup completion
+  const handleParentSetup = (result: ParentSetupResult) => {
+    if (!user) return;
+    setParentSetupData(result);
+    // Store in localStorage so kid onboarding can read it
+    try {
+      localStorage.setItem(`sleepseed_parent_setup_${user.id}`, '1');
+      localStorage.setItem(`sleepseed_child_profile_${user.id}`, JSON.stringify(result));
+    } catch {}
+    setView('dashboard');
+  };
+
+  // Library views — accessible to everyone (no auth required)
+  if (view === 'library') return (
+    <div style={{paddingBottom: user && !user.isGuest ? 70 : 0}}>
+      <LibraryHome />
+      {user && !user.isGuest && <BottomTabs current="library" onNav={v => setView(v as any)} />}
+    </div>
+  );
+  if (view === 'library-story') return (
+    <div style={{paddingBottom: user && !user.isGuest ? 70 : 0}}>
+      <LibraryStoryReader slug={libraryStorySlug ?? ''} />
+      {user && !user.isGuest && <BottomTabs current="library" onNav={v => setView(v as any)} />}
+    </div>
+  );
 
   if (view === 'public') return (
     <PublicHomepage
@@ -224,17 +354,37 @@ function AppInner() {
   if (view === 'onboarding-tour')    { setView('dashboard'); return null; }
   if (view === 'onboarding-night0')  { setView('dashboard'); return null; }
 
-  // New onboarding flow
-  if (view === 'onboarding') return (
-    <OnboardingFlow onComplete={handleOnboardingComplete} />
+  // Parent setup — clean adult onboarding (3 screens)
+  if (view === 'parent-setup') return (
+    <ParentSetup displayName={user?.displayName||''} onComplete={handleParentSetup} />
   );
 
-  if (view === 'dashboard') {
-    // Show ReadyStateDashboard if onboarding not complete
-    if (user && !user.isGuest && !onboardingDone) {
-      return <ReadyStateDashboard onBegin={() => setView('onboarding')} />;
+  // Kid onboarding — magical experience with child present
+  if (view === 'onboarding') {
+    // Load child profile from localStorage if not in state
+    let profile = parentSetupData;
+    if (!profile && user) {
+      try {
+        const stored = localStorage.getItem(`sleepseed_child_profile_${user.id}`);
+        if (stored) profile = JSON.parse(stored);
+      } catch {}
     }
-    return <UserDashboard onSignUp={goAuth} onReadStory={openSavedStory} />;
+    return <OnboardingFlow onComplete={handleOnboardingComplete} childProfile={profile} />;
+  }
+
+  if (view === 'dashboard') {
+    // New user: parent setup not done → send to parent setup
+    if (user && !user.isGuest && !parentSetupDone && !onboardingDone) {
+      return <ParentSetup displayName={user.displayName||''} onComplete={handleParentSetup} />;
+    }
+    // Parent setup done but kid onboarding not done → show dashboard with egg/begin button
+    // (the existing dashboard handles this state — shows egg + "Begin your first night")
+    return (
+      <div style={{paddingBottom:70}}>
+        <UserDashboard onSignUp={goAuth} onReadStory={openSavedStory} />
+        <BottomTabs current="dashboard" onNav={v=>setView(v as any)} />
+      </div>
+    );
   }
 
   if (view === 'first-night' && lastOnboardingResult) return (
@@ -256,11 +406,21 @@ function AppInner() {
   );
   if (view === 'first-night') { setView('dashboard'); return null; }
 
-  if (view === 'hatchery') return <Hatchery user={user!} onBack={goDashboard} />;
+  if (view === 'hatchery') return (
+    <div style={{paddingBottom:70}}>
+      <Hatchery user={user!} onBack={goDashboard} />
+      <BottomTabs current="" onNav={v=>setView(v as any)} />
+    </div>
+  );
   if (view === 'ritual-starter') return <RitualStarter />;
   if (view === 'story-handoff')  return <StoryHandoff />;
   if (view === 'story-configure') return <StoryBuilderPage />;
-  if (view === 'user-profile')   return <UserProfile />;
+  if (view === 'user-profile') return (
+    <div style={{paddingBottom:70}}>
+      <UserProfile />
+      <BottomTabs current="user-profile" onNav={v=>setView(v as any)} />
+    </div>
+  );
 
   if (view === 'characters') return (
     <><AppNav currentView="characters" onNav={handleNav} />
@@ -292,7 +452,7 @@ function AppInner() {
       onReadStory={openSavedStory}
       onCreateStory={() => setView('ritual-starter')}
     />
-    <BottomTabs current="story-library" onNav={v=>setView(v as any)} />
+    <BottomTabs current="user-profile" onNav={v=>setView(v as any)} />
     </div>
   );
 
@@ -303,7 +463,7 @@ function AppInner() {
       onBack={goDashboard}
       filterCharacterId={nightCardFilter}
     />
-    <BottomTabs current="nightcard-library" onNav={v=>setView(v as any)} />
+    <BottomTabs current="user-profile" onNav={v=>setView(v as any)} />
     </div>
   );
 

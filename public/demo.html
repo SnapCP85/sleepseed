@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SleepSeed — Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400;1,9..144,600;1,9..144,700&family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700&family=DM+Mono:wght@400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#020408;--amber:#F5B84C;--amber-dk:#a06010;--teal:#14d890;
+  --cream:#f5e8c8;--muted:rgba(255,255,255,.35);--card:rgba(6,10,28,.92);
+  --border:rgba(255,255,255,.07);
+  --fr:'Fraunces',Georgia,serif;--ba:'Baloo 2',cursive;--nu:'Nunito',sans-serif;
+  --dm:'DM Mono',monospace;--jk:'Plus Jakarta Sans',system-ui,sans-serif;
+  --night:#080C18;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);font-family:var(--nu);color:var(--cream);display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
+
+.backdrop{position:fixed;inset:0;background:radial-gradient(ellipse 120% 80% at 50% 30%,#080c20,var(--bg) 70%)}
+.watermark{display:none}
+.chapter{display:none}
+.ctrl-panel{position:fixed;top:50%;right:8px;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;z-index:10}
+.ctrl-btn{background:none;border:1px solid rgba(255,255,255,.1);border-radius:8px;width:36px;height:32px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;color:var(--cream);transition:all .2s}
+.ctrl-btn:hover{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.05)}
+.ctrl-btn.wide{width:36px;font-size:11px;font-family:var(--dm)}
+.scene-count{font-family:var(--dm);font-size:8px;color:var(--muted);text-align:center;padding:2px 0}
+.bk-star{position:fixed;border-radius:50%;background:#fff;pointer-events:none}
+@keyframes bkTwk{0%,100%{opacity:.06}50%{opacity:.5}}
+
+.phone{position:relative;width:390px;height:820px;border-radius:44px;overflow:hidden;border:2px solid rgba(255,255,255,.08);background:var(--night);box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04) inset;z-index:2;flex-shrink:0}
+.phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:160px;height:28px;background:var(--night);border-radius:0 0 20px 20px;z-index:50}
+.phone-inner{position:absolute;inset:0;overflow:hidden}
+.progress{position:absolute;bottom:0;left:0;right:0;height:4px;z-index:40;background:rgba(255,255,255,.06)}
+.progress-fill{height:4px;background:linear-gradient(90deg,var(--amber-dk),var(--amber));width:0%;transition:width .3s linear;border-radius:0 2px 2px 0}
+
+.scene{position:absolute;inset:0;opacity:0;transition:opacity .4s ease;pointer-events:none;overflow:hidden;overflow-y:auto}
+.scene::-webkit-scrollbar{display:none}
+.scene.active{opacity:1;pointer-events:auto}
+.title-card{position:absolute;inset:0;background:#000;display:flex;align-items:center;justify-content:center;z-index:30;opacity:0;pointer-events:none;transition:opacity .4s ease}
+.title-card.show{opacity:1}
+.title-card h2{font-family:var(--fr);font-size:17px;font-weight:400;font-style:italic;color:#fff;text-align:center;padding:0 36px;line-height:1.6}
+
+.s-stars{position:absolute;inset:0;pointer-events:none;z-index:0}
+.s-star{position:absolute;border-radius:50%;background:#EEE8FF}
+@keyframes sTwk{0%,100%{opacity:.05}50%{opacity:.55}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes rock{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 10px rgba(245,184,76,.25))}50%{filter:drop-shadow(0 0 28px rgba(245,184,76,.6))}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.08);opacity:1}}
+@keyframes ringFill{from{stroke-dashoffset:251}to{stroke-dashoffset:0}}
+@keyframes hatchPop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.3)}100%{transform:scale(1);opacity:1}}
+@keyframes shimmer{0%{transform:translateX(-120%)}100%{transform:translateX(260%)}}
+
+/* ── shared app chrome ── */
+.app-nav{display:flex;align-items:center;padding:34px 16px 10px;gap:7px;border-bottom:1px solid rgba(232,151,42,.07);background:rgba(8,12,24,.97)}
+.app-logo{font-family:'Playfair Display',var(--fr);font-size:14px;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:6px}
+.app-moon{width:13px;height:13px;border-radius:50%;background:var(--amber);position:relative;overflow:hidden;flex-shrink:0}
+.app-moon-sh{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--night);top:-2px;left:-5px}
+.app-tabs{display:flex;gap:2px;margin-left:auto}
+.app-tab{font-size:8px;font-weight:600;color:rgba(255,255,255,.2);padding:4px 8px;border-radius:6px;font-family:var(--jk)}
+.app-tab.on{color:var(--amber);background:rgba(232,151,42,.08)}
+.app-btabs{display:flex;background:rgba(8,12,24,.97);border-top:1px solid rgba(232,151,42,.07);padding:8px 0 6px;flex-shrink:0;z-index:20}
+.app-btab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.app-btab-ico{font-size:18px;line-height:1}
+.app-btab-lbl{font-size:8px;font-weight:700;color:rgba(255,255,255,.3)}
+.app-btab.on .app-btab-lbl{color:var(--amber)}
+.app-btab:not(.on) .app-btab-ico{opacity:.4}
+.app-btab-create{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:-14px}
+.app-btab-btn{width:42px;height:42px;border-radius:50%;background:linear-gradient(145deg,var(--amber-dk),var(--amber) 50%,var(--amber-dk));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 3px 12px rgba(200,130,20,.35),0 0 0 3px rgba(8,12,24,.97)}
+
+/* ── SCENE 0: Magical Intro ── */
+.s0{position:relative;min-height:100%;overflow:hidden;background:radial-gradient(ellipse 140% 70% at 50% 50%,#0a1030,#020408 70%)}
+.s0-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+
+/* ── Big egg: center → shake → crack → drop down ── */
+@keyframes s0eggIdle{0%,100%{transform:scale(1);filter:drop-shadow(0 0 20px rgba(245,184,76,.3))}50%{transform:scale(1.04);filter:drop-shadow(0 0 40px rgba(245,184,76,.65))}}
+@keyframes s0eggShake{
+  0%,100%{transform:rotate(0)}
+  8%{transform:rotate(-8deg) scale(1.02)}
+  16%{transform:rotate(9deg) scale(1.03)}
+  24%{transform:rotate(-10deg) scale(1.04)}
+  32%{transform:rotate(11deg) scale(1.05)}
+  40%{transform:rotate(-12deg) scale(1.06)}
+  48%{transform:rotate(13deg) scale(1.07)}
+  56%{transform:rotate(0) scale(1.1)}
+}
+@keyframes s0eggDrop{
+  0%{transform:translateY(0) scale(1.1);opacity:1}
+  100%{transform:translateY(175px) scale(.6);opacity:1}
+}
+@keyframes s0eggSettle{0%,100%{transform:translateY(175px) scale(.6)}50%{transform:translateY(175px) scale(.62)}}
+.s0-egg{position:absolute;font-size:100px;z-index:10;
+  animation:s0eggIdle 2s ease-in-out infinite}
+.s0-egg.shake{animation:s0eggShake 1.5s ease-in-out forwards}
+.s0-egg.drop{animation:s0eggDrop .8s cubic-bezier(.22,1,.36,1) forwards}
+.s0-egg.settled{animation:s0eggSettle 3s ease-in-out infinite;transform:translateY(175px) scale(.6)}
+
+/* ── Crack burst ring ── */
+@keyframes s0burstRing{0%{transform:scale(0);opacity:.9}100%{transform:scale(4);opacity:0}}
+.s0-burst{position:absolute;width:80px;height:80px;border-radius:50%;border:3px solid var(--amber);opacity:0;z-index:9}
+.s0-burst.go{animation:s0burstRing .8s ease-out forwards}
+.s0-burst2{position:absolute;width:80px;height:80px;border-radius:50%;border:2px solid var(--teal);opacity:0;z-index:9}
+.s0-burst2.go{animation:s0burstRing 1s ease-out .1s forwards}
+
+/* ── Creatures fly out from center ── */
+@keyframes s0fly1{0%{transform:translate(0,0) scale(0);opacity:0}30%{transform:translate(-140px,-100px) scale(1.2);opacity:1}60%{transform:translate(-80px,60px) scale(1)}100%{transform:translate(0,105px) scale(1)}}
+@keyframes s0fly2{0%{transform:translate(0,0) scale(0);opacity:0}30%{transform:translate(130px,-80px) scale(1.2);opacity:1}60%{transform:translate(60px,50px) scale(1)}100%{transform:translate(100px,32px) scale(1)}}
+@keyframes s0fly3{0%{transform:translate(0,0) scale(0);opacity:0}30%{transform:translate(-120px,90px) scale(1.2);opacity:1}60%{transform:translate(40px,-60px) scale(1)}100%{transform:translate(-100px,32px) scale(1)}}
+@keyframes s0fly4{0%{transform:translate(0,0) scale(0);opacity:0}30%{transform:translate(90px,110px) scale(1.2);opacity:1}60%{transform:translate(-50px,-80px) scale(1)}100%{transform:translate(62px,-88px) scale(1)}}
+@keyframes s0fly5{0%{transform:translate(0,0) scale(0);opacity:0}30%{transform:translate(-60px,-130px) scale(1.2);opacity:1}60%{transform:translate(70px,-40px) scale(1)}100%{transform:translate(-62px,-88px) scale(1)}}
+/* gentle bob at final positions (circle around moon) */
+@keyframes s0bob1{0%,100%{transform:translate(0,105px)}50%{transform:translate(0,99px)}}
+@keyframes s0bob2{0%,100%{transform:translate(100px,32px)}50%{transform:translate(100px,27px)}}
+@keyframes s0bob3{0%,100%{transform:translate(-100px,32px)}50%{transform:translate(-100px,26px)}}
+@keyframes s0bob4{0%,100%{transform:translate(62px,-88px)}50%{transform:translate(62px,-93px)}}
+@keyframes s0bob5{0%,100%{transform:translate(-62px,-88px)}50%{transform:translate(-62px,-94px)}}
+.s0-creature{position:absolute;font-size:30px;opacity:0;z-index:8;filter:drop-shadow(0 0 10px rgba(0,0,0,.4))}
+.s0-c1.fly{animation:s0fly1 2s cubic-bezier(.22,1,.36,1) forwards}
+.s0-c2.fly{animation:s0fly2 2s cubic-bezier(.22,1,.36,1) .1s forwards}
+.s0-c3.fly{animation:s0fly3 2s cubic-bezier(.22,1,.36,1) .2s forwards}
+.s0-c4.fly{animation:s0fly4 2s cubic-bezier(.22,1,.36,1) .3s forwards}
+.s0-c5.fly{animation:s0fly5 2s cubic-bezier(.22,1,.36,1) .4s forwards}
+.s0-c1.bob{animation:s0bob1 3.5s ease-in-out infinite}
+.s0-c2.bob{animation:s0bob2 4s ease-in-out infinite}
+.s0-c3.bob{animation:s0bob3 3.8s ease-in-out infinite}
+.s0-c4.bob{animation:s0bob4 4.2s ease-in-out infinite}
+.s0-c5.bob{animation:s0bob5 3.6s ease-in-out infinite}
+
+/* ── Moon: fades in at center after crack ── */
+@keyframes s0moonIn{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.05);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes s0moonGlow{0%,100%{box-shadow:0 0 30px rgba(245,184,76,.15),0 0 80px rgba(245,184,76,.05)}50%{box-shadow:0 0 50px rgba(245,184,76,.35),0 0 120px rgba(245,184,76,.12)}}
+.s0-moon{width:80px;height:80px;border-radius:50%;background:radial-gradient(circle at 35% 32%,#F5C060,#C87020);position:absolute;overflow:hidden;opacity:0;z-index:7}
+.s0-moon.show{animation:s0moonIn .8s cubic-bezier(.22,1,.36,1) forwards,s0moonGlow 4s ease-in-out .8s infinite}
+.s0-moon-sh{position:absolute;width:78px;height:78px;border-radius:50%;background:#040818;top:-12px;left:-16px}
+
+/* ── Rings pulse from moon ── */
+@keyframes s0ringPulse{0%{transform:scale(.5);opacity:.4}100%{transform:scale(3);opacity:0}}
+.s0-ring{position:absolute;width:80px;height:80px;border-radius:50%;border:1px solid rgba(245,184,76,.18);opacity:0;z-index:6}
+.s0-r1.go{animation:s0ringPulse 3s ease-out infinite}
+.s0-r2.go{animation:s0ringPulse 3s ease-out .8s infinite}
+.s0-r3.go{animation:s0ringPulse 3s ease-out 1.6s infinite}
+
+/* ── Sparkle dust ── */
+@keyframes s0dust{0%{opacity:0;transform:translateY(0) scale(0)}30%{opacity:.8;transform:translateY(-12px) scale(1)}100%{opacity:0;transform:translateY(-45px) scale(.3)}}
+.s0-dust{position:absolute;font-size:10px;color:rgba(245,184,76,.5);opacity:0;pointer-events:none;z-index:11}
+
+/* ── Logo ── */
+@keyframes s0logoIn{0%{opacity:0;transform:translateY(10px);letter-spacing:.3em}100%{opacity:1;transform:translateY(0);letter-spacing:.08em}}
+.s0-logo{position:absolute;bottom:6%;left:0;right:0;text-align:center;opacity:0;z-index:12}
+.s0-logo.show{animation:s0logoIn 1.2s cubic-bezier(.22,1,.36,1) forwards}
+.s0-logo-text{font-family:var(--fr);font-size:28px;font-weight:700;color:var(--cream);letter-spacing:.08em}
+.s0-logo-sub{font-family:var(--dm);font-size:8px;color:var(--amber);letter-spacing:.15em;text-transform:uppercase;margin-top:6px;opacity:.6}
+
+/* ── SCENE 1: Golden Window ── */
+.s1{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;background:radial-gradient(ellipse 130% 60% at 50% -10%,#0a1030,#040818 60%,#020410);text-align:center}
+.s1-egg{font-size:64px;margin-bottom:18px;opacity:0;animation:fadeUp .6s ease-out .3s forwards}
+.s1-egg span{display:inline-block;animation:rock 2.5s ease-in-out infinite,glow 3s ease-in-out infinite}
+.s1-kicker{font-family:var(--dm);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);opacity:0;animation:fadeUp .5s ease-out .6s forwards;margin-bottom:14px}
+.s1-h{font-family:var(--fr);font-size:22px;font-weight:700;color:var(--cream);line-height:1.3;margin-bottom:12px;opacity:0;animation:fadeUp .6s ease-out 1s forwards}
+.s1-h em{color:var(--amber);font-style:italic}
+.s1-p{font-size:13px;color:rgba(245,232,200,.45);line-height:1.7;opacity:0;animation:fadeUp .5s ease-out 1.6s forwards;max-width:310px}
+.s1-p strong{color:rgba(245,232,200,.75);font-weight:600}
+
+/* ── SCENE 2: Rituals Win ── */
+.s2{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 26px;background:linear-gradient(180deg,#0a0e20,#060a18);text-align:center}
+.s2-h{font-family:var(--fr);font-size:20px;font-weight:700;color:var(--cream);line-height:1.35;margin-bottom:18px;opacity:0;animation:fadeUp .6s ease-out .5s forwards}
+.s2-h em{color:var(--amber);font-style:italic}
+.s2-blocks{display:flex;flex-direction:column;gap:10px;width:100%}
+.s2-block{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;text-align:left;opacity:0;display:flex;align-items:center;gap:12px}
+.s2-b1{animation:fadeUp .4s ease-out 1.5s forwards}
+.s2-b2{animation:fadeUp .4s ease-out 3s forwards}
+.s2-b3{animation:fadeUp .4s ease-out 5s forwards}
+.s2-block-ico{font-size:28px;flex-shrink:0}
+.s2-block-text{font-size:12px;color:var(--muted);line-height:1.6}
+.s2-block-text strong{color:var(--cream);font-weight:700}
+.s2-block-text .hl{color:var(--amber)}
+.s2-tagline{font-family:var(--fr);font-size:15px;font-style:italic;color:var(--amber);margin-top:18px;opacity:0;animation:fadeUp .5s ease-out 7s forwards}
+
+/* ── SCENE 3: Walkthrough - Onboarding ── */
+.s3{background:var(--night);padding:0}
+.s3-frame{position:relative;min-height:100%}
+/* onboarding steps auto-cycle via JS */
+.ob-screen{display:none;animation:fadeUp .35s ease-out}
+.ob-screen.active{display:flex;flex-direction:column}
+/* individual onboarding screens recreated from actual app */
+.ob-full{min-height:100%;position:relative}
+.ob-stars{position:absolute;inset:0;pointer-events:none}
+.ob-dots{display:flex;gap:5px;justify-content:center;padding:36px 0 10px;position:relative;z-index:5}
+.ob-dot{width:7px;height:7px;border-radius:50%}
+.ob-dot-done{background:rgba(245,184,76,.5)}
+.ob-dot-cur{background:var(--amber);transform:scale(1.3);box-shadow:0 0 6px rgba(245,184,76,.5)}
+.ob-dot-future{background:rgba(255,255,255,.08)}
+.ob-body{padding:0 24px 24px;position:relative;z-index:5;text-align:center}
+.ob-title{font-family:var(--ba);font-size:24px;font-weight:800;margin-bottom:6px;line-height:1.2}
+.ob-sub{font-size:12px;color:rgba(245,232,200,.4);margin-bottom:14px;line-height:1.5}
+.ob-egg-big{font-size:80px;text-align:center;margin:16px 0;animation:rock 2.2s ease-in-out infinite,glow 2.5s ease-in-out infinite}
+.ob-input{width:100%;padding:13px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--cream);font-family:var(--nu);font-size:17px;font-weight:700;text-align:center}
+.ob-ages{display:flex;gap:6px;justify-content:center;margin:10px 0}
+.ob-age{padding:7px 14px;border-radius:50px;border:1.5px solid rgba(255,255,255,.08);color:rgba(245,232,200,.35);font-size:12px;font-weight:700}
+.ob-age.on{border-color:var(--amber);background:rgba(245,184,76,.1);color:var(--amber)}
+.ob-cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+.ob-cc{border-radius:12px;padding:7px 3px 5px;text-align:center;border:2px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02)}
+.ob-cc.on{border-color:var(--amber);background:rgba(245,184,76,.07);transform:scale(1.05)}
+.ob-cc-e{font-size:26px}
+.ob-cc-n{font-size:7.5px;font-weight:800;color:rgba(255,255,255,.35)}
+.ob-cc.on .ob-cc-n{color:var(--amber)}
+.ob-preview{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--border);margin-bottom:8px;text-align:left}
+.ob-preview-e{font-size:32px;animation:floatY 3s ease-in-out infinite}
+.ob-preview-name{font-family:var(--ba);font-size:14px;font-weight:800;color:var(--amber)}
+.ob-preview-desc{font-size:9px;color:rgba(255,255,255,.3);font-style:italic}
+.ob-tot{display:flex;gap:8px;margin:10px 0}
+.ob-tot-btn{flex:1;padding:14px 8px;border-radius:14px;border:2px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);text-align:center}
+.ob-tot-btn.on{border-color:var(--amber);background:rgba(245,184,76,.07)}
+.ob-tot-e{font-size:28px;margin-bottom:3px}
+.ob-tot-l{font-size:13px;font-weight:800;color:rgba(245,232,200,.5)}
+.ob-tot-btn.on .ob-tot-l{color:var(--amber)}
+.ob-secret-bg{background:radial-gradient(ellipse at 50% 0%,#1a0e08,transparent 70%)}
+.ob-secret-q{font-family:var(--fr);font-size:18px;font-weight:700;font-style:italic;color:var(--amber);margin-bottom:6px;line-height:1.35}
+.ob-secret-sub{font-size:11px;color:rgba(245,232,200,.3);font-style:italic;margin-bottom:12px}
+.ob-textarea{width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(245,232,200,.7);font-size:12px;font-family:var(--nu);font-style:italic;min-height:56px;resize:none}
+.ob-hold-wrap{display:flex;flex-direction:column;align-items:center;padding:8px 0}
+.ob-hold-ring{position:relative;width:140px;height:140px}
+.ob-hold-ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.ob-hold-bg{fill:none;stroke:rgba(255,255,255,.05);stroke-width:4}
+.ob-hold-fill{fill:none;stroke:var(--amber);stroke-width:4;stroke-linecap:round;stroke-dasharray:251;stroke-dashoffset:251;animation:ringFill 3s linear .5s forwards}
+.ob-hold-emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px;animation:pulse 2.5s ease-in-out infinite}
+.ob-hold-lbl{font-size:11px;color:rgba(255,255,255,.2);font-weight:700;margin-top:6px}
+.ob-hatch{text-align:center;padding:16px 0}
+.ob-hatch-e{font-size:64px;animation:hatchPop .5s ease-out}
+.ob-hatch-name{font-family:var(--ba);font-size:22px;font-weight:800;color:var(--amber);margin-top:8px}
+.ob-hatch-type{font-family:var(--dm);font-size:8px;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-top:3px}
+.ob-polaroid{background:#F4EFE8;border-radius:5px;padding:7px 7px 20px;box-shadow:0 6px 22px rgba(0,0,0,.4);transform:rotate(-2deg);margin:10px auto;max-width:200px}
+.ob-pol-img{width:100%;aspect-ratio:3/4;border-radius:2px;background:#1a1030;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.ob-pol-creature{position:absolute;bottom:16%;right:16%;font-size:28px}
+.ob-pol-caption{text-align:center;padding:5px 0 0;font-family:var(--ba);font-size:10px;color:#3a2810;font-weight:800}
+.ob-cta{display:block;width:100%;padding:13px;border:none;border-radius:14px;font-family:var(--ba);font-size:15px;font-weight:800;text-align:center;margin-top:12px;background:linear-gradient(135deg,var(--amber-dk),var(--amber) 50%,var(--amber-dk));color:#080200}
+
+/* ── SCENE 4: Create a Story ── */
+.s4{background:var(--night);padding:0;display:flex;flex-direction:column;height:100%}
+.s4-inner{padding:0 0 70px;flex:1;overflow-y:auto}
+.s4-inner::-webkit-scrollbar{display:none}
+/* ritual starter */
+.s4-prompt-card{margin:12px 16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;padding:14px;opacity:0;animation:fadeUp .4s ease-out .5s forwards}
+.s4-prompt-lbl{font-family:var(--dm);font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.s4-prompt-text{font-family:var(--fr);font-size:14px;font-style:italic;color:var(--cream);line-height:1.5}
+.s4-prompt-text em{color:var(--amber)}
+.s4-chips{display:flex;flex-wrap:wrap;gap:4px;margin:10px 16px;opacity:0;animation:fadeUp .4s ease-out 3s forwards}
+.s4-chip{display:inline-flex;align-items:center;gap:3px;font-size:8px;padding:3px 8px;border-radius:16px;background:rgba(200,112,32,.07);border:1px solid rgba(200,112,32,.14);color:#a06820;font-family:var(--dm)}
+.s4-gen{text-align:center;padding:16px;opacity:0;animation:fadeUp .4s ease-out 6s forwards}
+.s4-gen-dots{display:flex;gap:5px;justify-content:center;margin-bottom:8px}
+.s4-gdot{width:5px;height:5px;border-radius:50%;background:var(--amber);animation:pulse 1s ease-in-out infinite}
+.s4-gdot:nth-child(2){animation-delay:.2s}
+.s4-gdot:nth-child(3){animation-delay:.4s}
+.s4-gen-msg{font-family:var(--fr);font-size:13px;color:var(--muted);font-style:italic}
+/* engine highlights during generation */
+.s4-engine{margin:0 16px;opacity:0;animation:fadeUp .4s ease-out 10s forwards}
+.s4-eng-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.s4-eng-ico{font-size:14px;flex-shrink:0}
+.s4-eng-text{font-size:10px;color:var(--muted);line-height:1.5}
+.s4-eng-text strong{color:var(--cream)}
+/* rendered story */
+.s4-book{margin:14px 16px;background:linear-gradient(145deg,#F9F1E2,#F0E8D4);border-radius:14px;padding:18px;text-align:left;box-shadow:0 10px 36px rgba(0,0,0,.4);opacity:0;animation:fadeUp .5s ease-out 18s forwards;position:relative;overflow:hidden}
+.s4-book::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#C87020,#E8972A,#C87020)}
+.s4-book-k{font-family:var(--dm);font-size:7px;color:#8A6830;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.s4-book-title{font-family:var(--fr);font-size:16px;font-weight:700;color:#2A1A00;margin-bottom:10px;line-height:1.25}
+.s4-book-p{font-family:var(--fr);font-size:12px;color:#3A2800;line-height:1.8;margin-bottom:8px}
+.s4-book-p .cn{color:#C87020;font-weight:700}
+.s4-book-refrain{background:rgba(200,112,32,.07);border-left:3px solid rgba(200,112,32,.3);border-radius:0 5px 5px 0;padding:8px 12px;font-family:var(--fr);font-size:11px;color:#5A3800;font-style:italic;line-height:1.6}
+.s4-book-footer{display:flex;justify-content:space-between;font-size:7px;font-family:var(--dm);color:rgba(90,56,0,.3);padding-top:8px;margin-top:8px;border-top:1px solid rgba(200,112,32,.1)}
+/* night card */
+.s4-nc{margin:14px 16px;opacity:0;animation:fadeUp .5s ease-out 26s forwards}
+.s4-nc-lbl{font-family:var(--dm);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);opacity:.6;text-align:center;margin-bottom:10px}
+.s4-polaroid{background:#F4EFE2;border-radius:8px;padding:9px 9px 22px;box-shadow:0 10px 36px rgba(0,0,0,.5);transform:rotate(-1.5deg);max-width:240px;margin:0 auto}
+.s4-pol-img{width:100%;aspect-ratio:4/3;background:linear-gradient(135deg,#0A0D1A,#141030);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:8px;position:relative}
+.s4-pol-sparkle{position:absolute;font-size:8px;color:rgba(245,184,76,.45)}
+.s4-pol-origin{font-size:7px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:rgba(232,151,42,.65);margin-bottom:3px}
+.s4-pol-hl{font-family:Georgia,serif;font-size:12px;font-weight:700;color:#2A1A00;margin-bottom:3px;line-height:1.3}
+.s4-pol-quote{font-family:Georgia,serif;font-size:10px;color:#4A3000;font-style:italic;line-height:1.5;margin-bottom:5px}
+.s4-pol-memory{font-size:8.5px;color:#6A4800;font-style:italic;padding-top:5px;border-top:1px solid rgba(0,0,0,.07)}
+.s4-pol-meta{display:flex;justify-content:space-between;font-family:monospace;font-size:6.5px;color:rgba(74,48,0,.35);margin-top:5px}
+
+/* ── SCENE 5: Dashboard & Libraries ── */
+.s5{background:var(--night);padding:0;display:flex;flex-direction:column;height:100%}
+.s5-inner{padding:10px 16px 70px;flex:1;overflow-y:auto}
+.s5-inner::-webkit-scrollbar{display:none}
+.s5-greet{font-family:var(--fr);font-size:18px;font-weight:700;color:var(--cream);margin-bottom:3px;opacity:0;animation:fadeUp .4s ease-out .5s forwards}
+.s5-greet em{color:var(--amber);font-style:italic}
+.s5-date{font-family:var(--dm);font-size:8px;color:rgba(255,255,255,.15);margin-bottom:12px;opacity:0;animation:fadeUp .3s ease-out .7s forwards}
+/* creature card */
+.s5-creature{border-radius:18px;padding:14px;position:relative;overflow:hidden;margin-bottom:10px;background:linear-gradient(145deg,rgba(245,184,76,.06),rgba(200,112,32,.02));border:1.5px solid rgba(245,184,76,.15);opacity:0;animation:fadeUp .4s ease-out 1s forwards}
+.s5-creature-inner{display:flex;align-items:center;gap:12px}
+.s5-creature-emoji{font-size:42px;animation:floatY 3.5s ease-in-out infinite}
+.s5-creature-name{font-size:14px;font-weight:800;color:var(--amber)}
+.s5-creature-type{font-family:var(--dm);font-size:8px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.s5-creature-speech{font-family:var(--fr);font-size:12px;font-style:italic;color:rgba(245,232,200,.5);margin-top:6px;line-height:1.5}
+/* egg progress */
+.s5-egg{display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid var(--border);margin-bottom:10px;opacity:0;animation:fadeUp .4s ease-out 4s forwards}
+.s5-egg-emoji{font-size:36px;animation:rock 2.5s ease-in-out infinite,glow 3s ease-in-out infinite}
+.s5-egg-info{flex:1}
+.s5-egg-kick{font-family:var(--dm);font-size:7px;color:var(--amber);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;opacity:.6}
+.s5-egg-hint{font-family:var(--fr);font-size:11px;font-style:italic;color:rgba(245,232,200,.5);line-height:1.4}
+.s5-egg-dots{display:flex;gap:3px;margin-top:6px}
+.s5-egg-d{width:8px;height:8px;border-radius:50%}
+.s5-egg-d-done{background:rgba(245,184,76,.25);border:1.5px solid rgba(245,184,76,.5)}
+.s5-egg-d-now{background:rgba(245,184,76,.08);border:1.5px solid var(--amber)}
+.s5-egg-d-future{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05)}
+/* quick action cards */
+.s5-actions{display:flex;gap:6px;margin-bottom:10px;opacity:0;animation:fadeUp .4s ease-out 8s forwards}
+.s5-act{flex:1;border-radius:10px;padding:10px 8px;display:flex;flex-direction:column;align-items:flex-start;min-height:65px}
+.s5-act-create{background:linear-gradient(145deg,rgba(232,151,42,.12),rgba(200,110,18,.06));border:1px solid rgba(232,151,42,.2)}
+.s5-act-library{background:linear-gradient(145deg,rgba(90,120,220,.1),rgba(60,80,180,.05));border:1px solid rgba(100,130,255,.15)}
+.s5-act-nc{background:linear-gradient(145deg,rgba(150,90,240,.1),rgba(110,60,200,.06));border:1px solid rgba(160,110,255,.15)}
+.s5-act-ico{font-size:15px;margin-bottom:4px}
+.s5-act-title{font-size:9px;font-weight:600;color:var(--cream);margin-bottom:2px}
+.s5-act-stat{font-size:7.5px;color:var(--muted);font-family:var(--dm)}
+/* library preview */
+.s5-lib{opacity:0;animation:fadeUp .4s ease-out 14s forwards}
+.s5-lib-h{font-family:var(--dm);font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.s5-lib-row{display:flex;gap:6px;overflow:hidden}
+.s5-lib-card{flex-shrink:0;width:100px;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.s5-lib-card-img{width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:24px}
+.s5-lib-card-body{padding:6px 8px;background:var(--card)}
+.s5-lib-card-title{font-size:8px;font-weight:700;color:var(--cream);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s5-lib-card-meta{font-size:6.5px;color:var(--muted);font-family:var(--dm)}
+
+/* ── SCENE 6: Traction + Close ── */
+.s6{display:flex;flex-direction:column;padding:0;background:radial-gradient(ellipse 130% 60% at 50% 40%,#0a1030,#020408 70%)}
+.s6-inner{padding:40px 22px 30px;display:flex;flex-direction:column;align-items:center;gap:8px;flex:1}
+.s6-badge{font-family:var(--dm);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);opacity:.6;margin-bottom:6px}
+.s6-card{display:flex;align-items:flex-start;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;width:100%;opacity:0}
+.s6-card-ico{font-size:16px;flex-shrink:0;margin-top:1px}
+.s6-card-stat{font-size:11px;font-weight:700;color:var(--cream);margin-bottom:2px}
+.s6-card-stat .hl{color:var(--amber)}.s6-card-stat .tl{color:var(--teal)}
+.s6-card-desc{font-size:8.5px;color:var(--muted);line-height:1.45}
+.s6-c1{animation:fadeUp .3s ease-out .5s forwards}
+.s6-c2{animation:fadeUp .3s ease-out 4s forwards}
+.s6-c3{animation:fadeUp .3s ease-out 8s forwards}
+.s6-c4{animation:fadeUp .3s ease-out 12s forwards}
+.s6-c5{animation:fadeUp .3s ease-out 16s forwards}
+.s6-future{width:100%;margin-top:4px;opacity:0;animation:fadeUp .4s ease-out 20s forwards}
+.s6-future-h{font-family:var(--dm);font-size:8px;color:var(--teal);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.s6-future-items{display:flex;flex-wrap:wrap;gap:4px}
+.s6-future-item{font-size:9px;color:var(--muted);padding:3px 8px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.02)}
+.s6-quote{background:rgba(245,184,76,.04);border:1px solid rgba(245,184,76,.12);border-radius:12px;padding:14px;text-align:center;width:100%;opacity:0;animation:fadeUp .5s ease-out 28s forwards;margin-top:4px}
+.s6-quote-text{font-family:var(--fr);font-size:17px;font-weight:700;font-style:italic;color:var(--cream);line-height:1.4;margin-bottom:4px}
+.s6-quote-attr{font-size:9px;color:var(--muted);font-style:italic}
+.s6-close{opacity:0;animation:fadeUp .5s ease-out 34s forwards;text-align:center;margin-top:6px}
+.s6-logo{display:flex;align-items:center;gap:7px;justify-content:center;margin-bottom:4px}
+.s6-logo-moon{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#F5C060,#C87020)}
+.s6-logo-text{font-family:var(--fr);font-size:16px;font-weight:700}
+.s6-url{font-family:var(--dm);font-size:9px;color:var(--muted)}
+.s6-wi{font-family:var(--dm);font-size:7.5px;color:var(--amber);letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
+.s6-comp{font-family:var(--dm);font-size:6.5px;color:rgba(255,255,255,.12);margin-top:2px}
+
+/* ── SCENE 7: Magical Finale ── */
+.s7-closing{position:relative;min-height:100%;overflow:hidden;background:radial-gradient(ellipse 130% 60% at 50% 40%,#0a1030,#020408 70%)}
+.s7-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+
+/* ── Orbiting creatures ── */
+@keyframes s7orbit{0%{transform:rotate(0deg) translateX(130px) rotate(0deg)}100%{transform:rotate(360deg) translateX(130px) rotate(-360deg)}}
+@keyframes s7orbit2{0%{transform:rotate(0deg) translateX(100px) rotate(0deg)}100%{transform:rotate(-360deg) translateX(100px) rotate(360deg)}}
+@keyframes s7orbit3{0%{transform:rotate(0deg) translateX(160px) rotate(0deg)}100%{transform:rotate(360deg) translateX(160px) rotate(-360deg)}}
+.s7-orbit{position:absolute;top:50%;left:50%;margin:-16px 0 0 -16px;font-size:28px;opacity:0}
+.s7-o1{animation:s7orbit 12s linear infinite,fadeIn .8s ease-out 1s forwards}
+.s7-o2{animation:s7orbit2 10s linear infinite,fadeIn .8s ease-out 1.3s forwards}
+.s7-o3{animation:s7orbit3 15s linear infinite,fadeIn .8s ease-out 1.6s forwards}
+.s7-o4{animation:s7orbit2 18s linear infinite,fadeIn .8s ease-out 1.9s forwards}
+.s7-o5{animation:s7orbit 14s linear infinite,fadeIn .8s ease-out 2.2s forwards}
+.s7-o6{animation:s7orbit3 11s linear infinite,fadeIn .8s ease-out 2.5s forwards}
+
+/* ── Central egg → hatch sequence ── */
+@keyframes s7eggPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 15px rgba(245,184,76,.3))}50%{transform:scale(1.08);filter:drop-shadow(0 0 35px rgba(245,184,76,.7))}}
+@keyframes s7eggShake{0%,100%{transform:rotate(0)}10%{transform:rotate(-6deg)}20%{transform:rotate(6deg)}30%{transform:rotate(-4deg)}40%{transform:rotate(4deg)}50%{transform:rotate(0)}}
+@keyframes s7hatchBurst{0%{transform:scale(0);opacity:0}50%{transform:scale(1.4)}100%{transform:scale(1);opacity:1}}
+@keyframes s7ringExpand{0%{transform:scale(0);opacity:.8}100%{transform:scale(3.5);opacity:0}}
+.s7-center{position:relative;z-index:5;display:flex;flex-direction:column;align-items:center}
+.s7-egg{font-size:72px;animation:s7eggPulse 2s ease-in-out infinite;opacity:0;animation:fadeIn .5s ease-out .3s forwards,s7eggPulse 2s ease-in-out .3s infinite}
+.s7-egg.shake{animation:s7eggShake .6s ease-in-out 3 forwards}
+.s7-egg.gone{display:none}
+.s7-hatched{font-size:80px;display:none}
+.s7-hatched.show{display:block;animation:s7hatchBurst .7s ease-out forwards}
+.s7-ring{position:absolute;width:60px;height:60px;border-radius:50%;border:2px solid var(--amber);top:50%;left:50%;margin:-30px 0 0 -30px;opacity:0;pointer-events:none}
+.s7-ring.burst{animation:s7ringExpand .8s ease-out forwards}
+.s7-ring2{position:absolute;width:60px;height:60px;border-radius:50%;border:1px solid var(--teal);top:50%;left:50%;margin:-30px 0 0 -30px;opacity:0;pointer-events:none}
+.s7-ring2.burst{animation:s7ringExpand 1s ease-out .15s forwards}
+
+/* ── Floating features ── */
+@keyframes s7floatUp1{0%{opacity:0;transform:translateY(60px) rotate(-5deg)}100%{opacity:1;transform:translateY(0) rotate(-3deg)}}
+@keyframes s7floatUp2{0%{opacity:0;transform:translateY(60px) rotate(4deg)}100%{opacity:1;transform:translateY(0) rotate(2deg)}}
+@keyframes s7floatUp3{0%{opacity:0;transform:translateY(60px) rotate(-2deg)}100%{opacity:1;transform:translateY(0) rotate(-1deg)}}
+@keyframes s7drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.s7-features{position:absolute;inset:0;pointer-events:none}
+.s7-feat{position:absolute;border-radius:10px;padding:8px 10px;background:rgba(6,10,28,.85);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(8px);display:flex;align-items:center;gap:7px;opacity:0;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.s7-feat-ico{font-size:18px;flex-shrink:0}
+.s7-feat-text{font-size:9px;color:rgba(245,232,200,.6);font-weight:600;line-height:1.3}
+.s7-f1{top:12%;left:8%;animation:s7floatUp1 .6s ease-out 4s forwards,s7drift 4s ease-in-out 4.6s infinite}
+.s7-f2{top:10%;right:8%;animation:s7floatUp2 .6s ease-out 4.4s forwards,s7drift 3.5s ease-in-out 5s infinite}
+.s7-f3{bottom:32%;left:6%;animation:s7floatUp3 .6s ease-out 4.8s forwards,s7drift 4.2s ease-in-out 5.4s infinite}
+.s7-f4{bottom:30%;right:6%;animation:s7floatUp1 .6s ease-out 5.2s forwards,s7drift 3.8s ease-in-out 5.8s infinite}
+.s7-f5{bottom:18%;left:50%;margin-left:-55px;animation:s7floatUp2 .6s ease-out 5.6s forwards,s7drift 4.5s ease-in-out 6.2s infinite}
+
+/* ── Sparkles ── */
+@keyframes s7sparkle{0%{opacity:0;transform:scale(0) rotate(0)}50%{opacity:1;transform:scale(1) rotate(180deg)}100%{opacity:0;transform:scale(0) rotate(360deg)}}
+.s7-sparkle{position:absolute;font-size:12px;opacity:0;pointer-events:none}
+.s7-sp1{top:20%;left:20%;animation:s7sparkle 2s ease-in-out 3.5s infinite}
+.s7-sp2{top:15%;right:25%;animation:s7sparkle 2.5s ease-in-out 4s infinite;font-size:8px}
+.s7-sp3{bottom:40%;left:15%;animation:s7sparkle 1.8s ease-in-out 4.5s infinite;font-size:10px}
+.s7-sp4{bottom:35%;right:20%;animation:s7sparkle 2.2s ease-in-out 3.8s infinite}
+.s7-sp5{top:45%;left:30%;animation:s7sparkle 2s ease-in-out 5s infinite;font-size:14px}
+.s7-sp6{top:40%;right:28%;animation:s7sparkle 1.5s ease-in-out 4.2s infinite;font-size:9px}
+
+/* ── Closing text (appears after animation) ── */
+.s7-text{position:absolute;bottom:0;left:0;right:0;padding:20px 28px 30px;text-align:center;z-index:10;background:linear-gradient(0deg,rgba(2,4,8,.95) 60%,transparent)}
+.s7-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:10px;opacity:0;animation:fadeUp .6s ease-out 7s forwards}
+.s7-logo-moon{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#F5C060,#C87020)}
+.s7-logo-text{font-family:var(--fr);font-size:18px;font-weight:700;color:var(--cream)}
+.s7-msg{font-size:11px;color:rgba(245,232,200,.5);line-height:1.7;max-width:300px;margin:0 auto 10px;opacity:0;animation:fadeUp .5s ease-out 7.5s forwards}
+.s7-url{font-family:var(--dm);font-size:10px;color:var(--amber);margin-bottom:10px;opacity:0;animation:fadeUp .4s ease-out 8s forwards}
+.s7-thanks{font-family:var(--fr);font-size:13px;font-style:italic;color:rgba(245,232,200,.6);line-height:1.6;max-width:280px;margin:0 auto 10px;opacity:0;animation:fadeUp .5s ease-out 8.5s forwards}
+.s7-founder{font-size:12px;color:rgba(245,232,200,.7);font-weight:600;margin-bottom:3px;opacity:0;animation:fadeUp .4s ease-out 9s forwards}
+.s7-comp{font-family:var(--dm);font-size:8px;color:rgba(245,232,200,.4);letter-spacing:.06em;opacity:0;animation:fadeUp .4s ease-out 9.3s forwards}
+
+@media(max-width:420px){.phone{width:100vw;height:100vh;border-radius:0;border:none}}
+@media(max-height:860px) and (min-width:421px){.phone{height:calc(100vh - 40px)}}
+</style>
+</head>
+<body>
+<div class="backdrop" id="backdrop"></div>
+<div class="watermark">SleepSeed</div>
+<div class="chapter" id="chapter">SLEEPSEED</div>
+<div class="ctrl-panel">
+  <button class="ctrl-btn" id="prevBtn">⬆</button>
+  <span class="scene-count" id="sceneCount"></span>
+  <button class="ctrl-btn" id="nextBtn">⬇</button>
+  <button class="ctrl-btn" id="restartBtn">🔄</button>
+  <button class="ctrl-btn" id="muteBtn">🔊</button>
+</div>
+
+<div class="phone"><div class="phone-notch"></div><div class="phone-inner" id="phoneInner">
+<div class="title-card" id="titleCard"><h2 id="titleCardText"></h2></div>
+
+<!-- ═══ S0: Magical Intro ═══ -->
+<div class="scene" id="scene-0">
+<div class="s-stars" id="stars0"></div>
+<div class="s0">
+  <div class="s0-stage">
+    <!-- Rings (hidden until moon appears) -->
+    <div class="s0-ring s0-r1" id="s0r1"></div>
+    <div class="s0-ring s0-r2" id="s0r2"></div>
+    <div class="s0-ring s0-r3" id="s0r3"></div>
+    <!-- Moon (hidden until egg cracks) -->
+    <div class="s0-moon" id="s0Moon"><div class="s0-moon-sh"></div></div>
+    <!-- Burst rings -->
+    <div class="s0-burst" id="s0Burst"></div>
+    <div class="s0-burst2" id="s0Burst2"></div>
+    <!-- Big egg starts center -->
+    <div class="s0-egg" id="s0Egg">🥚</div>
+    <!-- Creatures (hidden until egg cracks) -->
+    <div class="s0-creature s0-c1" id="s0C1">🦉</div>
+    <div class="s0-creature s0-c2" id="s0C2">🦊</div>
+    <div class="s0-creature s0-c3" id="s0C3">🐉</div>
+    <div class="s0-creature s0-c4" id="s0C4">🦄</div>
+    <div class="s0-creature s0-c5" id="s0C5">🐻</div>
+    <!-- Sparkle dust (around egg drop zone) -->
+    <div class="s0-dust" id="s0D1" style="top:68%;left:40%">✦</div>
+    <div class="s0-dust" id="s0D2" style="top:65%;right:38%;font-size:7px">✧</div>
+    <div class="s0-dust" id="s0D3" style="top:70%;left:50%;font-size:8px">✦</div>
+    <div class="s0-dust" id="s0D4" style="top:63%;left:44%;font-size:6px">✧</div>
+    <div class="s0-dust" id="s0D5" style="top:67%;right:42%;font-size:11px">✦</div>
+  </div>
+  <div class="s0-logo" id="s0Logo">
+    <div class="s0-logo-text">SleepSeed</div>
+    <div class="s0-logo-sub">Bedtime, but magical</div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ S1: Golden Window ═══ -->
+<div class="scene" id="scene-1">
+<div class="s-stars" id="stars1"></div>
+<div class="s1">
+  <div class="s1-egg"><span>🥚</span></div>
+  <div class="s1-kicker">The Golden Window</div>
+  <div class="s1-h">The 20 minutes before sleep<br>are the <em>most important</em><br>of the day.</div>
+  <div class="s1-p"><strong>Almost nobody is building for this moment.</strong> SleepSeed owns it — and captures every word before it's gone.</div>
+</div>
+</div>
+
+<!-- ═══ S2: Rituals Win ═══ -->
+<div class="scene" id="scene-2">
+<div class="s-stars" id="stars2"></div>
+<div class="s2">
+  <div class="s2-h">Anyone can build an AI story generator.<br><em>Rituals</em> are what win.</div>
+  <div class="s2-blocks">
+    <div class="s2-block s2-b1">
+      <div class="s2-block-ico">🔥</div>
+      <div class="s2-block-text"><strong>Duolingo</strong> didn't win with translation. They won with <span class="hl">the streak.</span></div>
+    </div>
+    <div class="s2-block s2-b2">
+      <div class="s2-block-ico">🧘</div>
+      <div class="s2-block-text"><strong>Calm</strong> didn't win with audio tracks. They won with <span class="hl">the daily ritual.</span></div>
+    </div>
+    <div class="s2-block s2-b3">
+      <div class="s2-block-ico">🌙</div>
+      <div class="s2-block-text"><strong>SleepSeed</strong> is the <span class="hl">ritual platform for families.</span> The experience. The memory. Every night.</div>
+    </div>
+  </div>
+  <div class="s2-tagline">Let me show you what it looks like.</div>
+</div>
+</div>
+
+<!-- ═══ S3: Onboarding Walkthrough ═══ -->
+<div class="scene" id="scene-3">
+<div class="s3"><div class="s3-frame" id="obFrame">
+
+  <div class="ob-screen active" data-ob="0">
+    <div class="ob-stars" id="stars3a"></div>
+    <div class="ob-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;text-align:center">
+      <div style="font-size:48px;margin-bottom:16px;animation:floatY 3.5s ease-in-out infinite">🌙</div>
+      <div style="font-family:var(--fr);font-size:20px;font-weight:700;font-style:italic;color:var(--amber);line-height:1.4;margin-bottom:10px">The first night doesn't<br>begin with a tutorial.</div>
+      <div style="font-size:13px;color:rgba(245,232,200,.45);line-height:1.7;max-width:280px">It begins with a moment. Everything is locked — stories, Night Cards, the hatchery. The only thing a family can do is start. That's intentional.</div>
+    </div>
+  </div>
+
+  <div class="ob-screen" data-ob="1">
+    <div class="ob-dots" id="obDots1"></div>
+    <div class="ob-body">
+      <div class="ob-title">Something has arrived...</div>
+      <div class="ob-sub">A golden egg appeared tonight.</div>
+      <div class="ob-egg-big">🥚</div>
+      <div class="ob-cta">Touch the egg</div>
+    </div>
+  </div>
+
+  <div class="ob-screen" data-ob="2">
+    <div class="ob-dots" id="obDots2a"></div>
+    <div class="ob-body">
+      <div class="ob-title">Who is this egg for?</div>
+      <div class="ob-sub">Tell us about the hero of every story.</div>
+      <input class="ob-input" value="Adina" readonly>
+      <div class="ob-ages"><div class="ob-age">3-4</div><div class="ob-age on">5-6</div><div class="ob-age">7-8</div><div class="ob-age">9-10</div></div>
+      <div class="ob-cta">Next</div>
+    </div>
+  </div>
+
+  <div class="ob-screen" data-ob="3">
+    <div class="ob-dots" id="obDots3a"></div>
+    <div class="ob-body">
+      <div class="ob-title">Who's inside the egg?</div>
+      <div class="ob-sub">Pick a creature to hatch.</div>
+      <div class="ob-preview"><div class="ob-preview-e">🦉</div><div><div class="ob-preview-name">Dusk Owl</div><div class="ob-preview-desc">wise, watchful, full of secrets</div></div></div>
+      <div class="ob-cgrid">
+        <div class="ob-cc on"><div class="ob-cc-e">🦉</div><div class="ob-cc-n">Dusk Owl</div></div>
+        <div class="ob-cc"><div class="ob-cc-e">🦊</div><div class="ob-cc-n">Ember Fox</div></div>
+        <div class="ob-cc"><div class="ob-cc-e">🐉</div><div class="ob-cc-n">Storm Drake</div></div>
+        <div class="ob-cc"><div class="ob-cc-e">🦉</div><div class="ob-cc-n">Dusk Owl</div></div>
+        <div class="ob-cc"><div class="ob-cc-e">🐻</div><div class="ob-cc-n">Frost Bear</div></div>
+        <div class="ob-cc"><div class="ob-cc-e">🐱</div><div class="ob-cc-n">Shadow Cat</div></div>
+        <div class="ob-cc"><div class="ob-cc-e">🦄</div><div class="ob-cc-n">Unicorn</div></div>
+        <div class="ob-cc"><div class="ob-cc-e">🐺</div><div class="ob-cc-n">Moon Wolf</div></div>
+      </div>
+      <div class="ob-cta">This one!</div>
+    </div>
+  </div>
+
+  <div class="ob-screen" data-ob="4">
+    <div class="ob-dots" id="obDots4a"></div>
+    <div class="ob-body">
+      <div class="ob-title">Adina is more...</div>
+      <div class="ob-sub">Tap the one that fits best.</div>
+      <div class="ob-tot"><div class="ob-tot-btn"><div class="ob-tot-e">🦁</div><div class="ob-tot-l">Brave</div></div><div class="ob-tot-btn on"><div class="ob-tot-e">🌸</div><div class="ob-tot-l">Gentle</div></div></div>
+      <div class="ob-tot"><div class="ob-tot-btn on"><div class="ob-tot-e">🌙</div><div class="ob-tot-l">Dreamy</div></div><div class="ob-tot-btn"><div class="ob-tot-e">🚀</div><div class="ob-tot-l">Adventurous</div></div></div>
+    </div>
+  </div>
+
+  <div class="ob-screen ob-secret-bg" data-ob="5">
+    <div class="ob-dots" id="obDots5a"></div>
+    <div class="ob-body">
+      <div class="ob-secret-q">A quiet question<br>just for you.</div>
+      <div class="ob-secret-sub">What's something about Adina<br>that only you know?</div>
+      <textarea class="ob-textarea" readonly>She talks to her stuffed animals when she thinks nobody is listening</textarea>
+      <div class="ob-cta" style="background:linear-gradient(135deg,#1a0e08,#3a1e10 50%,#1a0e08);color:var(--amber)">Keep this safe</div>
+    </div>
+  </div>
+
+  <div class="ob-screen" data-ob="6">
+    <div class="ob-dots" id="obDots6a"></div>
+    <div class="ob-body">
+      <div class="ob-title">Hold to hatch...</div>
+      <div class="ob-hold-wrap">
+        <div class="ob-hold-ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" class="ob-hold-bg"/><circle cx="50" cy="50" r="40" class="ob-hold-fill"/></svg><div class="ob-hold-emoji">🥚</div></div>
+        <div class="ob-hold-lbl">Holding...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ob-screen" data-ob="7">
+    <div class="ob-dots" id="obDots7"></div>
+    <div class="ob-body">
+      <div class="ob-hatch"><div class="ob-hatch-e">🦉</div><div class="ob-hatch-name">Moonlight</div><div class="ob-hatch-type">Dusk Owl · Legendary</div></div>
+      <div class="ob-polaroid"><div class="ob-pol-img"><img src="adina-nightcard.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:2px" alt="Adina & Dad"></div><div class="ob-pol-caption">Adina & Moonlight · Night 1</div></div>
+    </div>
+  </div>
+
+</div></div>
+</div>
+
+<!-- ═══ S4: Create a Story ═══ -->
+<div class="scene" id="scene-4">
+<div class="s-stars" id="stars4"></div>
+<div class="s4">
+  <div class="app-nav"><div class="app-logo"><div class="app-moon"><div class="app-moon-sh"></div></div> SleepSeed</div></div>
+  <div class="s4-inner">
+    <div class="s4-prompt-card">
+      <div class="s4-prompt-lbl">What happened in Adina's world today?</div>
+      <div class="s4-prompt-text"><em>She was shy at school today. Didn't want to talk to the new kid.</em></div>
+    </div>
+    <div class="s4-chips">
+      <div class="s4-chip">🧒 Adina, 6</div><div class="s4-chip">🦉 Moonlight</div><div class="s4-chip">🌸 Gentle</div><div class="s4-chip">🌙 Cosy</div>
+    </div>
+    <div class="s4-gen">
+      <div class="s4-gen-dots"><div class="s4-gdot"></div><div class="s4-gdot"></div><div class="s4-gdot"></div></div>
+      <div class="s4-gen-msg">Writing tonight's story...</div>
+    </div>
+    <div class="s4-engine">
+      <div class="s4-eng-item"><div class="s4-eng-ico">📐</div><div class="s4-eng-text"><strong>5 genre arcs</strong> · Comedy, Adventure, Wonder, Cosy, Therapeutic</div></div>
+      <div class="s4-eng-item"><div class="s4-eng-ico">🚫</div><div class="s4-eng-text"><strong>Banned phrases</strong> · No "learned a lesson" or "happily ever after"</div></div>
+      <div class="s4-eng-item"><div class="s4-eng-ico">✅</div><div class="s4-eng-text"><strong>Quality check</strong> · 10-point rubric, auto-revises below bar</div></div>
+      <div class="s4-eng-item"><div class="s4-eng-ico">✍️</div><div class="s4-eng-text"><strong>Craft DNA</strong> · Dahl, Sendak, Milne, Donaldson, Klassen, Willems</div></div>
+    </div>
+    <div class="s4-book">
+      <div class="s4-book-k">Tonight's Story</div>
+      <div class="s4-book-title">Adina and the Shy Cloud</div>
+      <div class="s4-book-p">Up in the sky, all the clouds were making shapes. One made a bunny. One made a boat. But there was one little cloud hiding behind the moon.</div>
+      <div class="s4-book-p">"Look," said <span class="cn">Moonlight</span>, pointing with her wing. "That cloud looks sad."</div>
+      <div class="s4-book-refrain"><span class="cn">Adina</span> gave the cloud a gentle pat. "That's okay. You don't have to be a shape. You can just be you." The cloud stopped shaking. Then — very slowly — it made a heart.</div>
+      <div class="s4-book-footer"><span>SleepSeed · Adina & Moonlight</span><span>🦉</span></div>
+    </div>
+    <div class="s4-nc">
+      <div class="s4-nc-lbl">Night Card</div>
+      <div class="s4-polaroid">
+        <div class="s4-pol-img" style="background:none"><img src="adina-nightcard.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:4px" alt="Adina & Dad"><div class="s4-pol-sparkle" style="top:8px;right:14px">✦</div><div class="s4-pol-sparkle" style="bottom:10px;left:10px;font-size:6px">✧</div></div>
+        <div style="padding:6px 4px 0">
+          <div class="s4-pol-origin">Night 12 ✦</div>
+          <div class="s4-pol-hl">The cloud that didn't know its shape.</div>
+          <div class="s4-pol-quote">"You don't have to be a shape. You can just be you."</div>
+          <div class="s4-pol-memory">She said it so quietly — like she already knew.</div>
+          <div class="s4-pol-meta"><span>Adina · Mar 2026</span><span>SleepSeed ✦</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="app-btabs">
+    <div class="app-btab on"><div class="app-btab-ico">🏠</div><div class="app-btab-lbl">Home</div></div>
+    <div class="app-btab"><div class="app-btab-ico">📖</div><div class="app-btab-lbl">Stories</div></div>
+    <div class="app-btab-create"><div class="app-btab-btn">✨</div><div class="app-btab-lbl" style="color:var(--amber);margin-top:1px">Create</div></div>
+    <div class="app-btab"><div class="app-btab-ico">🥚</div><div class="app-btab-lbl">Hatchery</div></div>
+    <div class="app-btab"><div class="app-btab-ico">🌙</div><div class="app-btab-lbl">Cards</div></div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ S5: Dashboard & Libraries ═══ -->
+<div class="scene" id="scene-5">
+<div class="s-stars" id="stars5"></div>
+<div class="s5">
+  <div class="app-nav"><div class="app-logo"><div class="app-moon"><div class="app-moon-sh"></div></div> SleepSeed</div></div>
+  <div class="s5-inner">
+    <div class="s5-greet">Good evening. <em>Bedtime is close.</em></div>
+    <div class="s5-date">SUN, MAR 23</div>
+    <div class="s5-creature">
+      <div class="s5-creature-inner">
+        <div class="s5-creature-emoji">🦉</div>
+        <div>
+          <div class="s5-creature-name">Moonlight</div>
+          <div class="s5-creature-type">Dusk Owl · Legendary</div>
+          <div class="s5-creature-speech">Moonlight is watching over you tonight. Come sit close.</div>
+        </div>
+      </div>
+    </div>
+    <div class="s5-egg">
+      <div class="s5-egg-emoji">🥚</div>
+      <div class="s5-egg-info">
+        <div class="s5-egg-kick">Night 5 of 7</div>
+        <div class="s5-egg-hint">The cracks are spreading...</div>
+        <div class="s5-egg-dots">
+          <div class="s5-egg-d s5-egg-d-done"></div><div class="s5-egg-d s5-egg-d-done"></div><div class="s5-egg-d s5-egg-d-done"></div><div class="s5-egg-d s5-egg-d-done"></div>
+          <div class="s5-egg-d s5-egg-d-now"></div><div class="s5-egg-d s5-egg-d-future"></div><div class="s5-egg-d s5-egg-d-future"></div>
+        </div>
+      </div>
+    </div>
+    <div class="s5-actions">
+      <div class="s5-act s5-act-create"><div class="s5-act-ico">✨</div><div class="s5-act-title">New Story</div><div class="s5-act-stat">12 stories</div></div>
+      <div class="s5-act s5-act-library"><div class="s5-act-ico">📖</div><div class="s5-act-title">Library</div><div class="s5-act-stat">12 saved</div></div>
+      <div class="s5-act s5-act-nc"><div class="s5-act-ico">🌙</div><div class="s5-act-title">Night Cards</div><div class="s5-act-stat">12 captured</div></div>
+    </div>
+    <div class="s5-lib">
+      <div class="s5-lib-h">Story Library</div>
+      <div class="s5-lib-row">
+        <div class="s5-lib-card"><div class="s5-lib-card-img" style="background:linear-gradient(135deg,#1a1040,#0a0820)">🌙</div><div class="s5-lib-card-body"><div class="s5-lib-card-title">The Shy Cloud</div><div class="s5-lib-card-meta">Night 12</div></div></div>
+        <div class="s5-lib-card"><div class="s5-lib-card-img" style="background:linear-gradient(135deg,#1a2010,#0a1808)">🐉</div><div class="s5-lib-card-body"><div class="s5-lib-card-title">Moonlight's Forest</div><div class="s5-lib-card-meta">Night 11</div></div></div>
+        <div class="s5-lib-card"><div class="s5-lib-card-img" style="background:linear-gradient(135deg,#201020,#100818)">✨</div><div class="s5-lib-card-body"><div class="s5-lib-card-title">The Lost Star</div><div class="s5-lib-card-meta">Night 10</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="app-btabs">
+    <div class="app-btab on"><div class="app-btab-ico">🏠</div><div class="app-btab-lbl">Home</div></div>
+    <div class="app-btab"><div class="app-btab-ico">📖</div><div class="app-btab-lbl">Stories</div></div>
+    <div class="app-btab-create"><div class="app-btab-btn">✨</div><div class="app-btab-lbl" style="color:var(--amber);margin-top:1px">Create</div></div>
+    <div class="app-btab"><div class="app-btab-ico">🥚</div><div class="app-btab-lbl">Hatchery</div></div>
+    <div class="app-btab"><div class="app-btab-ico">🌙</div><div class="app-btab-lbl">Cards</div></div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ S6: Traction + Close ═══ -->
+<div class="scene" id="scene-6">
+<div class="s-stars" id="stars6"></div>
+<div class="s6"><div class="s6-inner">
+  <div class="s6-badge">Where We Are</div>
+  <div class="s6-card s6-c1"><div class="s6-card-ico">🧒</div><div><div class="s6-card-stat">"Daddy, can we do <span class="hl">SleepSeed</span>?"</div><div class="s6-card-desc">Every night. They argue over who goes first.</div></div></div>
+  <div class="s6-card s6-c2"><div class="s6-card-ico">👨‍👩‍👧</div><div><div class="s6-card-stat"><span class="hl">15+</span> families · all would pay</div><div class="s6-card-desc">"She asked to do it again — she's never once asked for that."</div></div></div>
+  <div class="s6-card s6-c3"><div class="s6-card-ico">🩺</div><div><div class="s6-card-stat"><span class="hl">3</span> therapists consulted</div><div class="s6-card-desc">Offered to provide therapeutic insights and content for stories.</div></div></div>
+  <div class="s6-card s6-c4"><div class="s6-card-ico">🏫</div><div><div class="s6-card-stat">Montessori pilot + <span class="tl">SEL program</span></div><div class="s6-card-desc">Mary Lake Montessori · Heritage Elementary</div></div></div>
+  <div class="s6-card s6-c5"><div class="s6-card-ico">🌍</div><div><div class="s6-card-stat"><span class="hl">33M</span> families · <span class="tl">70M</span> grandparents</div><div class="s6-card-desc">Every share brings a new family in.</div></div></div>
+  <div class="s6-future">
+    <div class="s6-future-h">Coming Next</div>
+    <div class="s6-future-items">
+      <div class="s6-future-item">Family case study</div>
+      <div class="s6-future-item">School pilots</div>
+      <div class="s6-future-item">Story illustrations</div>
+      <div class="s6-future-item">Voice library</div>
+      <div class="s6-future-item">Character continuity</div>
+      <div class="s6-future-item">Free story library</div>
+    </div>
+  </div>
+  <div class="s6-quote"><div class="s6-quote-text">"Daddy, can we<br>do SleepSeed?"</div><div class="s6-quote-attr">— Every night, without fail.</div></div>
+  <div class="s6-close">
+    <div class="s6-logo"><div class="s6-logo-moon"></div><div class="s6-logo-text">SleepSeed</div></div>
+    <div class="s6-url">sleepseed-vercel.app</div>
+    <div class="s6-wi">Built in Wisconsin</div>
+    <div class="s6-comp">FIRE Consortium · Vibe Madness 2026</div>
+  </div>
+</div></div>
+</div>
+
+<!-- ═══ S7: Magical Finale ═══ -->
+<div class="scene" id="scene-7">
+<div class="s-stars" id="stars7"></div>
+<div class="s7-closing">
+
+  <!-- Sparkles -->
+  <div class="s7-sparkle s7-sp1">✦</div>
+  <div class="s7-sparkle s7-sp2">✧</div>
+  <div class="s7-sparkle s7-sp3">✦</div>
+  <div class="s7-sparkle s7-sp4">✧</div>
+  <div class="s7-sparkle s7-sp5">✦</div>
+  <div class="s7-sparkle s7-sp6">✧</div>
+
+  <!-- Orbiting creatures -->
+  <div class="s7-stage">
+    <div class="s7-orbit s7-o1">🦉</div>
+    <div class="s7-orbit s7-o2">🦊</div>
+    <div class="s7-orbit s7-o3">🐉</div>
+    <div class="s7-orbit s7-o4">🐻</div>
+    <div class="s7-orbit s7-o5">🦄</div>
+    <div class="s7-orbit s7-o6">🐱</div>
+  </div>
+
+  <!-- Center: egg → hatch -->
+  <div class="s7-stage">
+    <div class="s7-center" id="s7Center">
+      <div class="s7-ring" id="s7Ring"></div>
+      <div class="s7-ring2" id="s7Ring2"></div>
+      <div class="s7-egg" id="s7Egg">🥚</div>
+      <div class="s7-hatched" id="s7Hatched">🦉</div>
+    </div>
+  </div>
+
+  <!-- Floating feature cards -->
+  <div class="s7-features">
+    <div class="s7-feat s7-f1"><div class="s7-feat-ico">📖</div><div class="s7-feat-text">Personalized<br>Stories</div></div>
+    <div class="s7-feat s7-f2"><div class="s7-feat-ico">🌙</div><div class="s7-feat-text">Night Card<br>Memories</div></div>
+    <div class="s7-feat s7-f3"><div class="s7-feat-ico">🥚</div><div class="s7-feat-text">7-Night<br>Hatch Cycle</div></div>
+    <div class="s7-feat s7-f4"><div class="s7-feat-ico">🎙️</div><div class="s7-feat-text">Voice<br>Narration</div></div>
+    <div class="s7-feat s7-f5"><div class="s7-feat-ico">📤</div><div class="s7-feat-text">Built to Share</div></div>
+  </div>
+
+  <!-- Closing text -->
+  <div class="s7-text">
+    <div class="s7-logo"><div class="s7-logo-moon"></div><div class="s7-logo-text">SleepSeed</div></div>
+    <div class="s7-msg">More information about the project, future phases, and a link to the live product can be found in the pitch deck submitted with this Round 2 entry.</div>
+    <div class="s7-url">sleepseed-vercel.app</div>
+    <div class="s7-thanks">Thank you for watching — and for your consideration of SleepSeed in this competition.</div>
+    <div class="s7-founder">Greg E. · Wisconsin</div>
+    <div class="s7-comp">FIRE Consortium · Vibe Madness 2026</div>
+  </div>
+
+</div>
+</div>
+
+<div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+</div></div>
+
+<script>
+(function(){
+  const SCENES=[
+    {id:0,name:'SleepSeed'},
+    {id:1,name:'The Golden Window'},
+    {id:2,name:'Rituals Win'},
+    {id:3,name:'The First Night'},
+    {id:4,name:'Tonight\'s Story'},
+    {id:5,name:'The World They Return To'},
+    {id:6,name:'Where We Are'},
+    {id:7,name:'Thank You'},
+  ];
+
+  let currentScene=-1;
+  let muted=localStorage.getItem('demo-muted')==='1';
+  const audio={};
+
+  // ── Stars ──
+  function makeStars(el,n){if(!el)return;for(let i=0;i<n;i++){const s=document.createElement('div');s.className='s-star';const sz=Math.random()<.3?3:2;s.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(Math.random()*100).toFixed(1)+'%;top:'+(Math.random()*60).toFixed(1)+'%;animation:sTwk '+(2.5+Math.random()*3).toFixed(1)+'s '+(Math.random()*4).toFixed(1)+'s ease-in-out infinite';el.appendChild(s);}}
+  ['stars0','stars1','stars2','stars3a','stars4','stars5','stars6','stars7'].forEach(id=>{makeStars(document.getElementById(id),id==='stars0'||id==='stars1'||id==='stars6'||id==='stars7'?30:15);});
+  const bd=document.getElementById('backdrop');for(let i=0;i<35;i++){const s=document.createElement('div');s.className='bk-star';const sz=Math.random()<.2?2.5:1.5;s.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;animation:bkTwk '+(3+Math.random()*3).toFixed(1)+'s '+(Math.random()*4).toFixed(1)+'s ease-in-out infinite';bd.appendChild(s);}
+
+  // ── Audio ──
+  SCENES.forEach(sc=>{const a=new Audio();a.preload='auto';a.src='demo-audio/scene-'+sc.id+'.mp3';a.muted=muted;audio[sc.id]=a;});
+  const muteBtn=document.getElementById('muteBtn');
+  function updateMute(){muteBtn.textContent=muted?'🔇':'🔊';Object.values(audio).forEach(a=>{a.muted=muted;})}
+  updateMute();
+  muteBtn.addEventListener('click',()=>{muted=!muted;localStorage.setItem('demo-muted',muted?'1':'0');updateMute();});
+
+  // ── Onboarding steps (Scene 3) — manual sub-steps via Next ──
+  let obStep=0;
+  const OB_TOTAL=8;
+  function showOb(idx){
+    document.querySelectorAll('.ob-screen').forEach(s=>s.classList.remove('active'));
+    const t=document.querySelector('.ob-screen[data-ob="'+idx+'"]');
+    if(t){t.classList.add('active');t.style.animation='none';t.offsetHeight;t.style.animation='fadeUp .35s ease-out';}
+    // Update all dot containers found in the active screen
+    document.querySelectorAll('.ob-screen [id^="obDots"]').forEach(el=>{
+      el.innerHTML='';for(let j=0;j<OB_TOTAL;j++){const d=document.createElement('div');d.className='ob-dot '+(j<idx?'ob-dot-done':j===idx?'ob-dot-cur':'ob-dot-future');el.appendChild(d);}
+    });
+  }
+
+  // ── DOM refs ──
+  const chapterEl=document.getElementById('chapter');
+  const titleCard=document.getElementById('titleCard');
+  const titleCardText=document.getElementById('titleCardText');
+  const progressFill=document.getElementById('progressFill');
+  const sceneCountEl=document.getElementById('sceneCount');
+  const nextBtn=document.getElementById('nextBtn');
+  const prevBtn=document.getElementById('prevBtn');
+  const restartBtn=document.getElementById('restartBtn');
+
+  function updateCounter(){
+    if(currentScene<0){sceneCountEl.textContent='';progressFill.style.width='0%';}
+    else{sceneCountEl.textContent=(currentScene+1)+' / '+SCENES.length;progressFill.style.width=((currentScene+1)/SCENES.length*100)+'%';}
+  }
+
+  function resetScene(id){
+    const el=document.getElementById('scene-'+id);if(!el)return el;
+    const p=el.parentNode,c=el.cloneNode(true);p.replaceChild(c,el);
+    c.querySelectorAll('.s-stars, .ob-stars').forEach(se=>{if(se.id){se.innerHTML='';makeStars(se,se.id==='stars0'||se.id==='stars1'||se.id==='stars6'||se.id==='stars7'?30:15);}});
+    return c;
+  }
+
+  let transitioning=false;
+  function goToScene(idx){
+    if(idx<0||idx>=SCENES.length||transitioning)return;
+    transitioning=true;
+    const sc=SCENES[idx];
+    Object.values(audio).forEach(a=>{a.pause();a.currentTime=0;});
+
+    // Scene 0 (intro): skip title card, run animated sequence
+    if(sc.id===0){
+      document.querySelectorAll('.scene').forEach(el=>el.classList.remove('active'));
+      const sceneEl=resetScene(sc.id);
+      chapterEl.textContent='SLEEPSEED';
+      sceneEl.classList.add('active');
+      currentScene=idx;
+      updateCounter();
+      transitioning=false;
+      startIntro();
+      return;
+    }
+
+    titleCardText.textContent=sc.name;titleCard.classList.add('show');
+
+    setTimeout(()=>{
+      document.querySelectorAll('.scene').forEach(el=>el.classList.remove('active'));
+      const sceneEl=resetScene(sc.id);
+      chapterEl.textContent='SLEEPSEED · '+sc.name.toUpperCase();
+
+      setTimeout(()=>{
+        titleCard.classList.remove('show');
+        sceneEl.classList.add('active');
+        currentScene=idx;
+        obStep=0;
+        if(sc.id===3)showOb(0);
+        if(sc.id===7)startFinale();
+        const a=audio[sc.id];if(a){a.currentTime=0;a.muted=muted;a.play().catch(()=>{});}
+        updateCounter();
+        transitioning=false;
+      },400);
+    },800);
+  }
+
+  // ── Next: if in Scene 3 onboarding, advance sub-step first ──
+  nextBtn.addEventListener('click',()=>{
+    if(currentScene<0){goToScene(0);return;}
+    // If on scene 3 (onboarding), advance sub-steps first
+    if(SCENES[currentScene].id===3&&obStep<OB_TOTAL-1){
+      obStep++;showOb(obStep);return;
+    }
+    if(currentScene<SCENES.length-1)goToScene(currentScene+1);
+  });
+
+  // ── Prev: if in Scene 3 onboarding, go back sub-step first ──
+  prevBtn.addEventListener('click',()=>{
+    if(currentScene<0)return;
+    if(SCENES[currentScene].id===3&&obStep>0){
+      obStep--;showOb(obStep);return;
+    }
+    if(currentScene>0)goToScene(currentScene-1);
+  });
+
+  // ── Restart ──
+  restartBtn.addEventListener('click',()=>{
+    Object.values(audio).forEach(a=>{a.pause();a.currentTime=0;});
+    document.querySelectorAll('.scene').forEach(el=>el.classList.remove('active'));
+    titleCard.classList.remove('show');
+    currentScene=-1;obStep=0;transitioning=false;
+    updateCounter();
+    chapterEl.textContent='SLEEPSEED';
+  });
+
+  // ── Keyboard: right arrow = next, left arrow = prev ──
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextBtn.click();}
+    else if(e.key==='ArrowLeft')prevBtn.click();
+  });
+
+  // ── Intro: big egg → shake → crack → creatures fly out → moon appears → egg drops → logo ──
+  function startIntro(){
+    const egg=document.getElementById('s0Egg');
+    const moon=document.getElementById('s0Moon');
+    const burst=document.getElementById('s0Burst');
+    const burst2=document.getElementById('s0Burst2');
+    const logo=document.getElementById('s0Logo');
+    const creatures=['s0C1','s0C2','s0C3','s0C4','s0C5'];
+    const rings=['s0r1','s0r2','s0r3'];
+    const dusts=['s0D1','s0D2','s0D3','s0D4','s0D5'];
+    if(!egg)return;
+
+    // 0s: egg pulses at center (CSS default)
+
+    // 2s: egg starts shaking violently
+    setTimeout(()=>{egg.classList.add('shake');},2000);
+
+    // 3.5s: CRACK — burst rings, creatures fly out, moon appears
+    setTimeout(()=>{
+      egg.classList.remove('shake');
+      burst.classList.add('go');
+      burst2.classList.add('go');
+      // creatures fly out from center
+      creatures.forEach(id=>{const el=document.getElementById(id);if(el){el.style.opacity='1';el.classList.add('fly');}});
+      // moon fades in
+      moon.classList.add('show');
+      // rings start pulsing
+      setTimeout(()=>{rings.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('go');});},600);
+    },3500);
+
+    // 5.5s: creatures settle into bob, egg drops down
+    setTimeout(()=>{
+      creatures.forEach(id=>{const el=document.getElementById(id);if(el){el.classList.remove('fly');el.classList.add('bob');}});
+      egg.classList.add('drop');
+    },5500);
+
+    // 6.3s: egg settled, sparkle dust starts, logo appears
+    setTimeout(()=>{
+      egg.classList.remove('drop');
+      egg.classList.add('settled');
+      dusts.forEach(id=>{const el=document.getElementById(id);if(el)el.style.animation='s0dust 2s ease-out infinite';});
+      logo.classList.add('show');
+    },6300);
+  }
+
+  // ── Finale: egg shake → hatch burst ──
+  function startFinale(){
+    const egg=document.getElementById('s7Egg');
+    const hatched=document.getElementById('s7Hatched');
+    const ring=document.getElementById('s7Ring');
+    const ring2=document.getElementById('s7Ring2');
+    if(!egg||!hatched)return;
+    egg.className='s7-egg';egg.style.display='';
+    hatched.className='s7-hatched';hatched.style.display='none';
+    ring.className='s7-ring';ring2.className='s7-ring2';
+    setTimeout(()=>{egg.classList.add('shake');},2500);
+    setTimeout(()=>{
+      egg.style.display='none';
+      hatched.style.display='block';
+      hatched.classList.add('show');
+      ring.classList.add('burst');
+      ring2.classList.add('burst');
+    },3500);
+  }
+
+  updateCounter();
+})();
+</script>
+</body>
+</html>

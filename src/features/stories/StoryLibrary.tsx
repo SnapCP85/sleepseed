@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { getStories, deleteStory, getCharacters } from '../../lib/storage';
+import { getStories, deleteStory, getCharacters, submitStoryToLibrary, removeStoryFromLibrary } from '../../lib/storage';
 import type { SavedStory, Character } from '../../lib/types';
+import { useApp } from '../../AppContext';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -146,6 +147,7 @@ const CSS = `
 interface Props { userId: string; onBack: () => void; onReadStory: (bookData: any) => void; onCreateStory: () => void; }
 
 export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStory }: Props) {
+  const { isSubscribed } = useApp();
   const [stories, setStories] = useState<SavedStory[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [search, setSearch] = useState('');
@@ -239,6 +241,29 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
               <button className="sl-menu-item" onClick={() => { setMenuOpen(null); onReadStory(s.bookData); }}>
                 📖 Read again
               </button>
+              {isSubscribed && !s.isPublic && (
+                <button className="sl-menu-item" onClick={async () => {
+                  setMenuOpen(null);
+                  try {
+                    await submitStoryToLibrary(s.id, userId, {
+                      ageGroup: s.ageGroup, vibe: s.vibe, mood: s.mood,
+                      storyStyle: s.storyStyle, storyLength: s.storyLength, lessons: s.lessons,
+                    });
+                    getStories(userId).then(setStories);
+                  } catch (e) { console.error('Submit to library:', e); }
+                }}>
+                  📚 Add to library
+                </button>
+              )}
+              {isSubscribed && s.isPublic && (
+                <button className="sl-menu-item" onClick={async () => {
+                  setMenuOpen(null);
+                  await removeStoryFromLibrary(s.id, userId);
+                  getStories(userId).then(setStories);
+                }}>
+                  📚 Remove from library
+                </button>
+              )}
               <button className="sl-menu-item danger" onClick={() => { setMenuOpen(null); setConfirmDelete(s); }}>
                 🗑 Remove
               </button>
@@ -252,6 +277,11 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
             <div className="sl-book-hero" style={{ color: palette.accent }}>{s.heroName}</div>
           </div>
 
+          {s.isPublic && (
+            <div style={{position:'absolute',bottom:24,left:8,fontSize:8,fontWeight:700,padding:'2px 7px',borderRadius:50,
+              background:'rgba(20,216,144,.15)',border:'1px solid rgba(20,216,144,.3)',color:'#14d890',
+              fontFamily:"'DM Mono',monospace",zIndex:2}}>In library</div>
+          )}
           <div className="sl-book-date">{formatDate(s.date)}</div>
         </div>
       </div>

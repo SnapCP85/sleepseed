@@ -2,7 +2,8 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import SleepSeedLibrary from "./sleepseed-library";
 import { buildStoryPrompt } from "./sleepseed-prompts";
 import { StoryFeedback, RereadCheck } from "./StoryFeedback";
-import { saveStory as dbSaveStory, saveNightCard as dbSaveNightCard } from "./lib/storage";
+import { saveStory as dbSaveStory, saveNightCard as dbSaveNightCard, submitStoryToLibrary, ensureRefCode } from "./lib/storage";
+import { BASE_URL } from "./lib/config";
 import { getSceneByVibe } from "./lib/storyScenes";
 import type { HatchedCreature } from "./lib/types";
 
@@ -1111,6 +1112,10 @@ export default function SleepSeed({
   const [viewingNightCard, setViewingNightCard] = useState<any>(null); // Night Card detail view
   const [styleDna,         setStyleDna]         = useState<any>(null); // Style DNA for feedback
   const [showFeedback,     setShowFeedback]     = useState(false);     // StoryFeedback sheet visible
+  const [libSubmitState,   setLibSubmitState]   = useState<'idle'|'confirming'|'submitting'|'done'>('idle');
+  const [libSubmitSlug,    setLibSubmitSlug]    = useState('');
+  const [libSubmitAge,     setLibSubmitAge]     = useState('');
+  const [libSubmitMood,    setLibSubmitMood]    = useState('');
   const [showToolbar,      setShowToolbar]      = useState(false);     // collapsed toolbar expanded
   const [ambientOn,        setAmbientOn]        = useState(false);     // cozy night ambient sound
 
@@ -1920,11 +1925,18 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
           id: entry.id, userId, title: entry.title,
           heroName: entry.heroName, characterIds: entry.characterIds,
           refrain: entry.refrain, date: entry.date,
-          occasion: occ, bookData
+          occasion: occ, bookData,
+          ageGroup: ageGroup || undefined,
+          vibe: storyMood || storyBrief2?.split(' ')[0]?.toLowerCase() || undefined,
+          theme: theme?.label || undefined,
+          mood: storyMood || undefined,
+          storyStyle: storyStyle || undefined,
+          storyLength: storyLen || undefined,
+          lessons: Array.isArray(lessons) && lessons.length > 0 ? lessons : undefined,
         });
       } catch(e) { console.error('SleepSeedCore dbSaveStory:', e); }
     }
-  },[memories,occasion,occasionCustom,userId,preloadedCharacter]);
+  },[memories,occasion,occasionCustom,userId,preloadedCharacter,ageGroup,storyMood,storyBrief2,theme,storyStyle,storyLen,lessons]);
 
   const deleteMemory = useCallback(async (id) => {
     const next = memories.filter(m => m.id!==id);
@@ -2589,6 +2601,111 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
             onClick={()=>setShowFeedback(true)}>
             ⭐ How was this story?
           </button>
+
+          {/* Library submission — paid users only */}
+          {userId && !isGuest && libSubmitState === 'idle' && !sessionStorage.getItem(`lib_dismiss_${memories[0]?.id}`) && (
+            <div style={{width:"100%",marginTop:10,background:"rgba(6,10,28,.92)",border:"1px solid rgba(245,184,76,.2)",
+              borderRadius:20,padding:18}}>
+              <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:16,fontWeight:700,color:"#F5B84C",marginBottom:4}}>
+                That was a great story.
+              </div>
+              <div style={{fontSize:12,color:"rgba(245,232,200,.45)",lineHeight:1.65,marginBottom:10}}>
+                Want to share it with other SleepSeed families? Add it to the public library — other kids might love it too.
+              </div>
+              <div style={{fontSize:10,color:"rgba(245,184,76,.55)",fontFamily:"'DM Mono',monospace",marginBottom:12}}>
+                If it brings a new family to SleepSeed, you earn rewards
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <button className="btn" style={{flex:1,fontSize:13,padding:"12px 16px"}}
+                  onClick={()=>{
+                    setLibSubmitAge(ageGroup || '');
+                    setLibSubmitMood(storyMood || '');
+                    setLibSubmitState('confirming');
+                  }}>
+                  Share with families
+                </button>
+                <button className="btn-ghost" style={{fontSize:12,padding:"10px 14px"}}
+                  onClick={()=>{
+                    try { sessionStorage.setItem(`lib_dismiss_${memories[0]?.id}`, '1'); } catch {}
+                    setLibSubmitState('idle');
+                  }}>
+                  Keep it just for us
+                </button>
+              </div>
+            </div>
+          )}
+
+          {libSubmitState === 'confirming' && (
+            <div style={{width:"100%",marginTop:10,background:"rgba(6,10,28,.92)",border:"1px solid rgba(245,184,76,.2)",
+              borderRadius:20,padding:18}}>
+              <div style={{fontSize:11,color:"rgba(245,232,200,.4)",marginBottom:8}}>Confirm metadata before publishing:</div>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+                <div style={{fontSize:9,color:"rgba(245,232,200,.35)",fontFamily:"'DM Mono',monospace",width:"100%",marginBottom:2}}>Age group</div>
+                {['age3','age5','age7','age10'].map(a => (
+                  <button key={a} style={{
+                    padding:"5px 12px",borderRadius:50,fontSize:11,fontWeight:700,cursor:"pointer",
+                    border:`1.5px solid ${libSubmitAge===a?"rgba(245,184,76,.5)":"rgba(255,255,255,.08)"}`,
+                    background:libSubmitAge===a?"rgba(245,184,76,.1)":"transparent",
+                    color:libSubmitAge===a?"#F5B84C":"rgba(255,255,255,.35)",fontFamily:"'Nunito',sans-serif"
+                  }} onClick={()=>setLibSubmitAge(a)}>
+                    {a==='age3'?'3-5':a==='age5'?'5-7':a==='age7'?'7-9':'9-11'}
+                  </button>
+                ))}
+              </div>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
+                <div style={{fontSize:9,color:"rgba(245,232,200,.35)",fontFamily:"'DM Mono',monospace",width:"100%",marginBottom:2}}>Mood</div>
+                {['calm','funny','exciting','heartfelt','mysterious'].map(m => (
+                  <button key={m} style={{
+                    padding:"5px 12px",borderRadius:50,fontSize:11,fontWeight:700,cursor:"pointer",
+                    border:`1.5px solid ${libSubmitMood===m?"rgba(20,216,144,.5)":"rgba(255,255,255,.08)"}`,
+                    background:libSubmitMood===m?"rgba(20,216,144,.1)":"transparent",
+                    color:libSubmitMood===m?"#14d890":"rgba(255,255,255,.35)",fontFamily:"'Nunito',sans-serif"
+                  }} onClick={()=>setLibSubmitMood(m)}>
+                    {m.charAt(0).toUpperCase()+m.slice(1)}
+                  </button>
+                ))}
+              </div>
+              <button className="btn" style={{width:"100%",fontSize:13,padding:"12px"}}
+                onClick={async()=>{
+                  setLibSubmitState('submitting');
+                  try {
+                    const storyId = memories[0]?.id;
+                    if (!storyId || !userId) throw new Error('No story');
+                    const { slug } = await submitStoryToLibrary(storyId, userId, {
+                      ageGroup: libSubmitAge || ageGroup || undefined,
+                      vibe: storyMood || undefined,
+                      mood: libSubmitMood || storyMood || undefined,
+                      storyStyle: storyStyle || undefined,
+                      storyLength: storyLen || undefined,
+                      lessons: Array.isArray(lessons) && lessons.length > 0 ? lessons : undefined,
+                      theme: theme?.label || undefined,
+                    });
+                    const code = await ensureRefCode(userId);
+                    setLibSubmitSlug(`${BASE_URL}/stories/${slug}?ref=${code}`);
+                    setLibSubmitState('done');
+                  } catch(e) {
+                    console.error('Library submit error:', e);
+                    setLibSubmitState('idle');
+                  }
+                }}>
+                Publish to library →
+              </button>
+            </div>
+          )}
+
+          {libSubmitState === 'done' && (
+            <div style={{width:"100%",marginTop:10,background:"rgba(20,216,144,.05)",border:"1px solid rgba(20,216,144,.2)",
+              borderRadius:20,padding:18,textAlign:"center"}}>
+              <div style={{fontSize:16,marginBottom:6}}>It's live in the library!</div>
+              <div style={{fontSize:11,color:"rgba(245,232,200,.4)",marginBottom:10}}>Share your personal link to earn rewards:</div>
+              <div style={{fontSize:11,color:"#14d890",fontFamily:"'DM Mono',monospace",background:"rgba(0,0,0,.3)",
+                borderRadius:8,padding:"8px 12px",marginBottom:10,wordBreak:"break-all"}}>{libSubmitSlug}</div>
+              <button className="btn-ghost" style={{fontSize:12,padding:"8px 16px"}}
+                onClick={()=>{ try{navigator.clipboard.writeText(libSubmitSlug)}catch{} }}>
+                Copy link
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
