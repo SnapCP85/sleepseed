@@ -143,7 +143,7 @@ function BottomTabs({ current, onNav }: { current: string; onNav: (v: string) =>
 
 function AppInner() {
   const {
-    user, view, setView, logout,
+    user, authLoading, view, setView, logout,
     selectedCharacter, setSelectedCharacter,
     selectedCharacters, setSelectedCharacters,
     ritualSeed, ritualMood, setRitualSeed,
@@ -209,6 +209,17 @@ function AppInner() {
       </div>
     );
   }
+
+  // Show loading screen while auth is resolving — prevents flash of PublicHomepage
+  if (authLoading) return (
+    <div style={{minHeight:'100vh',background:'#080C18',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{textAlign:'center'}}>
+        <div style={{fontSize:40,marginBottom:12,animation:'pulse 2s ease-in-out infinite'}}>🌙</div>
+        <div style={{color:'rgba(244,239,232,.3)',fontSize:13,fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif"}}>Loading...</div>
+        <style>{`@keyframes pulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}`}</style>
+      </div>
+    </div>
+  );
 
   // Load companion creature for story builder
   useEffect(() => {

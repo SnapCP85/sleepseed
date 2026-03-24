@@ -260,7 +260,7 @@ export default function LibraryStoryReader({ slug }: Props) {
     </div>
   );
 
-  const pages = story.bookData?.pages || [];
+  const pages = story.bookData?.pages || story.bookData?.setup_pages || [];
   const totalPages = 2 + pages.length; // cover + pages + end
   const isLast = pageIdx === totalPages - 1;
   const seed = parseInt(strHash(story.title + (story.heroName || '')), 36) || 0;

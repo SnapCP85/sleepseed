@@ -317,8 +317,8 @@ export default function LibraryHome() {
             <div className="lh-bod-info">
               <div className="lh-bod-title">{bookOfDay.title}</div>
               <div className="lh-bod-hero">A story for {bookOfDay.heroName}</div>
-              {bookOfDay.bookData?.pages?.[0]?.text && (
-                <div className="lh-bod-excerpt">{bookOfDay.bookData.pages[0].text.slice(0, 140)}...</div>
+              {(bookOfDay.bookData?.pages?.[0]?.text || bookOfDay.bookData?.setup_pages?.[0]?.text) && (
+                <div className="lh-bod-excerpt">{(bookOfDay.bookData.pages?.[0]?.text || bookOfDay.bookData.setup_pages?.[0]?.text || '').slice(0, 140)}...</div>
               )}
               <button className="lh-bod-cta" onClick={e => { e.stopPropagation(); openStory(bookOfDay); }}>
                 Read today's story →
