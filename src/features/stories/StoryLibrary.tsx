@@ -278,9 +278,9 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
           </div>
 
           {s.isPublic && (
-            <div style={{position:'absolute',bottom:24,left:8,fontSize:8,fontWeight:700,padding:'2px 7px',borderRadius:50,
+            <div style={{position:'absolute',bottom:24,left:'50%',transform:'translateX(-50%)',fontSize:9,fontWeight:700,padding:'3px 10px',borderRadius:50,
               background:'rgba(20,216,144,.15)',border:'1px solid rgba(20,216,144,.3)',color:'#14d890',
-              fontFamily:"'DM Mono',monospace",zIndex:2}}>In library</div>
+              fontFamily:"'DM Mono',monospace",zIndex:2,whiteSpace:'nowrap',letterSpacing:'.02em'}}>📚 In Library</div>
           )}
           <div className="sl-book-date">{formatDate(s.date)}</div>
         </div>

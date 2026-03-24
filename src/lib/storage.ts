@@ -318,7 +318,7 @@ const dbToLibraryStory = (row: any): LibraryStory => ({
   submitterRefCode: row.profiles?.ref_code ?? undefined,
 });
 
-const LIBRARY_LIST_COLS = 'id,user_id,title,hero_name,character_ids,refrain,date,occasion,is_public,library_slug,age_group,vibe,theme,mood,story_style,story_length,lessons,submitted_at,thumbs_up,thumbs_down,read_count,conversion_count,is_staff_pick,is_book_of_day,book_of_day_date,profiles(display_name,ref_code)';
+const LIBRARY_LIST_COLS = 'id,user_id,title,hero_name,character_ids,refrain,date,occasion,is_public,library_slug,age_group,vibe,theme,mood,story_style,story_length,lessons,submitted_at,thumbs_up,thumbs_down,read_count,conversion_count,is_staff_pick,is_book_of_day,book_of_day_date';
 const LIBRARY_FULL_COLS = LIBRARY_LIST_COLS + ',book_data';
 
 // ── Library: queries ─────────────────────────────────────────────────────
