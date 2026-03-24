@@ -186,12 +186,37 @@ function AppInner() {
     }
   }, []);
 
-  if (isSharedStory) return <SharedStoryViewer />;
-
-  // ── Test mode: ?test=onboarding bypasses auth ──────────────────────────────
+  // Test mode state (must be before any conditional returns)
   const [testMode] = useState(() => new URLSearchParams(window.location.search).get('test') === 'onboarding');
   const [testPhase, setTestPhase] = useState<'parent'|'child'|'done'>('parent');
   const [testChildProfile, setTestChildProfile] = useState<ParentSetupResult|null>(null);
+
+  // Load companion creature for story builder
+  useEffect(() => {
+    if (!user || user.isGuest) return;
+    import('./lib/hatchery').then(({ getAllHatchedCreatures }) => {
+      getAllHatchedCreatures(user.id).then(creatures => {
+        if (creatures.length > 0) setCompanionCreature(creatures[0]);
+      });
+    });
+  }, [user]); // eslint-disable-line
+
+  // ── All hooks above this line ─────────────────────────────────────────────
+
+  if (isSharedStory) return <SharedStoryViewer />;
+
+  // Show loading screen while auth is resolving — prevents flash of PublicHomepage
+  if (authLoading) return (
+    <div style={{minHeight:'100vh',background:'#080C18',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{textAlign:'center'}}>
+        <div style={{fontSize:40,marginBottom:12,animation:'pulse 2s ease-in-out infinite'}}>🌙</div>
+        <div style={{color:'rgba(244,239,232,.3)',fontSize:13,fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif"}}>Loading...</div>
+        <style>{`@keyframes pulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}`}</style>
+      </div>
+    </div>
+  );
+
+  // Test mode: ?test=onboarding bypasses auth
   if (testMode) {
     if (testPhase === 'parent') return (
       <ParentSetup displayName="Greg" onComplete={(result) => { setTestChildProfile(result); setTestPhase('child'); }} />
@@ -209,27 +234,6 @@ function AppInner() {
       </div>
     );
   }
-
-  // Show loading screen while auth is resolving — prevents flash of PublicHomepage
-  if (authLoading) return (
-    <div style={{minHeight:'100vh',background:'#080C18',display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <div style={{textAlign:'center'}}>
-        <div style={{fontSize:40,marginBottom:12,animation:'pulse 2s ease-in-out infinite'}}>🌙</div>
-        <div style={{color:'rgba(244,239,232,.3)',fontSize:13,fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif"}}>Loading...</div>
-        <style>{`@keyframes pulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}`}</style>
-      </div>
-    </div>
-  );
-
-  // Load companion creature for story builder
-  useEffect(() => {
-    if (!user || user.isGuest) return;
-    import('./lib/hatchery').then(({ getAllHatchedCreatures }) => {
-      getAllHatchedCreatures(user.id).then(creatures => {
-        if (creatures.length > 0) setCompanionCreature(creatures[0]);
-      });
-    });
-  }, [user]); // eslint-disable-line
 
   const goAuth        = () => setView('auth');
   const goDashboard   = () => { setNightCardFilter(undefined); setView('dashboard'); };
