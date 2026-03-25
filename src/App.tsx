@@ -10,8 +10,7 @@ import type { ParentSetupResult } from './pages/ParentSetup';
 import type { OnboardingResult, ChildProfile } from './pages/OnboardingFlow';
 import UserProfile from './pages/UserProfile';
 import RitualStarter from './pages/RitualStarter';
-import StoryHandoff from './pages/StoryHandoff';
-import StoryBuilderPage from './pages/StoryBuilderPage';
+import StoryWizard from './pages/StoryWizard';
 import CharacterBuilder from './features/characters/CharacterBuilder';
 import CharacterLibrary from './features/characters/CharacterLibrary';
 import StoryLibrary from './features/stories/StoryLibrary';
@@ -23,46 +22,10 @@ import LibraryStoryReader from './pages/LibraryStoryReader';
 import CharacterDetail from './features/characters/CharacterDetail';
 import Hatchery from './pages/Hatchery';
 import FirstNight from './pages/FirstNight';
+import DevStoryTest from './pages/DevStoryTest';
 import { saveCharacter, saveNightCard, saveStory, addFriendByCode } from './lib/storage';
 import { saveHatchedCreature, createEgg, getAllHatchedCreatures } from './lib/hatchery';
 import type { Character, HatchedCreature, SavedNightCard } from './lib/types';
-
-const NAV_CSS = `
-.anav{display:flex;align-items:center;gap:0;padding:0 5%;height:50px;border-bottom:1px solid rgba(232,151,42,.12);background:rgba(8,12,24,.97);position:sticky;top:0;z-index:20;backdrop-filter:blur(20px);font-family:'Plus Jakarta Sans',system-ui,sans-serif}
-.anav-logo{font-family:'Playfair Display',Georgia,serif;font-size:15px;font-weight:700;color:#F4EFE8;display:flex;align-items:center;gap:7px;cursor:pointer;flex-shrink:0;margin-right:12px;padding-right:14px;border-right:1px solid rgba(255,255,255,.08)}
-.anav-moon{width:14px;height:14px;border-radius:50%;background:#F5B84C;position:relative;overflow:hidden;flex-shrink:0}
-.anav-moon-sh{position:absolute;width:13px;height:13px;border-radius:50%;background:#050916;top:-3px;left:-6px}
-.anav-tabs{display:flex;align-items:center;gap:3px;flex:1;min-width:0}
-.anav-tab{padding:7px 14px;border-radius:9px;font-size:12px;font-weight:600;color:rgba(244,239,232,.35);cursor:pointer;transition:all .15s;white-space:nowrap;border:1px solid transparent;background:transparent}
-.anav-tab:hover{color:rgba(244,239,232,.7);background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.08)}
-.anav-tab.on{color:#E8972A;background:rgba(232,151,42,.1);border-color:rgba(232,151,42,.25)}
-@media(max-width:480px){.anav{padding:0 3%}.anav-tab{padding:5px 9px;font-size:10px}}
-`;
-
-function AppNav({ currentView, onNav }: { currentView: string; onNav: (v: string) => void }) {
-  return (
-    <>
-      <style>{NAV_CSS}</style>
-      <nav className="anav">
-        <div className="anav-logo" onClick={() => onNav('dashboard')}>
-          <div className="anav-moon"><div className="anav-moon-sh" /></div>
-          SleepSeed
-        </div>
-        <div className="anav-tabs">
-          {[
-            { key: 'dashboard', label: '🏠 Home' },
-            { key: 'story-library', label: '📖 Stories' },
-            { key: 'nightcard-library', label: '🌙 Night Cards' },
-            { key: 'characters', label: '👤 Characters' },
-          ].map(t => (
-            <div key={t.key} className={`anav-tab${currentView === t.key ? ' on' : ''}`}
-              onClick={() => onNav(t.key)}>{t.label}</div>
-          ))}
-        </div>
-      </nav>
-    </>
-  );
-}
 
 const TABS_CSS = `
 .btabs{display:flex;align-items:flex-end;background:rgba(6,10,20,.97);border-top:1px solid rgba(245,184,76,.06);padding:6px 0 max(6px,env(safe-area-inset-bottom));position:fixed;bottom:0;left:0;right:0;z-index:20;backdrop-filter:blur(20px)}
@@ -128,7 +91,7 @@ function BottomTabs({ current, onNav }: { current: string; onNav: (v: string) =>
           <div className="btab-ico"><DiscoverIcon active={isLib} /></div>
           <div className="btab-lbl">Discover</div>
         </div>
-        <div className="btab-create" onClick={()=>onNav('story-configure')}>
+        <div className="btab-create" onClick={()=>onNav('story-wizard')}>
           <div className="btab-create-btn"><CreateIcon /></div>
           <div className="btab-create-lbl">Create</div>
         </div>
@@ -142,18 +105,21 @@ function BottomTabs({ current, onNav }: { current: string; onNav: (v: string) =>
 }
 
 function AppInner() {
+  // DEV: instant route — no flash, no auth
+  if (new URLSearchParams(window.location.search).get('view') === 'dev-story') return <DevStoryTest />;
+
   const {
     user, authLoading, view, setView, logout,
     selectedCharacter, setSelectedCharacter,
     selectedCharacters, setSelectedCharacters,
     ritualSeed, ritualMood, setRitualSeed,
-    builderChoices,
     editingCharacter, setEditingCharacter,
     companionCreature, setCompanionCreature,
     libraryStorySlug, setLibraryStorySlug,
   } = useApp();
 
   const [preloadedBook,      setPreloadedBook]      = useState<any>(null);
+  const [wizardChoices,      setWizardChoices]      = useState<import('./lib/types').BuilderChoices|null>(null);
   const [lastOnboardingResult, setLastOnboardingResult] = useState<OnboardingResult|null>(null);
   const [parentSetupData,   setParentSetupData]   = useState<ParentSetupResult|null>(() => {
     // Load from localStorage if available
@@ -176,6 +142,7 @@ function AppInner() {
     if (librarySlug) { setLibraryStorySlug(librarySlug); setView('library-story'); return; }
 
     if (params.get('view') === 'library') { setView('library'); return; }
+    if (params.get('view') === 'dev-story') { setView('dev-story'); return; }
 
     const ref = params.get('ref');
     if (ref) { try { sessionStorage.setItem('sleepseed_ref', ref); } catch {} }
@@ -228,6 +195,7 @@ function AppInner() {
   // ── All hooks above this line ─────────────────────────────────────────────
 
   if (isSharedStory) return <SharedStoryViewer />;
+  if (view === 'dev-story') return <DevStoryTest />;
 
   // Test mode pages — render before auth so shareable links work without login
   if (testMode === 'onboarding') {
@@ -264,7 +232,8 @@ function AppInner() {
   const goStoryBuilder= (char?: Character) => {
     if (char) setSelectedCharacter(char);
     setPreloadedBook(null);
-    setView('story-builder');
+    setWizardChoices(null);
+    setView('story-wizard');
   };
   const goNewCharacter  = () => { setEditingCharacter(null); setView('onboarding'); };
   const goEditCharacter = (c: Character) => { setEditingCharacter(c); setView('character-builder'); };
@@ -467,9 +436,20 @@ function AppInner() {
       <BottomTabs current="" onNav={v=>setView(v as any)} />
     </div>
   );
-  if (view === 'ritual-starter') return <RitualStarter />;
-  if (view === 'story-handoff')  return <StoryHandoff />;
-  if (view === 'story-configure') return <StoryBuilderPage />;
+  if (view === 'ritual-starter') return (
+    <RitualStarter onGenerate={(choices) => {
+      setWizardChoices(choices);
+      setPreloadedBook(null);
+      setView('story-builder');
+    }} />
+  );
+  if (view === 'story-wizard') return (
+    <StoryWizard onGenerate={(choices) => {
+      setWizardChoices(choices);
+      setPreloadedBook(null);
+      setView('story-builder');
+    }} />
+  );
   if (view === 'user-profile') return (
     <div style={{paddingBottom:70}}>
       <UserProfile />
@@ -478,8 +458,7 @@ function AppInner() {
   );
 
   if (view === 'characters') return (
-    <><AppNav currentView="characters" onNav={handleNav} />
-    <CharacterLibrary
+    <><CharacterLibrary
       userId={user!.id}
       onBack={goDashboard}
       onNew={goNewCharacter}
@@ -523,8 +502,7 @@ function AppInner() {
   );
 
   if ((view as string) === 'character-detail' && viewingCharacter) return (
-    <><AppNav currentView="characters" onNav={handleNav} />
-    <CharacterDetail
+    <><CharacterDetail
       character={viewingCharacter}
       userId={user!.id}
       onBack={() => setView('characters')}
@@ -578,11 +556,12 @@ function AppInner() {
           preloadedBook={preloadedBook}
           ritualSeed={ritualSeed}
           ritualMood={ritualMood}
-          builderChoices={builderChoices}
+          builderChoices={wizardChoices}
           companionCreature={companionCreature}
           onCharacterSavePrompt={() => {}}
           onStoryReady={() => {}}
-          onGenerateError={ritualSeed ? () => setView('ritual-starter') : undefined}
+          onGenerateError={() => setView('story-wizard')}
+          onHome={() => setView('dashboard')}
         />
       </div>
     );

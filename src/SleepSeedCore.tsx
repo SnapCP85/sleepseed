@@ -620,7 +620,15 @@ HERO AGENCY: Even at 3\u20134, ${name} must DO something \u2014 not watch. They 
 
 ONE TRUE THING: Include one tiny moment a 3-year-old would recognise from their own life \u2014 losing something and finding it, not wanting to share and then doing it anyway, being scared of something small. Never name it as a lesson. Just let it happen.
 
-TONE: Always safe. Always warm. The ending must feel like a hug. The DEFAULT tone is very silly — SPLAT. BOING. WHOOSH. Characters say "Oh no!" and "Uh oh!" and things fall over hilariously. BUT: if the story premise is tender or emotional (missing someone, first day of something, a worried feeling), lead with warmth and gentleness instead. Silly and safe are not the same thing — a story can be entirely gentle without a sound word and still be perfect for this age.`},
+TONE: Always safe. Always warm. The ending must feel like a hug. The DEFAULT tone is very silly — SPLAT. BOING. WHOOSH. Characters say "Oh no!" and "Uh oh!" and things fall over hilariously. BUT: if the story premise is tender or emotional (missing someone, first day of something, a worried feeling), lead with warmth and gentleness instead. Silly and safe are not the same thing — a story can be entirely gentle without a sound word and still be perfect for this age.
+
+DIALOGUE AT THIS AGE sounds like: "Again!" / "My turn!" / "Uh oh!" / "No! Mine!" / "Where go?" / "More more more!" Children this age speak in bursts of 2–4 words. They repeat. They demand. They narrate what they're doing as they do it.
+
+WEIRD DETAIL AT THIS AGE is physical and immediate: "she always had to touch every fence post on the way home" or "he said goodnight to each shoe before bed — left shoe first, always." NOT abstract traits like "she was thoughtful" — a 3-year-old's weirdness lives in their body, not their mind.
+
+COMEDY AT THIS AGE is physical, repetitive, and loud. Slapstick: things fall over, characters bump into things, sounds are enormous (SPLAT! BONK! WHOOOOSH!). Repetition IS the joke — the same thing happens three times, the third time sillier. Forbidden territory: mess, mud, food on faces, silly noises. The child laughs because they SAW IT COMING and it happened ANYWAY.
+
+ECHO PATTERN: A literal refrain of 3–5 words, appearing exactly three times: once to introduce, once in the middle (varied — different character says it, or it goes slightly wrong), once at the end (warm, closing). Simple enough that a 3-year-old will say it out loud.`},
 
   {value:"age5",label:"Age 5\u20136",grade:"Kindergarten",prompt:`READER AGE: 5\u20136 years old (Kindergarten).
 
@@ -636,7 +644,15 @@ HERO AGENCY (critical): ${name} must make ONE decision that changes everything. 
 
 ONE TRUE THING: One moment of genuine emotional recognition \u2014 the flutter of nerves before something new, the warm feeling of being the one who fixed it, the sting of being left out and then included. It lives in what happens, never in what is said.
 
-TONE: Warm and funny. Someone always has a terrible plan. It sort of works anyway. Sound words on at least 3 pages.`},
+TONE: Warm and funny. Someone always has a terrible plan. It sort of works anyway. Sound words on at least 3 pages.
+
+DIALOGUE AT THIS AGE sounds like: "But WHY though?" / "That's not even fair!" / "Wait wait wait wait wait" / "I TOLD you!" / "Okay fine but only because I want to." Children this age argue, negotiate, and have OPINIONS. They use "actually" and "literally" wrong but with total confidence.
+
+WEIRD DETAIL AT THIS AGE is behavioural — a ritual, a habit, a rule they invented: "she always ate sandwiches from the middle out" or "he had to wave goodbye to the moon every night or it might forget to come back." The detail should be something another child would find interesting, not just cute.
+
+COMEDY AT THIS AGE is subverted expectations + forbidden territory. The setup promises one thing, the punchline delivers another. Anything involving bottoms, burps, or things you're not supposed to say is inherently hilarious. Characters who are ABSOLUTELY CERTAIN they are right and are SPECTACULARLY wrong. The gap between confidence and reality is where 5-year-olds laugh.
+
+ECHO PATTERN: A repeated phrase that CHANGES meaning each time it appears. First time: establishes the phrase and its obvious meaning. Second time: the situation has changed — same words, different feeling. Third time: the phrase now means something the reader didn't expect when they first heard it. At this age, the child should recognise the phrase returning and feel clever for noticing.`},
 
   {value:"age7",label:"Age 7\u20138",grade:"1st\u20132nd Grade",prompt:`READER AGE: 7\u20138 years old (1st\u20132nd Grade).
 
@@ -653,7 +669,15 @@ HERO AGENCY (critical): ${name} must make one decision under pressure that only 
 
 ONE TRUE THING: One moment must contain genuine emotional honesty \u2014 real doubt, real disappointment, real courage, or real joy. Not performed. Felt. This is the moment a parent will remember long after the story ends.
 
-TONE: Wry and warm. Not "big" but "SO ENORMOUSLY, RIDICULOUSLY big that three families of sparrows had moved into its left ear". The ending is surprising AND deeply satisfying.`},
+TONE: Wry and warm. Not "big" but "SO ENORMOUSLY, RIDICULOUSLY big that three families of sparrows had moved into its left ear". The ending is surprising AND deeply satisfying.
+
+DIALOGUE AT THIS AGE sounds like: "Actually, I have a better idea." / "Wait. What if we just..." / "You're not going to believe this." / "I mean, technically..." / "Okay but that's the OPPOSITE of what I said." Children this age try on adult phrasing but with their own logic underneath. They qualify, they hedge, they build arguments.
+
+WEIRD DETAIL AT THIS AGE is internal and contradictory: "he kept a ranked list of his fears, updated weekly" or "she could only think clearly when she was upside down" or "he was brave about everything except the specific shade of green on the school bathroom walls." The contradiction makes the character feel real — brave AND afraid, smart AND silly.
+
+COMEDY AT THIS AGE is irony + absurd escalation. Characters who are oblivious to things the reader sees clearly. Situations that get worse in ways that are technically logical but practically insane. Understatement: "There was, it must be said, rather a lot of fire." The reader feels clever for getting the joke. Wordplay starts landing.
+
+ECHO PATTERN: A planted line or image that returns in the final pages with NEW WEIGHT. First appearance: unremarkable, part of the world. Final appearance: the same words, but the reader now understands what they really mean. The child goes "OH!" The echo should make them want to re-read the beginning.`},
 
   {value:"age9",label:"Age 9\u201310",grade:"3rd\u20134th Grade",prompt:`READER AGE: 9\u201310 years old (3rd\u20134th Grade).
 
@@ -672,7 +696,15 @@ ONE TRUE THING: One moment should feel so emotionally true that it could only ha
 
 TONE: Intelligent, funny, and emotionally honest. Not condescending. The best moment should make both the child AND the parent feel something real.
 
-BEDTIME GUARD: No matter how sophisticated the structure, this is still a bedtime story. The emotional complexity earns its place only if it resolves completely and lands in warmth and sleep. A 9-year-old reading this at 9pm should feel satisfied, seen, and sleepy — not stimulated or unsettled.`},
+BEDTIME GUARD: No matter how sophisticated the structure, this is still a bedtime story. The emotional complexity earns its place only if it resolves completely and lands in warmth and sleep. A 9-year-old reading this at 9pm should feel satisfied, seen, and sleepy — not stimulated or unsettled.
+
+DIALOGUE AT THIS AGE sounds like: "Okay but hear me out." / "That's... actually kind of brilliant." / "I wasn't scared. I just didn't want to go first." / "Can I ask you something weird?" / "Never mind. Actually no, wait." Children this age are self-aware. They try to sound casual about things that matter. They use humour to approach hard topics sideways.
+
+WEIRD DETAIL AT THIS AGE is self-aware and layered: "she kept a notebook of things that were beautiful but nobody else seemed to notice — a certain kind of shadow, the sound of a spoon in an empty mug" or "he'd figured out that if you count to seven before answering a question, people think you're wise, even when you're just confused." The detail reveals how the child SEES THEMSELVES, not just what they do.
+
+COMEDY AT THIS AGE is wit + self-awareness. Characters who know they're being ridiculous and do it anyway. Meta-humour: awareness of story conventions ("This is the part where I'm supposed to say something brave, isn't it?"). Sophisticated irony. The humour earns the child's respect because it treats them as intelligent. Nothing patronising.
+
+ECHO PATTERN: A structural callback — an image, phrase, or detail from the opening that returns TRANSFORMED at the end. The first appearance sets up one meaning. The return reveals a deeper meaning the reader couldn't have understood at the start. This is the "re-read" moment — the child immediately wants to go back to the beginning and see it differently. At this age, the echo can be subtle. Trust the reader to find it.`},
 ];
 const CHAR_ICONS = {hero:"⭐",friend:"👫",sibling:"👶",parent:"🧑‍🍼",pet:"🐾",toy:"🧸"};
 const BONDING_QUESTIONS = [
@@ -1049,6 +1081,7 @@ interface SleepSeedCoreProps {
   onCharacterSavePrompt?: (charData: any) => void;
   onStoryReady?: (storyData: any) => void;
   onGenerateError?: () => void;
+  onHome?: () => void;
 }
 
 export default function SleepSeed({
@@ -1063,6 +1096,7 @@ export default function SleepSeed({
   onCharacterSavePrompt,
   onStoryReady,
   onGenerateError,
+  onHome,
 }: SleepSeedCoreProps = {}) {
   const [stage,          setStage]          = useState("home");
   const [heroName,       setHeroName]       = useState("");
@@ -1240,9 +1274,20 @@ export default function SleepSeed({
   const hasAutoGenRef = useRef(false);
 
   useEffect(() => {
-    if (!builderChoices || !heroName.trim() || hasAutoGenRef.current) return;
+    if (!builderChoices || hasAutoGenRef.current) return;
+    const name = heroName.trim() || builderChoices.heroName || '';
+    if (!name) return;
     hasAutoGenRef.current = true;
+    // Set hero state for display purposes
+    if (builderChoices.heroName && !heroName.trim()) {
+      setHeroName(builderChoices.heroName);
+      if (builderChoices.heroGender) setHeroGender(builderChoices.heroGender);
+    }
+    // Pass name directly as override — don't depend on state being flushed
+    doAutoGenerate(builderChoices, name);
+  }, [builderChoices, heroName]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const doAutoGenerate = (bc: NonNullable<typeof builderChoices>, heroNameOverride?: string) => {
     const vibeToFeel: Record<string, string> = {
       'warm-funny':  'warm and funny, with lots of laughs',
       'calm-cosy':   'calm and cosy, drifting toward sleep',
@@ -1261,17 +1306,17 @@ export default function SleepSeed({
       'mysterious':  'about to discover something magical and mysterious',
     };
 
-    const feel   = vibeToFeel[builderChoices.vibe]   || builderChoices.vibe;
-    const action = vibeToAction[builderChoices.vibe]  || 'going on an adventure';
+    const feel   = vibeToFeel[bc.vibe]   || bc.vibe;
+    const action = vibeToAction[bc.vibe]  || 'going on an adventure';
 
-    const isRitual   = builderChoices.path === 'ritual';
+    const isRitual   = bc.path === 'ritual';
     const storyCtx   = isRitual ? (ritualSeed || '') : '';
-    const brief1     = isRitual ? '' : (builderChoices.brief.trim() || action);
-    const isAdventure = builderChoices.style === 'adventure';
+    const brief1     = isRitual ? '' : (bc.brief.trim() || action);
+    const isAdventure = bc.style === 'adventure';
 
     generate({
-      ageGroup:       builderChoices.level    || 'age5',
-      storyLen:       builderChoices.length   || 'standard',
+      ageGroup:       bc.level    || 'age5',
+      storyLen:       bc.length   || 'standard',
       storyBrief1:    brief1,
       storyBrief2:    feel,
       storyContext:   storyCtx,
@@ -1279,16 +1324,17 @@ export default function SleepSeed({
       realLifeCtx:    '',
       lessonContext:  '',
       storyMood:      feel,
-      storyPace:      builderChoices.pace  || 'normal',
-      storyStyle:     builderChoices.style || 'standard',
+      storyPace:      bc.pace  || 'normal',
+      storyStyle:     bc.style || 'standard',
       adventure:      isAdventure,
-      extraChars:     builderChoices.chars  || [],
-      lessons:        builderChoices.lessons || [],
-      occasion:       builderChoices.occasion || '',
-      occasionCustom: builderChoices.occasionCustom || '',
+      extraChars:     bc.chars  || [],
+      lessons:        bc.lessons || [],
+      occasion:       bc.occasion || '',
+      occasionCustom: bc.occasionCustom || '',
       heroTraits:     [],
+      heroNameOverride: heroNameOverride,
     });
-  }, [builderChoices, heroName]); // eslint-disable-line react-hooks/exhaustive-deps
+  };
 
 
   useEffect(() => {
@@ -1378,10 +1424,9 @@ export default function SleepSeed({
       audio.onerror = () => { URL.revokeObjectURL(url); elAudioRef.current=null; onEnd(); };
       await audio.play();
     } catch(err) {
-      console.error("EL TTS error:", err);
-      // Do not fall back to browser voice — just stop cleanly
-      setIsReading(false);
-      autoReadRef.current = false;
+      console.error("EL TTS error, falling back to browser speech:", err);
+      // Fall back to browser speech so the user still hears something
+      speakText(text, pageProgress);
     }
   }, [voiceId, selectedVoiceId, pageIdx, speakText]);
 
@@ -2042,7 +2087,7 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     const bondingIdx = Math.floor(Date.now()/1000) % BONDING_QUESTIONS.length;
     setNcBondingQ(BONDING_QUESTIONS[bondingIdx]);
     setNcBondingSaved(false); setNcBondingA("");
-    const name = heroName.trim();
+    const name = overrides.heroNameOverride || heroName.trim();
     const seed = makeStorySeed(name,resolvedTheme,resolvedChars,resolvedOcc,resolvedOccCust,Array.isArray(resolvedLesson)?resolvedLesson.join("|"):resolvedLesson,resolvedAdv,resolvedLen,heroGender,heroClassify,resolvedGuidance);
     const bKey = `book_${seed}`;
     const mk = (n,st="p") => Array.from({length:n},()=>st);
@@ -2139,7 +2184,8 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
         const pro = pronouns(c.gender);
         const proStr = pro ? ` (${pro})` : "";
         const voice = c.classify && classifyVoice[c.classify] ? `\n  Voice/manner: ${classifyVoice[c.classify]}` : "";
-        const typeLabel = c.type==="hero" ? "the hero — the child this story belongs to"
+        const isFreeHero = builderChoices?.path === 'free' && c.type === 'hero';
+        const typeLabel = c.type==="hero" ? (isFreeHero ? "the main character and hero of the story" : "the hero — the child this story belongs to")
           : c.type==="parent" ? "parent/family member"
           : c.type==="pet" ? "beloved pet"
           : c.type==="toy" ? "beloved toy that comes alive in this world"
@@ -2255,16 +2301,16 @@ ${worldLine}${guidLine}${occLine}${lesLine}${moodLine}${paceLine}${styleLine}${t
 
 ${resolvedAdv
   ? `CHOOSE-YOUR-ADVENTURE FORMAT:\nWrite ${setupN} setup pages, then a choice moment, then ${resN} resolution pages per path. Both paths end with ${name} safely, warmly asleep.`
-  : `STORY SHAPE: Target ~${totalN} pages.`}
+  : `STORY SHAPE: Write EXACTLY ${totalN} pages. Not ${totalN-1}, not ${totalN+1}. Exactly ${totalN}.`}
 
 ━━━ OUTPUT ━━━
-Return ONLY this exact JSON object. No extra text, no markdown, no explanation:
+Return ONLY this exact JSON object. No extra text, no markdown, no explanation. Title must be 3-6 words. Each illustration_prompt must be 10-15 words (visual details added automatically by the system).
 ${resolvedAdv ? advSchema : simpleSchema}`;
 
       const raw = await callClaude(
         [{role:"user",content:storyPrompt}],
         promptSystem,
-        8000
+        4096
       );
 
       const story = extractJSON(raw);
@@ -2615,7 +2661,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 window.speechSynthesis?.cancel();
                 if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
                 autoReadRef.current = false; setIsReading(false);
-                setStage("home");
+                onHome ? onHome() : setStage("home");
               }}>
               🏠 Home
             </button>
@@ -2748,743 +2794,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       <div className="moon" />
       <div className="app">
 
-        {/* HOME */}
-        {stage==="home" && (
-          <div className="screen">
-            <div className="brand-row">
-              <div className="brand-gem">🌙</div>
-              <div>
-                <div className="brand-name">SleepSeed</div>
-                <div className="brand-tag">personalized bedtime books</div>
-              </div>
-              <div style={{marginLeft:"auto",display:"flex",gap:6}}>
-                <button className="btn-ghost" style={{fontSize:11,padding:"6px 11px"}} onClick={()=>setStage("memories")}>
-                  📚 Memories
-                </button>
-                <button className="btn-ghost" style={{fontSize:11,padding:"6px 11px",
-                  borderColor:"rgba(160,120,255,.25)",color:"rgba(160,120,255,.8)"}}
-                  onClick={()=>setStage("library")}>
-                  📖 Library
-                </button>
-              </div>
-            </div>
-            <div style={{height:10}} />
-
-            {/* ── Re-read check (from StoryFeedback) ── */}
-            {styleDna?.pendingRereadChecks?.[0] && (
-              <RereadCheck
-                pendingCheck={styleDna.pendingRereadChecks[0]}
-                styleDna={styleDna}
-                onAnswer={(updatedDna) => {
-                  setStyleDna(updatedDna);
-                  sSet("style_dna", updatedDna).catch(()=>{});
-                }}
-                onDismiss={() => {
-                  const updated = {...styleDna, pendingRereadChecks: (styleDna.pendingRereadChecks||[]).slice(1)};
-                  setStyleDna(updated);
-                  sSet("style_dna", updated).catch(()=>{});
-                }}
-              />
-            )}
-
-            {/* ── Demo story strip ── */}
-            <div onClick={()=>{ setBook({...DEMO_BOOK}); setPageIdx(0); setStage("book"); setFromCache(false); }}
-              style={{borderRadius:14,overflow:"hidden",
-                border:"1.5px solid rgba(212,160,48,.5)",
-                boxShadow:"0 0 0 3px rgba(212,160,48,.06)",
-                cursor:"pointer",marginBottom:18,transition:"transform .15s",
-                background:"rgba(13,21,53,.95)"}}
-              onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")}
-              onMouseLeave={e=>(e.currentTarget.style.transform="none")}>
-              <div style={{padding:"11px 14px",display:"flex",alignItems:"center",gap:11}}>
-                <div style={{fontSize:26,flexShrink:0}}>🌙</div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
-                    color:"rgba(212,160,48,.7)",marginBottom:3}}>Example story</div>
-                  <div style={{fontFamily:"'Fraunces',serif",fontSize:13,fontWeight:700,
-                    color:"var(--cream)",lineHeight:1.3,marginBottom:2}}>The Stone in Her Pocket</div>
-                  <div style={{fontSize:9,color:"rgba(140,100,220,.9)",fontWeight:700}}>Tap to read →</div>
-                </div>
-              </div>
-              <div style={{background:"rgba(212,160,48,.05)",padding:"8px 14px",
-                borderTop:"1px solid rgba(212,160,48,.12)",
-                fontFamily:"'Fraunces',serif",fontSize:11,fontStyle:"italic",
-                color:"rgba(240,210,130,.85)",lineHeight:1.6}}>
-                "Adina yawned the kind of yawn that means everything is okay now."
-              </div>
-            </div>
-
-            <div className="card" style={{marginBottom:10}}>
-              <div style={{fontFamily:"'Fraunces',serif",fontSize:17,fontWeight:700,color:"var(--cream)",marginBottom:12,textAlign:"center",fontStyle:"italic"}}>
-                ✨ Tonight's story is for…
-              </div>
-              {heroName.trim().length<1 && (
-                <div style={{textAlign:"center",marginBottom:8}}>
-                  <div style={{fontSize:10,color:"rgba(212,160,48,.7)",
-                    fontStyle:"italic",fontFamily:"'Fraunces',serif",marginBottom:3}}>
-                    Start here. Type your child's name.
-                  </div>
-                  <div style={{fontSize:14,color:"rgba(212,160,48,.6)"}}>↓</div>
-                </div>
-              )}
-              <input className="finput hero-input" placeholder="Your child's name…"
-                value={heroName} onChange={e=>{
-                  setHeroName(e.target.value);
-                  if(!hasSeenOnboard && e.target.value.trim().length >= 1) {
-                    setHasSeenOnboard(true);
-                    sSet("onboarded",{v:true});
-                  }
-                }} maxLength={20}
-                style={{marginBottom:heroName.trim().length<2?6:10,textAlign:"center",
-                  borderColor:heroName.trim().length<2?"rgba(212,160,48,.35)":"rgba(255,255,255,.1)",
-                  transition:"border-color .3s"}} />
-              {heroName.trim().length<2 && (
-                <div style={{textAlign:"center",fontSize:11,color:"rgba(212,160,48,.85)",
-                  marginBottom:10,fontWeight:700,letterSpacing:".02em",animation:"fadeUp .4s ease"}}>
-                  ✦ Type a name to unlock your story ✦
-                </div>
-              )}
-              <div className="gender-row" style={{marginBottom:0}}>
-                {[{v:"",l:"✨ Any",cls:"sel-any"},{v:"girl",l:"👧 Girl",cls:"sel-girl"},{v:"boy",l:"👦 Boy",cls:"sel-boy"}].map(o => (
-                  <button key={o.v} className={`gender-pill${heroGender===o.v?" "+o.cls:""}`} onClick={()=>setHeroGender(o.v)}>{o.l}</button>
-                ))}
-              </div>
-            </div>
-            {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
-            <div className="path-row">
-              <button className="path-btn quick" disabled={heroName.trim().length<2}
-                onClick={()=>{ if(heroName.trim().length<2) return; setStage("quick"); }}>
-                <div className="path-icon">⚡</div>
-                <div className="path-title">Quick Story</div>
-                <div className="path-sub">3 questions,<br/>then generate</div>
-              </button>
-              <button className="path-btn build" disabled={heroName.trim().length<2}
-                onClick={()=>{ if(heroName.trim().length<2) return; setStage("builder"); }}>
-                <div className="path-icon">🎨</div>
-                <div className="path-title">Build My Story</div>
-                <div className="path-sub">Full customise,<br/>more control</div>
-              </button>
-            </div>
-
-
-                        {/* ── About section ── */}
-            <div style={{marginTop:32,paddingTop:22}}>
-
-              {/* Divider 5 — centred stack */}
-              <div style={{textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:4,marginBottom:16}}>
-                <span style={{fontSize:16,filter:"opacity(.55)"}}>🌙</span>
-                <span style={{fontSize:8.5,fontWeight:700,letterSpacing:".13em",textTransform:"uppercase",color:"rgba(212,160,48,.5)"}}>About SleepSeed</span>
-                <div style={{width:26,height:1,background:"rgba(212,160,48,.3)",marginTop:1}} />
-              </div>
-
-              {/* Headline */}
-              <div style={{textAlign:"center",marginBottom:14}}>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:600,
-                  color:"var(--gold2)",marginBottom:8,fontStyle:"italic",lineHeight:1.15,
-                  letterSpacing:".01em"}}>
-                  Bedtime, but better.
-                </div>
-                <div style={{width:36,height:2,background:"linear-gradient(90deg,transparent,rgba(212,160,48,.55),transparent)",
-                  margin:"0 auto 12px"}} />
-                <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
-                  color:"rgba(212,160,48,.78)",lineHeight:1.85,maxWidth:300,margin:"0 auto",padding:"0 4px"}}>
-                  A bedtime story written{" "}
-                  <span style={{color:"var(--gold2)",fontStyle:"italic"}}>just for your child, in seconds</span>
-                  {" "}— about their day, their feelings, or the wildest adventure their imagination can dream up.{" "}
-                  Every night. Always different. Always theirs.
-                </div>
-              </div>
-
-              {/* Three compact cards */}
-              <div style={{display:"flex",gap:6,marginBottom:16}}>
-                {[
-                  {icon:"🌟", title:"Their world", body:"Real life or pure fantasy", accent:"rgba(212,160,48,.15)", border:"rgba(212,160,48,.2)"},
-                  {icon:"💛", title:"Real bonding", body:"Connection every night",    accent:"rgba(76,200,144,.1)",  border:"rgba(76,200,144,.2)"},
-                  {icon:"📄", title:"Keep forever", body:"A real printed book",       accent:"rgba(160,120,255,.1)", border:"rgba(160,120,255,.2)"},
-                ].map(({icon,title,body,accent,border}) => (
-                  <div key={title} style={{flex:1,background:accent,border:`1px solid ${border}`,
-                    borderRadius:11,padding:"10px 8px",textAlign:"center"}}>
-                    <div style={{fontSize:18,marginBottom:5}}>{icon}</div>
-                    <div style={{fontSize:10,fontWeight:700,color:"var(--cream)",marginBottom:3,lineHeight:1.3}}>{title}</div>
-                    <div style={{fontSize:9,color:"rgba(190,200,240,.6)",lineHeight:1.4}}>{body}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Quote */}
-              <div style={{padding:"14px 16px",
-                background:"linear-gradient(135deg,rgba(212,160,48,.07),rgba(180,130,30,.03))",
-                border:"1px solid rgba(212,160,48,.2)",borderRadius:13,marginBottom:14}}>
-                <div style={{fontSize:26,color:"rgba(212,160,48,.22)",fontFamily:"Georgia,serif",
-                  lineHeight:1,marginBottom:5,fontWeight:700}}>"</div>
-                <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
-                  color:"var(--gold3)",lineHeight:1.85,textAlign:"center"}}>
-                  Children don't remember the nights they fell asleep quickly.
-                  They remember the nights someone made something just for them.
-                </div>
-                <div style={{fontSize:26,color:"rgba(212,160,48,.22)",fontFamily:"Georgia,serif",
-                  lineHeight:1,marginTop:4,fontWeight:700,textAlign:"right"}}>"</div>
-              </div>
-
-              <div style={{textAlign:"center",paddingBottom:6}}>
-                <div style={{fontSize:9,color:"rgba(212,160,48,.4)",letterSpacing:".12em",textTransform:"uppercase",fontWeight:700}}>
-                  Made with love · sleepseed.app
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-        )}
-
-        {/* QUICK STORY */}
-        {stage==="quick" && (
-          <div className="screen">
-            <div className="brand-row">
-              <button className="btn-ghost" style={{fontSize:12,padding:"6px 12px",marginRight:8}} onClick={()=>setStage("home")}>← Back</button>
-              <div className="brand-gem">⚡</div>
-              <div>
-                <div className="brand-name" style={{fontSize:16}}>Quick Story</div>
-                <div className="brand-tag">for {heroName}</div>
-              </div>
-            </div>
-            <div style={{height:10}} />
-            <div className="card" style={{marginBottom:10}}>
-              <div style={{display:"flex",flexDirection:"column",gap:18}}>
-
-                {/* Age */}
-                <div>
-                  <div className="section-label" style={{marginBottom:8}}>🎓 How old is {heroName}?</div>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
-                    {AGES.map(a => (
-                      <button key={a.value}
-                        style={{padding:"10px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",
-                          border:`1.5px solid ${ageGroup===a.value?"rgba(100,160,255,.7)":"rgba(255,255,255,.1)"}`,
-                          background:ageGroup===a.value?"rgba(100,160,255,.13)":"rgba(255,255,255,.04)",
-                          transition:"all .2s"}}
-                        onClick={()=>setAgeGroup(a.value)}>
-                        <div style={{fontSize:13,fontWeight:700,color:ageGroup===a.value?"#a8c8ff":"var(--cream)"}}>{a.label}</div>
-                        <div style={{fontSize:9,color:"var(--dimmer)",marginTop:2,textTransform:"uppercase",letterSpacing:".06em"}}>{a.grade}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="divider" />
-
-                {/* Story Length */}
-                <div>
-                  <div className="section-label" style={{marginBottom:8}}>📖 Story Length</div>
-                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                    {LENGTHS.map(l => (
-                      <button key={l.value}
-                        style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",borderRadius:11,cursor:"pointer",
-                          border:`1.5px solid ${storyLen===l.value?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
-                          background:storyLen===l.value?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
-                          transition:"all .2s"}}
-                        onClick={()=>setStoryLen(l.value)}>
-                        <span style={{fontSize:13,fontWeight:700,color:storyLen===l.value?"var(--gold2)":"var(--cream)"}}>{l.label}</span>
-                        <span style={{fontSize:11,color:"var(--dimmer)"}}>{l.desc}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="divider" />
-
-                {/* Open prompt */}
-                <div>
-                  <div className="section-label" style={{marginBottom:8}}>
-                    ✏️ Make it yours <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:9}}>(optional)</span>
-                  </div>
-                  <div style={{display:"flex",gap:6,marginBottom:9}}>
-                    {["Who","What","Where"].map(w => (
-                      <div key={w} style={{padding:"3px 9px",borderRadius:99,fontSize:9,fontWeight:700,letterSpacing:".04em",
-                        border:"1px solid rgba(255,255,255,.12)",color:"rgba(190,200,240,.6)",background:"rgba(255,255,255,.04)"}}>
-                        {w}
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{position:"relative"}}>
-                    <textarea className="ftarea"
-                      style={{fontSize:12,border:"1.5px solid rgba(255,255,255,.2)",background:"rgba(255,255,255,.07)",
-                        minHeight:78,paddingRight:40,"--placeholder-color":"rgba(175,185,225,.7)" as any}}
-                      placeholder={`e.g. '${heroName} and her dog Biscuit find a dragon who is scared of the dark' or 'something funny happens at bedtime involving a very grumpy sock'…`}
-                      value={storyGuidance} onChange={e=>setStoryGuidance(e.target.value)} maxLength={300} />
-                    <button
-                      onClick={startListening}
-                      title="Hold to speak"
-                      style={{position:"absolute",right:8,bottom:8,width:28,height:28,borderRadius:"50%",
-                        border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.4)"}`,
-                        background:isListening?"rgba(240,80,80,.15)":"rgba(212,160,48,.08)",
-                        color:isListening?"#f08080":"rgba(212,160,48,.8)",
-                        fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-                        transition:"all .2s",flexShrink:0}}>
-                      {isListening ? "⏹" : "🎤"}
-                    </button>
-                  </div>
-                  <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
-                    {isListening
-                      ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
-                      : <span>Tap 🎤 to speak · For more control, use <span style={{color:"rgba(160,120,255,.85)",fontWeight:700}}>Build My Story →</span></span>
-                    }
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
-            <button className="btn" style={{marginBottom:10}} onClick={()=>{
-              generate({extraChars:[], occasion:"", occasionCustom:"", lessons:[], adventure:false, storyMood:"", storyPace:"normal", storyStyle:"standard", heroTraits:[]});
-            }}>
-              ✨ Make {heroName}'s story!
-            </button>
-            <div style={{textAlign:"center",fontSize:12,color:"var(--dimmer)",cursor:"pointer"}}
-              onClick={()=>setStage("builder")}>
-              Want more control? → Build My Story
-            </div>
-          </div>
-        )}
-        {/* BUILDER */}
-        {stage==="builder" && (
-          <div className="screen">
-            <div className="brand-row">
-              <button className="btn-ghost" style={{fontSize:12,padding:"6px 12px",marginRight:8}} onClick={()=>setStage("home")}>← Back</button>
-              <div className="brand-gem">🌙</div>
-              <div>
-                <div className="brand-name" style={{fontSize:16}}>{heroName}'s Story</div>
-                <div className="brand-tag">Build your adventure</div>
-              </div>
-            </div>
-            <div style={{height:10}} />
-
-            <div className="card" style={{marginBottom:10}}>
-              <div style={{display:"flex",flexDirection:"column",gap:14}}>
-
-                {/* ── Story Brief Builder ── */}
-                <div>
-                  <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:700,color:"var(--cream)",marginBottom:4}}>
-                    What's tonight's story about?
-                  </div>
-                  <div style={{fontSize:11,color:"var(--dimmer)",marginBottom:10}}>Two steps build your brief — or just type anything</div>
-
-                  {/* Live preview */}
-                  {(storyBrief1||storyBrief2) && (
-                    <div style={{background:"rgba(212,160,48,.07)",border:"1px solid rgba(212,160,48,.2)",borderRadius:10,padding:"10px 13px",fontSize:12,lineHeight:1.7,marginBottom:10,color:"var(--cream)"}}>
-                      {storyBrief1 && <span style={{color:"var(--gold2)",fontWeight:700}}>{heroName} is {storyBrief1}.</span>}
-                      {storyBrief1 && storyBrief2 && " "}
-                      {storyBrief2 && <span>The story should feel <span style={{color:"var(--gold2)",fontWeight:700}}>{storyBrief2}</span>.</span>}
-                    </div>
-                  )}
-
-                  {/* Step 1 */}
-                  <div style={{border:"1px solid rgba(255,255,255,.1)",borderRadius:10,overflow:"hidden",marginBottom:6}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 12px",cursor:"pointer",background:"rgba(255,255,255,.03)"}}
-                      onClick={()=>setBriefStep1Open(o=>!o)}>
-                      <div style={{width:18,height:18,borderRadius:"50%",background:storyBrief1?"rgba(76,200,144,.2)":"rgba(100,160,255,.2)",color:storyBrief1?"#80d8a8":"#a8c8ff",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>1</div>
-                      <div style={{fontSize:11,fontWeight:700,color:"var(--dim)",flex:1}}>Tonight, {heroName} is…</div>
-                      {storyBrief1 && <div style={{fontSize:10,color:"#a8c8ff",maxWidth:150,textAlign:"right",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{storyBrief1}</div>}
-                    </div>
-                    {briefStep1Open && (
-                      <div style={{padding:"10px 12px",borderTop:"1px solid rgba(255,255,255,.07)"}}>
-                        <div style={{fontSize:9,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:5}}>Real life</div>
-                        <div className="guidance-chips" style={{marginBottom:realLifeChip?6:8}}>
-                          {[
-                            {l:"something real today",    v:"going through something real from today",   p:`What happened? e.g. '${heroName} had a falling out with her best friend' or 'he tried really hard at something and didn't quite get there'…`},
-                            {l:"feeling something big",   v:"feeling a big emotion tonight",             p:`What's ${heroName} feeling? e.g. 'she's been really anxious about something' or 'he's upset but not sure why'…`},
-                            {l:"a tricky situation",      v:"dealing with a tricky situation",           p:`What's the situation? e.g. 'there's been tension with a sibling all day' or 'she said something she wishes she hadn't'…`},
-                            {l:"celebrating something",   v:"celebrating something that happened",       p:`What happened? e.g. 'she got the main part in the school play' or 'he finally learned to ride his bike today'…`},
-                          ].map(o => (
-                            <button key={o.v} className={`guidance-chip${storyBrief1===o.v?" on":""}`}
-                              onClick={()=>{ setStoryBrief1(o.v); setRealLifeChip(o.p); setRealLifeCtx(""); }}>
-                              {o.l}
-                            </button>
-                          ))}
-                        </div>
-                        {realLifeChip && (
-                          <div style={{marginBottom:8,animation:"fadeUp .2s ease"}}>
-                            <div style={{fontSize:10,color:"rgba(76,200,144,.8)",marginBottom:4,fontWeight:700}}>
-                              Tell us more <span style={{fontWeight:400,color:"var(--dimmer)"}}>— optional, but makes the story much more personal</span>
-                            </div>
-                            <div style={{position:"relative"}}>
-                              <textarea className="ftarea" rows={2} style={{minHeight:52,fontSize:12,paddingRight:38}}
-                                placeholder={realLifeChip}
-                                value={realLifeCtx}
-                                onChange={e=>setRealLifeCtx(e.target.value)}
-                                maxLength={200} />
-                              <button onClick={()=>{
-                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
-                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
-                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
-                                rec.onstart=()=>setIsListening(true);
-                                rec.onend=()=>setIsListening(false);
-                                rec.onerror=()=>setIsListening(false);
-                                rec.onresult=(e)=>{ const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" "); setRealLifeCtx(g=>g?g+' '+t:t); setIsListening(false); };
-                                rec.start();
-                              }}
-                              title="Tap to speak"
-                              style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
-                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
-                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
-                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
-                                fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-                                transition:"all .2s",flexShrink:0}}>
-                              {isListening ? "⏹" : "🎤"}
-                            </button>
-                            </div>
-                            <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
-                              {isListening
-                                ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
-                                : <span>Tap 🎤 to speak</span>
-                              }
-                            </div>
-                            <button style={{fontSize:10,color:"var(--dimmer)",background:"none",border:"none",cursor:"pointer",padding:"2px 0",textDecoration:"underline"}}
-                              onClick={()=>{ setBriefStep1Open(false); setBriefStep2Open(true); }}>
-                              {realLifeCtx.trim() ? "Done — continue to step 2 →" : "Skip — continue to step 2 →"}
-                            </button>
-                          </div>
-                        )}
-                        <div style={{fontSize:9,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:5}}>Fun &amp; fantasy</div>
-                        <div className="guidance-chips" style={{marginBottom:8}}>
-                          {[
-                            {l:"a made-up adventure",     v:"about to go on a completely made-up adventure"},
-                            {l:"discovering magic",       v:"about to discover something magical"},
-                            {l:"a silly quest",           v:"on a silly quest with friends"},
-                            {l:"a funny world",           v:"in a world where everything goes hilariously wrong"},
-                          ].map(o => (
-                            <button key={o.v}
-                              style={{padding:"4px 10px",borderRadius:99,fontSize:11,fontWeight:700,cursor:"pointer",
-                                border:`1px solid ${storyBrief1===o.v?"rgba(240,180,50,.6)":"rgba(240,180,50,.25)"}`,
-                                background:storyBrief1===o.v?"rgba(240,180,50,.12)":"transparent",
-                                color:storyBrief1===o.v?"#f0cc60":"rgba(240,200,80,.85)",fontFamily:"'Nunito',sans-serif",
-                                transition:"all .15s"}}
-                              onClick={()=>{ setStoryBrief1(o.v); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(false); setBriefStep2Open(true); }}>
-                              {o.l}
-                            </button>
-                          ))}
-                        </div>
-                        <div style={{borderTop:"1px dashed rgba(255,255,255,.12)",margin:"10px 0 10px",paddingTop:10}}>
-                          <div style={{fontSize:11,fontWeight:700,color:"var(--cream)",marginBottom:5}}>
-                            ✏️ Or just write anything you want
-                          </div>
-                          <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginBottom:7,lineHeight:1.5}}>
-                            Skip the chips entirely — describe the story in your own words
-                          </div>
-                          <div style={{position:"relative"}}>
-                            <textarea className="ftarea" rows={3} style={{minHeight:68,fontSize:12,border:"1.5px solid rgba(255,255,255,.18)",background:"rgba(255,255,255,.07)",paddingRight:40}}
-                              placeholder="e.g. 'Lily is nervous about starting at her new school next week' or 'a dragon who is scared of fire goes on a quest to find someone who can help' or 'something silly and funny involving bedtime and a talking sock'…"
-                              value={storyBrief1.startsWith("about")||storyBrief1.startsWith("on ")||storyBrief1.startsWith("in ")||storyBrief1.startsWith("going")||storyBrief1.startsWith("feeling")||storyBrief1.startsWith("dealing")||storyBrief1.startsWith("celebrating")? "":(storyBrief1||"")}
-                              onChange={e=>{ setStoryBrief1(e.target.value); }} />
-                            <button onClick={()=>{
-                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
-                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
-                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
-                                rec.onstart=()=>setIsListening(true);
-                                rec.onend=()=>setIsListening(false);
-                                rec.onerror=()=>setIsListening(false);
-                                rec.onresult=(e)=>{
-                                  const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" ");
-                                  setStoryBrief1(g=>(g&&!["about","on ","in ","going","feeling","dealing","celebrating"].some(p=>g.startsWith(p))?g+" ":"")+t);
-                                  setIsListening(false);
-                                };
-                                rec.start();
-                              }}
-                              title="Tap to speak"
-                              style={{position:"absolute",right:8,bottom:8,width:28,height:28,borderRadius:"50%",
-                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.4)"}`,
-                                background:isListening?"rgba(240,80,80,.15)":"rgba(212,160,48,.08)",
-                                color:isListening?"#f08080":"rgba(212,160,48,.8)",
-                                fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-                                transition:"all .2s"}}>
-                              {isListening ? "⏹" : "🎤"}
-                            </button>
-                          </div>
-                          <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
-                            {isListening
-                              ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
-                              : <span>Tap 🎤 to speak</span>
-                            }
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Step 2 */}
-                  <div style={{border:"1px solid rgba(255,255,255,.1)",borderRadius:10,overflow:"hidden"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 12px",cursor:"pointer",background:"rgba(255,255,255,.03)"}}
-                      onClick={()=>setBriefStep2Open(o=>!o)}>
-                      <div style={{width:18,height:18,borderRadius:"50%",background:storyBrief2?"rgba(76,200,144,.2)":"rgba(100,160,255,.2)",color:storyBrief2?"#80d8a8":"#a8c8ff",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>2</div>
-                      <div style={{fontSize:11,fontWeight:700,color:"var(--dim)",flex:1}}>The story should feel…</div>
-                      {storyBrief2 && <div style={{fontSize:10,color:"#a8c8ff",maxWidth:150,textAlign:"right",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{storyBrief2}</div>}
-                    </div>
-                    {briefStep2Open && (
-                      <div style={{padding:"10px 12px",borderTop:"1px solid rgba(255,255,255,.07)"}}>
-                        <div className="guidance-chips" style={{marginBottom:8}}>
-                          {[
-                            {l:"😂 Warm & funny",     v:"warm and funny, with lots of laughs"},
-                            {l:"🌙 Calm & cosy",      v:"calm and cosy, drifting toward sleep"},
-                            {l:"⚡ Exciting",          v:"exciting and full of surprises"},
-                            {l:"💛 Heartfelt",        v:"heartfelt and emotionally true"},
-                            {l:"🤪 Completely silly", v:"completely silly from start to finish"},
-                            {l:"🔍 Mysterious",       v:"mysterious with a satisfying ending"},
-                          ].map(o => (
-                            <button key={o.v} className={`guidance-chip${storyBrief2===o.v?" on":""}`}
-                              onClick={()=>{ setStoryBrief2(o.v); setBriefStep2Open(false); }}>
-                              {o.l}
-                            </button>
-                          ))}
-                        </div>
-                        <div style={{fontSize:9,color:"var(--dimmer)",marginBottom:4}}>or describe it yourself:</div>
-                        <div style={{position:"relative"}}>
-                          <textarea className="ftarea" rows={1} style={{minHeight:38,fontSize:12,paddingRight:38}}
-                            placeholder="e.g. gentle and slow, action-packed, the funniest story ever told…"
-                            value={["warm and funny, with lots of laughs","calm and cosy, drifting toward sleep","exciting and full of surprises","heartfelt and emotionally true","completely silly from start to finish","mysterious with a satisfying ending"].includes(storyBrief2)?"":storyBrief2}
-                            onChange={e=>setStoryBrief2(e.target.value)} />
-                          <button onClick={()=>{
-                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
-                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
-                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
-                                rec.onstart=()=>setIsListening(true);
-                                rec.onend=()=>setIsListening(false);
-                                rec.onerror=()=>setIsListening(false);
-                                rec.onresult=(e)=>{ const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" "); setStoryBrief2(g=>g?g+' '+t:t); setIsListening(false); };
-                                rec.start();
-                              }}
-                              title="Tap to speak"
-                              style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
-                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
-                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
-                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
-                                fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-                                transition:"all .2s",flexShrink:0}}>
-                              {isListening ? "⏹" : "🎤"}
-                            </button>
-                        </div>
-                        <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
-                          {isListening
-                            ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
-                            : <span>Tap 🎤 to speak</span>
-                          }
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="divider" />
-
-                {/* ── Characters ── */}
-                <div>
-                  <div className="section-label" style={{marginBottom:8}}>👥 Who's in the story with {heroName}?</div>
-                  {extraChars.length<4 && (
-                    <div style={{marginBottom:extraChars.length?10:0}}>
-                      <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-                        {CHAR_TYPES.map(t => (
-                          <button key={t.value} className="char-add-pill"
-                            onClick={()=>setExtraChars(cs=>[...cs,{...newChar(),type:t.value}])}>
-                            <span className="char-add-pill-icon">{t.icon}</span>
-                            <span>+ {t.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {extraChars.length>0 && (
-                    <div className="char-simple-list">
-                      {extraChars.map(c => (
-                        <div className="char-simple-row" key={c.id}>
-                          <div className="char-photo" style={{width:34,height:34,fontSize:16,borderRadius:8,flexShrink:0}} onClick={()=>pickPhoto(c.id)}>
-                            {c.photo ? <img src={c.photo.preview} alt={c.name} /> : <span>{CHAR_ICONS[c.type]||"👫"}</span>}
-                          </div>
-                          <div style={{display:"flex",flexDirection:"column",gap:4,flex:1}}>
-                            <input className="char-name-in"
-                              placeholder={`${CHAR_TYPES.find(t=>t.value===c.type)?.label||"Friend"}'s name…`}
-                              value={c.name} maxLength={16}
-                              onChange={e=>updateExtraChar(c.id,{name:e.target.value})} />
-                            <input className="char-name-in"
-                              placeholder={`Tell me about ${c.name||"them"}… e.g. 'best friend she argued with' or 'funny little brother'`}
-                              value={c.note||""} maxLength={80}
-                              style={{fontSize:10,opacity:.85}}
-                              onChange={e=>updateExtraChar(c.id,{note:e.target.value})} />
-                          </div>
-                          <button className="btn-danger" style={{flexShrink:0,alignSelf:"flex-start"}} onClick={()=>removeExtraChar(c.id)}>✕</button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="divider" />
-
-                {/* ── Lessons ── */}
-                <div>
-                  <div className="section-label" style={{marginBottom:8}}>💛 Sneak in a lesson? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
-                  <div className="les-pills">
-                    {[...LESSONS_CHARACTER,...LESSONS_EMOTIONAL].map(l => (
-                      <button key={l.value} className={`les-pill${lessons.includes(l.value)?" on":""}`}
-                        onClick={()=>setLessons(ls=>ls.includes(l.value)?ls.filter(x=>x!==l.value):[...ls,l.value])}>
-                        {l.label}
-                      </button>
-                    ))}
-                  </div>
-                  {lessons.length>0 && (
-                    <div style={{marginTop:8}}>
-                      <div style={{fontSize:10,color:"rgba(190,200,240,.65)",marginBottom:4}}>
-                        What's {heroName} experiencing? <span style={{opacity:.7}}>(makes it feel real, not preachy)</span>
-                      </div>
-                      <div style={{position:"relative"}}>
-                        <textarea className="ftarea" rows={1} style={{minHeight:40,fontSize:12,paddingRight:38}}
-                          placeholder={`e.g. '${heroName} has been scared about swimming lessons tomorrow' or 'gets very frustrated when things don't go her way'…`}
-                          value={lessonContext} onChange={e=>setLessonContext(e.target.value)} maxLength={200} />
-                        <button onClick={()=>{
-                                const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
-                                if(!SR){alert("Voice input isn't supported in this browser. Try Chrome or Safari.");return;}
-                                const rec=new SR(); rec.lang="en-US"; rec.continuous=false; rec.interimResults=false;
-                                rec.onstart=()=>setIsListening(true);
-                                rec.onend=()=>setIsListening(false);
-                                rec.onerror=()=>setIsListening(false);
-                                rec.onresult=(e)=>{ const t=Array.from(e.results).map((r:any)=>r[0].transcript).join(" "); setLessonContext(g=>g?g+' '+t:t); setIsListening(false); };
-                                rec.start();
-                              }}
-                              title="Tap to speak"
-                              style={{position:"absolute",right:8,bottom:8,width:26,height:26,borderRadius:"50%",
-                                border:`1.5px solid ${isListening?"rgba(240,80,80,.6)":"rgba(212,160,48,.35)"}`,
-                                background:isListening?"rgba(240,80,80,.12)":"rgba(212,160,48,.06)",
-                                color:isListening?"#f08080":"rgba(212,160,48,.7)",
-                                fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-                                transition:"all .2s",flexShrink:0}}>
-                              {isListening ? "⏹" : "🎤"}
-                            </button>
-                      </div>
-                      <div style={{fontSize:10,color:"rgba(190,200,240,.7)",marginTop:5,textAlign:"center",lineHeight:1.5}}>
-                        {isListening
-                          ? <span style={{color:"rgba(240,80,80,.85)",fontWeight:700}}>Listening… speak now</span>
-                          : <span>Tap 🎤 to speak</span>
-                        }
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="divider" />
-
-                {/* ── Settings ── */}
-                <div>
-                  <div className="section-label" style={{marginBottom:8}}>📖 Story settings</div>
-                  <div style={{marginBottom:8}}>
-                    <div style={{fontSize:10,color:"rgba(190,200,240,.65)",marginBottom:5}}>Age group</div>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-                      {AGES.map(a => (
-                        <button key={a.value}
-                          style={{padding:"9px 10px",borderRadius:11,cursor:"pointer",textAlign:"center",
-                            border:`1.5px solid ${ageGroup===a.value?"rgba(100,160,255,.7)":"rgba(255,255,255,.1)"}`,
-                            background:ageGroup===a.value?"rgba(100,160,255,.13)":"rgba(255,255,255,.04)",
-                            transition:"all .2s"}}
-                          onClick={()=>setAgeGroup(a.value)}>
-                          <div style={{fontSize:12,fontWeight:700,color:ageGroup===a.value?"#a8c8ff":"var(--cream)"}}>{a.label}</div>
-                          <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1,textTransform:"uppercase",letterSpacing:".05em"}}>{a.grade}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{fontSize:10,color:"rgba(190,200,240,.65)",marginBottom:5}}>Story length</div>
-                    <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                      {LENGTHS.map(l => (
-                        <button key={l.value}
-                          style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 13px",borderRadius:11,cursor:"pointer",textAlign:"left",
-                            border:`1.5px solid ${storyLen===l.value?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
-                            background:storyLen===l.value?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
-                            transition:"all .2s"}}
-                          onClick={()=>setStoryLen(l.value)}>
-                          <span style={{fontSize:12,fontWeight:700,color:storyLen===l.value?"var(--gold2)":"var(--cream)"}}>{l.label}</span>
-                          <span style={{fontSize:10,color:"var(--dimmer)"}}>{l.desc}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="divider" />
-
-                {/* ── More options ── */}
-                <div>
-                  <button style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",
-                    background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:12,
-                    padding:"10px 14px",cursor:"pointer"}}
-                    onClick={()=>setMoreOpen(o=>!o)}>
-                    <div style={{textAlign:"left"}}>
-                      <div style={{fontSize:12,fontWeight:700,color:"var(--cream)"}}>✨ More options</div>
-                      <div style={{fontSize:10,fontWeight:400,color:"var(--dimmer)",marginTop:2}}>Special night · pace · style · {heroName}'s personality</div>
-                    </div>
-                    <span style={{fontSize:12,color:"var(--dim)",transition:"transform .25s",transform:moreOpen?"rotate(180deg)":"none"}}>▼</span>
-                  </button>
-
-                  {moreOpen && (
-                    <div style={{display:"flex",flexDirection:"column",gap:14,marginTop:14}}>
-
-                      <div>
-                        <div className="section-label" style={{marginBottom:6}}>🎉 Is tonight a special night? <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"rgba(190,200,240,.65)",fontSize:10}}>(optional)</span></div>
-                        <input className="finput" style={{fontSize:13}}
-                          placeholder="e.g. Birthday, 1st day of school tomorrow, lost a tooth, new baby…"
-                          value={occasionCustom} onChange={e=>setOccasionCustom(e.target.value)} maxLength={120} />
-                      </div>
-
-                      <div className="divider" />
-
-                      <div>
-                        <div className="section-label" style={{marginBottom:8}}>💤 Narration pace</div>
-                        <div className="les-pills">
-                          {[{v:"normal",l:"Normal"},{v:"sleepy",l:"😴 Extra sleepy"},{v:"snappy",l:"⚡ Quick & snappy"}].map(o => (
-                            <button key={o.v} className={`les-pill${storyPace===o.v?" on":""}`}
-                              onClick={()=>setStoryPace(o.v)}>{o.l}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="divider" />
-
-                      <div>
-                        <div className="section-label" style={{marginBottom:8}}>📚 Story style</div>
-                        <div className="les-pills">
-                          {[{v:"standard",l:"Standard"},{v:"rhyming",l:"🎵 Rhyming"},{v:"adventure",l:"🔀 Choose-your-adventure"},{v:"mystery",l:"🔍 Mystery"}].map(o => (
-                            <button key={o.v} className={`les-pill${storyStyle===o.v?" on":""}`}
-                              onClick={()=>setStoryStyle(o.v)}>{o.l}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="divider" />
-
-                      <div>
-                        <div className="section-label" style={{marginBottom:8}}>✨ {heroName} is… <span style={{fontWeight:400,textTransform:"none",letterSpacing:0,color:"var(--dimmer)",fontSize:10}}>(optional)</span></div>
-                        <div className="les-pills">
-                          {["Brave","Silly","Curious","Kind","Adventurous","Shy","Clever","Caring"].map(t => (
-                            <button key={t} className={`les-pill${heroTraits.includes(t)?" on":""}`}
-                              onClick={()=>setHeroTraits(ts=>ts.includes(t)?ts.filter(x=>x!==t):[...ts,t])}>
-                              {t}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                    </div>
-                  )}
-                </div>
-
-              </div>
-            </div>
-
-            {error && <div className="err-box" style={{marginBottom:8}}>⚠️ {error}</div>}
-            <button className="btn" style={{marginBottom:16}} onClick={()=>generate({storyBrief1,storyBrief2,realLifeCtx})}>
-              ✨ Make {heroName}'s story!
-            </button>
-          </div>
-        )}
+        {/* HOME/QUICK/BUILDER stages removed — handled by StoryWizard */}
         {/* GENERATING */}
         {/* GENERATING */}
         {stage==="generating" && (
@@ -3587,7 +2897,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               <button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={()=>{
                 setError("");
                 if (onGenerateError) { onGenerateError(); return; }
-                setStage("home");
+                onHome ? onHome() : setStage("home");
               }}>
                 ← Back
               </button>
@@ -3604,7 +2914,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                   window.speechSynthesis?.cancel();
                   if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
                   autoReadRef.current = false; setIsReading(false);
-                  setStage("home");
+                  onHome ? onHome() : setStage("home");
                 }}>
                 <div className="brand-gem" style={{width:30,height:30,fontSize:15,borderRadius:9}}>🌙</div>
                 <span className="brand-name" style={{fontSize:16}}>SleepSeed</span>
@@ -3678,7 +2988,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                     if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
                     autoReadRef.current = false;
                     setStoryContext(""); setLessonContext(""); setTodayPrompt(""); setStoryBrief1(""); setStoryBrief2(""); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(true); setBriefStep2Open(false);
-                    setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
+                    onHome ? onHome() : setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
                   }}>🔄 New Story</button>
                   <div style={{padding:'6px 14px',fontSize:10,color:'rgba(76,200,144,.6)'}}>✓ Auto-saved</div>
                 </div>
@@ -4134,7 +3444,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                 <div className="brand-tag">memories library</div>
               </div>
               <button className="btn-ghost" style={{marginLeft:"auto",fontSize:12,padding:"6px 12px"}}
-                onClick={()=>setStage("home")}>🏠 Home</button>
+                onClick={()=>onHome ? onHome() : setStage("home")}>🏠 Home</button>
             </div>
             <div style={{height:12}} />
 
@@ -4161,7 +3471,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                     <div style={{fontSize:38,marginBottom:10}}>🌙</div>
                     <div style={{fontSize:14,fontWeight:700,color:"var(--dim)",marginBottom:6,fontFamily:"'Fraunces',serif"}}>No stories yet</div>
                     <div style={{fontSize:12,color:"var(--dimmer)",marginBottom:16,lineHeight:1.6}}>Generate your first story — it'll be saved here automatically.</div>
-                    <button className="btn" onClick={()=>setStage("home")}>✨ Make a story</button>
+                    <button className="btn" onClick={()=>onHome ? onHome() : setStage("home")}>✨ Make a story</button>
                   </div>
                 ) : (
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -4197,7 +3507,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                         )}
                       </div>
                     ))}
-                    <button className="btn-ghost" style={{marginTop:4,fontSize:12}} onClick={()=>setStage("home")}>
+                    <button className="btn-ghost" style={{marginTop:4,fontSize:12}} onClick={()=>onHome ? onHome() : setStage("home")}>
                       ✨ Make a new story
                     </button>
                   </div>
@@ -4216,7 +3526,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                     <div style={{fontSize:38,marginBottom:10}}>🌙</div>
                     <div style={{fontSize:14,fontWeight:700,color:"var(--dim)",marginBottom:6,fontFamily:"'Fraunces',serif"}}>No Night Cards yet</div>
                     <div style={{fontSize:12,color:"var(--dimmer)",marginBottom:16,lineHeight:1.6}}>After each story, a Night Card is created — a little keepsake from tonight.</div>
-                    <button className="btn" onClick={()=>setStage("home")}>✨ Make a story</button>
+                    <button className="btn" onClick={()=>onHome ? onHome() : setStage("home")}>✨ Make a story</button>
                   </div>
                 ) : (
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -4272,7 +3582,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                         </div>
                       </div>
                     ))}
-                    <button className="btn-ghost" style={{marginTop:4,fontSize:12}} onClick={()=>setStage("home")}>
+                    <button className="btn-ghost" style={{marginTop:4,fontSize:12}} onClick={()=>onHome ? onHome() : setStage("home")}>
                       ✨ Make a new story
                     </button>
                   </div>
@@ -4289,7 +3599,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               background:"rgba(6,11,24,.9)",backdropFilter:"blur(12px)",
               display:"flex",alignItems:"center",gap:8}}>
               <button className="btn-ghost" style={{fontSize:12,padding:"6px 12px"}}
-                onClick={()=>setStage("home")}>← Home</button>
+                onClick={()=>onHome ? onHome() : setStage("home")}>← Home</button>
             </div>
             <SleepSeedLibrary />
           </div>
