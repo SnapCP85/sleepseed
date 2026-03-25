@@ -8,13 +8,41 @@ import type { BuilderChoices, Character, HatchedCreature } from '../lib/types';
    CONSTANTS
    ══════════════════════════════════════════════════════════════════════ */
 
-const OCCASIONS = [
+const RITUAL_QUESTIONS = [
+  "Was there a moment today you wanted to hold onto?",
+  "Did something happen today that's still sitting with you?",
+  "Was anyone kind to them today \u2014 or unkind?",
+  "What do you wish you'd said \u2014 or done differently today?",
+  "Was there a quiet moment today that mattered more than it looked?",
+  "What did they say today that you don't want to forget?",
+  "Was there something heavy they carried home today?",
+  "What made them laugh today \u2014 really laugh?",
+  "Was there a moment today where you saw who they're becoming?",
+  "Did anything surprise you about them today?",
+];
+
+const CREATE_QUESTIONS = [
+  "What's something weird your child said this week?",
+  "If they could go anywhere impossible tonight, where?",
+  "What's a rule at home that would be funny if it were a law?",
+  "Name something your child is inexplicably obsessed with right now.",
+  "What's the silliest thing that actually happened this week?",
+  "If your child had a superpower they don't know about, what is it?",
+  "What would they do if they woke up and everything was slightly wrong?",
+  "What's something they're convinced is true that definitely isn't?",
+  "What would their creature companion say about them right now?",
+  "What's the most dramatic thing that happened this week?",
+];
+
+const OCCASION_OPTIONS = [
   { emoji: '\u{1F382}', label: 'Birthday' },
-  { emoji: '\u{1F3EB}', label: 'First day' },
-  { emoji: '\u{1F31F}', label: 'Big win' },
   { emoji: '\u{1F614}', label: 'Hard day' },
-  { emoji: '\u{1F3E0}', label: 'New home' },
+  { emoji: '\u{1F31F}', label: 'Big win' },
+  { emoji: '\u{1F3EB}', label: 'First day' },
   { emoji: '\u2764\uFE0F', label: 'Missing someone' },
+  { emoji: '\u{1F3E0}', label: 'New home' },
+  { emoji: '\u{1F3E5}', label: 'Feeling sick' },
+  { emoji: '\u{1F44F}', label: 'Proud moment' },
 ];
 
 const WORLDS = [
@@ -307,7 +335,7 @@ interface StoryCreatorProps {
 
 export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) {
   const {
-    user,
+    user, view,
     selectedCharacters, selectedCharacter,
     setSelectedCharacter, setCompanionCreature,
     companionCreature,
@@ -316,6 +344,9 @@ export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) 
   const primaryChar = selectedCharacters[0] ?? selectedCharacter ?? null;
   const childName = primaryChar?.name ?? 'friend';
   const defaultLevel = ageDescToLevel(primaryChar?.ageDescription);
+
+  // Entry mode: ritual (from dashboard) or create (from Create button)
+  const entryMode = view === 'ritual-starter' ? 'ritual' : 'create';
 
   // ── Data ──
   const [loading, setLoading] = useState(true);
@@ -361,7 +392,11 @@ export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) 
   const [transcript, setTranscript] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [occasion, setOccasion] = useState('');
+
+  // Inspiration & occasion state
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [occasionTag, setOccasionTag] = useState('');
+  const [occasionDismissed, setOccasionDismissed] = useState(false);
 
   // Adventure state
   const [worldChoice, setWorldChoice] = useState('');
@@ -391,6 +426,16 @@ export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) 
   const hasSpeechAPI = typeof window !== 'undefined' &&
     !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
 
+  // ── Inspiration & occasion derived values ──
+  const questionBank = entryMode === 'ritual' ? RITUAL_QUESTIONS : CREATE_QUESTIONS;
+  const currentQuestion = questionBank[questionIndex % questionBank.length];
+  const hasContent = (transcript.trim().length > 3) || (brief.trim().length > 3);
+  const showInspiration = !hasContent;
+  const showOccasionTag = hasContent && !occasionDismissed;
+
+  const shuffleQuestion = () => setQuestionIndex(i => i + 1);
+  const useQuestion = () => { setBrief(currentQuestion); setTranscript(''); };
+
   // ── Mode switch clears relevant state ──
   const switchMode = useCallback((m: 'today' | 'adventure') => {
     setMode(m);
@@ -401,6 +446,9 @@ export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) 
     setWorldChoice('');
     setCustomWorld('');
     setShowCustomWorldInput(false);
+    setQuestionIndex(0);
+    setOccasionTag('');
+    setOccasionDismissed(false);
     if (isListening) { srRef.current?.stop(); setIsListening(false); }
   }, [isListening]);
 
@@ -540,7 +588,7 @@ export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) 
       brief: finalBrief,
       chars: castChars,
       lessons,
-      occasion,
+      occasion: occasionTag,
       occasionCustom: '',
       style,
       pace: 'normal',
@@ -620,24 +668,92 @@ export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) 
         {/* ═══ MY DAY INPUT ZONE ═══ */}
         {mode === 'today' && (
           <div style={{ animation: 'slideUp .25s ease both' }}>
-            {/* Occasion pills */}
-            <div className="sc-occ-label">Any occasion tonight?</div>
-            <div className="sc-occ-row">
-              {OCCASIONS.map(o => (
-                <button
-                  key={o.label}
-                  className={`sc-occ${occasion === o.label ? ' on' : ''}`}
-                  onClick={() => setOccasion(occasion === o.label ? '' : o.label)}
+            {/* Inspiration card */}
+            {showInspiration && (
+              <div style={{
+                background: entryMode === 'ritual'
+                  ? 'rgba(245,184,76,.05)'
+                  : 'rgba(20,216,144,.04)',
+                border: `1px solid ${entryMode === 'ritual'
+                  ? 'rgba(245,184,76,.15)'
+                  : 'rgba(20,216,144,.14)'}`,
+                borderRadius: 14,
+                padding: '11px 13px',
+                flexShrink: 0,
+                animation: 'slideUp .3s ease-out',
+                marginBottom: 14,
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 8,
+                }}>
+                  <div style={{
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: 8,
+                    letterSpacing: '.1em',
+                    textTransform: 'uppercase' as const,
+                    color: entryMode === 'ritual'
+                      ? 'rgba(245,184,76,.45)'
+                      : 'rgba(20,216,144,.45)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 5,
+                  }}>
+                    {entryMode === 'ritual' ? '\u2726' : '\u2728'}{' '}
+                    Need some inspiration?
+                  </div>
+                  <button
+                    onClick={shuffleQuestion}
+                    style={{
+                      fontFamily: entryMode === 'ritual'
+                        ? "'Fraunces', serif"
+                        : "'Baloo 2', cursive",
+                      fontSize: 10,
+                      fontStyle: entryMode === 'ritual' ? 'italic' : 'normal',
+                      fontWeight: entryMode === 'ritual' ? 400 : 800,
+                      color: entryMode === 'ritual'
+                        ? 'rgba(245,184,76,.4)'
+                        : 'rgba(20,216,144,.4)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                    }}
+                  >
+                    {'\u{1F500}'} different
+                  </button>
+                </div>
+                <div
+                  onClick={useQuestion}
+                  style={{
+                    fontFamily: entryMode === 'ritual'
+                      ? "'Fraunces', serif"
+                      : "'Baloo 2', cursive",
+                    fontSize: 13,
+                    fontStyle: entryMode === 'ritual' ? 'italic' : 'normal',
+                    fontWeight: entryMode === 'ritual' ? 400 : 700,
+                    color: 'rgba(255,255,255,.75)',
+                    lineHeight: 1.6,
+                    cursor: 'pointer',
+                    marginBottom: 8,
+                  }}
                 >
-                  {o.emoji} {o.label}
-                </button>
-              ))}
-              {occasion && (
-                <button className="sc-occ" onClick={() => setOccasion('')}>
-                  {'\u2715'}
-                </button>
-              )}
-            </div>
+                  &ldquo;{currentQuestion}&rdquo;
+                </div>
+                <div style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: 8,
+                  letterSpacing: '.04em',
+                  color: entryMode === 'ritual'
+                    ? 'rgba(245,184,76,.3)'
+                    : 'rgba(20,216,144,.3)',
+                }}>
+                  {'\u2191'} tap to use {'\u00B7'} {'\u{1F500}'} to see another
+                </div>
+              </div>
+            )}
 
             {/* Voice button */}
             {hasSpeechAPI && (
@@ -767,6 +883,94 @@ export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) 
                 />
               </div>
             )}
+          </div>
+        )}
+
+        {/* ═══ OCCASION TAG ═══ */}
+        {showOccasionTag && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column' as const,
+            gap: 6,
+            animation: 'slideUp .3s ease-out',
+            flexShrink: 0,
+            marginTop: 10,
+            marginBottom: 4,
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+              <span style={{
+                fontFamily: entryMode === 'ritual'
+                  ? "'Fraunces', serif"
+                  : "'DM Mono', monospace",
+                fontSize: entryMode === 'ritual' ? 11 : 8,
+                fontStyle: entryMode === 'ritual' ? 'italic' : 'normal',
+                letterSpacing: entryMode === 'ritual' ? 0 : '.08em',
+                textTransform: entryMode === 'ritual' ? 'none' as const : 'uppercase' as const,
+                color: 'rgba(255,255,255,.28)',
+              }}>
+                {entryMode === 'ritual' ? 'Tag this story' : 'Tag this story (optional)'}
+              </span>
+              <button
+                onClick={() => setOccasionDismissed(true)}
+                style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: 8,
+                  color: 'rgba(255,255,255,.2)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  letterSpacing: '.04em',
+                }}
+              >
+                Skip {'\u2192'}
+              </button>
+            </div>
+            <div style={{
+              display: 'flex',
+              gap: 5,
+              overflowX: 'auto' as const,
+              paddingBottom: 2,
+              scrollbarWidth: 'none' as const,
+            }}>
+              {OCCASION_OPTIONS.map(occ => {
+                const isSelected = occasionTag === occ.label;
+                const activeColor = entryMode === 'ritual'
+                  ? 'rgba(245,184,76,'
+                  : 'rgba(20,216,144,';
+                return (
+                  <button
+                    key={occ.label}
+                    onClick={() => setOccasionTag(isSelected ? '' : occ.label)}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: 50,
+                      fontSize: 10,
+                      cursor: 'pointer',
+                      border: isSelected
+                        ? `1px solid ${activeColor}.38)`
+                        : '1px solid rgba(255,255,255,.1)',
+                      background: isSelected
+                        ? `${activeColor}.1)`
+                        : 'rgba(255,255,255,.04)',
+                      color: isSelected
+                        ? (entryMode === 'ritual' ? '#F5B84C' : '#14d890')
+                        : 'rgba(255,255,255,.42)',
+                      fontFamily: "'Nunito', sans-serif",
+                      fontWeight: 700,
+                      whiteSpace: 'nowrap' as const,
+                      flexShrink: 0,
+                      transition: 'all .2s',
+                    }}
+                  >
+                    {occ.emoji} {occ.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
