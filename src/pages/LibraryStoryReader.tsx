@@ -532,10 +532,24 @@ export default function LibraryStoryReader({ slug }: Props) {
           <button className="lr-nav-btn" disabled={isLast} onClick={() => goPage(1)}>Next →</button>
         </div>
 
-        <button className="lr-menu-btn" onClick={() => setMenuOpen(!menuOpen)}>
-          <svg viewBox="0 0 20 20" fill="currentColor"><circle cx="4" cy="10" r="1.8"/><circle cx="10" cy="10" r="1.8"/><circle cx="16" cy="10" r="1.8"/></svg>
-          Options
-        </button>
+        <div style={{display:'flex',gap:8,marginBottom:6}}>
+          <button className="lr-play-btn" onClick={() => setReadAloudActive(!readAloudActive)} style={{
+            flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+            padding:'10px 14px',borderRadius:10,border:'1.5px solid rgba(245,184,76,.25)',
+            background:readAloudActive?'rgba(245,184,76,.15)':'rgba(245,184,76,.06)',
+            color:readAloudActive?'#F5B84C':'rgba(245,184,76,.7)',fontSize:13,fontWeight:600,
+            cursor:'pointer',fontFamily:'var(--body)',transition:'all .2s'}}>
+            {readAloudActive ? '\u23F8 Pause' : '\u{1F50A} Read Aloud'}
+          </button>
+          <button className="lr-menu-btn" onClick={() => setMenuOpen(!menuOpen)} style={{
+            flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+            padding:'10px 14px',borderRadius:10,border:'1.5px solid rgba(255,255,255,.12)',
+            background:'rgba(255,255,255,.07)',color:'var(--cream)',fontSize:13,fontWeight:600,
+            cursor:'pointer',fontFamily:'var(--body)',transition:'all .2s'}}>
+            <svg viewBox="0 0 20 20" fill="currentColor" style={{width:16,height:16}}><circle cx="4" cy="10" r="1.8"/><circle cx="10" cy="10" r="1.8"/><circle cx="16" cy="10" r="1.8"/></svg>
+            Options
+          </button>
+        </div>
 
         {menuOpen && (
           <>
