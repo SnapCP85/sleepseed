@@ -92,7 +92,7 @@ const CSS=`
   --cta:'Baloo 2',system-ui,sans-serif;
   --mono:'DM Mono',monospace;
 }
-.dash{min-height:100vh;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;padding-bottom:80px}
+.dash{min-height:100vh;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;padding-bottom:100px}
 @keyframes twk{0%,100%{opacity:.15}50%{opacity:.85}}
 @keyframes twk2{0%,100%{opacity:.35}60%{opacity:.1}}
 @keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
@@ -372,16 +372,66 @@ const CSS=`
 .dash-sh-bq{font-family:var(--serif);font-size:11px;font-style:italic;color:rgba(255,255,255,.38);margin-bottom:6px;line-height:1.5}
 .dash-sh-ba{font-family:var(--sans);font-size:13px;font-weight:700;color:rgba(255,255,255,.75);line-height:1.5}
 
-/* ── BOTTOM TABS ── */
-.dash-tabs{display:flex;background:rgba(3,6,14,.97);border-top:1px solid rgba(255,255,255,.07);padding:8px 0 6px;position:fixed;bottom:0;left:0;right:0;z-index:20;backdrop-filter:blur(16px)}
-.dash-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 0;transition:all .15s;-webkit-tap-highlight-color:transparent}
-.dash-tab-ico{font-size:20px;line-height:1}
-.dash-tab-lbl{font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.02em}
-.dash-tab.on .dash-tab-lbl{color:var(--amber2)}
-.dash-tab.on-t .dash-tab-lbl{color:#14d890}
-.dash-tab:not(.on):not(.on-t) .dash-tab-lbl{color:rgba(255,255,255,.35)}
-.dash-tab:not(.on):not(.on-t) .dash-tab-ico{opacity:.45}
-.dash-tab-pip{width:4px;height:4px;border-radius:50%;background:var(--amber2);animation:pring 2.2s ease-in-out infinite;margin-top:2px}
+/* ── PROFILE AVATAR ── */
+.dash-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(145deg,#1a0e32,#2e1858);border:1.5px solid rgba(160,96,240,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .22s;flex-shrink:0;position:relative}
+.dash-avatar:hover{border-color:rgba(160,96,240,.62);background:linear-gradient(145deg,#2e1858,#4818a0)}
+.dash-avatar-pip{position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:#14d890;border:1.5px solid var(--night)}
+
+/* ── NEW NAV BAR ── */
+.dash-navbar{position:fixed;bottom:0;left:0;right:0;height:72px;background:linear-gradient(180deg,rgba(2,4,12,.94) 0%,rgba(4,6,18,.98) 100%);border-top:1px solid rgba(255,255,255,.06);backdrop-filter:blur(24px);display:flex;align-items:center;justify-content:space-around;padding:4px 6px 0;z-index:30;padding-bottom:max(4px,env(safe-area-inset-bottom))}
+.dash-navbar::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,.14),transparent)}
+.dash-nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:10px 4px 12px;transition:all .2s;-webkit-tap-highlight-color:transparent;position:relative;border-radius:14px}
+.dash-nav-tab svg{transition:opacity .2s,transform .2s;opacity:.28}
+.dash-nav-tab-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.22);transition:color .2s;white-space:nowrap}
+.dash-nav-tab.on::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:24px;height:2px;border-radius:0 0 2px 2px}
+.dash-nav-tab.on-amber{background:rgba(245,184,76,.06)}
+.dash-nav-tab.on-amber::after{background:linear-gradient(90deg,transparent,#F5B84C,transparent)}
+.dash-nav-tab.on-amber svg{opacity:1}
+.dash-nav-tab.on-amber .dash-nav-tab-lbl{color:rgba(245,184,76,.82)}
+.dash-nav-tab.on-purple{background:rgba(160,96,240,.06)}
+.dash-nav-tab.on-purple::after{background:linear-gradient(90deg,transparent,#c090ff,transparent)}
+.dash-nav-tab.on-purple svg{opacity:1}
+.dash-nav-tab.on-purple .dash-nav-tab-lbl{color:rgba(160,96,240,.78)}
+.dash-nav-tab:active svg{transform:scale(.88)}
+
+/* ── CENTRE CREATE ── */
+.dash-nav-create{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:-20px;padding-bottom:4px;position:relative}
+.dash-nav-create-ring{position:absolute;width:70px;height:70px;border-radius:50%;pointer-events:none;box-shadow:0 0 0 1px rgba(245,184,76,.14),0 0 28px rgba(245,184,76,.2),0 0 56px rgba(245,184,76,.08);animation:pglow 3.5s ease-in-out infinite}
+@keyframes pglow{0%,100%{box-shadow:0 0 0 1px rgba(245,184,76,.14),0 0 28px rgba(245,184,76,.2)}50%{box-shadow:0 0 0 1px rgba(245,184,76,.22),0 0 38px rgba(245,184,76,.45)}}
+.dash-nav-create-btn{width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 38% 32%,rgba(255,235,140,.35) 0%,transparent 60%),linear-gradient(145deg,#b07018,#F5B84C 42%,#c88020 68%,#a06010);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform .18s,filter .18s;box-shadow:0 0 0 1.5px rgba(255,230,120,.28),0 6px 20px rgba(180,110,10,.6),inset 0 1px 0 rgba(255,240,160,.22)}
+.dash-nav-create-btn::after{content:'';position:absolute;top:-20%;left:-60%;width:40%;height:140%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.17),transparent);transform:skewX(-15deg);animation:shimmer 3.2s ease-in-out infinite}
+.dash-nav-create-btn:active{transform:scale(.91);filter:brightness(.88)}
+.dash-nav-create-lbl{font-family:var(--serif);font-size:9px;font-style:italic;color:rgba(245,184,76,.52);letter-spacing:.01em;white-space:nowrap}
+
+/* unread dot */
+.dash-nav-unread{position:absolute;top:10px;right:calc(50% - 16px);width:7px;height:7px;border-radius:50%;background:#c090ff;border:1.5px solid var(--night);animation:twk 2s ease-in-out infinite}
+
+/* ── MY STUFF SHEET ── */
+.dash-ms-bd{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:60;animation:fadein .22s ease}
+.dash-ms-sheet{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(175deg,#080b20 0%,#06091a 100%);border-radius:24px 24px 0 0;border-top:1px solid rgba(255,255,255,.07);z-index:61;padding-bottom:max(16px,env(safe-area-inset-bottom));animation:sheetUp .28s cubic-bezier(.22,.68,0,1.2);overflow:hidden}
+.dash-ms-sheet::before{content:'';position:absolute;top:0;left:25%;right:25%;height:1px;background:linear-gradient(90deg,transparent,rgba(160,96,240,.35),transparent)}
+@media(min-width:600px){.dash-ms-sheet{left:50%;right:auto;bottom:50%;transform:translateX(-50%) translateY(50%);width:100%;max-width:420px;border-radius:24px;animation:none;box-shadow:0 24px 80px rgba(0,0,0,.85),0 0 0 1px rgba(160,96,240,.22)}.dash-ms-sheet::before{display:none}}
+.dash-ms-handle{width:32px;height:3px;border-radius:2px;background:rgba(255,255,255,.12);margin:13px auto 10px}
+@media(min-width:600px){.dash-ms-handle{display:none}}
+.dash-ms-hd{display:flex;align-items:center;justify-content:space-between;padding:2px 18px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
+.dash-ms-title{font-family:var(--serif);font-size:17px;font-weight:700;color:var(--cream);font-style:italic}
+.dash-ms-close{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.35);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.dash-ms-close:hover{background:rgba(255,255,255,.11);color:rgba(255,255,255,.6)}
+.dash-ms-row{display:flex;align-items:center;gap:14px;padding:14px 18px;cursor:pointer;transition:background .18s;border-bottom:1px solid rgba(255,255,255,.04);position:relative;overflow:hidden}
+.dash-ms-row:last-child{border-bottom:none}
+.dash-ms-row:hover{background:rgba(255,255,255,.03)}
+.dash-ms-row:active{background:rgba(255,255,255,.06)}
+.dash-ms-row::before{content:'';position:absolute;left:0;top:18%;bottom:18%;width:2.5px;border-radius:2px;opacity:0;transition:opacity .2s}
+.dash-ms-row:hover::before{opacity:1}
+.dash-ms-row.books::before{background:#F5B84C}
+.dash-ms-row.cards::before{background:#c090ff}
+.dash-ms-row.hatch::before{background:#14d890}
+.dash-ms-ico{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dash-ms-label{flex:1}
+.dash-ms-row-title{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--cream);margin-bottom:2px}
+.dash-ms-row-sub{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.26);letter-spacing:.04em}
+.dash-ms-badge{padding:2px 9px;border-radius:20px;font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.04em;flex-shrink:0}
+.dash-ms-arr{font-size:14px;color:rgba(255,255,255,.18);flex-shrink:0}
 
 @media(max-width:600px){.dash-pods{gap:6px}.dash-pod{min-width:72px}}
 `;
@@ -395,6 +445,30 @@ const STARS=Array.from({length:45},(_,i)=>({
   dl:(Math.random()*4).toFixed(1)+'s',
   t:Math.random()<.4?1:Math.random()<.75?2:3,
 }));
+
+// ── Nav SVG icons ─────────────────────────────────────────────────────────────
+
+const NavIconDiscover = ({color='rgba(255,255,255,.55)'}:{color?:string}) => (
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke={color} strokeWidth="1.2"/><path d="M11 3v1M11 18v1M3 11h1M18 11h1" stroke={color} strokeWidth="1.2" strokeLinecap="round"/><circle cx="11" cy="11" r="2.5" stroke={color} strokeWidth="1.2"/><path d="M13.5 8.5l-1.2 3.7-3.7 1.2 1.2-3.7z" fill={color}/></svg>
+);
+const NavIconCreate = () => (
+  <svg width="30" height="30" viewBox="0 0 30 30" fill="none" style={{position:'relative',zIndex:2}}><path d="M15 4l2.7 8.2H26l-6.9 5 2.6 8.2L15 20.4l-6.7 5 2.6-8.2L4 12.2h8.3z" fill="rgba(10,5,0,.85)"/></svg>
+);
+const NavIconMyStuff = ({color='rgba(255,255,255,.55)'}:{color?:string}) => (
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="10" width="16" height="10" rx="2" stroke={color} strokeWidth="1.2"/><path d="M3 11a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4" stroke={color} strokeWidth="1.2"/><rect x="9.5" y="14" width="3" height="2.5" rx="1" stroke={color} strokeWidth="1.1"/><path d="M3 11h16" stroke={color} strokeWidth="1.2"/><circle cx="7" cy="15.5" r=".8" fill={color} opacity=".3"/><circle cx="15" cy="15.5" r=".8" fill={color} opacity=".3"/></svg>
+);
+const NavIconProfile = ({color='#c090ff'}:{color?:string}) => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke={color} strokeWidth="1.2"/><path d="M2 12c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke={color} strokeWidth="1.2" strokeLinecap="round"/></svg>
+);
+const NavIconBooks = () => (
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="4" y="3" width="14" height="16" rx="1.5" stroke="#F5B84C" strokeWidth="1.2"/><path d="M7 8h8M7 11h8M7 14h5" stroke="#F5B84C" strokeWidth="1.1" strokeLinecap="round"/><path d="M4 3h1.5" stroke="#F5B84C" strokeWidth="1.4" strokeLinecap="round"/></svg>
+);
+const NavIconNightCards = () => (
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="5" width="16" height="12" rx="2" stroke="#c090ff" strokeWidth="1.2"/><path d="M3 9h16" stroke="#c090ff" strokeWidth="1.1"/><circle cx="7" cy="7" r="1.2" fill="#c090ff" opacity=".6"/><path d="M12 12a2.5 2.5 0 1 1 2.5-2.5 1.8 1.8 0 0 0-2.5 2.5z" fill="rgba(160,96,240,.5)" stroke="#c090ff" strokeWidth=".8"/></svg>
+);
+const NavIconHatchery = () => (
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3C7.5 3 5 6.5 5 10.5 5 15 7.5 19 11 19c3.5 0 6-4 6-8.5C17 6.5 14.5 3 11 3z" stroke="#14d890" strokeWidth="1.2"/><path d="M9 13l2-2.5 2 1.5" stroke="#14d890" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/><circle cx="11" cy="10" r="1.5" fill="rgba(20,216,144,.5)"/></svg>
+);
 
 // ── component ─────────────────────────────────────────────────────────────────
 
@@ -419,6 +493,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const[shardsInfoOpen,setShardsInfoOpen]=useState(false);
   const[weekInfoOpen,setWeekInfoOpen]=useState(false);
   const[shardsFirstTime,setShardsFirstTime]=useState(false);
+  const[myStuffOpen,setMyStuffOpen]=useState(false);
   const missTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
   const isGuest=!!user?.isGuest;
 
@@ -545,6 +620,17 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   }
   function showMiss(idx:number){if(missTimer.current)clearTimeout(missTimer.current);setMissTooltip(idx);missTimer.current=setTimeout(()=>setMissTooltip(null),2200);}
 
+  // ── Nav handlers ──────────────────────────────────────────────────────────
+  function handleNavCreate(){setMyStuffOpen(false);setView('story-wizard' as any);}
+  function handleNavDiscover(){setMyStuffOpen(false);setView('library');}
+  function closeMyStuff(){setMyStuffOpen(false);}
+  function handleNavMyStuff(){setMyStuffOpen(p=>!p);}
+  function handleMyBooks(){closeMyStuff();setView('story-library' as any);}
+  function handleNightCards(){closeMyStuff();setView('nightcard-library' as any);}
+  function handleHatchery(){closeMyStuff();setView('hatchery');}
+  function handleProfile(){setView('user-profile' as any);}
+  const showMyStuffDot=useMemo(()=>tonightDone&&!myStuffOpen,[tonightDone,myStuffOpen]);
+
   // ── Effects ────────────────────────────────────────────────────────────────
   useEffect(()=>{
     const seen=localStorage.getItem('ss_shards_explained');
@@ -643,6 +729,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
         <div style={{display:'flex',alignItems:'center',gap:8}}>
           {primary&&<div className="dash-nav-child"><span style={{fontSize:14}}>{primary.emoji||'\uD83E\uDDD2'}</span><span className="dash-nav-child-name">{primary.name}</span></div>}
           <div className="dash-date">{today}</div>
+          <div className="dash-avatar" onClick={handleProfile} title="Profile & settings"><NavIconProfile/><div className="dash-avatar-pip"/></div>
         </div>
       </nav>
 
@@ -1008,12 +1095,54 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
         </>
       )}
 
-      {/* BOTTOM TABS */}
-      <div className="dash-tabs">
-        <div className={`dash-tab ${tonightDone?'on-t':'on'}`}><div className="dash-tab-ico">🏠</div><div className="dash-tab-lbl">Home</div>{!tonightDone&&<div className="dash-tab-pip"/>}</div>
-        <div className="dash-tab" onClick={()=>setView('story-wizard' as any)}><div className="dash-tab-ico">✨</div><div className="dash-tab-lbl">Create</div></div>
-        <div className="dash-tab" onClick={()=>setView('library')}><div className="dash-tab-ico">📚</div><div className="dash-tab-lbl">Library</div></div>
-        <div className="dash-tab" onClick={()=>setView('hatchery')}><div className="dash-tab-ico">🥚</div><div className="dash-tab-lbl">Hatchery</div></div>
+      {/* ── MY STUFF SHEET ── */}
+      {myStuffOpen&&(
+        <>
+          <div className="dash-ms-bd" onClick={closeMyStuff}/>
+          <div className="dash-ms-sheet">
+            <div className="dash-ms-handle"/>
+            <div className="dash-ms-hd">
+              <div className="dash-ms-title">My Stuff</div>
+              <button className="dash-ms-close" onClick={closeMyStuff}>✕</button>
+            </div>
+            <div className="dash-ms-row books" onClick={handleMyBooks}>
+              <div className="dash-ms-ico" style={{background:'rgba(245,184,76,.08)',border:'1px solid rgba(245,184,76,.18)'}}><NavIconBooks/></div>
+              <div className="dash-ms-label"><div className="dash-ms-row-title">My Books</div><div className="dash-ms-row-sub">Stories your family has made</div></div>
+              {storyCount>0&&<div className="dash-ms-badge" style={{background:'rgba(245,184,76,.1)',border:'1px solid rgba(245,184,76,.22)',color:'rgba(245,184,76,.72)'}}>{storyCount}</div>}
+              <div className="dash-ms-arr">›</div>
+            </div>
+            <div className="dash-ms-row cards" onClick={handleNightCards}>
+              <div className="dash-ms-ico" style={{background:'rgba(160,96,240,.08)',border:'1px solid rgba(160,96,240,.18)'}}><NavIconNightCards/></div>
+              <div className="dash-ms-label"><div className="dash-ms-row-title">Night Cards</div><div className="dash-ms-row-sub">{primary?.name??'Your child'}'s bedtime memories</div></div>
+              {showMyStuffDot&&<div className="dash-ms-badge" style={{background:'rgba(160,96,240,.1)',border:'1px solid rgba(160,96,240,.22)',color:'#c090ff'}}>1 new</div>}
+              <div className="dash-ms-arr">›</div>
+            </div>
+            <div className="dash-ms-row hatch" onClick={handleHatchery}>
+              <div className="dash-ms-ico" style={{background:'rgba(20,216,144,.06)',border:'1px solid rgba(20,216,144,.18)'}}><NavIconHatchery/></div>
+              <div className="dash-ms-label"><div className="dash-ms-row-title">Hatchery</div><div className="dash-ms-row-sub">Creatures {primary?.name??'your child'} has earned</div></div>
+              <div className="dash-ms-arr">›</div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── BOTTOM NAV BAR ── */}
+      {/* BottomTabs replaced by dash-navbar inside UserDashboard.tsx */}
+      <div className="dash-navbar">
+        <div className="dash-nav-tab" onClick={handleNavDiscover}>
+          <NavIconDiscover/>
+          <div className="dash-nav-tab-lbl">Discover</div>
+        </div>
+        <div className="dash-nav-create" onClick={handleNavCreate}>
+          <div className="dash-nav-create-ring"/>
+          <div className="dash-nav-create-btn"><NavIconCreate/></div>
+          <div className="dash-nav-create-lbl">Create a story</div>
+        </div>
+        <div className={`dash-nav-tab${myStuffOpen?' on on-purple':''}`} onClick={handleNavMyStuff}>
+          <NavIconMyStuff color={myStuffOpen?'rgba(160,96,240,.85)':'rgba(255,255,255,.55)'}/>
+          <div className="dash-nav-tab-lbl">My Stuff</div>
+          {showMyStuffDot&&!myStuffOpen&&<div className="dash-nav-unread"/>}
+        </div>
       </div>
     </div>
   );
