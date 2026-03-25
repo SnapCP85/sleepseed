@@ -191,6 +191,7 @@ export default function LibraryStoryReader({ slug }: Props) {
   const [translateError, setTranslateError] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [langPickerOpen, setLangPickerOpen] = useState(false);
+  const [readAloudActive, setReadAloudActive] = useState(false);
 
   const sessionId = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('sleepseed_sid') : null;
   const refFromUrl = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('sleepseed_ref') : null;
@@ -318,7 +319,7 @@ export default function LibraryStoryReader({ slug }: Props) {
   const displayTitle = personalise(story.title);
   const displayHero = nameMap[story.heroName] || story.heroName;
 
-  const goPage = (dir: number) => setPageIdx(p => Math.max(0, Math.min(totalPages - 1, p + dir)));
+  const goPage = (dir: number) => { setReadAloudActive(false); setPageIdx(p => Math.max(0, Math.min(totalPages - 1, p + dir))); };
 
   const handleVote = async (vote: 1 | -1) => {
     if (!user || user.isGuest) return;
@@ -439,12 +440,16 @@ export default function LibraryStoryReader({ slug }: Props) {
               text={translatedPage.sentences.map(s => s.foreign).join(' ')}
               theme="light"
               className="lr-text"
+              autoPlay={readAloudActive}
+              onFinish={() => setReadAloudActive(false)}
             />
           ) : (
             <ReadAloudText
               text={pageText}
               theme="light"
               className="lr-text"
+              autoPlay={readAloudActive}
+              onFinish={() => setReadAloudActive(false)}
             />
           )}
           {story.refrain && <div className="lr-refrain">* {personalise(story.refrain)} *</div>}
@@ -519,6 +524,10 @@ export default function LibraryStoryReader({ slug }: Props) {
                       <span className="mi-badge">{learningMode ? 'ON' : 'OFF'}</span>
                     </div>
                   )}
+                  <div className="lr-menu-item" onClick={() => { setReadAloudActive(true); setMenuOpen(false); }}>
+                    <span className="mi-icon">🔊</span>
+                    <span className="mi-label">Read Aloud</span>
+                  </div>
                   <div className="lr-menu-sep" />
                   <div className="lr-menu-item" onClick={() => { setMenuOpen(false); if (shareLink) { navigator.clipboard?.writeText(shareLink); setCopied(true); setTimeout(() => setCopied(false), 2000); } }}>
                     <span className="mi-icon">🔗</span>

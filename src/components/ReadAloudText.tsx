@@ -48,9 +48,11 @@ interface Props {
   hideControls?: boolean;
   /** Called when reading finishes */
   onFinish?: () => void;
+  /** Auto-start reading when set to true */
+  autoPlay?: boolean;
 }
 
-export default function ReadAloudText({ text, theme = 'dark', style, className, hideControls, onFinish }: Props) {
+export default function ReadAloudText({ text, theme = 'dark', style, className, hideControls, onFinish, autoPlay }: Props) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [activeWordIdx, setActiveWordIdx] = useState(-1);
@@ -77,6 +79,11 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
       window.speechSynthesis?.cancel();
     };
   }, []);
+
+  // Auto-play when triggered externally
+  useEffect(() => {
+    if (autoPlay && !isPlaying && !isPaused) play();
+  }, [autoPlay]); // eslint-disable-line
 
   const findWordAtChar = useCallback((charIndex: number): number => {
     const words = wordsRef.current;
