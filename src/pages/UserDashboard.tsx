@@ -364,6 +364,73 @@ const CSS=`
 .dash-hatch-btn{padding:16px 32px;border:none;border-radius:18px;font-size:17px;font-weight:800;cursor:pointer;font-family:var(--cta);background:linear-gradient(135deg,#0a7a50,#14d890 50%,#0a7a50);color:#041a0c;box-shadow:0 8px 28px rgba(20,200,130,.35);transition:transform .18s,filter .18s}
 .dash-hatch-btn:hover{transform:scale(1.03) translateY(-1px);filter:brightness(1.08)}
 
+/* ── SHARD WRAP — needed for tooltip positioning ── */
+.dash-shard-wrap{position:relative;flex-shrink:0}
+
+/* SHARD TOOLTIP */
+.dash-shard-tip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(6,12,26,.97);border:1px solid rgba(20,216,144,.28);border-radius:10px;padding:5px 10px;white-space:nowrap;pointer-events:none;z-index:50;min-width:76px;text-align:center;animation:tipIn .18s ease-out}
+.dash-shard-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid rgba(20,216,144,.28)}
+.dash-shard-tip-date{font-family:var(--mono);font-size:8px;color:rgba(20,216,144,.7);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:2px}
+.dash-shard-tip-hint{font-family:var(--serif);font-size:9.5px;font-style:italic;color:rgba(255,255,255,.45)}
+@keyframes tipIn{from{opacity:0;transform:translateX(-50%) translateY(5px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* SHARD active/tapped state */
+.dash-shard.tapped{transform:scale(.9);box-shadow:0 0 0 3px rgba(20,216,144,.35)}
+
+/* SHEET BACKDROP */
+.dash-sheet-bd{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:60;animation:fadein .22s ease}
+
+/* BOTTOM SHEET */
+.dash-sheet{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(168deg,#080c24,#060a1c);border-radius:22px 22px 0 0;border-top:1px solid rgba(160,96,240,.22);z-index:61;max-height:78vh;overflow-y:auto;scrollbar-width:none;animation:sheetUp .28s ease-out;padding-bottom:env(safe-area-inset-bottom,0px)}
+.dash-sheet::-webkit-scrollbar{display:none}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.dash-sheet-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);margin:12px auto 8px}
+
+/* SHEET HEADER */
+.dash-sh-hd{padding:0 16px 12px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between}
+.dash-sh-night{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(20,216,144,.62)}
+.dash-sh-close{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.07);border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .18s;flex-shrink:0}
+.dash-sh-close:hover{background:rgba(255,255,255,.13)}
+
+/* SHEET WISDOM */
+.dash-sh-wisdom{padding:12px 16px;display:flex;align-items:flex-start;gap:10px;background:rgba(20,216,144,.04);border-bottom:1px solid rgba(255,255,255,.05)}
+.dash-sh-wis-emo{font-size:28px;line-height:1;flex-shrink:0;margin-top:2px}
+.dash-sh-wis-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(20,216,144,.45);margin-bottom:4px}
+.dash-sh-wis-txt{font-family:var(--serif);font-size:13px;font-style:italic;color:rgba(255,255,255,.72);line-height:1.6}
+
+/* SHEET PHOTO */
+.dash-sh-photo{margin:12px 16px 0;border-radius:14px;overflow:hidden;position:relative}
+
+/* SHEET PHOTO ADD PROMPT */
+.dash-sh-photo-add{margin:12px 16px 0;background:rgba(255,255,255,.02);border:1.5px dashed rgba(245,184,76,.18);border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .2s}
+.dash-sh-photo-add:hover{background:rgba(245,184,76,.04);border-color:rgba(245,184,76,.32)}
+.dash-sh-pa-ico{width:40px;height:40px;border-radius:11px;background:rgba(245,184,76,.08);border:1px solid rgba(245,184,76,.18);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.dash-sh-pa-title{font-family:var(--cta);font-size:12px;font-weight:800;color:rgba(255,255,255,.5);margin-bottom:2px}
+.dash-sh-pa-sub{font-family:var(--sans);font-size:9.5px;color:rgba(255,255,255,.24);line-height:1.4}
+
+/* SHEET STORY SECTION */
+.dash-sh-story{padding:12px 16px}
+.dash-sh-sec-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:7px}
+.dash-sh-story-card{background:rgba(255,255,255,.03);border:1px solid rgba(160,96,240,.18);border-radius:13px;padding:12px;position:relative;overflow:hidden}
+.dash-sh-story-title{font-family:var(--serif);font-size:13px;font-weight:700;color:var(--cream);line-height:1.3;margin-bottom:8px}
+.dash-sh-story-refrain{font-family:var(--serif);font-size:12px;font-style:italic;color:rgba(255,255,255,.6);line-height:1.65;border-left:2px solid rgba(160,96,240,.38);padding-left:9px;margin-bottom:10px}
+.dash-sh-story-refrain em{color:#c090ff;font-style:normal;font-weight:700}
+
+/* READ STORY BUTTON */
+.dash-sh-read-btn{width:100%;padding:11px;border:none;border-radius:12px;background:rgba(160,96,240,.12);border:1px solid rgba(160,96,240,.32);color:#c090ff;font-family:var(--cta);font-size:12.5px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;position:relative;overflow:hidden}
+.dash-sh-read-btn::after{content:'';position:absolute;top:0;left:-130%;width:55%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.1),transparent);animation:shimmer 3s ease-in-out infinite}
+.dash-sh-read-btn:hover{background:rgba(160,96,240,.22);border-color:rgba(160,96,240,.5);transform:translateY(-1px)}
+.dash-sh-read-btn:active{transform:scale(.97)}
+
+/* NO STORY STATE */
+.dash-sh-no-story{font-family:var(--serif);font-size:11px;font-style:italic;color:rgba(255,255,255,.28);text-align:center;padding:8px 0}
+
+/* SHEET BONDING */
+.dash-sh-bond{padding:0 16px 16px}
+.dash-sh-bond-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:11px 13px}
+.dash-sh-bq{font-family:var(--serif);font-size:11px;font-style:italic;color:rgba(255,255,255,.4);margin-bottom:6px;line-height:1.5}
+.dash-sh-ba{font-family:var(--sans);font-size:12.5px;font-weight:600;color:rgba(255,255,255,.75);line-height:1.5}
+
 @media(max-width:600px){.dash-pods{gap:6px}.dash-pod{min-width:72px}}
 `;
 
@@ -593,6 +660,52 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
     : `${nightsLeft} night${nightsLeft !== 1 ? 's' : ''} to evolve`;
   const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
+  // ── Shard interaction state ───────────────────────────────────────────────
+  const [activeShardIdx, setActiveShardIdx] = useState<number | null>(null);
+
+  const activeShardCard = useMemo(() =>
+    activeShardIdx !== null ? (eggCards[activeShardIdx] ?? null) : null,
+    [activeShardIdx, eggCards]
+  );
+
+  const activeShardStory = useMemo(() => {
+    if (!activeShardCard?.storyId) return null;
+    return allStories.find(s => s.id === activeShardCard.storyId) ?? null;
+  }, [activeShardCard, allStories]);
+
+  const activeShardWisdom = useMemo(() => {
+    if (activeShardIdx === null) return null;
+    return creatureDef?.dailyWisdom?.[activeShardIdx] ?? null;
+  }, [activeShardIdx, creatureDef]);
+
+  const handleShardTap = (index: number, isDone: boolean) => {
+    if (!isDone) return;
+    setActiveShardIdx(activeShardIdx === index ? null : index);
+  };
+
+  const closeSheet = () => setActiveShardIdx(null);
+
+  const shardTooltipLabel = (index: number): string => {
+    const card = eggCards[index];
+    if (!card) return '';
+    const d = new Date(card.date);
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  };
+
+  // Close sheet on unmount
+  useEffect(() => {
+    return () => setActiveShardIdx(null);
+  }, []);
+
+  // Close sheet on Escape key
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeSheet();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
   // ── LOADING ─────────────────────────────────────────────────────────────────
   if(!user) return null;
 
@@ -790,14 +903,26 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
                   <div className="dash-evo-track">
                     {Array.from({length:7},(_,i)=>{
                       const isDone=i<eggStage;
-                      const isTonight=i===eggStage;
+                      const isTonight=i===eggStage&&!tonightDone;
+                      const isFuture=!isDone&&!isTonight;
                       const card=eggCards[i]??null;
                       const colour=isDone?shardColour(card):'rgba(245,184,76,.5)';
+                      const tappable=isDone;
+                      const isTapped=activeShardIdx===i;
                       return(
                         <React.Fragment key={i}>
-                          <div className={`dash-shard ${isDone?'done':isTonight?'tonight':'future'}`}
-                            style={isDone?{borderColor:colour,background:colour+'22'}:undefined}>
-                            {isDone?'✦':isTonight?'·':'·'}
+                          <div className="dash-shard-wrap">
+                            {tappable&&isTapped&&(
+                              <div className="dash-shard-tip">
+                                <span className="dash-shard-tip-date">{shardTooltipLabel(i)}</span>
+                                <span className="dash-shard-tip-hint">tap to open ✦</span>
+                              </div>
+                            )}
+                            <div className={`dash-shard ${isDone?'done':isTonight?'tonight':'future'}${isTapped?' tapped':''}`}
+                              style={isDone?{borderColor:colour,background:colour+'22',cursor:'pointer'}:undefined}
+                              onClick={()=>handleShardTap(i,tappable)}>
+                              {isDone?'✦':isTonight?'·':'·'}
+                            </div>
                           </div>
                           {i<6&&<div className="dash-shard-conn"/>}
                         </React.Fragment>
@@ -938,14 +1063,26 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
                 {Array.from({length:7},(_,i)=>{
                   const wasDoneBefore=i<eggStage-1;
                   const isJustNow=i===eggStage-1;
+                  const isDone=wasDoneBefore||isJustNow;
                   const isFutureD=i>=eggStage;
                   const card=eggCards[i]??null;
                   const colour=shardColour(card);
+                  const tappable=isDone;
+                  const isTapped=activeShardIdx===i;
                   return(
                     <React.Fragment key={i}>
-                      <div className={`dash-done-shard ${isJustNow?'jn':wasDoneBefore?'dn':'ft'}`}
-                        style={(wasDoneBefore||isJustNow)?{borderColor:colour,background:colour+'22'}:undefined}>
-                        {(wasDoneBefore||isJustNow)?'✦':'·'}
+                      <div className="dash-shard-wrap">
+                        {tappable&&isTapped&&(
+                          <div className="dash-shard-tip">
+                            <span className="dash-shard-tip-date">{shardTooltipLabel(i)}</span>
+                            <span className="dash-shard-tip-hint">tap to open ✦</span>
+                          </div>
+                        )}
+                        <div className={`dash-done-shard ${isJustNow?'jn':wasDoneBefore?'dn':'ft'}${isTapped?' tapped':''}`}
+                          style={isDone?{borderColor:colour,background:colour+'22',cursor:'pointer'}:undefined}
+                          onClick={()=>handleShardTap(i,tappable)}>
+                          {isDone?'✦':'·'}
+                        </div>
                       </div>
                       {i<6&&<div className="dash-done-shard-conn"/>}
                     </React.Fragment>
@@ -1025,6 +1162,85 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
             </button>
           </div>
         </div>
+      )}
+
+      {/* SHARD BOTTOM SHEET */}
+      {activeShardIdx !== null && activeShardCard && (
+        <>
+          <div className="dash-sheet-bd" onClick={closeSheet}/>
+          <div className="dash-sheet">
+            <div className="dash-sheet-handle"/>
+            <div className="dash-sh-hd">
+              <span className="dash-sh-night">
+                ✦ Night {activeShardIdx + 1}
+                {' · '}
+                {new Date(activeShardCard.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}
+              </span>
+              <button className="dash-sh-close" onClick={closeSheet}>✕</button>
+            </div>
+
+            {activeShardWisdom && hatchedCreature && (
+              <div className="dash-sh-wisdom">
+                <div className="dash-sh-wis-emo">{hatchedCreature.creatureEmoji}</div>
+                <div>
+                  <div className="dash-sh-wis-lbl">{hatchedCreature.name}'s wisdom that night</div>
+                  <div className="dash-sh-wis-txt">"{activeShardWisdom}"</div>
+                </div>
+              </div>
+            )}
+
+            {activeShardCard.photo ? (
+              <div className="dash-sh-photo">
+                <img src={activeShardCard.photo}
+                  alt={`${activeShardCard.heroName} · Night ${activeShardIdx + 1}`}
+                  style={{width:'100%',height:145,objectFit:'cover',display:'block',borderRadius:14}}/>
+              </div>
+            ) : (
+              <div className="dash-sh-photo-add">
+                <div className="dash-sh-pa-ico">📷</div>
+                <div>
+                  <div className="dash-sh-pa-title">Add a photo of {activeShardCard.heroName}</div>
+                  <div className="dash-sh-pa-sub">Make this night a memory worth keeping forever</div>
+                </div>
+              </div>
+            )}
+
+            <div className="dash-sh-story">
+              <div className="dash-sh-sec-lbl">Tonight's story</div>
+              {activeShardCard.storyTitle ? (
+                <div className="dash-sh-story-card">
+                  <div className="dash-sh-story-title">{activeShardCard.storyTitle}</div>
+                  {activeShardCard.quote && (
+                    <div className="dash-sh-story-refrain">"{activeShardCard.quote}"</div>
+                  )}
+                  {activeShardStory && onReadStory ? (
+                    <button className="dash-sh-read-btn" onClick={()=>{closeSheet();onReadStory(activeShardStory.bookData);}}>
+                      📖 Read this story again →
+                    </button>
+                  ) : (
+                    <div className="dash-sh-no-story">Story not available to re-read</div>
+                  )}
+                </div>
+              ) : (
+                <div className="dash-sh-no-story">No story recorded for this night</div>
+              )}
+            </div>
+
+            {(activeShardCard.bondingQuestion || activeShardCard.bondingAnswer) && (
+              <div className="dash-sh-bond">
+                <div className="dash-sh-sec-lbl">What {activeShardCard.heroName} said</div>
+                <div className="dash-sh-bond-card">
+                  {activeShardCard.bondingQuestion && (
+                    <div className="dash-sh-bq">{activeShardCard.bondingQuestion}</div>
+                  )}
+                  {activeShardCard.bondingAnswer && (
+                    <div className="dash-sh-ba">"{activeShardCard.bondingAnswer}"</div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {/* BOTTOM TABS */}
