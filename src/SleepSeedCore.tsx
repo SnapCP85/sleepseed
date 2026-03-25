@@ -1031,6 +1031,7 @@ interface SleepSeedCoreProps {
   companionCreature?: HatchedCreature | null;
   onCharacterSavePrompt?: (charData: any) => void;
   onStoryReady?: (storyData: any) => void;
+  onGenerateError?: () => void;
 }
 
 export default function SleepSeed({
@@ -1044,6 +1045,7 @@ export default function SleepSeed({
   companionCreature,
   onCharacterSavePrompt,
   onStoryReady,
+  onGenerateError,
 }: SleepSeedCoreProps = {}) {
   const [stage,          setStage]          = useState("home");
   const [heroName,       setHeroName]       = useState("");
@@ -3554,14 +3556,17 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </div>
               <button className="btn" style={{marginBottom:10}} onClick={()=>{
                 setError("");
+                if (onGenerateError) { onGenerateError(); return; }
                 setStage(lastErrStage||"quick");
               }}>
                 ✨ Try again
               </button>
               <button className="btn-ghost" style={{width:"100%",fontSize:12}} onClick={()=>{
-                setError(""); setStage("home");
+                setError("");
+                if (onGenerateError) { onGenerateError(); return; }
+                setStage("home");
               }}>
-                ← Back to home
+                ← Back
               </button>
             </div>
           </div>

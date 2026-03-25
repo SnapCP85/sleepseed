@@ -582,6 +582,7 @@ function AppInner() {
           companionCreature={companionCreature}
           onCharacterSavePrompt={() => {}}
           onStoryReady={() => {}}
+          onGenerateError={ritualSeed ? () => setView('ritual-starter') : undefined}
         />
       </div>
     );
