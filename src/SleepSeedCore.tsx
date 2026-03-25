@@ -909,24 +909,41 @@ const elDeleteVoice = async (vid) => {
 };
 
 /* ── API ── */
-const callClaude = async (messages, system="", maxTokens=4000) => {
+const callClaude = async (messages, system="", maxTokens=4000, retries=2) => {
   const body = {model:"claude-sonnet-4-6",max_tokens:maxTokens,messages};
   if(system) body.system = system;
-  const r = await fetch("/api/claude",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(body),
-  });
-  // Safely parse — Vercel may return a plain-text error page on timeout/crash
-  const raw = await r.text();
-  let d;
-  try { d = JSON.parse(raw); } catch(_) {
-    throw new Error(`Server error (${r.status}): ${raw.slice(0,120)}`);
+
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const r = await fetch("/api/claude",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(body),
+      });
+      const raw = await r.text();
+      let d;
+      try { d = JSON.parse(raw); } catch(_) {
+        throw new Error(`Server error (${r.status}): ${raw.slice(0,120)}`);
+      }
+      // Retry on overloaded/server errors
+      if (r.status === 529 || r.status === 503 || r.status === 500) {
+        throw new Error(d.error?.message || `API error ${r.status}`);
+      }
+      if(!r.ok) throw new Error(d.error?.message||`API error ${r.status}`);
+      const text = d.content?.find(b=>b.type==="text")?.text||"";
+      if(!text) throw new Error("Empty response from API");
+      return text;
+    } catch(e) {
+      lastErr = e;
+      if (attempt < retries) {
+        const delay = 1000 * (attempt + 1); // 1s, 2s
+        console.warn(`[callClaude] Attempt ${attempt+1} failed: ${e.message}. Retrying in ${delay}ms...`);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
   }
-  if(!r.ok) throw new Error(d.error?.message||`API error ${r.status}`);
-  const text = d.content?.find(b=>b.type==="text")?.text||"";
-  if(!text) throw new Error("Empty response from API");
-  return text;
+  throw lastErr;
 };
 
 /* ── Shared sub-components (defined outside main to avoid transpiler issues) ── */
@@ -2247,7 +2264,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
       const raw = await callClaude(
         [{role:"user",content:storyPrompt}],
         promptSystem,
-        6000
+        8000
       );
 
       const story = extractJSON(raw);
@@ -2324,10 +2341,16 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       console.error("SleepSeed error:",e);
       const msg = e.message||"Something went wrong";
       const isParseErr = msg.toLowerCase().includes("json")||msg.toLowerCase().includes("parse")||msg.toLowerCase().includes("missing");
-      const userMsg = isParseErr
-        ? "The story response was incomplete — your settings are saved. Tap Try Again."
-        : msg.includes("ANTHROPIC_KEY")
-          ? "API key not set — check your Vercel environment variables."
+      const isTimeout = msg.toLowerCase().includes("server error")||msg.toLowerCase().includes("timeout")||msg.toLowerCase().includes("502")||msg.toLowerCase().includes("504");
+      const isOverloaded = msg.includes("529")||msg.includes("503")||msg.toLowerCase().includes("overloaded");
+      const userMsg = msg.includes("ANTHROPIC_KEY")
+        ? "API key not set — check your Vercel environment variables."
+        : isOverloaded
+          ? "The AI is busy right now — please wait a moment and try again."
+          : isTimeout
+            ? "The story took too long to generate — tap Try Again (it usually works on the second attempt)."
+          : isParseErr
+            ? "The story response was incomplete — your settings are saved. Tap Try Again."
           : "Something went wrong — your settings are saved. Tap Try Again.";
       setError(userMsg);
       setLastErrStage(stage==="builder" ? "builder" : "quick");

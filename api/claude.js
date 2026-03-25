@@ -1,4 +1,4 @@
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
