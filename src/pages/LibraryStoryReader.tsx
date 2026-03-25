@@ -152,6 +152,14 @@ const CSS = `
 .lr-menu-item .mi-label{flex:1}
 .lr-menu-item .mi-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:50px;background:rgba(245,184,76,.12);color:#F5B84C;flex-shrink:0}
 .lr-menu-sep{height:1px;background:rgba(255,255,255,.06);margin:4px 12px}
+.lr-voice-list{position:fixed;bottom:0;left:0;right:0;background:rgba(10,8,24,.98);border-top:1px solid rgba(255,255,255,.12);border-radius:18px 18px 0 0;padding:12px 8px calc(env(safe-area-inset-bottom,8px) + 8px);box-shadow:0 -12px 40px rgba(0,0,0,.6);z-index:201;animation:lrMenuSlide .2s ease both;max-height:60vh;overflow-y:auto}
+.lr-voice-title{font-size:15px;font-weight:700;text-align:center;margin-bottom:4px;color:var(--cream)}
+.lr-voice-sub{font-size:11px;color:rgba(244,239,232,.35);text-align:center;margin-bottom:12px}
+.lr-voice-item{display:flex;align-items:center;gap:10px;padding:11px 16px;border-radius:12px;cursor:pointer;transition:background .15s;font-size:13px;color:rgba(244,239,232,.7)}
+.lr-voice-item:hover,.lr-voice-item:active{background:rgba(255,255,255,.06)}
+.lr-voice-item.selected{background:rgba(245,184,76,.1);color:#F5B84C}
+.lr-voice-item .vname{font-weight:600;flex:1}
+.lr-voice-item .vtag{font-size:10px;color:rgba(244,239,232,.35)}
 
 /* loading */
 .lr-loading{text-align:center;padding:80px 24px;color:rgba(245,232,200,.3)}
@@ -194,6 +202,24 @@ export default function LibraryStoryReader({ slug }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [langPickerOpen, setLangPickerOpen] = useState(false);
   const [readAloudActive, setReadAloudActive] = useState(false);
+  const [voicePickerOpen, setVoicePickerOpen] = useState(false);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoice, setSelectedVoice] = useState<string>(() => {
+    try { return localStorage.getItem('sleepseed_voice') || ''; } catch { return ''; }
+  });
+
+  // Load available voices
+  useEffect(() => {
+    const load = () => {
+      const v = window.speechSynthesis?.getVoices() || [];
+      // Filter to good storytelling voices — prefer English, exclude novelty
+      const usable = v.filter(voice => voice.lang.startsWith('en'));
+      setVoices(usable.length > 0 ? usable : v);
+    };
+    load();
+    window.speechSynthesis?.addEventListener('voiceschanged', load);
+    return () => window.speechSynthesis?.removeEventListener('voiceschanged', load);
+  }, []);
 
   const sessionId = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('sleepseed_sid') : null;
   const refFromUrl = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('sleepseed_ref') : null;
@@ -444,6 +470,7 @@ export default function LibraryStoryReader({ slug }: Props) {
               className="lr-text"
               autoPlay={readAloudActive}
               onFinish={() => setReadAloudActive(false)}
+              voiceName={selectedVoice}
             />
           ) : (
             <ReadAloudText
@@ -452,6 +479,7 @@ export default function LibraryStoryReader({ slug }: Props) {
               className="lr-text"
               autoPlay={readAloudActive}
               onFinish={() => setReadAloudActive(false)}
+              voiceName={selectedVoice}
             />
           )}
           {story.refrain && <div className="lr-refrain">* {personalise(story.refrain)} *</div>}
@@ -534,6 +562,11 @@ export default function LibraryStoryReader({ slug }: Props) {
                 <span className="mi-icon">🔊</span>
                 <span className="mi-label">Read Aloud</span>
               </div>
+              <div className="lr-menu-item" onClick={() => { setMenuOpen(false); setVoicePickerOpen(true); }}>
+                <span className="mi-icon">🎙️</span>
+                <span className="mi-label">Voice</span>
+                {selectedVoice && <span className="mi-badge">{selectedVoice.split(/[-(]/)[0].trim()}</span>}
+              </div>
               <div className="lr-menu-sep" />
               <div className="lr-menu-item" onClick={() => { setMenuOpen(false); if (shareLink) { navigator.clipboard?.writeText(shareLink); setCopied(true); setTimeout(() => setCopied(false), 2000); } }}>
                 <span className="mi-icon">🔗</span>
@@ -553,6 +586,38 @@ export default function LibraryStoryReader({ slug }: Props) {
           {isLast ? 'The End' : `Page ${pageIdx} of ${totalPages - 1}`}
         </div>
       </div>
+
+      {/* Voice picker bottom sheet */}
+      {voicePickerOpen && (
+        <>
+          <div className="lr-menu-bg" onClick={() => setVoicePickerOpen(false)} />
+          <div className="lr-voice-list">
+            <div className="lr-menu-handle" />
+            <div className="lr-voice-title">Choose a Voice</div>
+            <div className="lr-voice-sub">Tap a voice to preview it</div>
+            <div className={`lr-voice-item${!selectedVoice ? ' selected' : ''}`}
+              onClick={() => { setSelectedVoice(''); try { localStorage.setItem('sleepseed_voice', ''); } catch {} setVoicePickerOpen(false); }}>
+              <span className="vname">Default</span>
+              <span className="vtag">System voice</span>
+            </div>
+            {voices.map(v => (
+              <div key={v.name} className={`lr-voice-item${selectedVoice === v.name ? ' selected' : ''}`}
+                onClick={() => {
+                  setSelectedVoice(v.name);
+                  try { localStorage.setItem('sleepseed_voice', v.name); } catch {}
+                  // Preview the voice
+                  window.speechSynthesis?.cancel();
+                  const u = new SpeechSynthesisUtterance('Once upon a time...');
+                  u.voice = v; u.rate = 0.85;
+                  window.speechSynthesis?.speak(u);
+                }}>
+                <span className="vname">{v.name.replace(/Microsoft |Google |Apple /g, '')}</span>
+                <span className="vtag">{v.lang}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Post-reading section — only after reaching end */}
       {isLast && (

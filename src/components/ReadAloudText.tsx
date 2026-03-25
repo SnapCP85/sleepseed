@@ -50,9 +50,11 @@ interface Props {
   onFinish?: () => void;
   /** Auto-start reading when set to true */
   autoPlay?: boolean;
+  /** Name of a specific SpeechSynthesis voice to use */
+  voiceName?: string;
 }
 
-export default function ReadAloudText({ text, theme = 'dark', style, className, hideControls, onFinish, autoPlay }: Props) {
+export default function ReadAloudText({ text, theme = 'dark', style, className, hideControls, onFinish, autoPlay, voiceName }: Props) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [activeWordIdx, setActiveWordIdx] = useState(-1);
@@ -109,6 +111,12 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
     const utter = new SpeechSynthesisUtterance(text);
     utter.rate = rate;
     utter.pitch = 1.0;
+
+    // Set specific voice if requested
+    if (voiceName) {
+      const match = window.speechSynthesis.getVoices().find(v => v.name === voiceName);
+      if (match) utter.voice = match;
+    }
 
     utter.onboundary = (e) => {
       if (e.name === 'word') {
