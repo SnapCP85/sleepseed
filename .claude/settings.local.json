@@ -35,7 +35,27 @@
       "Bash(cp ~/Downloads/StoryHandoff.tsx src/pages/StoryHandoff.tsx)",
       "Bash(npx vercel:*)",
       "Bash(VERCEL_ORG_ID=\"\" npx vercel --prod --yes --force)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(ELEVENLABS_API_KEY=dcc31cb1c30f403a2e848e605816045b259afd38b51d67eb1fa544c425817882 node scripts/generate-demo-audio.js)",
+      "WebSearch",
+      "Bash(npm run:*)",
+      "Bash(printf \"https://sleepseed-vercel.vercel.app\")",
+      "Bash(printf \"9780f9e08d5607d3777fd054ae549ee23a6749ccfcbe5b6f\")",
+      "Bash(printf \"d1977395241dd03308976499da69ea272efb4e802d199de7\")",
+      "Bash(printf \"7a40d6f1-354f-47cb-b283-382947ed01e7\")",
+      "Bash(printf \"gregct85@gmail.com\")",
+      "Bash(printf \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxYXp1aG9jdGNncHZqYXFqa3NxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mzk3MjY0OSwiZXhwIjoyMDg5NTQ4NjQ5fQ.iwmV59qKjY4XQa4sQ43h9MueoE2UiFgD0cgRaw_ZJLg\")",
+      "Bash(grep -n \"Exit demo\\\\|testMode === ''readaloud''\" src/App.tsx)",
+      "Bash(grep -n \"testMode === ''onboarding''\\\\|testMode === ''readaloud''\\\\|testMode === ''language''\" src/App.tsx)",
+      "Bash(find C:UsersgregcOneDriveDesktopsleepseed-vercel -type f -name *[Ss]tory* -o -name *[Pp]rompt* -o -name *[Gg]enerate*)",
+      "Bash(grep -r \"system prompt\\\\|system.*=.*\\\\`\" \"C:\\\\Users\\\\gregc\\\\OneDrive\\\\Desktop\\\\sleepseed-vercel\\\\src\" --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.js\" --include=\"*.jsx\")",
+      "Bash(find /c/Users/gregc/OneDrive/Desktop/sleepseed-vercel -name *prompt* -type f)",
+      "Bash(grep -n \"^\\\\`;\" \"C:\\\\Users\\\\gregc\\\\OneDrive\\\\Desktop\\\\sleepseed-vercel\\\\src\\\\SleepSeedCore.tsx\")",
+      "Bash(grep -n story-configure src/App.tsx src/pages/*.tsx src/features/**/*.tsx)",
+      "Bash(awk 'NR>=2752 && NR<=3487' src/SleepSeedCore.tsx)",
+      "Bash(sed -n '2752p' src/SleepSeedCore.tsx)",
+      "Bash(sed -n '3487p' src/SleepSeedCore.tsx)",
+      "Bash(sed -n '3488p' src/SleepSeedCore.tsx)"
     ]
   }
 }

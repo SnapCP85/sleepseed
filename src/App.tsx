@@ -9,8 +9,7 @@ import ParentSetup from './pages/ParentSetup';
 import type { ParentSetupResult } from './pages/ParentSetup';
 import type { OnboardingResult, ChildProfile } from './pages/OnboardingFlow';
 import UserProfile from './pages/UserProfile';
-import RitualStarter from './pages/RitualStarter';
-import StoryWizard from './pages/StoryWizard';
+import StoryCreator from './pages/StoryCreator';
 import CharacterBuilder from './features/characters/CharacterBuilder';
 import CharacterLibrary from './features/characters/CharacterLibrary';
 import StoryLibrary from './features/stories/StoryLibrary';
@@ -437,18 +436,24 @@ function AppInner() {
     </div>
   );
   if (view === 'ritual-starter') return (
-    <RitualStarter onGenerate={(choices) => {
-      setWizardChoices(choices);
-      setPreloadedBook(null);
-      setView('story-builder');
-    }} />
+    <StoryCreator
+      onGenerate={(choices) => {
+        setWizardChoices(choices);
+        setPreloadedBook(null);
+        setView('story-builder');
+      }}
+      onBack={() => setView('dashboard')}
+    />
   );
   if (view === 'story-wizard') return (
-    <StoryWizard onGenerate={(choices) => {
-      setWizardChoices(choices);
-      setPreloadedBook(null);
-      setView('story-builder');
-    }} />
+    <StoryCreator
+      onGenerate={(choices) => {
+        setWizardChoices(choices);
+        setPreloadedBook(null);
+        setView('story-builder');
+      }}
+      onBack={() => setView('dashboard')}
+    />
   );
   if (view === 'user-profile') return (
     <div style={{paddingBottom:70}}>

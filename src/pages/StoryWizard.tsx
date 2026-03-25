@@ -1,3 +1,4 @@
+// DEPRECATED — replaced by StoryCreator.tsx
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../AppContext';
 import { getCharacters } from '../lib/storage';

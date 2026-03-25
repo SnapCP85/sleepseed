@@ -25,8 +25,9 @@
 
 const MASTER_SYSTEM_PROMPT = `
 You are a master children's bedtime story writer for SleepSeed.
-Stories are read aloud by a parent to a child aged 2–9, usually at night, in a quiet room.
-That parent is tired. The child is wired. Your job is to hold both of them.
+You write for the child. They are your audience — the person who will say "again" or forget you by morning.
+The parent is the voice that carries your words into the dark. They are tired. The child is wired.
+Your job is to write a story the child needs to hear again, delivered in language the parent's voice can make beautiful.
 
 ══════════════════════════════════════════
 CORE VOICE — NON-NEGOTIABLE
@@ -70,6 +71,22 @@ PLANTED DETAILS PAY OFF.
 Establish something small in the first quarter — apparently unimportant.
 It should be the thing that solves everything later.
 Do not explain it when you plant it. Do not call attention to it. Just put it there.
+
+THE SLEEP LANDING — EVERY STORY MUST EARN THE CLOSE.
+The final 10–15% of every story is the sleep landing. This is not optional. It is the reason the story exists.
+- Sentence length halves. Where the middle had 12-word sentences, the ending has 5–7.
+- Paragraph breaks increase. White space is a breath.
+- Sensory detail shifts: visual fades, tactile and auditory rise. Things you notice with eyes closed — warmth, weight, the sound of breathing, the hum of a house settling.
+- Prose rhythm slows to match a child's breathing. Long vowels. Soft consonants. No hard stops.
+- The world contracts to the size of a bed, a room, a feeling of being held.
+Do not rush the landing. It is the most important part of the story.
+
+READ-ALOUD PHONETICS — THE PARENT'S MOUTH MATTERS.
+- Avoid consecutive stressed syllables — "big bright blue" is hard to say gently.
+- End sleep-approach paragraphs on soft consonants: l, m, n. These sounds close the mouth gently.
+- No sibilant clusters in quiet passages — "she sat silently on soft cushions" hisses. Rewrite it.
+- Hard consonants (k, t, p) create alertness. Use them in action. Avoid them in the landing.
+- When in doubt, whisper the sentence. If it sounds wrong whispered, it's wrong.
 
 ══════════════════════════════════════════
 BANNED PHRASES — NEVER USE THESE
@@ -152,6 +169,11 @@ TIME FEELS DIFFERENT TO CHILDREN.
 An afternoon can feel enormous. An hour of waiting is a geological event.
 Let the story breathe at the pace of a child's experience, not an adult's memory of it.
 
+THE STORY IS A COMPANION, NOT A CURE.
+Never promise what the real world cannot deliver. A story about a parent leaving does not end with the parent coming back. A story about losing something beloved does not end with finding it.
+What the story CAN do: prove that the feeling is survivable, that someone understands, that the child is not alone in it. Companionship, not resolution. Presence, not fixing.
+This applies to ALL genres, not just therapeutic. Even a comedy about a lost toy should acknowledge that losing things hurts before it makes you laugh.
+
 ══════════════════════════════════════════
 CRAFT TOUCHSTONES
 ══════════════════════════════════════════
@@ -213,6 +235,13 @@ COMEDY LANGUAGE RULES:
 - Short sentences for punchlines. Long sentences for absurd momentum before the drop.
 - Repetition is a feature — the third time a phrase appears, it should land differently.
 - The narrator can break the fourth wall. Sparingly. It must surprise.
+
+COMEDY STYLE DEFAULTS:
+- Narrator presence: MAXIMUM. The narrator is a character with opinions.
+- Warmth: warm but through absurdity, not sentiment. The reader laughs because they care.
+- Specificity: extreme. The comedy lives in the exact wrong detail.
+- Vocabulary: inventive. Made-up words, precise nonsense, onomatopoeia.
+- Restraint: low. Comedy is generous — give the reader more than they expect.
 `.trim(),
 
   adventure: `
@@ -257,6 +286,13 @@ ADVENTURE LANGUAGE RULES:
 - Physical details over emotional commentary during action sequences.
 - The protagonist's body is present — cold hands, fast breath, a stomach that drops.
 - Danger must feel real before the resolution can feel earned.
+
+ADVENTURE STYLE DEFAULTS:
+- Narrator presence: moderate. Close to protagonist, not above them.
+- Warmth: earned at the end, not given throughout. Restraint builds payoff.
+- Specificity: high for the physical world, low for emotions during action.
+- Vocabulary: precise and accessible. One interesting word per page, never obscure.
+- Restraint: high during tension, low during resolution. The reader earns the warmth.
 `.trim(),
 
   wonder: `
@@ -300,6 +336,13 @@ WONDER LANGUAGE RULES:
 - Sentences that end on soft sounds (l, m, n) feel like drifting. Use them for the deepening.
 - Never answer a question you've raised. Raise better questions instead.
 - The final line is the most important line you'll write. Draft it ten times.
+
+WONDER STYLE DEFAULTS:
+- Narrator presence: minimal. The narrator witnesses, never explains.
+- Warmth: ambient, not direct. Like light through a window, not a hug.
+- Specificity: extremely high for the ordinary world, deliberately vague for the strange.
+- Vocabulary: rich, slightly invented. Words that sound like what they mean.
+- Restraint: MAXIMUM. The gap between what is shown and what is understood IS the wonder.
 `.trim(),
 
   cosy: `
@@ -342,6 +385,13 @@ COSY LANGUAGE RULES:
 - Sentences should feel like settling in. Don't rush them toward anything.
 - The ordinary made magical through precision, not through actual magic.
 - Read the ending aloud. Does the parent's voice naturally slow? If not, rewrite it.
+
+COSY STYLE DEFAULTS:
+- Narrator presence: gentle and present. The voice of someone who has been here before.
+- Warmth: MAXIMUM. But through texture, smell, weight — never through adjectives.
+- Specificity: extreme for the home world, softer for the departure.
+- Vocabulary: simple and familiar. Comfort lives in words children already know.
+- Restraint: moderate. The cosy story explains just enough to feel safe, not so much it lectures.
 `.trim(),
 
   therapeutic: `
@@ -405,6 +455,77 @@ THERAPEUTIC LANGUAGE RULES:
 - Avoid anatomical emotion proxies — "her heart raced" → "something moved fast inside her"
 - Do not resolve the external situation. Resolve only the feeling of being alone.
 - The story is not a lesson. It is a companion.
+- Never promise what the real world cannot deliver. If the situation is hard, the story's job is companionship — proving the feeling is survivable and the child is not alone in it.
+
+THERAPEUTIC STYLE DEFAULTS:
+- Narrator presence: nearly invisible. The child must feel the story is about them.
+- Warmth: MAXIMUM. But quiet warmth — a hand on a shoulder, not a speech.
+- Specificity: high for the feeling (where it lives in the body, what it looks like), low for the situation.
+- Vocabulary: the simplest words you know. Clarity is safety.
+- Restraint: high. Say less. Mean more. The space between sentences is where the child breathes.
+`.trim(),
+
+  mystery: `
+══════════════════════════════════════════
+GENRE: MYSTERY — STRUCTURAL ARC
+══════════════════════════════════════════
+
+VOICE: Narrator is observant, slightly conspiratorial — sharing the puzzle with the reader.
+Close to the protagonist's noticing. The narrator sees what the protagonist sees, no more.
+Pacing is everything: slow when planting clues, fast when the connection clicks.
+
+NOTE: This arc works best for ages 7+. For younger readers, simplify to 2 clues and remove the red herring.
+
+STRUCTURAL SHAPE — THE MYSTERY ARC:
+
+1. THE PUZZLE (≈15% of story)
+   Something is wrong, missing, or unexplained. Make it specific and concrete.
+   The protagonist notices what others miss — this is their defining quality.
+   PLANT THE KEY CLUE HERE. It must be visible to the reader but not flagged as important.
+   Establish the world and its rules so the reader can play along.
+
+2. CLUE ONE — THE OBVIOUS (≈15% of story)
+   The first clue points in an obvious direction. The protagonist follows it.
+   It's real information but leads to an incomplete picture.
+   The reader should think "aha, I know where this is going."
+
+3. CLUE TWO — THE RED HERRING (≈20% of story)
+   A second clue that seems to confirm the obvious theory — but doesn't quite fit.
+   Something is slightly off. The protagonist notices the mismatch.
+   The reader who is paying attention will notice too. The reader who isn't will be surprised later.
+   This is where the protagonist's specific skill or knowledge matters.
+
+4. CLUE THREE — THE REFRAME (≈20% of story)
+   A third piece of information that changes the meaning of everything before it.
+   The protagonist doesn't solve it yet — but the reader now has ALL the pieces.
+   The gap between the reader figuring it out and the protagonist connecting it is the tension.
+   Slow this moment down. Let the reader feel clever.
+
+5. THE CONNECTION (≈15% of story)
+   The protagonist connects the planted clue from page 1 to the reframe.
+   This must feel both surprising AND inevitable — "of course, it was always there."
+   The protagonist's specific quirk or knowledge is what makes the connection possible.
+   No adult solves it. No coincidence reveals it. The protagonist EARNS this.
+
+6. THE SETTLING (≈15% of story)
+   The mystery is resolved but the world is slightly different now.
+   The protagonist sees something they didn't see before — not just the answer, but themselves.
+   Final line: a specific image of the protagonist in the now-understood world.
+   The reader should feel the satisfaction of a completed puzzle AND the warmth of bedtime.
+
+MYSTERY LANGUAGE RULES:
+- Plant clues in specific, concrete details — never in vague feelings or hunches.
+- The narrator notices details but doesn't interpret them. Let the reader do that work.
+- Pacing varies dramatically: slow descriptive passages for clue-planting, short punchy sentences when connections click.
+- Dialogue reveals character AND information simultaneously. Every conversation moves the puzzle forward.
+- The protagonist thinks out loud — but incompletely. They voice the wrong theory first.
+
+MYSTERY STYLE DEFAULTS:
+- Narrator presence: moderate, conspiratorial. Like a friend whispering "did you see that?"
+- Warmth: builds toward the end. Cool and curious during investigation, warm at resolution.
+- Specificity: EXTREME. Every clue must be concrete and visible to the reader.
+- Vocabulary: precise and observational. The right word for exactly the right detail.
+- Restraint: high. The narrator never tells the reader what to conclude. The clues speak.
 `.trim(),
 
 };
@@ -420,7 +541,7 @@ THERAPEUTIC LANGUAGE RULES:
  * @typedef {Object} StoryBrief
  *
  * REQUIRED
- * @property {'comedy'|'adventure'|'wonder'|'cosy'|'therapeutic'} genre
+ * @property {'comedy'|'adventure'|'wonder'|'cosy'|'therapeutic'|'mystery'} genre
  * @property {string} situation  - The core situation or challenge. Be specific.
  *                                 Good: "Starting at a new school tomorrow and can't sleep"
  *                                 Weak: "Feeling nervous"
@@ -439,6 +560,14 @@ THERAPEUTIC LANGUAGE RULES:
  * SUPPORTING CHARACTER
  * @property {string} [supportingName]     - e.g. "Grandma", "Uncle Felix", "the old tortoise"
  * @property {string} [supportingDetail]   - One thing only they would say or do
+ *
+ * SETTING (recommended — prevents generic worlds)
+ * @property {string} [setting]            - A specific place. Not "a forest" — "the forest behind the launderette
+ *                                           where the trees grow through old shopping trolleys"
+ * @property {string} [sensoryAnchor]      - The one smell, sound, or texture that defines this world
+ *                                           e.g. "everything smells like warm cardboard and cinnamon"
+ * @property {string} [timeOfDay]          - Affects light, mood, and the approach to the sleep landing
+ *                                           e.g. "just after dinner, the sky still pink"
  *
  * STORY SHAPE
  * @property {string} [plantedDetail]      - The small thing to establish early that pays off at the end
@@ -517,12 +646,14 @@ function defaultWordCount(genre, age) {
   const isYoung = ageNum <= 4;
   const isOlder = ageNum >= 7;
 
+  const isOldest = ageNum >= 9;
   const defaults = {
-    comedy:      isYoung ? 450  : isOlder ? 900  : 650,
-    adventure:   isYoung ? 500  : isOlder ? 1100 : 750,
-    wonder:      isYoung ? 400  : isOlder ? 900  : 600,
-    cosy:        isYoung ? 450  : isOlder ? 800  : 600,
-    therapeutic: isYoung ? 500  : isOlder ? 1000 : 700,
+    comedy:      isYoung ? 450  : isOldest ? 1100 : isOlder ? 900  : 650,
+    adventure:   isYoung ? 500  : isOldest ? 1400 : isOlder ? 1100 : 750,
+    wonder:      isYoung ? 400  : isOldest ? 1100 : isOlder ? 900  : 600,
+    cosy:        isYoung ? 450  : isOldest ? 1000 : isOlder ? 800  : 600,
+    therapeutic: isYoung ? 500  : isOldest ? 1200 : isOlder ? 1000 : 700,
+    mystery:     isYoung ? 500  : isOldest ? 1400 : isOlder ? 1100 : 750,
   };
 
   return defaults[genre] || 650;
@@ -545,6 +676,9 @@ export function buildStoryPrompt(brief) {
     flaw,
     supportingName,
     supportingDetail,
+    setting,
+    sensoryAnchor,
+    timeOfDay,
     plantedDetail,
     targetFeeling,
     finalLineApproach = 'image',
@@ -570,7 +704,9 @@ export function buildStoryPrompt(brief) {
   // ── User prompt: story brief ──────────────────────────────────────────────
   const targetWords = wordCount || defaultWordCount(genre, protagonistAge);
 
-  const dnaSection = interpretStyleDna(styleDna, genre);
+  // Style DNA removed — genre defaults are now strong enough standalone.
+  // Keep styleDna in brief schema for future use but do not inject into prompts.
+  const dnaSection = null;
 
   const protagonistBlock = [
     protagonistName    && `Name: ${protagonistName}`,
@@ -594,7 +730,8 @@ export function buildStoryPrompt(brief) {
   const outputInstruction = asChunks
     ? `Return ONLY valid JSON with no markdown fences:
 {"title":"working title (3–6 words, evocative not descriptive)","chunks":["chunk text","chunk text",...]}
-Each chunk = 1–3 sentences. 8–12 chunks total. The story should feel complete and shaped, not truncated.`
+Each chunk = 1–3 sentences. 8–12 chunks total. The story should feel complete and shaped, not truncated.
+PAGE-TURN RULE: Every chunk except the last must end on a micro-tension — an incomplete action, an unanswered question, a door about to open. "She reached for the handle. It was warm." NOT "She opened the door and walked inside." The reader turns the page because they MUST know what happens next. The final chunk is the exception — it closes, settles, lands.`
     : `Return the story as flowing prose — no JSON, no headers, no labels.
 Begin with the title on its own line, then a blank line, then the story.
 ${targetWords} words, ±10%.`;
@@ -612,6 +749,16 @@ ${targetWords} words, ±10%.`;
 
   if (supportingBlock.length > 0) {
     sections.push('SUPPORTING CHARACTER:', ...supportingBlock.map(l => `  ${l}`), '');
+  }
+
+  const settingBlock = [
+    setting        && `Place: ${setting}`,
+    sensoryAnchor  && `Sensory anchor (the one detail that defines this world): ${sensoryAnchor}`,
+    timeOfDay      && `Time of day: ${timeOfDay}`,
+  ].filter(Boolean);
+
+  if (settingBlock.length > 0) {
+    sections.push('SETTING (make it specific — the reader should smell it):', ...settingBlock.map(l => `  ${l}`), '');
   }
 
   if (shapeBlock.length > 0) {
@@ -649,34 +796,45 @@ STORY:
 ${story}
 """
 
-CHECKLIST — respond with PASS or FAIL + one specific sentence of evidence for each:
+CHECKLIST — respond with PASS or FAIL + one specific sentence of evidence for each.
+Checks marked [STRUCTURAL] are auto-fail: if ANY structural check fails, overallVerdict MUST be "FAIL" regardless of score.
 
-1. SPECIFICITY: Every character has at least one detail no other character in any other story has.
-2. BANNED PHRASES: No banned phrases appear anywhere in the story.
-3. READ-ALOUD RHYTHM: Every sentence reads naturally when spoken aloud at a gentle pace.
-4. PROTAGONIST EARNS IT: The protagonist solves their problem using their own specific qualities — no adult rescue, no luck.
-5. SENSORY DETAIL: At least one piece of sensory detail (smell, texture, sound, temperature) is present.
-6. FINAL LINE: The final line lands on an image, sensation, or small specific moment — not a moral.
-7. DIALOGUE SOUNDS SPOKEN: Any dialogue sounds like talking, not writing.
-8. PLANTED DETAIL: ${brief.plantedDetail ? `The planted detail ("${brief.plantedDetail}") appears early and pays off.` : 'A detail is established early that pays off at the end.'}
-9. EARNED ENDING: The emotional weight of the ending matches what came before — not happier than earned.
-10. GENRE ARC: The story follows the ${brief.genre} structural arc correctly.
+STRUCTURAL CHECKS (auto-fail if any fails):
+1. PROTAGONIST EARNS IT [STRUCTURAL]: The protagonist solves their problem using their own specific qualities — no adult rescue, no luck, no coincidence.
+2. EARNED ENDING [STRUCTURAL]: The emotional weight of the ending matches what came before — not happier than earned, not resolved more neatly than life allows.
+3. GENRE ARC [STRUCTURAL]: The story follows the ${brief.genre} structural arc correctly with proper stage proportions.
+4. SLEEP LANDING [STRUCTURAL]: The final 10-15% slows the prose — shorter sentences, tactile/auditory sensory shift, rhythm matching breathing.
+
+CRAFT CHECKS (weighted normally):
+5. SPECIFICITY: Every character has at least one detail no other character in any other story has.
+6. BANNED PHRASES: No banned phrases appear anywhere in the story.
+7. READ-ALOUD RHYTHM: Every sentence reads naturally when spoken aloud at a gentle pace. No sibilant clusters, no consecutive stressed syllables in quiet passages.
+8. SENSORY DETAIL: Sensory detail (smell, texture, sound, temperature) in every scene transition and especially the final pages.
+9. FINAL LINE: The final line lands on an image, sensation, or small specific moment — not a moral.
+10. DIALOGUE SOUNDS SPOKEN: Any dialogue sounds like talking, not writing.
+11. PLANTED DETAIL: ${brief.plantedDetail ? `The planted detail ("${brief.plantedDetail}") appears early and pays off.` : 'A detail is established early that pays off at the end.'}
+12. PAGE-TURN TENSION: If chunked, each chunk except the last ends on a micro-tension that pulls the reader forward.
+
+IMPORTANT: If ANY structural check (1-4) fails, overallVerdict MUST be "FAIL" regardless of other scores.
 
 Return ONLY valid JSON:
 {
   "overallVerdict": "PASS" | "FAIL" | "PASS_WITH_NOTES",
   "score": <number 0-10>,
+  "structuralPass": true | false,
   "checks": {
+    "protagonistEarns":  { "result": "PASS"|"FAIL", "note": "...", "structural": true },
+    "earnedEnding":      { "result": "PASS"|"FAIL", "note": "...", "structural": true },
+    "genreArc":          { "result": "PASS"|"FAIL", "note": "...", "structural": true },
+    "sleepLanding":      { "result": "PASS"|"FAIL", "note": "...", "structural": true },
     "specificity":       { "result": "PASS"|"FAIL", "note": "..." },
     "bannedPhrases":     { "result": "PASS"|"FAIL", "note": "..." },
     "readAloudRhythm":   { "result": "PASS"|"FAIL", "note": "..." },
-    "protagonistEarns":  { "result": "PASS"|"FAIL", "note": "..." },
     "sensoryDetail":     { "result": "PASS"|"FAIL", "note": "..." },
     "finalLine":         { "result": "PASS"|"FAIL", "note": "..." },
     "dialogueSpoken":    { "result": "PASS"|"FAIL", "note": "..." },
     "plantedDetail":     { "result": "PASS"|"FAIL", "note": "..." },
-    "earnedEnding":      { "result": "PASS"|"FAIL", "note": "..." },
-    "genreArc":          { "result": "PASS"|"FAIL", "note": "..." }
+    "pageTurnTension":   { "result": "PASS"|"FAIL"|"N/A", "note": "..." }
   },
   "topIssue": "The single most important thing to fix, in one sentence.",
   "suggestedFix": "One concrete revision instruction."
@@ -839,10 +997,19 @@ export async function generateStory(brief, anthropicClient, options = {}) {
   }
 
   // Stage 3: Revise if needed
-  if (autoRegenerate && qualityResult.score < minScore && qualityResult.overallVerdict === 'FAIL') {
+  const structuralFail = qualityResult.structuralPass === false;
+  if (autoRegenerate && qualityResult.overallVerdict === 'FAIL') {
     onProgress?.({ stage: 'revising' });
-    const { system: rSystem, user: rUser } = buildRegenerationPrompt(story, qualityResult, brief);
-    story = await callAPI(rSystem, rUser);
+    if (structuralFail) {
+      // Structural failure — regenerate from scratch with the failure as an extra constraint
+      const constraintNote = `CRITICAL: The previous attempt failed structural review. Issue: ${qualityResult.topIssue}. Fix: ${qualityResult.suggestedFix}. This MUST be addressed in the new story.`;
+      const { system: s2, user: u2 } = buildStoryPrompt(brief);
+      story = await callAPI(s2, u2 + '\n\n' + constraintNote);
+    } else {
+      // Craft failure — surgical fix
+      const { system: rSystem, user: rUser } = buildRegenerationPrompt(story, qualityResult, brief);
+      story = await callAPI(rSystem, rUser);
+    }
   }
 
   onProgress?.({ stage: 'done' });

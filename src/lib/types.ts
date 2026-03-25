@@ -183,6 +183,8 @@ export interface HatcheryEgg {
 // ── Builder choices (passed from StoryBuilderPage → SleepSeedCore) ───────────
 export interface BuilderChoices {
   path: 'ritual' | 'free';
+  heroName: string;    // child's name
+  heroGender?: string; // 'boy' | 'girl' | ''
   vibe: string;        // 'warm-funny' | 'calm-cosy' | 'exciting' | 'heartfelt' | 'silly' | 'mysterious'
   level: string;       // 'age3' | 'age5' | 'age7' | 'age10'
   length: string;      // 'short' | 'standard' | 'long'
@@ -204,8 +206,7 @@ export type AppView =
   | 'onboarding-night0'   // Night 0 card creation
   | 'dashboard'           // ritual dashboard (home)
   | 'ritual-starter'      // tonight's story capture screen
-  | 'story-handoff'       // ritual seed shown, choose ritual vs free path
-  | 'story-configure'     // new story builder UI (ritual + free)
+  | 'story-wizard'        // unified story creation wizard (ritual + free)
   | 'story-builder'       // SleepSeedCore (generates + reads story)
   | 'user-profile'        // profile: characters + story library + night cards
   | 'characters'          // character library
@@ -217,4 +218,5 @@ export type AppView =
   | 'first-night'        // post-onboarding choice screen
   | 'hatchery'           // hatchery screen
   | 'library'            // public story library
-  | 'library-story';     // single library story reader
+  | 'library-story'      // single library story reader
+  | 'dev-story';         // DEV: story engine test bench
