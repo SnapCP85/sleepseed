@@ -187,6 +187,8 @@ const CSS = `
 @keyframes eggRock{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
 @keyframes micPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 @keyframes bubblePop{0%{opacity:0;transform:scale(.94) translateY(6px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes twinkle{0%,100%{opacity:.04;transform:scale(.35)}50%{opacity:.9;transform:scale(1.4)}}
+@keyframes waveBarIdle{0%,100%{height:3px;opacity:.35}50%{height:7px;opacity:.7}}
 
 /* nav */
 .sc-nav{display:flex;align-items:center;justify-content:space-between;padding:0 5%;height:52px;position:sticky;top:0;z-index:20;background:rgba(4,10,22,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(245,184,76,.06)}
@@ -196,7 +198,7 @@ const CSS = `
 .sc-close:hover{color:var(--cream)}
 
 /* inner */
-.sc-inner{flex:1;width:100%;max-width:540px;margin:0 auto;padding:0 5% 180px;overflow-x:hidden}
+.sc-inner{flex:1;width:100%;max-width:540px;margin:0 auto;padding:0 5% 180px;overflow-x:hidden;position:relative;z-index:5}
 
 /* creature zone */
 .sc-creature{display:flex;flex-direction:column;align-items:center;padding:20px 0 4px;animation:slideUp .4s ease both}
@@ -231,29 +233,30 @@ const CSS = `
 .sc-occ.on{background:rgba(245,184,76,.12);border-color:rgba(245,184,76,.4);color:#F5B84C}
 
 /* voice button */
-.sc-voice{width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid rgba(245,184,76,.25);background:rgba(245,184,76,.04);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;margin-bottom:6px;font-family:var(--body)}
+.sc-voice{width:100%;padding:13px 16px;border-radius:14px;border:1.5px solid rgba(245,184,76,.22);background:rgba(10,15,35,.7);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;margin-bottom:8px;font-family:var(--body)}
 .sc-voice:hover{border-color:rgba(245,184,76,.4);background:rgba(245,184,76,.07)}
 .sc-voice.rec{border-color:rgba(245,76,76,.6);background:rgba(245,76,76,.05);animation:micPulse 1.2s ease-in-out infinite}
-.sc-voice.teal{border-color:rgba(20,216,144,.25);background:rgba(20,216,144,.04)}
+.sc-voice.teal{border-color:rgba(20,216,144,.2);background:rgba(6,20,16,.7)}
 .sc-voice.teal:hover{border-color:rgba(20,216,144,.4);background:rgba(20,216,144,.07)}
 .sc-voice-icon{font-size:20px;flex-shrink:0}
 .sc-voice-text{flex:1;font-size:13px;font-weight:600;color:#F5B84C;text-align:left}
 .sc-voice.teal .sc-voice-text{color:#14d890}
 .sc-voice.rec .sc-voice-text{color:#FF8070}
 .sc-voice-waves{display:flex;align-items:center;gap:2px;flex-shrink:0}
-.sc-wave-bar{width:4px;border-radius:2px;background:var(--amber);transition:height .2s}
+.sc-wave-bar{width:4px;border-radius:2px;background:var(--amber)}
 .sc-voice.teal .sc-wave-bar{background:var(--teal)}
-.sc-wave-bar.active{animation:waveBar .6s ease-in-out infinite}
 
 /* or divider */
-.sc-or{font-size:10px;color:rgba(255,255,255,.18);text-align:center;margin:10px 0;text-transform:uppercase;letter-spacing:.1em}
+.sc-or{display:flex;align-items:center;gap:10px;margin:10px 0}
+.sc-or-line{flex:1;height:1px;background:rgba(255,255,255,.07)}
+.sc-or-text{font-size:9px;color:rgba(255,255,255,.2);letter-spacing:.06em;white-space:nowrap}
 
 /* textarea */
-.sc-textarea{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid rgba(245,184,76,.28);background:rgba(255,255,255,.03);color:var(--cream);font-size:13px;font-family:var(--body);outline:none;resize:none;min-height:56px;line-height:1.6;transition:border-color .2s;margin-bottom:6px}
-.sc-textarea:focus{border-color:rgba(245,184,76,.5)}
+.sc-textarea{width:100%;padding:12px 14px;border-radius:14px;border:1px solid rgba(245,184,76,.2);background:rgba(245,184,76,.03);color:var(--cream);font-size:13px;font-family:var(--heading);font-style:italic;outline:none;resize:none;min-height:60px;line-height:1.65;transition:border-color .2s,box-shadow .2s;margin-bottom:6px}
+.sc-textarea:focus{border-color:rgba(245,184,76,.45);box-shadow:0 0 0 3px rgba(245,184,76,.07)}
 .sc-textarea::placeholder{color:rgba(255,255,255,.18);font-style:italic}
-.sc-textarea.teal{border-color:rgba(20,216,144,.28)}
-.sc-textarea.teal:focus{border-color:rgba(20,216,144,.5)}
+.sc-textarea.teal{border-color:rgba(20,216,144,.2);background:rgba(20,216,144,.03);font-family:var(--body);font-style:normal;font-weight:700}
+.sc-textarea.teal:focus{border-color:rgba(20,216,144,.45);box-shadow:0 0 0 3px rgba(20,216,144,.07)}
 .sc-textarea.purple{border-color:rgba(160,96,240,.3)}
 .sc-textarea.purple:focus{border-color:rgba(160,96,240,.55)}
 
@@ -437,6 +440,22 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   const hasSpeechAPI = typeof window !== 'undefined' &&
     !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
 
+  // ── Star field ──
+  useEffect(() => {
+    const container = document.getElementById('sc-stars');
+    if (!container) return;
+    container.innerHTML = '';
+    const colours = ['#fff8e0','#e8d8ff','#d0f0e8','#c8e8ff','#fff'];
+    for (let i = 0; i < 55; i++) {
+      const s = document.createElement('div');
+      const sz = Math.random() < .28 ? 2.2 : Math.random() < .6 ? 1.4 : .7;
+      const d = (2 + Math.random() * 3.5).toFixed(1);
+      const dl = (Math.random() * 4.5).toFixed(1);
+      s.style.cssText = `position:absolute;border-radius:50%;width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*70}%;background:${colours[i % colours.length]};animation:twinkle ${d}s -${dl}s ease-in-out infinite;pointer-events:none;`;
+      container.appendChild(s);
+    }
+  }, []);
+
   // ── Inspiration & occasion derived values ──
   const questionBank = entryMode === 'ritual' ? RITUAL_QUESTIONS : CREATE_QUESTIONS;
   const currentQuestion = questionBank[questionIndex % questionBank.length];
@@ -446,6 +465,21 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
 
   const shuffleQuestion = () => setQuestionIndex(i => i + 1);
   const useQuestion = () => { setBrief(currentQuestion); setTranscript(''); };
+
+  const renderInspoQuestion = (q: string): ReactNode => {
+    const accentColor = entryMode === 'ritual' ? '#F5B84C' : '#14d890';
+    const highlightMatch = q.match(
+      /\b(wanted to hold onto|still sitting with you|unkind|done differently|mattered more|don't want to forget|carried home|really laugh|becoming|surprise you|weird.*said|anywhere impossible|funny if|obsessed|silliest|superpower|slightly wrong|convinced is true|companion say|most dramatic)\b/i
+    );
+    if (highlightMatch) {
+      const phrase = highlightMatch[0];
+      const idx = q.indexOf(phrase);
+      return (
+        <>&ldquo;{q.slice(0, idx)}<em style={{ color: accentColor, fontStyle: 'normal', fontWeight: 800 }}>{phrase}</em>{q.slice(idx + phrase.length)}&rdquo;</>
+      );
+    }
+    return <>&ldquo;{q}&rdquo;</>;
+  };
 
   // ── Mode switch clears relevant state ──
   const switchMode = useCallback((m: 'today' | 'adventure') => {
@@ -651,6 +685,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   return (
     <div className={`sc ${isRitual ? 'ritual' : 'create'}`}>
       <style>{CSS}</style>
+      <div id="sc-stars" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }} />
 
       {/* ─── NAV ─── */}
       <nav className="sc-nav">
@@ -708,9 +743,13 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
               <div className="sc-egg">{'\u{1F95A}'}</div>
             ) : (
               <>
-                <div className={`sc-creature-emoji ${glowClass}`}>{cEmoji}</div>
-                <div className="sc-creature-name">{cName}</div>
-                {cType && <div className="sc-creature-type">{cType}</div>}
+                <div className="sc-creature-emoji" style={{ animation: 'floatCreature 4.5s ease-in-out infinite, glowAmber 4s ease-in-out infinite' }}>{cEmoji}</div>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase' as const, color: 'rgba(245,184,76,.55)', marginTop: 4, textAlign: 'center' as const }}>{cName}</div>
+                {cType && (
+                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 7.5, letterSpacing: '.08em', textTransform: 'uppercase' as const, color: 'rgba(255,255,255,.2)', marginTop: 2, textAlign: 'center' as const }}>
+                    {cType.charAt(0).toUpperCase() + cType.slice(1).replace(/-/g, ' ')}
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -720,13 +759,15 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
               <div className="sc-egg" style={{ fontSize: 36 }}>{'\u{1F95A}'}</div>
             ) : (
               <>
-                <div style={{ fontSize: 42, animation: 'floatCreature 4s ease-in-out infinite' }}>{cEmoji}</div>
-                <div>
-                  <div style={{ fontFamily: "'Baloo 2', cursive", fontSize: 16, fontWeight: 700, color: 'var(--cream)', lineHeight: 1.3 }}>
+                <div style={{ fontSize: 42, animation: 'floatCreature 3.5s ease-in-out infinite, glowTeal 3s ease-in-out infinite', display: 'inline-block' }}>{cEmoji}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: "'Baloo 2', cursive", fontSize: 15, fontWeight: 800, color: 'var(--cream)', lineHeight: 1.3 }}>
                     What kind of story{' '}
                     <em style={{ color: '#14d890', fontStyle: 'italic' }}>tonight?</em>
                   </div>
-                  <div className="sc-creature-name" style={{ marginTop: 2 }}>{cName}</div>
+                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: '.1em', textTransform: 'uppercase' as const, color: 'rgba(20,216,144,.4)', marginTop: 3 }}>
+                    {cName} {'\u00B7'} ready to write
+                  </div>
                 </div>
               </>
             )}
@@ -735,8 +776,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
 
         {/* ─── SPEECH BUBBLE (ritual only) ─── */}
         {isRitual && (
-          <div className="sc-bubble" key={`bubble-${mode}-${isListening}-${!!transcript}-${!!brief}-${worldChoice}`}
-            style={{ borderColor: 'rgba(245,184,76,.2)', background: 'rgba(245,184,76,.04)' }}>
+          <div className="sc-bubble" style={{ borderColor: 'rgba(245,184,76,.2)', background: 'rgba(245,184,76,.04)', opacity: 1, animation: 'bubblePop .35s ease forwards' }}>
             <div className="sc-bubble-text">{renderBubbleText()}</div>
           </div>
         )}
@@ -834,7 +874,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                     marginBottom: 8,
                   }}
                 >
-                  &ldquo;{currentQuestion}&rdquo;
+                  {renderInspoQuestion(currentQuestion)}
                 </div>
                 <div style={{
                   fontFamily: "'DM Mono', monospace",
@@ -863,10 +903,12 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                   {[0, .1, .2, .15, .05].map((d, i) => (
                     <span
                       key={i}
-                      className={`sc-wave-bar${isListening ? ' active' : ''}`}
+                      className="sc-wave-bar"
                       style={{
-                        height: isListening ? undefined : 4,
-                        animationDelay: `${d}s`,
+                        height: 4,
+                        animation: isListening
+                          ? `waveBar .6s ${d}s ease-in-out infinite`
+                          : `waveBarIdle 1.8s ${d * 3}s ease-in-out infinite`,
                       }}
                     />
                   ))}
@@ -905,8 +947,12 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
             ) : (
               <>
                 {hasSpeechAPI && (
-                  <div className="sc-or" style={isRitual ? { fontFamily: "'Fraunces', serif", fontStyle: 'italic' } : { fontFamily: "'DM Mono', monospace" }}>
-                    {isRitual ? 'or write it down' : 'or type it'}
+                  <div className="sc-or">
+                    <div className="sc-or-line" />
+                    <span className="sc-or-text" style={isRitual ? { fontFamily: "'Fraunces', serif", fontStyle: 'italic', fontSize: 10 } : {}}>
+                      {isRitual ? 'or write it down' : 'or type it'}
+                    </span>
+                    <div className="sc-or-line" />
                   </div>
                 )}
                 <textarea
@@ -972,7 +1018,11 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                     </div>
                   ))}
                 </div>
-                <div className="sc-or">or make one up</div>
+                <div className="sc-or">
+                  <div className="sc-or-line" />
+                  <span className="sc-or-text">or make one up</span>
+                  <div className="sc-or-line" />
+                </div>
                 <textarea
                   className="sc-textarea purple"
                   rows={2}
