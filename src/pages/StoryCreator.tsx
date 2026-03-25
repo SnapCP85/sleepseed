@@ -218,7 +218,7 @@ const CSS = `
 /* bubble */
 .sc-bubble{position:relative;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:14px 18px;margin:12px 0 18px;text-align:center;animation:bubblePop .4s ease forwards .2s;opacity:0}
 .sc-bubble::before{content:'';position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:7px solid rgba(255,255,255,.1)}
-.sc-bubble-text{font-family:var(--heading);font-size:13.5px;font-style:italic;color:rgba(255,255,255,.72);line-height:1.6}
+.sc-bubble-text{font-family:var(--body);font-size:13.5px;font-weight:600;color:rgba(255,255,255,.72);line-height:1.6}
 
 /* mode toggle */
 .sc-mode{display:flex;gap:8px;margin-bottom:18px}
@@ -255,10 +255,10 @@ const CSS = `
 .sc-or-text{font-size:9px;color:rgba(255,255,255,.2);letter-spacing:.06em;white-space:nowrap}
 
 /* textarea */
-.sc-textarea{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid rgba(245,184,76,.25);background:rgba(245,184,76,.05);color:var(--cream);font-size:13px;font-family:var(--heading);font-style:italic;outline:none;resize:none;min-height:60px;line-height:1.65;transition:border-color .2s,box-shadow .2s;margin-bottom:6px}
+.sc-textarea{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid rgba(245,184,76,.25);background:rgba(245,184,76,.05);color:var(--cream);font-size:13px;font-family:var(--body);font-weight:700;outline:none;resize:none;min-height:60px;line-height:1.65;transition:border-color .2s,box-shadow .2s;margin-bottom:6px}
 .sc-textarea:focus{border-color:rgba(245,184,76,.45);box-shadow:0 0 0 3px rgba(245,184,76,.07)}
 .sc-textarea::placeholder{color:rgba(255,255,255,.18);font-style:italic}
-.sc-textarea.teal{border-color:rgba(20,216,144,.2);background:rgba(255,255,255,.05);font-family:var(--body);font-style:normal;font-weight:700}
+.sc-textarea.teal{border-color:rgba(20,216,144,.2);background:rgba(255,255,255,.05)}
 .sc-textarea.teal:focus{border-color:rgba(20,216,144,.45);box-shadow:0 0 0 3px rgba(20,216,144,.07)}
 .sc-textarea.purple{border-color:rgba(160,96,240,.3)}
 .sc-textarea.purple:focus{border-color:rgba(160,96,240,.55)}
@@ -269,7 +269,7 @@ const CSS = `
 .sc-transcript-label{font-size:9px;font-family:var(--mono);color:var(--amber);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:4px}
 .sc-transcript-edit{font-size:10px;color:rgba(245,184,76,.5);background:none;border:none;cursor:pointer;font-family:var(--body);font-weight:600;transition:color .15s}
 .sc-transcript-edit:hover{color:var(--amber)}
-.sc-transcript-text{font-family:var(--heading);font-style:italic;font-size:13px;color:rgba(255,255,255,.82);line-height:1.6}
+.sc-transcript-text{font-family:var(--body);font-size:13px;font-weight:600;color:rgba(255,255,255,.82);line-height:1.6}
 
 /* world grid */
 .sc-world-label{font-family:var(--heading);font-style:italic;font-size:15px;color:rgba(255,255,255,.65);text-align:center;margin-bottom:14px}
@@ -851,12 +851,9 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                   <button
                     onClick={shuffleQuestion}
                     style={{
-                      fontFamily: entryMode === 'ritual'
-                        ? "'Fraunces', serif"
-                        : "'Baloo 2', cursive",
+                      fontFamily: "'Baloo 2', cursive",
                       fontSize: 10,
-                      fontStyle: entryMode === 'ritual' ? 'italic' : 'normal',
-                      fontWeight: entryMode === 'ritual' ? 400 : 800,
+                      fontWeight: 700,
                       color: entryMode === 'ritual'
                         ? 'rgba(245,184,76,.4)'
                         : 'rgba(20,216,144,.4)',
@@ -872,12 +869,9 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                 <div
                   onClick={useQuestion}
                   style={{
-                    fontFamily: entryMode === 'ritual'
-                      ? "'Fraunces', serif"
-                      : "'Baloo 2', cursive",
+                    fontFamily: "'Baloo 2', cursive",
                     fontSize: 13,
-                    fontStyle: entryMode === 'ritual' ? 'italic' : 'normal',
-                    fontWeight: entryMode === 'ritual' ? 400 : 700,
+                    fontWeight: 700,
                     color: 'rgba(255,255,255,.75)',
                     lineHeight: 1.6,
                     cursor: 'pointer',
@@ -964,7 +958,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                 {hasSpeechAPI && (
                   <div className="sc-or">
                     <div className="sc-or-line" />
-                    <span className="sc-or-text" style={isRitual ? { fontFamily: "'Fraunces', serif", fontStyle: 'italic', fontSize: 10 } : {}}>
+                    <span className="sc-or-text">
                       {isRitual ? 'or write it down' : 'or type it'}
                     </span>
                     <div className="sc-or-line" />
@@ -976,7 +970,6 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                   value={brief}
                   onChange={e => { setBrief(e.target.value); setTranscript(''); }}
                   placeholder="We found a really fat frog under the plant pot\u2026"
-                  style={isRitual ? { fontFamily: "'Fraunces', serif", fontStyle: 'italic' } : { fontFamily: "'Nunito', sans-serif", fontWeight: 700 }}
                 />
               </>
             )}
@@ -1067,16 +1060,13 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
               justifyContent: 'space-between',
             }}>
               <span style={{
-                fontFamily: entryMode === 'ritual'
-                  ? "'Fraunces', serif"
-                  : "'DM Mono', monospace",
-                fontSize: entryMode === 'ritual' ? 11 : 8,
-                fontStyle: entryMode === 'ritual' ? 'italic' : 'normal',
-                letterSpacing: entryMode === 'ritual' ? 0 : '.08em',
-                textTransform: entryMode === 'ritual' ? 'none' as const : 'uppercase' as const,
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 8,
+                letterSpacing: '.08em',
+                textTransform: 'uppercase' as const,
                 color: 'rgba(255,255,255,.28)',
               }}>
-                {entryMode === 'ritual' ? 'Tag this story' : 'Tag this story (optional)'}
+                Tag this story
               </span>
               <button
                 onClick={() => setOccasionDismissed(true)}
