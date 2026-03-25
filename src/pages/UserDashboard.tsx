@@ -620,8 +620,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
     ).length;
     return Math.min(count,7);
   },[activeEgg,allCards]);
-  // DEV OVERRIDE — remove before deploy
-  const eggStage = 5;
+  const eggStage = _realEggStage;
 
   // Cards belonging to this egg cycle, sorted chronologically (star[0] = first card, etc.)
   const _realEggCards = useMemo(()=>{
@@ -632,14 +631,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
       .sort((a,b)=>a.date.localeCompare(b.date))
       .slice(0,7);
   },[activeEgg,allCards]);
-  // DEV DEMO CARDS — remove before deploy
-  const eggCards = [
-    {id:'demo1',userId:'',heroName:'',storyId:'demo-s1',storyTitle:'The Brave Little Light',characterIds:[],headline:'',quote:'',date:'2026-03-19'},
-    {id:'demo2',userId:'',heroName:'',storyId:'demo-s2',storyTitle:'Naming the Shadow',characterIds:[],headline:'',quote:'',date:'2026-03-20'},
-    {id:'demo3',userId:'',heroName:'',storyId:'demo-s3',storyTitle:'One Step Into the Cave',characterIds:[],headline:'',quote:'',date:'2026-03-21'},
-    {id:'demo4',userId:'',heroName:'',storyId:'demo-s4',storyTitle:'The Fall That Taught Me',characterIds:[],headline:'',quote:'',date:'2026-03-22'},
-    {id:'demo5',userId:'',heroName:'',storyId:'demo-s5',storyTitle:'A Lantern for a Friend',characterIds:[],headline:'',quote:'',date:'2026-03-23'},
-  ] as any[];
+  const eggCards = _realEggCards;
 
   const weekDone=week.filter(n=>n.state==='complete').length;
   const glowPct =Math.min(100,Math.round((weekDone/7)*100));
@@ -650,10 +642,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
 
   // tonight done = today's ritual completed
   const todayStr=dateStr(new Date());
-  const _realTonightDone=!!allCards.find(c=>primary&&cardBelongsTo(c,primary.id)&&c.date.split('T')[0]===todayStr);
-  // DEV TOGGLE — remove before deploy
-  const [devDoneOverride, setDevDoneOverride] = useState<null|boolean>(null);
-  const tonightDone = devDoneOverride !== null ? devDoneOverride : _realTonightDone;
+  const tonightDone=!!allCards.find(c=>primary&&cardBelongsTo(c,primary.id)&&c.date.split('T')[0]===todayStr);
   const tonightCard=allCards.find(c=>primary&&cardBelongsTo(c,primary.id)&&c.date.split('T')[0]===todayStr)??null;
 
   // time-aware greeting
@@ -823,28 +812,6 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
 
       <div className="dash-inner">
 
-        {/* DEV TOGGLE — remove before deploy */}
-        {!isGuest&&(
-          <div style={{display:'flex',gap:6,justifyContent:'center',padding:'8px 0 0'}}>
-            <button onClick={()=>setDevDoneOverride(false)} style={{
-              padding:'5px 14px',borderRadius:50,fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:'var(--sans)',
-              background:tonightDone?'transparent':'rgba(245,184,76,.15)',
-              border:tonightDone?'1px solid rgba(255,255,255,.1)':'1px solid rgba(245,184,76,.4)',
-              color:tonightDone?'rgba(255,255,255,.3)':'#F5B84C',
-            }}>Before ritual</button>
-            <button onClick={()=>setDevDoneOverride(true)} style={{
-              padding:'5px 14px',borderRadius:50,fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:'var(--sans)',
-              background:tonightDone?'rgba(29,158,117,.15)':'transparent',
-              border:tonightDone?'1px solid rgba(29,158,117,.4)':'1px solid rgba(255,255,255,.1)',
-              color:tonightDone?'var(--teal2)':'rgba(255,255,255,.3)',
-            }}>After ritual</button>
-            <button onClick={()=>setDevDoneOverride(null)} style={{
-              padding:'5px 10px',borderRadius:50,fontSize:10,cursor:'pointer',fontFamily:'var(--sans)',
-              background:'transparent',border:'1px solid rgba(255,255,255,.06)',color:'rgba(255,255,255,.2)',
-            }}>Reset</button>
-          </div>
-        )}
-
         {/* ═══════════════════════════════════════════════════
             GUEST EXPERIENCE — conversion-focused landing
         ═══════════════════════════════════════════════════ */}
@@ -867,7 +834,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
               width:'100%',marginBottom:20,
               background:'linear-gradient(145deg,#a06010,#F5B84C 48%,#a06010)',
               boxShadow:'0 8px 30px rgba(200,130,20,.42)',
-            }} onClick={()=>setView('story-configure' as any)}>
+            }} onClick={()=>setView('story-wizard' as any)}>
               <span className="dash-u-btn-ico">✨</span>
               <span className="dash-u-btn-texts">
                 <span className="dash-u-btn-title" style={{color:'#080200'}}>Try your first story</span>
