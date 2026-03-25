@@ -171,7 +171,9 @@ const CSS = `
   --heading:'Fraunces',Georgia,serif;--body:'Nunito',system-ui,sans-serif;
   --cta:'Baloo 2',system-ui,sans-serif;--mono:'DM Mono',monospace;
 }
-.sc{min-height:100dvh;background:radial-gradient(ellipse at 50% 0%,#0c1228 0%,#040a16 55%,#020408 100%);font-family:var(--body);color:var(--cream);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
+.sc{min-height:100dvh;font-family:var(--body);color:var(--cream);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
+.sc.ritual{background:radial-gradient(ellipse at 50% 0%,#0a1428 0%,#040810 55%,#020406 100%)}
+.sc.create{background:radial-gradient(ellipse at 50% 0%,#061820 0%,#030c10 55%,#020408 100%)}
 
 /* animations */
 @keyframes floatCreature{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
@@ -198,7 +200,9 @@ const CSS = `
 
 /* creature zone */
 .sc-creature{display:flex;flex-direction:column;align-items:center;padding:20px 0 4px;animation:slideUp .4s ease both}
+.sc-creature.create-creature{flex-direction:row;align-items:center;gap:12px;padding:16px 0 4px}
 .sc-creature-emoji{font-size:72px;animation:floatCreature 4s ease-in-out infinite}
+.sc-creature.create-creature .sc-creature-emoji{font-size:42px}
 .sc-creature-glow{animation:glowAmber 3s ease-in-out infinite}
 .sc-creature-glow-teal{animation:glowTeal 3s ease-in-out infinite}
 .sc-creature-glow-purple{animation:glowPurple 3s ease-in-out infinite}
@@ -230,11 +234,15 @@ const CSS = `
 .sc-voice{width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid rgba(245,184,76,.25);background:rgba(245,184,76,.04);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;margin-bottom:6px;font-family:var(--body)}
 .sc-voice:hover{border-color:rgba(245,184,76,.4);background:rgba(245,184,76,.07)}
 .sc-voice.rec{border-color:rgba(245,76,76,.6);background:rgba(245,76,76,.05);animation:micPulse 1.2s ease-in-out infinite}
+.sc-voice.teal{border-color:rgba(20,216,144,.25);background:rgba(20,216,144,.04)}
+.sc-voice.teal:hover{border-color:rgba(20,216,144,.4);background:rgba(20,216,144,.07)}
 .sc-voice-icon{font-size:20px;flex-shrink:0}
 .sc-voice-text{flex:1;font-size:13px;font-weight:600;color:#F5B84C;text-align:left}
+.sc-voice.teal .sc-voice-text{color:#14d890}
 .sc-voice.rec .sc-voice-text{color:#FF8070}
 .sc-voice-waves{display:flex;align-items:center;gap:2px;flex-shrink:0}
 .sc-wave-bar{width:4px;border-radius:2px;background:var(--amber);transition:height .2s}
+.sc-voice.teal .sc-wave-bar{background:var(--teal)}
 .sc-wave-bar.active{animation:waveBar .6s ease-in-out infinite}
 
 /* or divider */
@@ -244,6 +252,8 @@ const CSS = `
 .sc-textarea{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid rgba(245,184,76,.28);background:rgba(255,255,255,.03);color:var(--cream);font-size:13px;font-family:var(--body);outline:none;resize:none;min-height:56px;line-height:1.6;transition:border-color .2s;margin-bottom:6px}
 .sc-textarea:focus{border-color:rgba(245,184,76,.5)}
 .sc-textarea::placeholder{color:rgba(255,255,255,.18);font-style:italic}
+.sc-textarea.teal{border-color:rgba(20,216,144,.28)}
+.sc-textarea.teal:focus{border-color:rgba(20,216,144,.5)}
 .sc-textarea.purple{border-color:rgba(160,96,240,.3)}
 .sc-textarea.purple:focus{border-color:rgba(160,96,240,.55)}
 
@@ -313,7 +323,8 @@ const CSS = `
 .sc-cta:hover{filter:brightness(1.1);transform:scale(1.02) translateY(-1px)}
 .sc-cta:active{transform:scale(.97)}
 .sc-cta:disabled{opacity:.35;cursor:not-allowed;transform:none;filter:none}
-.sc-cta.amber{background:linear-gradient(145deg,#a06010,#F5B84C 48%,#a06010);color:#060200;box-shadow:0 10px 35px rgba(200,130,20,.45)}
+.sc-cta.amber{background:linear-gradient(145deg,#7a4a08,#F5B84C 48%,#7a4a08);color:#060200;box-shadow:0 10px 35px rgba(200,130,20,.45)}
+.sc-cta.teal{background:linear-gradient(145deg,#0a7a50,#14d890 48%,#0a7a50);color:#020c08;box-shadow:0 10px 35px rgba(20,216,144,.35)}
 .sc-cta.purple{background:linear-gradient(145deg,#5010a0,#c090ff 48%,#5010a0);color:#0a0020;box-shadow:0 10px 35px rgba(160,96,240,.38)}
 .sc-cta-main{font-size:15px;font-weight:700;display:block}
 .sc-cta-sub{font-size:10px;font-weight:500;opacity:.7;display:block;margin-top:2px}
@@ -329,24 +340,24 @@ const CSS = `
    ══════════════════════════════════════════════════════════════════════ */
 
 interface StoryCreatorProps {
+  entryMode: 'ritual' | 'create';
   onGenerate: (choices: BuilderChoices) => void;
   onBack: () => void;
 }
 
-export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) {
+export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCreatorProps) {
   const {
-    user, view,
+    user,
     selectedCharacters, selectedCharacter,
     setSelectedCharacter, setCompanionCreature,
     companionCreature,
   } = useApp();
 
+  const isRitual = entryMode === 'ritual';
+
   const primaryChar = selectedCharacters[0] ?? selectedCharacter ?? null;
   const childName = primaryChar?.name ?? 'friend';
   const defaultLevel = ageDescToLevel(primaryChar?.ageDescription);
-
-  // Entry mode: ritual (from dashboard) or create (from Create button)
-  const entryMode = view === 'ritual-starter' ? 'ritual' : 'create';
 
   // ── Data ──
   const [loading, setLoading] = useState(true);
@@ -498,7 +509,8 @@ export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) 
   const creatureColor = creature?.color || '#F5B84C';
 
   // Choose glow class based on mode/color
-  const glowClass = mode === 'adventure' ? 'sc-creature-glow-purple'
+  const glowClass = isRitual ? 'sc-creature-glow'
+    : mode === 'adventure' ? 'sc-creature-glow-purple'
     : creatureColor.toLowerCase().includes('60c8') || creatureColor.toLowerCase().includes('14d8') ? 'sc-creature-glow-teal'
     : 'sc-creature-glow';
 
@@ -604,8 +616,15 @@ export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) 
     ? brief.trim().length < 4 && transcript.trim().length < 4
     : !worldChoice && adventureDetail.trim().length < 4;
 
-  const ctaLabel = mode === 'today' ? '\u2728 Write today\u2019s story!' : '\u{1F680} Begin the adventure!';
-  const ctaColor = mode === 'today' ? 'amber' : 'purple';
+  const ctaLabel = isRitual
+    ? '\u2726 Write tonight\u2019s story'
+    : (mode === 'today' ? 'Let\u2019s make a story! \u2192' : '\u{1F680} Begin the adventure!');
+  const ctaColor = isRitual
+    ? 'amber'
+    : (mode === 'today' ? 'teal' : 'purple');
+  const ctaSub = isRitual
+    ? `${cName} has been waiting`
+    : `${cName} is ready`;
 
   // ── Settings summary ──
   const summary = settingsSummary(style, length, vibe, level);
@@ -617,7 +636,7 @@ export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) 
   const otherChars = characters.filter(c => c.id !== primaryChar?.id);
 
   return (
-    <div className="sc">
+    <div className={`sc ${isRitual ? 'ritual' : 'create'}`}>
       <style>{CSS}</style>
 
       {/* ─── NAV ─── */}
@@ -632,38 +651,61 @@ export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) 
       <div className="sc-inner">
 
         {/* ─── CREATURE ZONE ─── */}
-        <div className="sc-creature">
-          {loading ? (
-            <div className="sc-egg">{'\u{1F95A}'}</div>
-          ) : (
-            <>
-              <div className={`sc-creature-emoji ${glowClass}`}>{cEmoji}</div>
-              <div className="sc-creature-name">{cName}</div>
-              {cType && <div className="sc-creature-type">{cType}</div>}
-            </>
-          )}
-        </div>
+        {isRitual ? (
+          <div className="sc-creature">
+            {loading ? (
+              <div className="sc-egg">{'\u{1F95A}'}</div>
+            ) : (
+              <>
+                <div className={`sc-creature-emoji ${glowClass}`}>{cEmoji}</div>
+                <div className="sc-creature-name">{cName}</div>
+                {cType && <div className="sc-creature-type">{cType}</div>}
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="sc-creature create-creature">
+            {loading ? (
+              <div className="sc-egg" style={{ fontSize: 36 }}>{'\u{1F95A}'}</div>
+            ) : (
+              <>
+                <div style={{ fontSize: 42, animation: 'floatCreature 4s ease-in-out infinite' }}>{cEmoji}</div>
+                <div>
+                  <div style={{ fontFamily: "'Baloo 2', cursive", fontSize: 16, fontWeight: 700, color: 'var(--cream)', lineHeight: 1.3 }}>
+                    What kind of story tonight?
+                  </div>
+                  <div className="sc-creature-name" style={{ marginTop: 2 }}>{cName}</div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
-        {/* ─── SPEECH BUBBLE ─── */}
-        <div className="sc-bubble" key={`bubble-${mode}-${isListening}-${!!transcript}-${!!brief}-${worldChoice}`}>
-          <div className="sc-bubble-text">{bubbleText}</div>
-        </div>
+        {/* ─── SPEECH BUBBLE (ritual only) ─── */}
+        {isRitual && (
+          <div className="sc-bubble" key={`bubble-${mode}-${isListening}-${!!transcript}-${!!brief}-${worldChoice}`}
+            style={{ borderColor: 'rgba(245,184,76,.2)', background: 'rgba(245,184,76,.04)' }}>
+            <div className="sc-bubble-text">{bubbleText}</div>
+          </div>
+        )}
 
-        {/* ─── MODE TOGGLE ─── */}
-        <div className="sc-mode">
-          <button
-            className={`sc-mode-btn${mode === 'today' ? ' today-on' : ''}`}
-            onClick={() => switchMode('today')}
-          >
-            {'\u2600\uFE0F'} My Day
-          </button>
-          <button
-            className={`sc-mode-btn${mode === 'adventure' ? ' adv-on' : ''}`}
-            onClick={() => switchMode('adventure')}
-          >
-            {'\u2728'} Adventure
-          </button>
-        </div>
+        {/* ─── MODE TOGGLE (create only) ─── */}
+        {!isRitual && (
+          <div className="sc-mode">
+            <button
+              className={`sc-mode-btn${mode === 'today' ? ' today-on' : ''}`}
+              onClick={() => switchMode('today')}
+            >
+              {'\u2600\uFE0F'} My Day
+            </button>
+            <button
+              className={`sc-mode-btn${mode === 'adventure' ? ' adv-on' : ''}`}
+              onClick={() => switchMode('adventure')}
+            >
+              {'\u2728'} Adventure
+            </button>
+          </div>
+        )}
 
         {/* ═══ MY DAY INPUT ZONE ═══ */}
         {mode === 'today' && (
@@ -758,7 +800,7 @@ export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) 
             {/* Voice button */}
             {hasSpeechAPI && (
               <button
-                className={`sc-voice${isListening ? ' rec' : ''}`}
+                className={`sc-voice${isListening ? ' rec' : ''}${!isRitual ? ' teal' : ''}`}
                 onClick={toggleVoice}
               >
                 <span className="sc-voice-icon">{'\u{1F399}\uFE0F'}</span>
@@ -810,13 +852,18 @@ export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) 
               </>
             ) : (
               <>
-                {hasSpeechAPI && <div className="sc-or">or type it</div>}
+                {hasSpeechAPI && (
+                  <div className="sc-or" style={isRitual ? { fontFamily: "'Fraunces', serif", fontStyle: 'italic' } : { fontFamily: "'DM Mono', monospace" }}>
+                    {isRitual ? 'or write it down' : 'or type it'}
+                  </div>
+                )}
                 <textarea
-                  className="sc-textarea"
+                  className={`sc-textarea${!isRitual ? ' teal' : ''}`}
                   rows={2}
                   value={brief}
                   onChange={e => { setBrief(e.target.value); setTranscript(''); }}
                   placeholder="We found a really fat frog under the plant pot\u2026"
+                  style={isRitual ? { fontFamily: "'Fraunces', serif", fontStyle: 'italic' } : { fontFamily: "'Nunito', sans-serif", fontWeight: 700 }}
                 />
               </>
             )}
@@ -1104,7 +1151,7 @@ export default function StoryCreator({ onGenerate, onBack }: StoryCreatorProps) 
           onClick={handleGenerate}
         >
           <span className="sc-cta-main">{ctaLabel}</span>
-          <span className="sc-cta-sub">{cName} is ready</span>
+          <span className="sc-cta-sub">{ctaSub}</span>
         </button>
       </div>
     </div>

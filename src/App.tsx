@@ -437,6 +437,7 @@ function AppInner() {
   );
   if (view === 'ritual-starter') return (
     <StoryCreator
+      entryMode="ritual"
       onGenerate={(choices) => {
         setWizardChoices(choices);
         setPreloadedBook(null);
@@ -447,6 +448,7 @@ function AppInner() {
   );
   if (view === 'story-wizard') return (
     <StoryCreator
+      entryMode="create"
       onGenerate={(choices) => {
         setWizardChoices(choices);
         setPreloadedBook(null);
