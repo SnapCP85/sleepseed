@@ -162,7 +162,7 @@ function settingsSummary(style: string, length: string, vibe: string, level: str
    ══════════════════════════════════════════════════════════════════════ */
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;1,400&family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;500;600&family=DM+Mono:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,700&family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#040a16;--amber:#F5B84C;--amber-dk:#a06010;--teal:#14d890;--teal-dk:#0a7a50;
@@ -188,10 +188,13 @@ const CSS = `
 @keyframes micPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 @keyframes bubblePop{0%{opacity:0;transform:scale(.94) translateY(6px)}100%{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes twinkle{0%,100%{opacity:.04;transform:scale(.35)}50%{opacity:.9;transform:scale(1.4)}}
-@keyframes waveBarIdle{0%,100%{height:3px;opacity:.35}50%{height:7px;opacity:.7}}
+@keyframes waveBarIdle{0%,100%{height:3px;opacity:.28}50%{height:8px;opacity:.62}}
+@keyframes pulse{0%,100%{opacity:.15;transform:translateX(-50%) scale(1)}50%{opacity:.45;transform:translateX(-50%) scale(1.1)}}
 
 /* nav */
-.sc-nav{display:flex;align-items:center;justify-content:space-between;padding:0 5%;height:52px;position:sticky;top:0;z-index:20;background:rgba(4,10,22,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(245,184,76,.06)}
+.sc-nav{display:flex;align-items:center;justify-content:space-between;padding:0 5%;height:52px;position:sticky;top:0;z-index:20;background:rgba(4,10,22,.92);backdrop-filter:blur(16px)}
+.sc.ritual .sc-nav{border-bottom:1px solid rgba(245,184,76,.07)}
+.sc.create .sc-nav{border-bottom:1px solid rgba(20,216,144,.07)}
 .sc-logo{font-family:var(--heading);font-size:15px;font-weight:700;display:flex;align-items:center;gap:7px;color:var(--cream)}
 .sc-logo-moon{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020);flex-shrink:0}
 .sc-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:6px;line-height:1;transition:color .15s}
@@ -201,7 +204,7 @@ const CSS = `
 .sc-inner{flex:1;width:100%;max-width:540px;margin:0 auto;padding:0 5% 180px;overflow-x:hidden;position:relative;z-index:5}
 
 /* creature zone */
-.sc-creature{display:flex;flex-direction:column;align-items:center;padding:20px 0 4px;animation:slideUp .4s ease both}
+.sc-creature{display:flex;flex-direction:column;align-items:center;padding:20px 0 4px;animation:slideUp .4s ease both;position:relative}
 .sc-creature.create-creature{flex-direction:row;align-items:center;gap:12px;padding:16px 0 4px}
 .sc-creature-emoji{font-size:72px;animation:floatCreature 4s ease-in-out infinite}
 .sc-creature.create-creature .sc-creature-emoji{font-size:42px}
@@ -213,7 +216,7 @@ const CSS = `
 .sc-egg{font-size:56px;animation:eggRock 2s ease-in-out infinite;display:inline-block}
 
 /* bubble */
-.sc-bubble{position:relative;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:14px 18px;margin:12px 0 18px;text-align:center;animation:bubblePop .35s ease both .15s;opacity:0}
+.sc-bubble{position:relative;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:14px 18px;margin:12px 0 18px;text-align:center;animation:bubblePop .4s ease forwards .2s;opacity:0}
 .sc-bubble::before{content:'';position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:7px solid rgba(255,255,255,.1)}
 .sc-bubble-text{font-family:var(--heading);font-size:13.5px;font-style:italic;color:rgba(255,255,255,.72);line-height:1.6}
 
@@ -252,10 +255,10 @@ const CSS = `
 .sc-or-text{font-size:9px;color:rgba(255,255,255,.2);letter-spacing:.06em;white-space:nowrap}
 
 /* textarea */
-.sc-textarea{width:100%;padding:12px 14px;border-radius:14px;border:1px solid rgba(245,184,76,.2);background:rgba(245,184,76,.03);color:var(--cream);font-size:13px;font-family:var(--heading);font-style:italic;outline:none;resize:none;min-height:60px;line-height:1.65;transition:border-color .2s,box-shadow .2s;margin-bottom:6px}
+.sc-textarea{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid rgba(245,184,76,.25);background:rgba(245,184,76,.05);color:var(--cream);font-size:13px;font-family:var(--heading);font-style:italic;outline:none;resize:none;min-height:60px;line-height:1.65;transition:border-color .2s,box-shadow .2s;margin-bottom:6px}
 .sc-textarea:focus{border-color:rgba(245,184,76,.45);box-shadow:0 0 0 3px rgba(245,184,76,.07)}
 .sc-textarea::placeholder{color:rgba(255,255,255,.18);font-style:italic}
-.sc-textarea.teal{border-color:rgba(20,216,144,.2);background:rgba(20,216,144,.03);font-family:var(--body);font-style:normal;font-weight:700}
+.sc-textarea.teal{border-color:rgba(20,216,144,.2);background:rgba(255,255,255,.05);font-family:var(--body);font-style:normal;font-weight:700}
 .sc-textarea.teal:focus{border-color:rgba(20,216,144,.45);box-shadow:0 0 0 3px rgba(20,216,144,.07)}
 .sc-textarea.purple{border-color:rgba(160,96,240,.3)}
 .sc-textarea.purple:focus{border-color:rgba(160,96,240,.55)}
@@ -319,9 +322,12 @@ const CSS = `
 .sc-spill{padding:7px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--body);white-space:nowrap}
 .sc-spill:hover{border-color:rgba(255,255,255,.18)}
 .sc-spill.on{background:rgba(245,184,76,.1);border-color:rgba(245,184,76,.4);color:#F5B84C}
+.sc.create .sc-spill.on{background:rgba(20,216,144,.1);border-color:rgba(20,216,144,.4);color:#14d890}
 
 /* CTA */
-.sc-cta-wrap{position:fixed;bottom:0;left:0;right:0;padding:10px 5% calc(env(safe-area-inset-bottom,8px) + 12px);background:linear-gradient(0deg,rgba(4,10,22,.98) 65%,transparent);z-index:15;display:flex;justify-content:center}
+.sc-cta-wrap{position:fixed;bottom:0;left:0;right:0;padding:10px 5% calc(env(safe-area-inset-bottom,8px) + 12px);z-index:15;display:flex;justify-content:center}
+.sc.ritual .sc-cta-wrap{background:linear-gradient(0deg,rgba(2,4,6,.98) 65%,transparent)}
+.sc.create .sc-cta-wrap{background:linear-gradient(0deg,rgba(3,12,10,.98) 65%,transparent)}
 .sc-cta{width:100%;max-width:540px;padding:16px;border:none;border-radius:16px;cursor:pointer;font-family:var(--cta);transition:all .2s;position:relative;overflow:hidden;text-align:center}
 .sc-cta:hover{filter:brightness(1.1);transform:scale(1.02) translateY(-1px)}
 .sc-cta:active{transform:scale(.97)}
@@ -445,16 +451,17 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
     const container = document.getElementById('sc-stars');
     if (!container) return;
     container.innerHTML = '';
-    const colours = ['#fff8e0','#e8d8ff','#d0f0e8','#c8e8ff','#fff'];
-    for (let i = 0; i < 55; i++) {
+    const colours = ['#fff8e0','#e8d8ff','#d0f0e8','#c8e8ff','#ffffff'];
+    const count = isRitual ? 55 : 40;
+    for (let i = 0; i < count; i++) {
       const s = document.createElement('div');
       const sz = Math.random() < .28 ? 2.2 : Math.random() < .6 ? 1.4 : .7;
-      const d = (2 + Math.random() * 3.5).toFixed(1);
-      const dl = (Math.random() * 4.5).toFixed(1);
-      s.style.cssText = `position:absolute;border-radius:50%;width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*70}%;background:${colours[i % colours.length]};animation:twinkle ${d}s -${dl}s ease-in-out infinite;pointer-events:none;`;
+      const dur = isRitual ? (2.8 + Math.random() * 4).toFixed(1) : (1.8 + Math.random() * 2.5).toFixed(1);
+      const delay = (Math.random() * 5).toFixed(1);
+      s.style.cssText = ['position:absolute','border-radius:50%',`width:${sz}px`,`height:${sz}px`,`left:${(Math.random()*100).toFixed(1)}%`,`top:${(Math.random()*72).toFixed(1)}%`,`background:${colours[i % colours.length]}`,`animation:twinkle ${dur}s -${delay}s ease-in-out infinite`,'pointer-events:none'].join(';');
       container.appendChild(s);
     }
-  }, []);
+  }, [isRitual]);
 
   // ── Inspiration & occasion derived values ──
   const questionBank = entryMode === 'ritual' ? RITUAL_QUESTIONS : CREATE_QUESTIONS;
@@ -739,11 +746,14 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
         {/* ─── CREATURE ZONE ─── */}
         {isRitual ? (
           <div className="sc-creature">
+            {isRitual && (
+              <div style={{ position: 'absolute', width: 180, height: 180, borderRadius: '50%', background: 'radial-gradient(circle, rgba(245,184,76,.1), transparent 70%)', top: -40, left: '50%', transform: 'translateX(-50%)', animation: 'pulse 5s ease-in-out infinite', pointerEvents: 'none' as const, zIndex: 0 }} />
+            )}
             {loading ? (
               <div className="sc-egg">{'\u{1F95A}'}</div>
             ) : (
               <>
-                <div className="sc-creature-emoji" style={{ animation: 'floatCreature 4.5s ease-in-out infinite, glowAmber 4s ease-in-out infinite' }}>{cEmoji}</div>
+                <div className="sc-creature-emoji" style={{ animation: 'floatCreature 4.5s ease-in-out infinite, glowAmber 4s ease-in-out infinite', position: 'relative' as const, zIndex: 1 }}>{cEmoji}</div>
                 <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase' as const, color: 'rgba(245,184,76,.55)', marginTop: 4, textAlign: 'center' as const }}>{cName}</div>
                 {cType && (
                   <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 7.5, letterSpacing: '.08em', textTransform: 'uppercase' as const, color: 'rgba(255,255,255,.2)', marginTop: 2, textAlign: 'center' as const }}>
@@ -761,7 +771,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
               <>
                 <div style={{ fontSize: 42, animation: 'floatCreature 3.5s ease-in-out infinite, glowTeal 3s ease-in-out infinite', display: 'inline-block' }}>{cEmoji}</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "'Baloo 2', cursive", fontSize: 15, fontWeight: 800, color: 'var(--cream)', lineHeight: 1.3 }}>
+                  <div style={{ fontFamily: "'Fraunces', serif", fontSize: 15, fontWeight: 700, color: 'var(--cream)', lineHeight: 1.3 }}>
                     What kind of story{' '}
                     <em style={{ color: '#14d890', fontStyle: 'italic' }}>tonight?</em>
                   </div>
@@ -897,7 +907,12 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
               >
                 <span className="sc-voice-icon">{'\u{1F399}\uFE0F'}</span>
                 <span className="sc-voice-text">
-                  {isListening ? 'Listening\u2026 tap to stop' : `Tap to tell ${cName}`}
+                  {isListening
+                    ? 'Listening\u2026 tap to stop'
+                    : isRitual
+                      ? `Tell ${cName} out loud`
+                      : 'Tap to answer out loud'
+                  }
                 </span>
                 <span className="sc-voice-waves">
                   {[0, .1, .2, .15, .05].map((d, i) => (
@@ -1172,13 +1187,22 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
         <div
           className="sc-settings-trigger"
           onClick={() => setSettingsOpen(prev => !prev)}
+          style={!isRitual ? { borderColor: 'rgba(20,216,144,.12)' } : undefined}
         >
           <span className="sc-settings-left">Story options</span>
           <div className="sc-settings-right">
             {summary && !settingsOpen && (
               <div className="sc-settings-badges">
                 {summary.split(' \u00B7 ').map(s => (
-                  <span key={s} className="sc-settings-badge">{s}</span>
+                  <span
+                    key={s}
+                    className="sc-settings-badge"
+                    style={!isRitual ? {
+                      background: 'rgba(20,216,144,.08)',
+                      border: '1px solid rgba(20,216,144,.2)',
+                      color: 'rgba(20,216,144,.75)',
+                    } : undefined}
+                  >{s}</span>
                 ))}
               </div>
             )}
