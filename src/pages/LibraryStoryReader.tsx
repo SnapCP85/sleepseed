@@ -13,6 +13,15 @@ import { translateStory, getSavedLanguage, LANGUAGES } from '../lib/translate';
 import type { TranslatedPage } from '../lib/translate';
 import type { LibraryStory } from '../lib/types';
 
+const PRESET_VOICES = [
+  {id:"iCrDUkL56s3C8sCRl7wb", name:"Hope",          emoji:"🎙️", desc:"Warm & clear"},
+  {id:"NOpBlnGInO9m6vDvFkFC", name:"Spuds Oxley",   emoji:"🎭", desc:"Rich & deep"},
+  {id:"4YYIPFl9wE5c4L2eu2Gb", name:"Burt Reynolds",  emoji:"🤠", desc:"Smooth & warm"},
+  {id:"Atp5cNFg1Wj5gyKD7HWV", name:"Natasha",       emoji:"✨", desc:"Clear & bright"},
+  {id:"eadgjmk4R4uojdsheG9t", name:"Chadwich",      emoji:"🎙️", desc:"Bold & rich"},
+  {id:"bIQlQ61Q7WgbyZAL7IWj", name:"Faith",         emoji:"🌸", desc:"Warm & gentle"},
+];
+
 function strHash(s: string): string {
   let h = 5381;
   for (let i = 0; i < s.length; i++) h = (h * 33) ^ s.charCodeAt(i);
@@ -203,23 +212,10 @@ export default function LibraryStoryReader({ slug }: Props) {
   const [langPickerOpen, setLangPickerOpen] = useState(false);
   const [readAloudActive, setReadAloudActive] = useState(false);
   const [voicePickerOpen, setVoicePickerOpen] = useState(false);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoice, setSelectedVoice] = useState<string>(() => {
-    try { return localStorage.getItem('sleepseed_voice') || ''; } catch { return ''; }
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>(() => {
+    try { return localStorage.getItem('sleepseed_voice_id') || 'iCrDUkL56s3C8sCRl7wb'; } catch { return 'iCrDUkL56s3C8sCRl7wb'; }
   });
-
-  // Load available voices
-  useEffect(() => {
-    const load = () => {
-      const v = window.speechSynthesis?.getVoices() || [];
-      // Filter to good storytelling voices — prefer English, exclude novelty
-      const usable = v.filter(voice => voice.lang.startsWith('en'));
-      setVoices(usable.length > 0 ? usable : v);
-    };
-    load();
-    window.speechSynthesis?.addEventListener('voiceschanged', load);
-    return () => window.speechSynthesis?.removeEventListener('voiceschanged', load);
-  }, []);
+  const [previewingVoice, setPreviewingVoice] = useState<string | null>(null);
 
   const sessionId = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('sleepseed_sid') : null;
   const refFromUrl = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('sleepseed_ref') : null;
@@ -470,7 +466,7 @@ export default function LibraryStoryReader({ slug }: Props) {
               className="lr-text"
               autoPlay={readAloudActive}
               onFinish={() => setReadAloudActive(false)}
-              voiceName={selectedVoice}
+              voiceId={selectedVoiceId}
             />
           ) : (
             <ReadAloudText
@@ -479,7 +475,7 @@ export default function LibraryStoryReader({ slug }: Props) {
               className="lr-text"
               autoPlay={readAloudActive}
               onFinish={() => setReadAloudActive(false)}
-              voiceName={selectedVoice}
+              voiceId={selectedVoiceId}
             />
           )}
           {story.refrain && <div className="lr-refrain">* {personalise(story.refrain)} *</div>}
@@ -565,7 +561,7 @@ export default function LibraryStoryReader({ slug }: Props) {
               <div className="lr-menu-item" onClick={() => { setMenuOpen(false); setVoicePickerOpen(true); }}>
                 <span className="mi-icon">🎙️</span>
                 <span className="mi-label">Voice</span>
-                {selectedVoice && <span className="mi-badge">{selectedVoice.split(/[-(]/)[0].trim()}</span>}
+                <span className="mi-badge">{PRESET_VOICES.find(v => v.id === selectedVoiceId)?.name || 'Hope'}</span>
               </div>
               <div className="lr-menu-sep" />
               <div className="lr-menu-item" onClick={() => { setMenuOpen(false); if (shareLink) { navigator.clipboard?.writeText(shareLink); setCopied(true); setTimeout(() => setCopied(false), 2000); } }}>
@@ -594,25 +590,36 @@ export default function LibraryStoryReader({ slug }: Props) {
           <div className="lr-voice-list">
             <div className="lr-menu-handle" />
             <div className="lr-voice-title">Choose a Voice</div>
-            <div className="lr-voice-sub">Tap a voice to preview it</div>
-            <div className={`lr-voice-item${!selectedVoice ? ' selected' : ''}`}
-              onClick={() => { setSelectedVoice(''); try { localStorage.setItem('sleepseed_voice', ''); } catch {} setVoicePickerOpen(false); }}>
-              <span className="vname">Default</span>
-              <span className="vtag">System voice</span>
-            </div>
-            {voices.map(v => (
-              <div key={v.name} className={`lr-voice-item${selectedVoice === v.name ? ' selected' : ''}`}
-                onClick={() => {
-                  setSelectedVoice(v.name);
-                  try { localStorage.setItem('sleepseed_voice', v.name); } catch {}
-                  // Preview the voice
-                  window.speechSynthesis?.cancel();
-                  const u = new SpeechSynthesisUtterance('Once upon a time...');
-                  u.voice = v; u.rate = 0.85;
-                  window.speechSynthesis?.speak(u);
+            <div className="lr-voice-sub">Tap to preview, then close to use</div>
+            {PRESET_VOICES.map(v => (
+              <div key={v.id} className={`lr-voice-item${selectedVoiceId === v.id ? ' selected' : ''}`}
+                onClick={async () => {
+                  setSelectedVoiceId(v.id);
+                  try { localStorage.setItem('sleepseed_voice_id', v.id); } catch {}
+                  // Preview via 11Labs
+                  setPreviewingVoice(v.id);
+                  try {
+                    const res = await fetch('/api/tts', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ text: 'Once upon a time, in a land of dreams...', voiceId: v.id, speed: 1.0 }),
+                    });
+                    if (res.ok) {
+                      const blob = await res.blob();
+                      const url = URL.createObjectURL(blob);
+                      const a = new Audio(url);
+                      a.play();
+                      a.onended = () => URL.revokeObjectURL(url);
+                    }
+                  } catch {}
+                  setPreviewingVoice(null);
                 }}>
-                <span className="vname">{v.name.replace(/Microsoft |Google |Apple /g, '')}</span>
-                <span className="vtag">{v.lang}</span>
+                <span style={{fontSize:18,width:28,textAlign:'center'}}>{v.emoji}</span>
+                <div style={{flex:1}}>
+                  <span className="vname">{v.name}</span>
+                  <span className="vtag" style={{marginLeft:8}}>{v.desc}</span>
+                </div>
+                {previewingVoice === v.id && <span style={{fontSize:11,color:'rgba(245,184,76,.6)'}}>Playing...</span>}
               </div>
             ))}
           </div>

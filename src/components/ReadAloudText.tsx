@@ -50,16 +50,19 @@ interface Props {
   onFinish?: () => void;
   /** Auto-start reading when set to true */
   autoPlay?: boolean;
-  /** Name of a specific SpeechSynthesis voice to use */
-  voiceName?: string;
+  /** 11Labs voice ID — when set, uses /api/tts instead of browser speech */
+  voiceId?: string;
 }
 
-export default function ReadAloudText({ text, theme = 'dark', style, className, hideControls, onFinish, autoPlay, voiceName }: Props) {
+export default function ReadAloudText({ text, theme = 'dark', style, className, hideControls, onFinish, autoPlay, voiceId }: Props) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [activeWordIdx, setActiveWordIdx] = useState(-1);
   const [rate, setRate] = useState(0.85);
+  const [elLoading, setElLoading] = useState(false);
   const utterRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const wordTimerRef = useRef<number | null>(null);
   const wordsRef = useRef<{ word: string; startChar: number; endChar: number }[]>([]);
 
   // Build word map with character offsets
@@ -79,6 +82,8 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
   useEffect(() => {
     return () => {
       window.speechSynthesis?.cancel();
+      if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+      if (wordTimerRef.current) clearTimeout(wordTimerRef.current);
     };
   }, []);
 
@@ -97,7 +102,64 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
     return -1;
   }, []);
 
-  const play = useCallback(() => {
+  // 11Labs TTS playback with word-timing simulation
+  const playEL = useCallback(async () => {
+    setElLoading(true);
+    try {
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, voiceId, speed: rate }),
+      });
+      if (!res.ok) throw new Error('TTS failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+
+      // Simulate word highlighting based on audio duration
+      audio.onloadedmetadata = () => {
+        const words = wordsRef.current;
+        if (words.length === 0) return;
+        const dur = audio.duration * 1000; // ms
+        const msPerWord = dur / words.length;
+        let i = 0;
+        const tick = () => {
+          if (i < words.length) {
+            setActiveWordIdx(i);
+            i++;
+            wordTimerRef.current = window.setTimeout(tick, msPerWord);
+          }
+        };
+        tick();
+      };
+
+      audio.onended = () => {
+        setIsPlaying(false);
+        setActiveWordIdx(-1);
+        if (wordTimerRef.current) clearTimeout(wordTimerRef.current);
+        URL.revokeObjectURL(url);
+        onFinish?.();
+      };
+
+      audio.onerror = () => {
+        setIsPlaying(false);
+        setActiveWordIdx(-1);
+        if (wordTimerRef.current) clearTimeout(wordTimerRef.current);
+      };
+
+      setIsPlaying(true);
+      setElLoading(false);
+      audio.play();
+    } catch {
+      setElLoading(false);
+      // Fallback to browser speech
+      playBrowser();
+    }
+  }, [text, voiceId, rate, onFinish]);
+
+  // Browser speechSynthesis playback
+  const playBrowser = useCallback(() => {
     if (!('speechSynthesis' in window)) return;
 
     if (isPaused) {
@@ -111,12 +173,6 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
     const utter = new SpeechSynthesisUtterance(text);
     utter.rate = rate;
     utter.pitch = 1.0;
-
-    // Set specific voice if requested
-    if (voiceName) {
-      const match = window.speechSynthesis.getVoices().find(v => v.name === voiceName);
-      if (match) utter.voice = match;
-    }
 
     utter.onboundary = (e) => {
       if (e.name === 'word') {
@@ -144,6 +200,16 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
     window.speechSynthesis.speak(utter);
   }, [text, rate, isPaused, findWordAtChar, onFinish]);
 
+  const play = useCallback(() => {
+    if (isPaused && !voiceId) {
+      // Resume browser speech
+      playBrowser();
+      return;
+    }
+    if (voiceId) playEL();
+    else playBrowser();
+  }, [voiceId, isPaused, playEL, playBrowser]);
+
   const pause = useCallback(() => {
     window.speechSynthesis?.pause();
     setIsPaused(true);
@@ -152,6 +218,8 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
 
   const stop = useCallback(() => {
     window.speechSynthesis?.cancel();
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    if (wordTimerRef.current) { clearTimeout(wordTimerRef.current); wordTimerRef.current = null; }
     setIsPlaying(false);
     setIsPaused(false);
     setActiveWordIdx(-1);
@@ -211,8 +279,8 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
       {!hideControls && (
         <div className="ra-controls">
           {!isPlaying ? (
-            <button className={`ra-btn ra-btn-play${isPaused ? ' active' : ''}`} onClick={play}>
-              {isPaused ? '▶ Resume' : '🔊 Read Aloud'}
+            <button className={`ra-btn ra-btn-play${isPaused ? ' active' : ''}`} onClick={play} disabled={elLoading}>
+              {elLoading ? '⏳ Loading...' : isPaused ? '▶ Resume' : '🔊 Read Aloud'}
             </button>
           ) : (
             <button className="ra-btn ra-btn-play active" onClick={pause}>
