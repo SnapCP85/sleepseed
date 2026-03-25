@@ -458,6 +458,8 @@ export default function LibraryStoryReader({ slug }: Props) {
               theme="light"
               foreignStyle={{fontFamily:"var(--hand,'Patrick Hand',cursive)",fontSize:'clamp(17px,3.8vw,20px)',color:'#261600',lineHeight:1.75}}
               englishStyle={{fontFamily:"var(--body,'Nunito',sans-serif)"}}
+              autoPlay={readAloudActive}
+              onFinish={() => setReadAloudActive(false)}
             />
           ) : isTranslated ? (
             <ReadAloudText

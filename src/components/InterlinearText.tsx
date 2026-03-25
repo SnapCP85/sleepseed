@@ -42,9 +42,10 @@ interface Props {
   englishStyle?: React.CSSProperties;
   className?: string;
   onFinish?: () => void;
+  autoPlay?: boolean;
 }
 
-export default function InterlinearText({ sentences, theme = 'dark', foreignStyle, englishStyle, className, onFinish }: Props) {
+export default function InterlinearText({ sentences, theme = 'dark', foreignStyle, englishStyle, className, onFinish, autoPlay }: Props) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [activeSentenceIdx, setActiveSentenceIdx] = useState(-1);
@@ -67,6 +68,11 @@ export default function InterlinearText({ sentences, theme = 'dark', foreignStyl
   useEffect(() => {
     return () => { cancelRef.current = true; window.speechSynthesis?.cancel(); };
   }, []);
+
+  // Auto-play when triggered externally
+  useEffect(() => {
+    if (autoPlay && !isPlaying && !isPaused) playAll();
+  }, [autoPlay]); // eslint-disable-line
 
   const speakSentence = useCallback((text: string, sentIdx: number): Promise<void> => {
     return new Promise((resolve) => {
