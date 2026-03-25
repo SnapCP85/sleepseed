@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../AppContext';
-import { getCharacters, getStories, getNightCards } from '../lib/storage';
+import { getCharacters, getStories, getNightCards, getFriends, ensureRefCode } from '../lib/storage';
+import type { Friend } from '../lib/storage';
+import { BASE_URL } from '../lib/config';
 import { supabase } from '../lib/supabase';
 import type { Character, SavedStory, SavedNightCard } from '../lib/types';
 
@@ -70,6 +72,9 @@ export default function UserProfile() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [stories,    setStories]    = useState<SavedStory[]>([]);
   const [nightCards, setNightCards] = useState<SavedNightCard[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [inviteLink, setInviteLink] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -77,11 +82,17 @@ export default function UserProfile() {
       getCharacters(user.id),
       getStories(user.id),
       getNightCards(user.id),
-    ]).then(([chars, strs, ncs]) => {
+      getFriends(user.id),
+    ]).then(([chars, strs, ncs, frs]) => {
       setCharacters(chars);
       setStories(strs.slice(0, 5));
       setNightCards(ncs.slice(0, 8));
+      setFriends(frs);
     });
+    // Generate invite link
+    ensureRefCode(user.id).then(code => {
+      setInviteLink(`${BASE_URL}?friend=${code}`);
+    }).catch(() => {});
   }, [user]);
 
   if (!user) return null;
@@ -90,6 +101,7 @@ export default function UserProfile() {
     <div className="up">
       <style>{CSS}</style>
       <nav className="up-nav">
+        <button className="up-nav-out" onClick={() => setView('dashboard')} style={{marginRight:'auto'}}>← Home</button>
         <div className="up-nav-title">My Profile</div>
         <div className="up-nav-r">
           <span className="up-nav-user">{user.displayName}</span>
@@ -184,6 +196,51 @@ export default function UserProfile() {
                     }
                   </div>
                   <div className="up-nc-caption">{nc.heroName}<br />{nc.date?.split('T')[0]}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Friends */}
+        <div className="up-section">
+          <div className="up-sec-head">
+            <div className="up-sec-title">
+              Friends
+              <span className="up-sec-count">{friends.length}</span>
+            </div>
+          </div>
+
+          {/* Invite link */}
+          <div style={{background:'rgba(232,151,42,.04)',border:'1px solid rgba(232,151,42,.15)',borderRadius:14,padding:'14px 16px',marginBottom:14}}>
+            <div style={{fontSize:12,fontWeight:600,color:'rgba(244,239,232,.65)',marginBottom:8}}>Invite a friend to SleepSeed</div>
+            <div style={{fontSize:11,color:'rgba(244,239,232,.35)',lineHeight:1.5,marginBottom:10}}>Share this link — when they sign up, you'll be connected and can send stories to each other.</div>
+            <div style={{display:'flex',gap:8}}>
+              <div style={{flex:1,fontSize:10,fontFamily:'var(--mono)',color:'rgba(245,184,76,.6)',background:'rgba(0,0,0,.25)',borderRadius:8,padding:'8px 10px',wordBreak:'break-all',lineHeight:1.4}}>
+                {inviteLink || 'Generating...'}
+              </div>
+              <button onClick={() => {
+                if (inviteLink) { navigator.clipboard.writeText(inviteLink).catch(() => {}); setCopied(true); setTimeout(() => setCopied(false), 2000); }
+              }} style={{padding:'8px 16px',borderRadius:8,border:'none',background:copied?'rgba(20,216,144,.15)':'rgba(232,151,42,.12)',color:copied?'#14d890':'rgba(232,151,42,.8)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'var(--sans)',whiteSpace:'nowrap',transition:'all .2s'}}>
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
+          </div>
+
+          {/* Friend list */}
+          {friends.length === 0 ? (
+            <div className="up-empty">No friends yet. Share your invite link to connect!</div>
+          ) : (
+            <div style={{display:'flex',flexDirection:'column',gap:6}}>
+              {friends.map(f => (
+                <div key={f.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:10,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.05)'}}>
+                  <div style={{width:30,height:30,borderRadius:'50%',background:'linear-gradient(135deg,#D4A060,#B07020)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,color:'#fff',fontWeight:700,flexShrink:0}}>
+                    {f.friendDisplayName.charAt(0).toUpperCase()}
+                  </div>
+                  <div style={{fontSize:13,fontWeight:600,color:'var(--cream)'}}>{f.friendDisplayName}</div>
+                  <div style={{marginLeft:'auto',fontSize:9,color:'rgba(244,239,232,.2)',fontFamily:'var(--mono)'}}>
+                    {f.createdAt?.split('T')[0]}
+                  </div>
                 </div>
               ))}
             </div>

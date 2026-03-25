@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { getStories, deleteStory, getCharacters, submitStoryToLibrary, removeStoryFromLibrary } from '../../lib/storage';
+import { getStories, deleteStory, getCharacters, submitStoryToLibrary, removeStoryFromLibrary, getFriends, shareStoryWithFriend, getSharedStories, markSharedStoryRead } from '../../lib/storage';
+import type { Friend, SharedStory } from '../../lib/storage';
 import type { SavedStory, Character } from '../../lib/types';
 import { useApp } from '../../AppContext';
 
@@ -155,10 +156,17 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<SavedStory | null>(null);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [shareTarget, setShareTarget] = useState<SavedStory | null>(null);
+  const [shareMsg, setShareMsg] = useState('');
+  const [shareSent, setShareSent] = useState(false);
+  const [sharedWithMe, setSharedWithMe] = useState<SharedStory[]>([]);
 
   useEffect(() => {
     getStories(userId).then(setStories);
     getCharacters(userId).then(setCharacters);
+    getFriends(userId).then(setFriends);
+    getSharedStories(userId).then(setSharedWithMe);
     try {
       const fav = JSON.parse(localStorage.getItem(`ss_fav_stories_${userId}`) || '[]');
       setFavorites(new Set(fav));
@@ -264,6 +272,11 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
                   📚 Remove from library
                 </button>
               )}
+              {friends.length > 0 && (
+                <button className="sl-menu-item" onClick={() => { setMenuOpen(null); setShareTarget(s); setShareMsg(''); setShareSent(false); }}>
+                  💌 Send to a friend
+                </button>
+              )}
               <button className="sl-menu-item danger" onClick={() => { setMenuOpen(null); setConfirmDelete(s); }}>
                 🗑 Remove
               </button>
@@ -334,6 +347,34 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
           </>
         )}
 
+        {/* Shared with you */}
+        {sharedWithMe.length > 0 && (
+          <>
+            <div className="sl-shelf-label">💌 Shared with you</div>
+            <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:16}}>
+              {sharedWithMe.map(s => (
+                <div key={s.id} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 14px',borderRadius:14,
+                  background:s.read?'rgba(255,255,255,.02)':'rgba(245,184,76,.04)',
+                  border:`1px solid ${s.read?'rgba(255,255,255,.05)':'rgba(245,184,76,.15)'}`,
+                  cursor:'pointer',transition:'all .15s'}}
+                  onClick={() => {
+                    if (!s.read) markSharedStoryRead(s.id).then(() => setSharedWithMe(prev => prev.map(x => x.id === s.id ? {...x, read: true} : x)));
+                    if (s.bookData) onReadStory(s.bookData);
+                  }}>
+                  <div style={{width:36,height:36,borderRadius:10,background:'linear-gradient(145deg,#2a1a40,#1a1030)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>📖</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:13,fontWeight:700,color:'#F4EFE8',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{s.storyTitle}</div>
+                    <div style={{fontSize:10,color:'rgba(244,239,232,.35)'}}>
+                      From {s.fromDisplayName}{s.message ? ` · "${s.message}"` : ''} · {s.sharedAt?.split('T')[0]}
+                    </div>
+                  </div>
+                  {!s.read && <div style={{width:8,height:8,borderRadius:'50%',background:'#F5B84C',flexShrink:0}}/>}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
         {/* empty state */}
         {stories.length === 0 ? (
           <div className="sl-empty">
@@ -375,6 +416,45 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
               <button className="sl-confirm-cancel" onClick={() => setConfirmDelete(null)}>Keep it</button>
               <button className="sl-confirm-del" onClick={() => handleDelete(confirmDelete)}>Remove</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* send to friend modal */}
+      {shareTarget && (
+        <div className="sl-confirm-bg" onClick={() => setShareTarget(null)}>
+          <div className="sl-confirm" onClick={e => e.stopPropagation()} style={{maxWidth:340}}>
+            {!shareSent ? (
+              <>
+                <div style={{fontSize:28,marginBottom:8}}>💌</div>
+                <h3>Send "{shareTarget.title}"</h3>
+                <p>Pick a friend to share this story with.</p>
+                <input placeholder="Add a message (optional)" value={shareMsg} onChange={e => setShareMsg(e.target.value)}
+                  style={{width:'100%',padding:'10px 12px',borderRadius:10,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.04)',color:'#F4EFE8',fontSize:12,fontFamily:'inherit',outline:'none',marginBottom:12}} />
+                <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                  {friends.map(f => (
+                    <button key={f.id} onClick={async () => {
+                      await shareStoryWithFriend(userId, f.friendUserId, shareTarget.id, shareMsg || undefined);
+                      setShareSent(true);
+                    }} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderRadius:12,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)',cursor:'pointer',transition:'all .15s',width:'100%',textAlign:'left'}}>
+                      <div style={{width:32,height:32,borderRadius:'50%',background:'linear-gradient(135deg,#D4A060,#B07020)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,color:'#fff',fontWeight:700,flexShrink:0}}>
+                        {f.friendDisplayName.charAt(0).toUpperCase()}
+                      </div>
+                      <div style={{fontSize:13,fontWeight:600,color:'#F4EFE8'}}>{f.friendDisplayName}</div>
+                      <div style={{marginLeft:'auto',fontSize:11,color:'rgba(245,184,76,.5)'}}>Send →</div>
+                    </button>
+                  ))}
+                </div>
+                <button className="sl-confirm-cancel" onClick={() => setShareTarget(null)} style={{marginTop:12,width:'100%'}}>Cancel</button>
+              </>
+            ) : (
+              <>
+                <div style={{fontSize:36,marginBottom:8}}>✅</div>
+                <h3>Story sent!</h3>
+                <p>They'll see it in their "Shared with you" section.</p>
+                <button className="sl-confirm-cancel" onClick={() => setShareTarget(null)} style={{marginTop:8,width:'100%'}}>Done</button>
+              </>
+            )}
           </div>
         </div>
       )}

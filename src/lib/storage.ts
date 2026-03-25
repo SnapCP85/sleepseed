@@ -624,6 +624,140 @@ export const ensureRefCode = async (userId: string): Promise<string> => {
   return generateRefCode(userId);
 };
 
+// ── Friends ──────────────────────────────────────────────────────────────────
+
+export interface Friend {
+  id: string;
+  friendUserId: string;
+  friendDisplayName: string;
+  createdAt: string;
+}
+
+export interface SharedStory {
+  id: string;
+  fromUser: string;
+  fromDisplayName: string;
+  toUser: string;
+  storyId: string;
+  storyTitle: string;
+  storyHeroName: string;
+  message?: string;
+  sharedAt: string;
+  read: boolean;
+  bookData?: any;
+}
+
+/** Add a friend by their ref_code. Returns the friend's display name. */
+export const addFriendByCode = async (myUserId: string, friendRefCode: string): Promise<{ friendName: string }> => {
+  // Look up friend's profile by ref_code
+  const { data: friendProfile } = await supabase
+    .from('profiles')
+    .select('id, display_name')
+    .eq('ref_code', friendRefCode)
+    .single();
+  if (!friendProfile) throw new Error('Friend not found');
+  if (friendProfile.id === myUserId) throw new Error("That's your own code!");
+
+  // Check if already friends (in either direction)
+  const { data: existing } = await supabase
+    .from('friends')
+    .select('id')
+    .or(`and(user_a.eq.${myUserId},user_b.eq.${friendProfile.id}),and(user_a.eq.${friendProfile.id},user_b.eq.${myUserId})`);
+  if (existing && existing.length > 0) return { friendName: friendProfile.display_name };
+
+  // Create friendship
+  const { error } = await supabase.from('friends').insert({ user_a: myUserId, user_b: friendProfile.id });
+  if (error) throw error;
+  return { friendName: friendProfile.display_name };
+};
+
+/** Get all friends for a user */
+export const getFriends = async (userId: string): Promise<Friend[]> => {
+  const { data, error } = await supabase
+    .from('friends')
+    .select('id, user_a, user_b, created_at')
+    .or(`user_a.eq.${userId},user_b.eq.${userId}`)
+    .order('created_at', { ascending: false });
+  if (error || !data) return [];
+
+  // For each friend, get their display name
+  const friendIds = data.map(f => f.user_a === userId ? f.user_b : f.user_a);
+  if (friendIds.length === 0) return [];
+
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, display_name')
+    .in('id', friendIds);
+  const nameMap: Record<string, string> = {};
+  (profiles || []).forEach((p: any) => { nameMap[p.id] = p.display_name || 'Friend'; });
+
+  return data.map(f => {
+    const friendId = f.user_a === userId ? f.user_b : f.user_a;
+    return {
+      id: f.id,
+      friendUserId: friendId,
+      friendDisplayName: nameMap[friendId] || 'Friend',
+      createdAt: f.created_at,
+    };
+  });
+};
+
+/** Share a story with a friend */
+export const shareStoryWithFriend = async (
+  fromUserId: string, toUserId: string, storyId: string, message?: string
+): Promise<void> => {
+  const { error } = await supabase.from('shared_stories').insert({
+    from_user: fromUserId, to_user: toUserId, story_id: storyId, message,
+  });
+  if (error) throw error;
+};
+
+/** Get stories shared with me */
+export const getSharedStories = async (userId: string): Promise<SharedStory[]> => {
+  const { data, error } = await supabase
+    .from('shared_stories')
+    .select('id, from_user, to_user, story_id, message, shared_at, read, stories!inner(title, hero_name, book_data)')
+    .eq('to_user', userId)
+    .order('shared_at', { ascending: false })
+    .limit(50);
+  if (error || !data) { console.error('[friends] getSharedStories:', error); return []; }
+
+  // Get sender display names
+  const senderIds = [...new Set(data.map((d: any) => d.from_user))];
+  const { data: profiles } = await supabase.from('profiles').select('id, display_name').in('id', senderIds);
+  const nameMap: Record<string, string> = {};
+  (profiles || []).forEach((p: any) => { nameMap[p.id] = p.display_name || 'A friend'; });
+
+  return data.map((d: any) => ({
+    id: d.id,
+    fromUser: d.from_user,
+    fromDisplayName: nameMap[d.from_user] || 'A friend',
+    toUser: d.to_user,
+    storyId: d.story_id,
+    storyTitle: d.stories?.title || 'Untitled',
+    storyHeroName: d.stories?.hero_name || '',
+    message: d.message,
+    sharedAt: d.shared_at,
+    read: d.read,
+    bookData: d.stories?.book_data,
+  }));
+};
+
+/** Mark a shared story as read */
+export const markSharedStoryRead = async (sharedId: string): Promise<void> => {
+  await supabase.from('shared_stories').update({ read: true }).eq('id', sharedId);
+};
+
+/** Count unread shared stories */
+export const getUnreadSharedCount = async (userId: string): Promise<number> => {
+  const { count } = await supabase
+    .from('shared_stories')
+    .select('id', { count: 'exact', head: true })
+    .eq('to_user', userId)
+    .eq('read', false);
+  return count || 0;
+};
+
 // ── Legacy stubs (kept so nothing breaks) ────────────────────────────────────
 export const getCurrentUser  = () => null;
 export const setCurrentUser  = (_u: any) => {};

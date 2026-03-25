@@ -89,12 +89,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const handleSession = (session: any, isInitial: boolean) => {
+  const handleSession = async (session: any, isInitial: boolean) => {
     if (session?.user) {
       const u = toAppUser(session.user);
-      setUser(u);
       if (!session.user.is_anonymous) {
-        // Only navigate to dashboard if not on a URL-driven or active view
+        // Load profile BEFORE setting user/view to batch all state updates
+        let sub = false;
+        let rc: string | null = null;
+        try {
+          const profile = await getUserProfile(session.user.id);
+          if (profile) { sub = profile.isSubscribed; rc = profile.refCode; }
+          profileLoadedRef.current = session.user.id;
+        } catch {}
+        // Single batch of state updates
+        setUser(u);
+        setIsSubscribed(sub);
+        setRefCode(rc);
         const params = new URLSearchParams(window.location.search);
         const isUrlDriven = params.get('view') === 'library' || params.get('library') || params.get('s');
         if (!isUrlDriven) {
@@ -102,9 +112,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             setView('dashboard');
           }
         }
-        loadProfile(session.user.id);
         runMigration(session.user.id);
       } else {
+        setUser(u);
         if (viewRef.current === 'auth') setView('dashboard');
       }
     } else {

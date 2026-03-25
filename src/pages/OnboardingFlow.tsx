@@ -685,7 +685,7 @@ Return ONLY valid JSON:
       <div className="ob-content" style={{paddingTop:20}}>
         <div className="ob-read-badge">Let your child pick!</div>
         <div className="ob-title">Tap one!</div>
-        <div className="ob-sub">Pick a creature to hatch. They'll join every story.</div>
+        <div className="ob-sub">Pick a DreamKeeper to hatch. They'll join every story.</div>
         {creature && (
           <div className="ob-preview" style={{'--cc':creature.color+'30',borderColor:creature.color+'35'} as any}>
             <div className="ob-preview-sparkles">
@@ -831,8 +831,8 @@ Return ONLY valid JSON:
                 <div className="ob-hatch-emoji" style={{animation:'obPop .5s ease-out,obFloat 3s ease-in-out .5s infinite',filter:`drop-shadow(0 0 20px ${creature?.color||'#F5B84C'}60)`}}>{creature?.emoji}</div>
               </div>
               <div className="ob-hatch-name" style={{color:creature?.color}}>It's a {creature?.name}!</div>
-              <div className="ob-sub" style={{color:'rgba(244,239,232,.55)'}}>Your creature is here. What will you call them?</div>
-              <button className="ob-cta ob-cta-teal" onClick={next}>Name your creature →</button>
+              <div className="ob-sub" style={{color:'rgba(244,239,232,.55)'}}>Your DreamKeeper is here. What will you call them?</div>
+              <button className="ob-cta ob-cta-teal" onClick={next}>Name your DreamKeeper →</button>
             </div>
           )}
           {backBtn}
@@ -845,7 +845,7 @@ Return ONLY valid JSON:
   if (step === 8) return (
     <div className="ob"><style>{CSS}</style>{starField}{dots}
       <div className="ob-content" style={{paddingTop:20,display:'flex',flexDirection:'column',alignItems:'center'}}>
-        <div className="ob-read-badge">Your child names the creature!</div>
+        <div className="ob-read-badge">Your child names their DreamKeeper!</div>
         <div style={{position:'relative',marginBottom:12}}>
           <div style={{position:'absolute',inset:-20,borderRadius:'50%',background:`radial-gradient(circle,${creature?.color||'#F5B84C'}18,transparent 65%)`,animation:'obPulse 3s ease-in-out infinite'}}/>
           <div style={{fontSize:64,animation:'obFloat 3s ease-in-out infinite',filter:`drop-shadow(0 0 20px ${creature?.color||'#F5B84C'}55)`,position:'relative',zIndex:2}}>{creature?.emoji}</div>

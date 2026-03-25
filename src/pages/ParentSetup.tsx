@@ -13,12 +13,26 @@ interface Props {
   onComplete: (result: ParentSetupResult) => void;
 }
 
-const SECRET_EXAMPLES = [
-  "She talks to her stuffed animals when nobody is looking",
-  "He checks under the bed for friendly monsters every night",
-  "She makes up songs about everything, even breakfast",
-  "He draws maps of imaginary places on every piece of paper",
-];
+const SECRET_EXAMPLES_BY_PRONOUN: Record<string, string[]> = {
+  'she/her': [
+    "She talks to her stuffed animals when nobody is looking",
+    "She checks under the bed for friendly monsters every night",
+    "She makes up songs about everything, even breakfast",
+    "She draws maps of imaginary places on every piece of paper",
+  ],
+  'he/him': [
+    "He talks to his stuffed animals when nobody is looking",
+    "He checks under the bed for friendly monsters every night",
+    "He makes up songs about everything, even breakfast",
+    "He draws maps of imaginary places on every piece of paper",
+  ],
+  'they/them': [
+    "They talk to their stuffed animals when nobody is looking",
+    "They check under the bed for friendly monsters every night",
+    "They make up songs about everything, even breakfast",
+    "They draw maps of imaginary places on every piece of paper",
+  ],
+};
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,600&family=DM+Mono:wght@400&display=swap');
@@ -127,8 +141,8 @@ export default function ParentSetup({ displayName, onComplete }: Props) {
             <div className="ps-how-item">
               <div className="ps-how-ico" style={{background:'rgba(96,232,176,.06)',border:'1px solid rgba(96,232,176,.12)'}}>🥚</div>
               <div className="ps-how-text">
-                <div className="ps-how-title">A creature companion that grows</div>
-                <div className="ps-how-desc">Your child hatches a creature tonight. After 7 nights, a new one hatches.</div>
+                <div className="ps-how-title">A DreamKeeper companion that grows</div>
+                <div className="ps-how-desc">Your child hatches a DreamKeeper tonight. After 7 nights, a new one hatches.</div>
               </div>
             </div>
             <div className="ps-how-item">
@@ -159,7 +173,7 @@ export default function ParentSetup({ displayName, onComplete }: Props) {
         <div className="ps-card">
           {stepsBar(1)}
           <div className="ps-h">Tell us about <em>your child</em></div>
-          <div className="ps-sub">This shapes every story, creature, and Night Card.</div>
+          <div className="ps-sub">This shapes every story, DreamKeeper, and Night Card.</div>
 
           <div className="ps-label">Child's first name</div>
           <input className="ps-input" placeholder="Their first name" value={childName}
@@ -204,10 +218,10 @@ export default function ParentSetup({ displayName, onComplete }: Props) {
             What's something about {childName} that makes you smile when they're not looking? We'll weave it into their stories.
           </div>
 
-          <textarea className="ps-textarea" placeholder={`${childName} secretly talks to stuffed animals when nobody is watching...`}
+          <textarea className="ps-textarea" placeholder={`${childName} secretly talks to ${childPronouns === 'he/him' ? 'his' : childPronouns === 'they/them' ? 'their' : 'her'} stuffed animals when nobody is watching...`}
             value={parentSecret} onChange={e => setParentSecret(e.target.value)} rows={3} />
           <div className="ps-chips">
-            {SECRET_EXAMPLES.map((ex,i) => (
+            {(SECRET_EXAMPLES_BY_PRONOUN[childPronouns] || SECRET_EXAMPLES_BY_PRONOUN['she/her']).map((ex,i) => (
               <div key={i} className="ps-chip" onClick={() => setParentSecret(ex)}>{ex.slice(0,38)}…</div>
             ))}
           </div>

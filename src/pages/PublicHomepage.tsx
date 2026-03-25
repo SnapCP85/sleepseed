@@ -347,7 +347,7 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp }: Pr
                 <div className="s2-feat-ico" style={{background:'rgba(245,184,76,.08)',border:'1px solid rgba(245,184,76,.15)'}}>🐰</div>
                 <div>
                   <div className="s2-feat-title">A companion who asks what you can't</div>
-                  <div className="s2-feat-desc">Your child's creature joins every story — and your child tells it things they won't tell you directly.</div>
+                  <div className="s2-feat-desc">Your child's DreamKeeper joins every story — and your child tells it things they won't tell you directly.</div>
                 </div>
               </div>
               <div className="s2-feat">
@@ -385,7 +385,7 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp }: Pr
             <div className="hw-step fu d1">
               <div className="hw-step-ico">✨</div>
               <div className="hw-step-title">Story appears</div>
-              <div className="hw-step-desc">A personalised bedtime story starring them and their creature companion.</div>
+              <div className="hw-step-desc">A personalised bedtime story starring them and their DreamKeeper companion.</div>
             </div>
             <div className="hw-arrow" style={{left:'66%',transform:'translate(-50%,-50%)'}}>→</div>
             <div className="hw-step fu d2">
@@ -455,7 +455,7 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp }: Pr
           {/* Bridge into story peek */}
           <div className="s3-bridge fu">
             <div className="s3-bridge-line">Here's what tonight's story <em>actually looks like.</em></div>
-            <div className="s3-bridge-sub">Every story is built from your child's real day, starring them and their creature.</div>
+            <div className="s3-bridge-sub">Every story is built from your child's real day, starring them and their DreamKeeper.</div>
           </div>
 
           {/* Story peek */}
@@ -567,12 +567,12 @@ export default function PublicHomepage({ onCreateStory, onSignIn, onSignUp }: Pr
           <div className="s5-plan">
             <div className="s5-plan-name">Free</div>
             <div className="s5-plan-price"><sup>$</sup>0</div>
-            <div className="s5-plan-detail">3 stories · 3 Night Cards<br/>Hatch your first creature</div>
+            <div className="s5-plan-detail">3 stories · 3 Night Cards<br/>Hatch your first DreamKeeper</div>
           </div>
           <div className="s5-plan pop">
             <div className="s5-plan-name">Family</div>
             <div className="s5-plan-price"><sup>$</sup>6<sub>.58/mo</sub></div>
-            <div className="s5-plan-detail">Unlimited stories &amp; Night Cards<br/>Unlimited creatures · Multiple children</div>
+            <div className="s5-plan-detail">Unlimited stories &amp; Night Cards<br/>Unlimited DreamKeepers · Multiple children</div>
             <div className="s5-plan-note">$79/year · save 34%</div>
           </div>
         </div>

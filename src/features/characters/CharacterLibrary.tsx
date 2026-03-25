@@ -53,7 +53,7 @@ const CSS = `
 
 const TYPE_LABELS: Record<string, string> = {
   human: 'Child', animal: 'Animal', stuffy: 'Stuffy',
-  creature: 'Creature', parent: 'Parent', other: 'Other',
+  creature: 'DreamKeeper', parent: 'Parent', other: 'Other',
 };
 
 interface Props {

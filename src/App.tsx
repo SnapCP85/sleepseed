@@ -23,8 +23,8 @@ import LibraryStoryReader from './pages/LibraryStoryReader';
 import CharacterDetail from './features/characters/CharacterDetail';
 import Hatchery from './pages/Hatchery';
 import FirstNight from './pages/FirstNight';
-import { saveCharacter, saveNightCard, saveStory } from './lib/storage';
-import { saveHatchedCreature, createEgg } from './lib/hatchery';
+import { saveCharacter, saveNightCard, saveStory, addFriendByCode } from './lib/storage';
+import { saveHatchedCreature, createEgg, getAllHatchedCreatures } from './lib/hatchery';
 import type { Character, HatchedCreature, SavedNightCard } from './lib/types';
 
 const NAV_CSS = `
@@ -180,6 +180,15 @@ function AppInner() {
     const ref = params.get('ref');
     if (ref) { try { sessionStorage.setItem('sleepseed_ref', ref); } catch {} }
 
+    const friendCode = params.get('friend');
+    if (friendCode) {
+      try {
+        sessionStorage.setItem('sleepseed_pending_friend', friendCode);
+        // Friend link doubles as referral — give credit for sign-ups
+        sessionStorage.setItem('sleepseed_ref', friendCode);
+      } catch {}
+    }
+
     if (!sessionStorage.getItem('sleepseed_sid')) {
       const sid = Math.random().toString(36).slice(2) + Date.now().toString(36);
       try { sessionStorage.setItem('sleepseed_sid', sid); } catch {}
@@ -187,37 +196,41 @@ function AppInner() {
   }, []);
 
   // Test mode state (must be before any conditional returns)
-  const [testMode] = useState(() => new URLSearchParams(window.location.search).get('test') === 'onboarding');
+  const [testMode] = useState(() => new URLSearchParams(window.location.search).get('test') === 'onboarding' ? 'onboarding' : null);
   const [testPhase, setTestPhase] = useState<'parent'|'child'|'done'>('parent');
   const [testChildProfile, setTestChildProfile] = useState<ParentSetupResult|null>(null);
 
   // Load companion creature for story builder
   useEffect(() => {
     if (!user || user.isGuest) return;
-    import('./lib/hatchery').then(({ getAllHatchedCreatures }) => {
-      getAllHatchedCreatures(user.id).then(creatures => {
-        if (creatures.length > 0) setCompanionCreature(creatures[0]);
-      });
+    getAllHatchedCreatures(user.id).then(creatures => {
+      if (creatures.length > 0) setCompanionCreature(creatures[0]);
     });
+  }, [user]); // eslint-disable-line
+
+  // Process pending friend invite after auth
+  const [friendAdded, setFriendAdded] = useState<string|null>(null);
+  useEffect(() => {
+    if (!user || user.isGuest) return;
+    const code = sessionStorage.getItem('sleepseed_pending_friend');
+    if (!code) return;
+    sessionStorage.removeItem('sleepseed_pending_friend');
+    // Clean the URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete('friend');
+    window.history.replaceState({}, '', url.toString());
+    addFriendByCode(user.id, code).then(({ friendName }) => {
+      setFriendAdded(friendName);
+      setTimeout(() => setFriendAdded(null), 4000);
+    }).catch(e => console.warn('[friends] add failed:', e));
   }, [user]); // eslint-disable-line
 
   // ── All hooks above this line ─────────────────────────────────────────────
 
   if (isSharedStory) return <SharedStoryViewer />;
 
-  // Show loading screen while auth is resolving — prevents flash of PublicHomepage
-  if (authLoading) return (
-    <div style={{minHeight:'100vh',background:'#080C18',display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <div style={{textAlign:'center'}}>
-        <div style={{fontSize:40,marginBottom:12,animation:'pulse 2s ease-in-out infinite'}}>🌙</div>
-        <div style={{color:'rgba(244,239,232,.3)',fontSize:13,fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif"}}>Loading...</div>
-        <style>{`@keyframes pulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}`}</style>
-      </div>
-    </div>
-  );
-
-  // Test mode: ?test=onboarding bypasses auth
-  if (testMode) {
+  // Test mode pages — render before auth so shareable links work without login
+  if (testMode === 'onboarding') {
     if (testPhase === 'parent') return (
       <ParentSetup displayName="Greg" onComplete={(result) => { setTestChildProfile(result); setTestPhase('child'); }} />
     );
@@ -234,6 +247,17 @@ function AppInner() {
       </div>
     );
   }
+
+  // Show loading screen while auth is resolving — prevents flash of PublicHomepage
+  if (authLoading) return (
+    <div style={{minHeight:'100vh',background:'#080C18',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{textAlign:'center'}}>
+        <div style={{fontSize:40,marginBottom:12,animation:'pulse 2s ease-in-out infinite'}}>🌙</div>
+        <div style={{color:'rgba(244,239,232,.3)',fontSize:13,fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif"}}>Loading...</div>
+        <style>{`@keyframes pulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}`}</style>
+      </div>
+    </div>
+  );
 
   const goAuth        = () => setView('auth');
   const goDashboard   = () => { setNightCardFilter(undefined); setView('dashboard'); };
@@ -338,6 +362,21 @@ function AppInner() {
     setView('dashboard');
   };
 
+  // Friend-added toast (renders as overlay on any view)
+  const friendToast = friendAdded ? (
+    <div style={{position:'fixed',top:20,left:'50%',transform:'translateX(-50%)',zIndex:9999,
+      background:'rgba(20,216,144,.15)',border:'1px solid rgba(20,216,144,.3)',borderRadius:14,
+      padding:'12px 20px',display:'flex',alignItems:'center',gap:10,backdropFilter:'blur(12px)',
+      animation:'slideDown .3s ease-out',fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif"}}>
+      <span style={{fontSize:20}}>🤝</span>
+      <div>
+        <div style={{fontSize:13,fontWeight:700,color:'#14d890'}}>{friendAdded} added as friend!</div>
+        <div style={{fontSize:11,color:'rgba(244,239,232,.4)'}}>You can now share stories with each other.</div>
+      </div>
+      <style>{`@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}`}</style>
+    </div>
+  ) : null;
+
   // Library views — accessible to everyone (no auth required)
   if (view === 'library') return (
     <div style={{paddingBottom: user && !user.isGuest ? 70 : 0}}>
@@ -396,6 +435,7 @@ function AppInner() {
     // (the existing dashboard handles this state — shows egg + "Begin your first night")
     return (
       <div style={{paddingBottom:70}}>
+        {friendToast}
         <UserDashboard onSignUp={goAuth} onReadStory={openSavedStory} />
         <BottomTabs current="dashboard" onNav={v=>setView(v as any)} />
       </div>

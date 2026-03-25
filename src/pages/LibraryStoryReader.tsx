@@ -1,4 +1,7 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import ReadAloudText from '../components/ReadAloudText';
+import InterlinearText from '../components/InterlinearText';
+import LanguagePicker from '../components/LanguagePicker';
 import { useApp } from '../AppContext';
 import {
   getLibraryStoryBySlug, recordStoryRead, voteOnStory, getUserVote,
@@ -6,6 +9,8 @@ import {
 } from '../lib/storage';
 import { getSceneByVibe } from '../lib/storyScenes';
 import { BASE_URL } from '../lib/config';
+import { translateStory, getSavedLanguage, LANGUAGES } from '../lib/translate';
+import type { TranslatedPage } from '../lib/translate';
 import type { LibraryStory } from '../lib/types';
 
 function strHash(s: string): string {
@@ -133,6 +138,19 @@ const CSS = `
 .lr-cta-btn{padding:12px 28px;border:none;border-radius:50px;background:var(--amber);color:#120800;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--cta);transition:all .18s}
 .lr-cta-btn:hover{filter:brightness(1.1)}
 
+/* book menu */
+.lr-menu-btn{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:10px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:var(--cream);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body);transition:all .2s;flex-shrink:0}
+.lr-menu-btn:hover{background:rgba(255,255,255,.13)}
+.lr-menu-btn svg{width:16px;height:16px}
+.lr-menu-bg{position:fixed;inset:0;z-index:100}
+.lr-menu{position:absolute;bottom:calc(100% + 8px);right:0;background:rgba(10,8,24,.98);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:6px;min-width:200px;box-shadow:0 12px 40px rgba(0,0,0,.6);z-index:101;animation:lrFade .15s ease both}
+.lr-menu-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;cursor:pointer;transition:background .15s;font-size:13px;font-weight:600;color:rgba(244,239,232,.75);white-space:nowrap}
+.lr-menu-item:hover{background:rgba(255,255,255,.06)}
+.lr-menu-item .mi-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.lr-menu-item .mi-label{flex:1}
+.lr-menu-item .mi-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:50px;background:rgba(245,184,76,.12);color:#F5B84C;flex-shrink:0}
+.lr-menu-sep{height:1px;background:rgba(255,255,255,.06);margin:4px 8px}
+
 /* loading */
 .lr-loading{text-align:center;padding:80px 24px;color:rgba(245,232,200,.3)}
 .lr-error{text-align:center;padding:80px 24px}
@@ -164,6 +182,15 @@ export default function LibraryStoryReader({ slug }: Props) {
   const [isFav, setIsFav] = useState(false);
   const [shareLink, setShareLink] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // Language state
+  const [lang, setLang] = useState(() => getSavedLanguage().code);
+  const [learningMode, setLearningMode] = useState(() => getSavedLanguage().learningMode);
+  const [translatedPages, setTranslatedPages] = useState<TranslatedPage[]>([]);
+  const [translating, setTranslating] = useState(false);
+  const [translateError, setTranslateError] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [langPickerOpen, setLangPickerOpen] = useState(false);
 
   const sessionId = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('sleepseed_sid') : null;
   const refFromUrl = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('sleepseed_ref') : null;
@@ -203,6 +230,29 @@ export default function LibraryStoryReader({ slug }: Props) {
       isFavourited(user.id, story.id).then(setIsFav);
     }
   }, [story, user]);
+
+  // Translate story when language changes
+  useEffect(() => {
+    if (!story || lang === 'en') { setTranslatedPages([]); setTranslateError(''); return; }
+    const pages = story.bookData?.pages || story.bookData?.setup_pages || [];
+    if (pages.length === 0) return;
+    setTranslating(true);
+    setTranslateError('');
+    const pageTexts = pages.map((p: any) => personalise(p.text || ''));
+    translateStory(pageTexts, lang, story.id).then(result => {
+      setTranslatedPages(result.pages);
+      setTranslating(false);
+    }).catch((e) => {
+      console.error('[translate]', e);
+      setTranslateError('Translation unavailable — showing English');
+      setTranslating(false);
+    });
+  }, [story, lang]); // eslint-disable-line
+
+  const handleLanguageChange = (newLang: string, newLearn: boolean) => {
+    setLang(newLang);
+    setLearningMode(newLearn);
+  };
 
   // Build share link
   useEffect(() => {
@@ -363,12 +413,40 @@ export default function LibraryStoryReader({ slug }: Props) {
     // Story page
     const pg = pages[pageIdx - 1];
     if (!pg) return null;
+    const pageText = personalise(pg.text || '');
+    const translatedPage = translatedPages[pageIdx - 1];
+    const isTranslated = lang !== 'en' && translatedPage && translatedPage.sentences.length > 0;
+
     return (
       <div className="lr-page lr-story">
         <div className="lr-story-scene"><Scene /></div>
         <div className="lr-story-text">
-          <div className="lr-pgnum">Page {pageIdx}</div>
-          <div className="lr-text">{personalise(pg.text || '')}</div>
+          <div className="lr-pgnum">Page {pageIdx}{isTranslated ? ` · ${lang.toUpperCase()}` : ''}</div>
+          {translateError && (
+            <div style={{fontSize:11,color:'rgba(180,80,20,.6)',fontStyle:'italic',marginBottom:6}}>{translateError}</div>
+          )}
+          {translating ? (
+            <div className="lr-text" style={{textAlign:'center',color:'rgba(90,56,10,.4)',fontStyle:'italic'}}>Translating...</div>
+          ) : isTranslated && learningMode ? (
+            <InterlinearText
+              sentences={translatedPage.sentences}
+              theme="light"
+              foreignStyle={{fontFamily:"var(--hand,'Patrick Hand',cursive)",fontSize:'clamp(17px,3.8vw,20px)',color:'#261600',lineHeight:1.75}}
+              englishStyle={{fontFamily:"var(--body,'Nunito',sans-serif)"}}
+            />
+          ) : isTranslated ? (
+            <ReadAloudText
+              text={translatedPage.sentences.map(s => s.foreign).join(' ')}
+              theme="light"
+              className="lr-text"
+            />
+          ) : (
+            <ReadAloudText
+              text={pageText}
+              theme="light"
+              className="lr-text"
+            />
+          )}
           {story.refrain && <div className="lr-refrain">* {personalise(story.refrain)} *</div>}
         </div>
       </div>
@@ -386,6 +464,16 @@ export default function LibraryStoryReader({ slug }: Props) {
         <div className="lr-logo" onClick={() => setView('library')}><div className="lr-logo-moon" /> SleepSeed</div>
         <button className="lr-back" onClick={() => setView('library')}>← Library</button>
       </nav>
+
+      {/* Language picker modal (opened from menu) */}
+      <LanguagePicker
+        language={lang}
+        learningMode={learningMode}
+        onChange={handleLanguageChange}
+        hideTrigger
+        externalOpen={langPickerOpen}
+        onClose={() => setLangPickerOpen(false)}
+      />
 
       {/* Upgrade banner for free/guest */}
       {(isNotLoggedIn || isFreeUser) && showUpgradeBanner && (
@@ -409,6 +497,42 @@ export default function LibraryStoryReader({ slug }: Props) {
             {Array.from({ length: totalPages }).map((_, i) => (
               <div key={i} className={`lr-dot${i === pageIdx ? ' on' : ''}`} onClick={() => setPageIdx(i)} />
             ))}
+          </div>
+          <div style={{position:'relative'}}>
+            <button className="lr-menu-btn" onClick={() => setMenuOpen(!menuOpen)}>
+              <svg viewBox="0 0 20 20" fill="currentColor"><circle cx="4" cy="10" r="1.8"/><circle cx="10" cy="10" r="1.8"/><circle cx="16" cy="10" r="1.8"/></svg>
+              Options
+            </button>
+            {menuOpen && (
+              <>
+                <div className="lr-menu-bg" onClick={() => setMenuOpen(false)} />
+                <div className="lr-menu">
+                  <div className="lr-menu-item" onClick={() => { setMenuOpen(false); setLangPickerOpen(true); }}>
+                    <span className="mi-icon">{LANGUAGES.find(l => l.code === lang)?.flag || '🌐'}</span>
+                    <span className="mi-label">Language</span>
+                    {lang !== 'en' && <span className="mi-badge">{LANGUAGES.find(l => l.code === lang)?.label}</span>}
+                  </div>
+                  {lang !== 'en' && (
+                    <div className="lr-menu-item" onClick={() => { const next = !learningMode; setLearningMode(next); setMenuOpen(false); }}>
+                      <span className="mi-icon">📖</span>
+                      <span className="mi-label">Learning Mode</span>
+                      <span className="mi-badge">{learningMode ? 'ON' : 'OFF'}</span>
+                    </div>
+                  )}
+                  <div className="lr-menu-sep" />
+                  <div className="lr-menu-item" onClick={() => { setMenuOpen(false); if (shareLink) { navigator.clipboard?.writeText(shareLink); setCopied(true); setTimeout(() => setCopied(false), 2000); } }}>
+                    <span className="mi-icon">🔗</span>
+                    <span className="mi-label">{copied ? 'Copied!' : 'Share Story'}</span>
+                  </div>
+                  {user && !user.isGuest && (
+                    <div className="lr-menu-item" onClick={() => { toggleFav(); setMenuOpen(false); }}>
+                      <span className="mi-icon">{isFav ? '⭐' : '☆'}</span>
+                      <span className="mi-label">{isFav ? 'Saved to Favourites' : 'Add to Favourites'}</span>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
           <button className="lr-nav-btn" disabled={isLast} onClick={() => goPage(1)}>Next →</button>
         </div>

@@ -8,7 +8,7 @@ const CHAR_TYPES: { v: CharacterType; label: string; emoji: string; desc: string
   { v: 'parent',   label: 'Parent',   emoji: '🧑‍🍼', desc: 'Mom, Dad, Grandma, Grandpa' },
   { v: 'animal',   label: 'Animal',   emoji: '🐶', desc: 'A pet, wild animal, or creature' },
   { v: 'stuffy',   label: 'Stuffy',   emoji: '🧸', desc: 'A beloved stuffed animal or toy' },
-  { v: 'creature', label: 'Creature', emoji: '🐉', desc: 'A dragon, monster, or fantastical being' },
+  { v: 'creature', label: 'DreamKeeper', emoji: '🐉', desc: 'A dragon, monster, or fantastical being' },
   { v: 'other',    label: 'Other',    emoji: '✨', desc: 'Something entirely their own' },
 ];
 const PARENT_ROLES: { v: ParentRole; label: string; emoji: string }[] = [
