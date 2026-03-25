@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
-import type { User, AppView, Character, BuilderChoices, HatchedCreature } from './lib/types';
+import type { User, AppView, Character, HatchedCreature } from './lib/types';
 import { supabase } from './lib/supabase';
 import { signOut as sbSignOut, getUserProfile } from './lib/storage';
 import { migrateLocalStorageToSupabase } from './lib/migrateLocalStorage';
@@ -19,8 +19,6 @@ interface AppCtx {
   setRitualSeed: (s: string) => void;
   ritualMood: string;
   setRitualMood: (m: string) => void;
-  builderChoices: BuilderChoices | null;
-  setBuilderChoices: (c: BuilderChoices | null) => void;
   editingCharacter: Character | null;
   setEditingCharacter: (c: Character | null) => void;
   pendingSaveCharacter: Partial<Character> | null;
@@ -59,7 +57,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [selectedCharacters,    setSelectedCharacters]    = useState<Character[]>([]);
   const [ritualSeed,            setRitualSeed]            = useState<string>('');
   const [ritualMood,            setRitualMood]            = useState<string>('');
-  const [builderChoices,        setBuilderChoices]        = useState<BuilderChoices | null>(null);
   const [editingCharacter,      setEditingCharacter]      = useState<Character | null>(null);
   const [pendingSaveCharacter,  setPendingSaveCharacter]  = useState<Partial<Character> | null>(null);
   const [companionCreature,    setCompanionCreature]    = useState<HatchedCreature | null>(null);
@@ -89,22 +86,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const handlingRef = useRef(false);
   const handleSession = async (session: any, isInitial: boolean) => {
+    // Prevent duplicate handling from overlapping auth events
+    if (handlingRef.current && !isInitial) return;
+    handlingRef.current = true;
+
     if (session?.user) {
       const u = toAppUser(session.user);
       if (!session.user.is_anonymous) {
-        // Load profile BEFORE setting user/view to batch all state updates
-        let sub = false;
-        let rc: string | null = null;
-        try {
-          const profile = await getUserProfile(session.user.id);
-          if (profile) { sub = profile.isSubscribed; rc = profile.refCode; }
-          profileLoadedRef.current = session.user.id;
-        } catch {}
-        // Single batch of state updates
+        // Set user + view IMMEDIATELY so UI shows dashboard fast
         setUser(u);
-        setIsSubscribed(sub);
-        setRefCode(rc);
         const params = new URLSearchParams(window.location.search);
         const isUrlDriven = params.get('view') === 'library' || params.get('library') || params.get('s');
         if (!isUrlDriven) {
@@ -112,10 +104,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             setView('dashboard');
           }
         }
-        runMigration(session.user.id);
+        setAuthLoading(false);
+        // Load profile in background — don't block UI
+        if (profileLoadedRef.current !== session.user.id) {
+          profileLoadedRef.current = session.user.id;
+          getUserProfile(session.user.id).then(profile => {
+            if (profile) { setIsSubscribed(profile.isSubscribed); setRefCode(profile.refCode); }
+          }).catch(() => { profileLoadedRef.current = null; });
+          runMigration(session.user.id);
+        }
       } else {
         setUser(u);
         if (viewRef.current === 'auth') setView('dashboard');
+        setAuthLoading(false);
       }
     } else {
       setUser(null);
@@ -124,8 +125,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       profileLoadedRef.current = null;
       migrationDoneRef.current = null;
       setView('public');
+      setAuthLoading(false);
     }
-    setAuthLoading(false);
+    handlingRef.current = false;
   };
 
   useEffect(() => {
@@ -165,7 +167,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       selectedCharacters, setSelectedCharacters,
       ritualSeed, setRitualSeed,
       ritualMood, setRitualMood,
-      builderChoices, setBuilderChoices,
       editingCharacter, setEditingCharacter,
       pendingSaveCharacter, setPendingSaveCharacter,
       companionCreature, setCompanionCreature,
