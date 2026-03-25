@@ -139,17 +139,19 @@ const CSS = `
 .lr-cta-btn:hover{filter:brightness(1.1)}
 
 /* book menu */
-.lr-menu-btn{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:10px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:var(--cream);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body);transition:all .2s;flex-shrink:0}
+.lr-menu-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:var(--cream);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--body);transition:all .2s;margin-bottom:6px}
 .lr-menu-btn:hover{background:rgba(255,255,255,.13)}
 .lr-menu-btn svg{width:16px;height:16px}
-.lr-menu-bg{position:fixed;inset:0;z-index:100}
-.lr-menu{position:absolute;bottom:calc(100% + 8px);right:0;background:rgba(10,8,24,.98);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:6px;min-width:200px;box-shadow:0 12px 40px rgba(0,0,0,.6);z-index:101;animation:lrFade .15s ease both}
-.lr-menu-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;cursor:pointer;transition:background .15s;font-size:13px;font-weight:600;color:rgba(244,239,232,.75);white-space:nowrap}
-.lr-menu-item:hover{background:rgba(255,255,255,.06)}
-.lr-menu-item .mi-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.lr-menu-bg{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.5)}
+.lr-menu{position:fixed;bottom:0;left:0;right:0;background:rgba(10,8,24,.98);border-top:1px solid rgba(255,255,255,.12);border-radius:18px 18px 0 0;padding:12px 8px calc(env(safe-area-inset-bottom,8px) + 8px);box-shadow:0 -12px 40px rgba(0,0,0,.6);z-index:101;animation:lrMenuSlide .2s ease both}
+@keyframes lrMenuSlide{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.lr-menu-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);margin:0 auto 10px}
+.lr-menu-item{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;cursor:pointer;transition:background .15s;font-size:14px;font-weight:600;color:rgba(244,239,232,.75);white-space:nowrap}
+.lr-menu-item:hover,.lr-menu-item:active{background:rgba(255,255,255,.06)}
+.lr-menu-item .mi-icon{font-size:18px;width:24px;text-align:center;flex-shrink:0}
 .lr-menu-item .mi-label{flex:1}
 .lr-menu-item .mi-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:50px;background:rgba(245,184,76,.12);color:#F5B84C;flex-shrink:0}
-.lr-menu-sep{height:1px;background:rgba(255,255,255,.06);margin:4px 8px}
+.lr-menu-sep{height:1px;background:rgba(255,255,255,.06);margin:4px 12px}
 
 /* loading */
 .lr-loading{text-align:center;padding:80px 24px;color:rgba(245,232,200,.3)}
@@ -503,48 +505,49 @@ export default function LibraryStoryReader({ slug }: Props) {
               <div key={i} className={`lr-dot${i === pageIdx ? ' on' : ''}`} onClick={() => setPageIdx(i)} />
             ))}
           </div>
-          <div style={{position:'relative'}}>
-            <button className="lr-menu-btn" onClick={() => setMenuOpen(!menuOpen)}>
-              <svg viewBox="0 0 20 20" fill="currentColor"><circle cx="4" cy="10" r="1.8"/><circle cx="10" cy="10" r="1.8"/><circle cx="16" cy="10" r="1.8"/></svg>
-              Options
-            </button>
-            {menuOpen && (
-              <>
-                <div className="lr-menu-bg" onClick={() => setMenuOpen(false)} />
-                <div className="lr-menu">
-                  <div className="lr-menu-item" onClick={() => { setMenuOpen(false); setLangPickerOpen(true); }}>
-                    <span className="mi-icon">{LANGUAGES.find(l => l.code === lang)?.flag || '🌐'}</span>
-                    <span className="mi-label">Language</span>
-                    {lang !== 'en' && <span className="mi-badge">{LANGUAGES.find(l => l.code === lang)?.label}</span>}
-                  </div>
-                  {lang !== 'en' && (
-                    <div className="lr-menu-item" onClick={() => { const next = !learningMode; setLearningMode(next); setMenuOpen(false); }}>
-                      <span className="mi-icon">📖</span>
-                      <span className="mi-label">Learning Mode</span>
-                      <span className="mi-badge">{learningMode ? 'ON' : 'OFF'}</span>
-                    </div>
-                  )}
-                  <div className="lr-menu-item" onClick={() => { setReadAloudActive(true); setMenuOpen(false); }}>
-                    <span className="mi-icon">🔊</span>
-                    <span className="mi-label">Read Aloud</span>
-                  </div>
-                  <div className="lr-menu-sep" />
-                  <div className="lr-menu-item" onClick={() => { setMenuOpen(false); if (shareLink) { navigator.clipboard?.writeText(shareLink); setCopied(true); setTimeout(() => setCopied(false), 2000); } }}>
-                    <span className="mi-icon">🔗</span>
-                    <span className="mi-label">{copied ? 'Copied!' : 'Share Story'}</span>
-                  </div>
-                  {user && !user.isGuest && (
-                    <div className="lr-menu-item" onClick={() => { toggleFav(); setMenuOpen(false); }}>
-                      <span className="mi-icon">{isFav ? '⭐' : '☆'}</span>
-                      <span className="mi-label">{isFav ? 'Saved to Favourites' : 'Add to Favourites'}</span>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
           <button className="lr-nav-btn" disabled={isLast} onClick={() => goPage(1)}>Next →</button>
         </div>
+
+        <button className="lr-menu-btn" onClick={() => setMenuOpen(!menuOpen)}>
+          <svg viewBox="0 0 20 20" fill="currentColor"><circle cx="4" cy="10" r="1.8"/><circle cx="10" cy="10" r="1.8"/><circle cx="16" cy="10" r="1.8"/></svg>
+          Options
+        </button>
+
+        {menuOpen && (
+          <>
+            <div className="lr-menu-bg" onClick={() => setMenuOpen(false)} />
+            <div className="lr-menu">
+              <div className="lr-menu-handle" />
+              <div className="lr-menu-item" onClick={() => { setMenuOpen(false); setLangPickerOpen(true); }}>
+                <span className="mi-icon">{LANGUAGES.find(l => l.code === lang)?.flag || '🌐'}</span>
+                <span className="mi-label">Language</span>
+                {lang !== 'en' && <span className="mi-badge">{LANGUAGES.find(l => l.code === lang)?.label}</span>}
+              </div>
+              {lang !== 'en' && (
+                <div className="lr-menu-item" onClick={() => { const next = !learningMode; setLearningMode(next); setMenuOpen(false); }}>
+                  <span className="mi-icon">📖</span>
+                  <span className="mi-label">Learning Mode</span>
+                  <span className="mi-badge">{learningMode ? 'ON' : 'OFF'}</span>
+                </div>
+              )}
+              <div className="lr-menu-item" onClick={() => { setReadAloudActive(true); setMenuOpen(false); }}>
+                <span className="mi-icon">🔊</span>
+                <span className="mi-label">Read Aloud</span>
+              </div>
+              <div className="lr-menu-sep" />
+              <div className="lr-menu-item" onClick={() => { setMenuOpen(false); if (shareLink) { navigator.clipboard?.writeText(shareLink); setCopied(true); setTimeout(() => setCopied(false), 2000); } }}>
+                <span className="mi-icon">🔗</span>
+                <span className="mi-label">{copied ? 'Copied!' : 'Share Story'}</span>
+              </div>
+              {user && !user.isGuest && (
+                <div className="lr-menu-item" onClick={() => { toggleFav(); setMenuOpen(false); }}>
+                  <span className="mi-icon">{isFav ? '⭐' : '☆'}</span>
+                  <span className="mi-label">{isFav ? 'Saved to Favourites' : 'Add to Favourites'}</span>
+                </div>
+              )}
+            </div>
+          </>
+        )}
 
         <div className="lr-progress">
           {isLast ? 'The End' : `Page ${pageIdx} of ${totalPages - 1}`}
