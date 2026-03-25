@@ -227,7 +227,7 @@ function AppInner() {
   );
 
   const goAuth        = () => setView('auth');
-  const goDashboard   = () => { setNightCardFilter(undefined); setView('dashboard'); };
+  const goDashboard   = () => { setNightCardFilter(undefined); setPreloadedBook(null); setView('dashboard'); };
   const goStoryBuilder= (char?: Character) => {
     if (char) setSelectedCharacter(char);
     setPreloadedBook(null);
@@ -241,6 +241,7 @@ function AppInner() {
   const goCharacterDetail = (c: Character) => { setViewingCharacter(c); setView('character-detail' as any); };
   const handleNav = (v: string) => {
     if (v === 'nightcard-library') goNightCards();
+    else if (v === 'story-wizard') goStoryBuilder();
     else setView(v as any);
   };
 
