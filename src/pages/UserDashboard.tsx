@@ -506,20 +506,30 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const userId = user?.id;
   useEffect(()=>{
     if(!userId) return;
-    Promise.all([getCharacters(userId),getNightCards(userId),getStories(userId)]).then(([chars,cards,stories])=>{
+    // Fetch all data in parallel — one render when everything resolves
+    Promise.all([
+      getCharacters(userId),
+      getNightCards(userId),
+      getStories(userId),
+      hasSupabase ? getAllHatchedCreatures(userId) : Promise.resolve([] as HatchedCreature[]),
+    ]).then(async ([chars,cards,stories,creatures])=>{
+      // Determine primary character eagerly so we can fetch egg in the same pass
+      const fc=chars.filter(c=>c.isFamily===true||(c.isFamily===undefined&&c.type==='human'));
+      const pri=fc.length>0?fc[0]:chars.length>0?chars[0]:null;
+      // Fetch active egg immediately (no waterfall — same load pass)
+      let egg: HatcheryEgg|null = null;
+      if(hasSupabase&&pri){
+        egg=await getActiveEgg(userId,pri.id);
+        if(!egg){const rc=CREATURES[Math.floor(Math.random()*CREATURES.length)];try{egg=await createEgg(userId,pri.id,rc.id,1);}catch{}}
+      }
+      // Set all state in one batch — single render
       setCharacters(chars);setAllCards(cards);setStoryCount(stories.length);
       setAllStories(stories);
-      if(stories.length>0){
-        const sorted=[...stories].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-        setLastStory(sorted[0]);
-      }
-      const fc=chars.filter(c=>c.isFamily===true||(c.isFamily===undefined&&c.type==='human'));
-      if(fc.length>0){setSelectedCharacters([fc[0]]);setWeekViewId(fc[0].id);}
-      else if(chars.length>0){setSelectedCharacters([chars[0]]);setWeekViewId(chars[0].id);}
-      setLoading(false);
-    });
-    if(hasSupabase) getAllHatchedCreatures(userId).then(creatures=>{
+      if(stories.length>0){const sorted=[...stories].sort((a,b)=>(b.date||'').localeCompare(a.date||''));setLastStory(sorted[0]);}
       if(creatures.length>0) setHatchedCreature(creatures[0]);
+      if(pri){if(fc.length>0){setSelectedCharacters([fc[0]]);setWeekViewId(fc[0].id);}else{setSelectedCharacters([chars[0]]);setWeekViewId(chars[0].id);}}
+      if(egg) setActiveEgg(egg);
+      setLoading(false);
     });
   },[userId]); // eslint-disable-line
 
@@ -529,8 +539,11 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const isMulti=selectedCharacters.length>1;
   const weekChild=characters.find(c=>c.id===weekViewId)??primary;
 
+  // Fetch egg when child switches (initial egg is loaded in main Promise.all above)
   useEffect(()=>{
     if(!hasSupabase||!user||!primary) return;
+    // Skip if egg already loaded for this character (from initial fetch)
+    if(activeEgg&&activeEgg.characterId===primary.id) return;
     getActiveEgg(user.id,primary.id).then(egg=>{
       if(egg){setActiveEgg(egg);}
       else{const rc=CREATURES[Math.floor(Math.random()*CREATURES.length)];createEgg(user.id,primary.id,rc.id,1).then(setActiveEgg).catch(()=>{});}

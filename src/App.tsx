@@ -217,12 +217,14 @@ function AppInner() {
 
   // Show loading screen while auth is resolving — prevents flash of PublicHomepage
   if (authLoading) return (
-    <div style={{minHeight:'100vh',background:'#080C18',display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <div style={{textAlign:'center'}}>
-        <div style={{fontSize:40,marginBottom:12,animation:'pulse 2s ease-in-out infinite'}}>🌙</div>
-        <div style={{color:'rgba(244,239,232,.3)',fontSize:13,fontFamily:"'Plus Jakarta Sans',system-ui,sans-serif"}}>Loading...</div>
-        <style>{`@keyframes pulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}`}</style>
+    <div style={{minHeight:'100vh',background:'#080C18',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:14}}>
+      <div style={{display:'flex',alignItems:'center',gap:9,animation:'ssLoadIn .6s ease-out'}}>
+        <div style={{width:20,height:20,borderRadius:'50%',background:'#F5B84C',position:'relative',overflow:'hidden'}}>
+          <div style={{position:'absolute',width:19,height:19,borderRadius:'50%',background:'#080C18',top:-4,left:-7}}/>
+        </div>
+        <div style={{fontFamily:"'Fraunces',Georgia,serif",fontSize:18,fontWeight:700,color:'#F4EFE8',letterSpacing:'-.02em'}}>SleepSeed</div>
       </div>
+      <style>{`@keyframes ssLoadIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
     </div>
   );
 

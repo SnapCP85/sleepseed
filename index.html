@@ -36,6 +36,20 @@
 
     <!-- Prevent phone number detection -->
     <meta name="format-detection" content="telephone=no" />
+
+    <!-- Font preconnect — eliminates DNS/TLS delay for Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Critical font preload — load Fraunces (serif) early so text doesn't flash -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,700&family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" as="style" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,700&family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" />
+
+    <!-- Inline critical styles for loading screen — prevents white flash -->
+    <style>
+      body{margin:0;background:#080C18}
+      #root{min-height:100vh}
+    </style>
   </head>
   <body>
     <div id="root"></div>
