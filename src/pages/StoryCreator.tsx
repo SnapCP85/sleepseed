@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { useApp } from '../AppContext';
 import { getCharacters } from '../lib/storage';
 import { getHatchedCreatures, getAllHatchedCreatures } from '../lib/hatchery';
@@ -515,20 +515,33 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
     : 'sc-creature-glow';
 
   // ── Bubble text ──
-  const bubbleText = (() => {
-    if (isListening) return "I'm listening\u2026 \u{1F399}\uFE0F";
+  const renderBubbleText = (): ReactNode => {
+    const amber = (text: string) => (
+      <em style={{ color: '#F5B84C', fontStyle: 'normal', fontWeight: 700 }}>{text}</em>
+    );
+
+    if (isListening) return <>I&apos;m listening&hellip; {'\u{1F399}\uFE0F'}</>;
+
     if (mode === 'today') {
-      const hasContent = transcript.trim() || brief.trim();
-      if (!hasContent) return `${childName}! What happened today worth putting in a story? Could be anything \u2014 big, small, silly, or strange. \u{1F319}`;
+      const hasAny = transcript.trim() || brief.trim();
+      if (!hasAny) return (
+        <>{childName ? <>{amber(childName)}! </> : null}What happened today worth putting in a story? Could be {amber('anything')} &mdash; big, small, silly, or strange. {'\u{1F319}'}</>
+      );
       const words = (transcript || brief).trim().split(/\s+/).slice(0, 4).join(' ');
-      return `Got it! ${words}\u2026 Ready when you are. \u2728`;
+      return <>Got it! {amber(words + '\u2026')} Ready when you are. {'\u2728'}</>;
     }
-    // adventure
-    if (!worldChoice) return "Forget today! Where should we go tonight? Pick a world and I'll write us in. \u{1F680}";
-    const worldLabel = worldChoice === 'custom' ? customWorld || 'your world'
+
+    // adventure mode
+    if (!worldChoice) return (
+      <>Forget today! {amber('Where should we go')} tonight? Pick a world and I&apos;ll write us in. {'\u{1F680}'}</>
+    );
+
+    const worldLabel = worldChoice === 'custom'
+      ? customWorld || 'your world'
       : WORLDS.find(w => w.key === worldChoice)?.label || worldChoice;
-    return `A story set in ${worldLabel}! Give me one weird detail and we're off. \u2728`;
-  })();
+
+    return <>A story set in {amber(worldLabel)}! Give me one {amber('weird detail')} and we&apos;re off. {'\u2728'}</>;
+  };
 
   // ── Cast helpers ──
   const isHero = (c: Character) => c.id === primaryChar?.id;
@@ -650,6 +663,44 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
 
       <div className="sc-inner">
 
+        {/* ─── NIGHT BADGE (ritual only) ─── */}
+        {isRitual && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            padding: '4px 0 8px',
+            animation: 'slideUp .3s ease both',
+          }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'rgba(245,184,76,.08)',
+              border: '1px solid rgba(245,184,76,.18)',
+              borderRadius: 20,
+              padding: '4px 14px',
+            }}>
+              <div style={{
+                width: 5,
+                height: 5,
+                borderRadius: '50%',
+                background: '#F5B84C',
+                animation: 'shimmer 2s ease-in-out infinite',
+                flexShrink: 0,
+              }} />
+              <span style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 8,
+                letterSpacing: '.1em',
+                textTransform: 'uppercase' as const,
+                color: 'rgba(245,184,76,.65)',
+              }}>
+                {cName} is ready
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* ─── CREATURE ZONE ─── */}
         {isRitual ? (
           <div className="sc-creature">
@@ -672,7 +723,8 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                 <div style={{ fontSize: 42, animation: 'floatCreature 4s ease-in-out infinite' }}>{cEmoji}</div>
                 <div>
                   <div style={{ fontFamily: "'Baloo 2', cursive", fontSize: 16, fontWeight: 700, color: 'var(--cream)', lineHeight: 1.3 }}>
-                    What kind of story tonight?
+                    What kind of story{' '}
+                    <em style={{ color: '#14d890', fontStyle: 'italic' }}>tonight?</em>
                   </div>
                   <div className="sc-creature-name" style={{ marginTop: 2 }}>{cName}</div>
                 </div>
@@ -685,7 +737,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
         {isRitual && (
           <div className="sc-bubble" key={`bubble-${mode}-${isListening}-${!!transcript}-${!!brief}-${worldChoice}`}
             style={{ borderColor: 'rgba(245,184,76,.2)', background: 'rgba(245,184,76,.04)' }}>
-            <div className="sc-bubble-text">{bubbleText}</div>
+            <div className="sc-bubble-text">{renderBubbleText()}</div>
           </div>
         )}
 
