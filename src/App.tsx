@@ -402,10 +402,9 @@ function AppInner() {
     // Parent setup done but kid onboarding not done → show dashboard with egg/begin button
     // (the existing dashboard handles this state — shows egg + "Begin your first night")
     return (
-      <div style={{paddingBottom:70}}>
+      <div>
         {friendToast}
         <UserDashboard onSignUp={goAuth} onReadStory={openSavedStory} />
-        <BottomTabs current="dashboard" onNav={v=>setView(v as any)} />
       </div>
     );
   }
