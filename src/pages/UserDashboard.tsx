@@ -131,7 +131,7 @@ const CSS=`
 .dash-skel{background:rgba(255,255,255,.04);border-radius:8px;animation:shimmer 1.5s ease-in-out infinite}
 
 /* ── CONTENT ── */
-.dash-inner{max-width:860px;margin:0 auto;padding:0 5% 24px;position:relative;z-index:5}
+.dash-inner{max-width:860px;margin:0 auto;padding:0 5% 110px;position:relative;z-index:5}
 .dash-greet-row{padding-top:18px;margin-bottom:10px;position:relative;z-index:5}
 .dash-greet-time{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(245,184,76,.44);margin-bottom:3px}
 .dash-greet{font-family:var(--serif);font-size:clamp(19px,3.2vw,28px);font-weight:700;color:var(--cream);letter-spacing:-.02em;line-height:1.2}
@@ -377,38 +377,35 @@ const CSS=`
 .dash-avatar:hover{border-color:rgba(160,96,240,.62);background:linear-gradient(145deg,#2e1858,#4818a0)}
 .dash-avatar-pip{position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:#14d890;border:1.5px solid var(--night)}
 
-/* ── NEW NAV BAR ── */
-.dash-navbar{position:fixed;bottom:0;left:0;right:0;height:72px;background:linear-gradient(180deg,rgba(2,4,12,.94) 0%,rgba(4,6,18,.98) 100%);border-top:1px solid rgba(255,255,255,.06);backdrop-filter:blur(24px);display:flex;align-items:center;justify-content:space-around;padding:4px 6px 0;z-index:30;padding-bottom:max(4px,env(safe-area-inset-bottom))}
-.dash-navbar::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,.14),transparent)}
-.dash-nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:10px 4px 12px;transition:all .2s;-webkit-tap-highlight-color:transparent;position:relative;border-radius:14px}
-.dash-nav-tab svg{transition:opacity .2s,transform .2s;opacity:.28}
-.dash-nav-tab-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.22);transition:color .2s;white-space:nowrap}
-.dash-nav-tab.on::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:24px;height:2px;border-radius:0 0 2px 2px}
-.dash-nav-tab.on-amber{background:rgba(245,184,76,.06)}
-.dash-nav-tab.on-amber::after{background:linear-gradient(90deg,transparent,#F5B84C,transparent)}
-.dash-nav-tab.on-amber svg{opacity:1}
-.dash-nav-tab.on-amber .dash-nav-tab-lbl{color:rgba(245,184,76,.82)}
-.dash-nav-tab.on-purple{background:rgba(160,96,240,.06)}
-.dash-nav-tab.on-purple::after{background:linear-gradient(90deg,transparent,#c090ff,transparent)}
-.dash-nav-tab.on-purple svg{opacity:1}
-.dash-nav-tab.on-purple .dash-nav-tab-lbl{color:rgba(160,96,240,.78)}
-.dash-nav-tab:active svg{transform:scale(.88)}
+/* ── NAV BAR ── */
+@keyframes cBreathe{0%,100%{box-shadow:0 0 0 1.5px rgba(255,218,80,.3),0 6px 22px rgba(160,95,0,.65),0 0 32px rgba(245,184,76,.15),inset 0 1px 0 rgba(255,245,160,.25)}50%{box-shadow:0 0 0 1.5px rgba(255,218,80,.48),0 10px 30px rgba(160,95,0,.85),0 0 50px rgba(245,184,76,.28),inset 0 1px 0 rgba(255,245,160,.3)}}
+@keyframes pillIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+.dash-navbar{position:fixed;bottom:0;left:0;right:0;height:74px;background:linear-gradient(180deg,rgba(4,6,18,.94) 0%,rgba(6,9,22,.98) 100%);border-top:1px solid rgba(245,184,76,.14);display:flex;align-items:center;justify-content:space-around;padding:0 8px;z-index:30;padding-bottom:max(0px,env(safe-area-inset-bottom))}
+.dash-nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:8px 4px 10px;position:relative;border-radius:14px;-webkit-tap-highlight-color:transparent;transition:opacity .15s}
+.dash-nav-tab:active{opacity:.65}
+.dash-nav-tab svg{opacity:.58;transition:opacity .2s,transform .2s}
+.dash-nav-tab-lbl{font-family:var(--serif);font-style:italic;font-size:10px;color:rgba(255,255,255,.48);transition:color .2s;white-space:nowrap;line-height:1}
+.dash-nav-tab.on::before{content:'';position:absolute;inset:3px 0px;border-radius:12px;animation:pillIn .2s ease-out}
+.dash-nav-tab.on-amber::before{background:rgba(245,184,76,.15);border:1px solid rgba(245,184,76,.22);box-shadow:0 0 12px rgba(245,184,76,.08)}
+.dash-nav-tab.on-purple::before{background:rgba(160,96,240,.14);border:1px solid rgba(160,96,240,.2);box-shadow:0 0 12px rgba(160,96,240,.08)}
+.dash-nav-tab.on-amber svg,.dash-nav-tab.on-purple svg{opacity:1;transform:scale(1.08)}
+.dash-nav-tab.on-amber .dash-nav-tab-lbl{color:rgba(245,184,76,.95)}
+.dash-nav-tab.on-purple .dash-nav-tab-lbl{color:rgba(160,96,240,.92)}
 
 /* ── CENTRE CREATE ── */
-.dash-nav-create{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:-20px;padding-bottom:4px;position:relative}
-.dash-nav-create-ring{position:absolute;width:70px;height:70px;border-radius:50%;pointer-events:none;box-shadow:0 0 0 1px rgba(245,184,76,.14),0 0 28px rgba(245,184,76,.2),0 0 56px rgba(245,184,76,.08);animation:pglow 3.5s ease-in-out infinite}
-@keyframes pglow{0%,100%{box-shadow:0 0 0 1px rgba(245,184,76,.14),0 0 28px rgba(245,184,76,.2)}50%{box-shadow:0 0 0 1px rgba(245,184,76,.22),0 0 38px rgba(245,184,76,.45)}}
-.dash-nav-create-btn{width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 38% 32%,rgba(255,235,140,.35) 0%,transparent 60%),linear-gradient(145deg,#b07018,#F5B84C 42%,#c88020 68%,#a06010);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform .18s,filter .18s;box-shadow:0 0 0 1.5px rgba(255,230,120,.28),0 6px 20px rgba(180,110,10,.6),inset 0 1px 0 rgba(255,240,160,.22)}
-.dash-nav-create-btn::after{content:'';position:absolute;top:-20%;left:-60%;width:40%;height:140%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.17),transparent);transform:skewX(-15deg);animation:shimmer 3.2s ease-in-out infinite}
-.dash-nav-create-btn:active{transform:scale(.91);filter:brightness(.88)}
-.dash-nav-create-lbl{font-family:var(--serif);font-size:9px;font-style:italic;color:rgba(245,184,76,.52);letter-spacing:.01em;white-space:nowrap}
+.dash-nav-create{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:-16px;padding-bottom:2px}
+.dash-nav-create-btn{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,242,150,.4) 0%,transparent 48%),linear-gradient(148deg,#c08020 0%,#F5B84C 35%,#F0A030 60%,#a06010 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform .18s,filter .18s;animation:cBreathe 4s ease-in-out infinite}
+.dash-nav-create-btn::before{content:'';position:absolute;top:0;left:0;right:0;height:55%;background:linear-gradient(180deg,rgba(255,250,180,.22) 0%,transparent 100%);border-radius:50% 50% 0 0;pointer-events:none}
+.dash-nav-create-btn::after{content:'';position:absolute;top:-20%;left:-65%;width:38%;height:140%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.16),transparent);transform:skewX(-15deg);animation:shimmer 3.4s ease-in-out infinite}
+.dash-nav-create-btn:active{transform:scale(.9);filter:brightness(.88)}
+.dash-nav-create-lbl{font-family:var(--serif);font-style:italic;font-size:10px;color:rgba(245,184,76,.65);white-space:nowrap;line-height:1}
 
 /* unread dot */
-.dash-nav-unread{position:absolute;top:10px;right:calc(50% - 16px);width:7px;height:7px;border-radius:50%;background:#c090ff;border:1.5px solid var(--night);animation:twk 2s ease-in-out infinite}
+.dash-nav-unread{position:absolute;top:8px;right:calc(50% - 17px);width:7px;height:7px;border-radius:50%;background:#c090ff;border:1.5px solid var(--night);animation:twk 2s ease-in-out infinite}
 
 /* ── MY STUFF SHEET ── */
 .dash-ms-bd{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:60;animation:fadein .22s ease}
-.dash-ms-sheet{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(175deg,#080b20 0%,#06091a 100%);border-radius:24px 24px 0 0;border-top:1px solid rgba(255,255,255,.07);z-index:61;padding-bottom:max(16px,env(safe-area-inset-bottom));animation:sheetUp .28s cubic-bezier(.22,.68,0,1.2);overflow:hidden}
+.dash-ms-sheet{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(175deg,#080b20 0%,#06091a 100%);border-radius:24px 24px 0 0;border-top:1px solid rgba(245,184,76,.12);z-index:61;padding-bottom:max(16px,env(safe-area-inset-bottom));animation:sheetUp .28s cubic-bezier(.22,.68,0,1.2);overflow:hidden}
 .dash-ms-sheet::before{content:'';position:absolute;top:0;left:25%;right:25%;height:1px;background:linear-gradient(90deg,transparent,rgba(160,96,240,.35),transparent)}
 @media(min-width:600px){.dash-ms-sheet{left:50%;right:auto;bottom:50%;transform:translateX(-50%) translateY(50%);width:100%;max-width:420px;border-radius:24px;animation:none;box-shadow:0 24px 80px rgba(0,0,0,.85),0 0 0 1px rgba(160,96,240,.22)}.dash-ms-sheet::before{display:none}}
 .dash-ms-handle{width:32px;height:3px;border-radius:2px;background:rgba(255,255,255,.12);margin:13px auto 10px}
@@ -448,17 +445,20 @@ const STARS=Array.from({length:45},(_,i)=>({
 
 // ── Nav SVG icons ─────────────────────────────────────────────────────────────
 
-const NavIconDiscover = ({color='rgba(255,255,255,.55)'}:{color?:string}) => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke={color} strokeWidth="1.2"/><path d="M11 3v1M11 18v1M3 11h1M18 11h1" stroke={color} strokeWidth="1.2" strokeLinecap="round"/><circle cx="11" cy="11" r="2.5" stroke={color} strokeWidth="1.2"/><path d="M13.5 8.5l-1.2 3.7-3.7 1.2 1.2-3.7z" fill={color}/></svg>
+const NavIconDiscover = ({color='rgba(255,255,255,.9)'}:{color?:string}) => (
+  <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke={color} strokeWidth="1.4"/><path d="M11 3.5v1M11 17.5v1M3.5 11h1M17.5 11h1" stroke={color} strokeWidth="1.4" strokeLinecap="round"/><circle cx="11" cy="11" r="2.5" stroke={color} strokeWidth="1.3"/><path d="M13.5 8.5l-1.2 3.7-3.7 1.2 1.2-3.7z" fill={color}/></svg>
+);
+const NavIconHome = ({color='rgba(255,255,255,.9)'}:{color?:string}) => (
+  <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><path d="M4 10.5L11 4l7 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" stroke={color} strokeWidth="1.4" strokeLinejoin="round"/><rect x="8.5" y="14" width="5" height="6" rx="1" stroke={color} strokeWidth="1.3"/><circle cx="14.5" cy="8.5" r="1.8" fill={`${color}30`} stroke={color} strokeWidth=".9"/></svg>
 );
 const NavIconCreate = () => (
-  <svg width="30" height="30" viewBox="0 0 30 30" fill="none" style={{position:'relative',zIndex:2}}><path d="M15 4l2.7 8.2H26l-6.9 5 2.6 8.2L15 20.4l-6.7 5 2.6-8.2L4 12.2h8.3z" fill="rgba(10,5,0,.85)"/></svg>
+  <svg width="26" height="26" viewBox="0 0 30 30" fill="none" style={{position:'relative',zIndex:2}}><path d="M15 4l2.7 8.2H26l-6.9 5 2.6 8.2L15 20.4l-6.7 5 2.6-8.2L4 12.2h8.3z" fill="rgba(8,4,0,.85)"/></svg>
 );
-const NavIconMyStuff = ({color='rgba(255,255,255,.55)'}:{color?:string}) => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="10" width="16" height="10" rx="2" stroke={color} strokeWidth="1.2"/><path d="M3 11a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4" stroke={color} strokeWidth="1.2"/><rect x="9.5" y="14" width="3" height="2.5" rx="1" stroke={color} strokeWidth="1.1"/><path d="M3 11h16" stroke={color} strokeWidth="1.2"/><circle cx="7" cy="15.5" r=".8" fill={color} opacity=".3"/><circle cx="15" cy="15.5" r=".8" fill={color} opacity=".3"/></svg>
+const NavIconMyStuff = ({color='rgba(255,255,255,.9)'}:{color?:string}) => (
+  <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><rect x="3" y="10" width="16" height="10" rx="2" stroke={color} strokeWidth="1.4"/><path d="M3 11a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4" stroke={color} strokeWidth="1.4"/><rect x="9.5" y="14" width="3" height="2.5" rx="1" stroke={color} strokeWidth="1.3"/><path d="M3 11h16" stroke={color} strokeWidth="1.4"/></svg>
 );
-const NavIconProfile = ({color='#c090ff'}:{color?:string}) => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke={color} strokeWidth="1.2"/><path d="M2 12c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke={color} strokeWidth="1.2" strokeLinecap="round"/></svg>
+const NavIconProfile = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="#c090ff" strokeWidth="1.2"/><path d="M2 12c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="#c090ff" strokeWidth="1.2" strokeLinecap="round"/></svg>
 );
 const NavIconBooks = () => (
   <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="4" y="3" width="14" height="16" rx="1.5" stroke="#F5B84C" strokeWidth="1.2"/><path d="M7 8h8M7 11h8M7 14h5" stroke="#F5B84C" strokeWidth="1.1" strokeLinecap="round"/><path d="M4 3h1.5" stroke="#F5B84C" strokeWidth="1.4" strokeLinecap="round"/></svg>
@@ -1134,12 +1134,11 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
           <div className="dash-nav-tab-lbl">Discover</div>
         </div>
         <div className="dash-nav-create" onClick={handleNavCreate}>
-          <div className="dash-nav-create-ring"/>
           <div className="dash-nav-create-btn"><NavIconCreate/></div>
           <div className="dash-nav-create-lbl">Create a story</div>
         </div>
         <div className={`dash-nav-tab${myStuffOpen?' on on-purple':''}`} onClick={handleNavMyStuff}>
-          <NavIconMyStuff color={myStuffOpen?'rgba(160,96,240,.85)':'rgba(255,255,255,.55)'}/>
+          <NavIconMyStuff color={myStuffOpen?'rgba(160,96,240,.85)':undefined}/>
           <div className="dash-nav-tab-lbl">My Stuff</div>
           {showMyStuffDot&&!myStuffOpen&&<div className="dash-nav-unread"/>}
         </div>
