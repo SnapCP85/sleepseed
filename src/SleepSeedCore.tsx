@@ -530,7 +530,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .story-illo-fade{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(0deg,#fef4e0,transparent)}
 .story-text-area{flex:1;min-height:0;display:flex;flex-direction:column;padding:14px 18px 36px;background:linear-gradient(160deg,#fef8e8,#f5e8c0);overflow:hidden;position:relative}
 .page-num-kalam{font-family:'Kalam',cursive;font-size:10px;color:rgba(90,56,10,.32);text-align:center;margin-bottom:8px;letter-spacing:.08em;flex-shrink:0}
-.story-text-main{font-family:'Patrick Hand',cursive;font-size:clamp(17px,3.6vw,19px);color:var(--ink);line-height:1.85;flex:1;min-height:0;overflow:hidden}
+.story-text-main{font-family:'Patrick Hand',cursive;font-size:clamp(19px,4vw,22px);color:var(--ink);line-height:1.85;flex:1;min-height:0;overflow:hidden}
 .story-refrain-cg{font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;font-weight:500;color:rgba(90,56,10,.45);text-align:center;padding:7px 0 0;border-top:1px solid rgba(90,56,10,.08);margin-top:8px;line-height:1.6;flex-shrink:0}
 .page-nav-corners{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 14px;pointer-events:none;z-index:8}
 .page-nav-corner{font-family:'Kalam',cursive;font-size:11px;color:rgba(90,56,10,.32);display:flex;align-items:center;gap:3px}
