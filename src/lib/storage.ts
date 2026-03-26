@@ -117,7 +117,7 @@ export const getCharacters = async (userId: string): Promise<Character[]> => {
       if (merged.length > local.length) lsSet(LS_CHARS(userId), merged);
       return merged;
     }
-  } catch {}
+  } catch(e) { console.error('[storage] getCharacters error:', e); }
   return local;
 };
 
@@ -139,12 +139,12 @@ export const saveCharacter = async (c: Character): Promise<void> => {
       parent_role: c.parentRole ?? null,
       updated_at: new Date().toISOString(),
     });
-  } catch {}
+  } catch(e) { console.error('[storage] saveCharacter Supabase error:', e); }
 };
 
 export const deleteCharacter = async (userId: string, charId: string): Promise<void> => {
   lsSet(LS_CHARS(userId), lsGet<Character>(LS_CHARS(userId)).filter(c => c.id !== charId));
-  try { await supabase.from('characters').delete().eq('id', charId).eq('user_id', userId); } catch {}
+  try { await supabase.from('characters').delete().eq('id', charId).eq('user_id', userId); } catch(e) { console.error('[storage] deleteCharacter error:', e); }
 };
 
 export const tagCharacterInStory = async (userId: string, characterId: string, storyId: string): Promise<void> => {
@@ -180,7 +180,7 @@ export const getStories = async (userId: string): Promise<SavedStory[]> => {
       if (merged.length > local.length) lsSet(LS_STORIES(userId), merged);
       return merged.sort((a, b) => b.date.localeCompare(a.date));
     }
-  } catch {}
+  } catch(e) { console.error('[storage] getStories error:', e); }
   return local.sort((a, b) => b.date.localeCompare(a.date));
 };
 
@@ -201,12 +201,12 @@ export const saveStory = async (s: SavedStory): Promise<void> => {
     if (s.storyLength !== undefined) row.story_length = s.storyLength;
     if (s.lessons !== undefined) row.lessons = s.lessons;
     await supabase.from('stories').upsert(row);
-  } catch {}
+  } catch(e) { console.error('[storage] saveStory Supabase error:', e); }
 };
 
 export const deleteStory = async (userId: string, storyId: string): Promise<void> => {
   lsSet(LS_STORIES(userId), lsGet<SavedStory>(LS_STORIES(userId)).filter(s => s.id !== storyId));
-  try { await supabase.from('stories').delete().eq('id', storyId).eq('user_id', userId); } catch {}
+  try { await supabase.from('stories').delete().eq('id', storyId).eq('user_id', userId); } catch(e) { console.error('[storage] deleteStory error:', e); }
 };
 
 // ── Night Cards ───────────────────────────────────────────────────────────────
@@ -245,7 +245,7 @@ export const getNightCards = async (userId: string): Promise<SavedNightCard[]> =
       if (merged.length > local.length) lsSet(LS_CARDS(userId), merged);
       return merged.sort((a, b) => b.date.localeCompare(a.date));
     }
-  } catch {}
+  } catch(e) { console.error('[storage] getNightCards error:', e); }
   return local.sort((a, b) => b.date.localeCompare(a.date));
 };
 
@@ -282,7 +282,7 @@ export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
 
 export const deleteNightCard = async (userId: string, cardId: string): Promise<void> => {
   lsSet(LS_CARDS(userId), lsGet<SavedNightCard>(LS_CARDS(userId)).filter(c => c.id !== cardId));
-  try { await supabase.from('night_cards').delete().eq('id', cardId).eq('user_id', userId); } catch {}
+  try { await supabase.from('night_cards').delete().eq('id', cardId).eq('user_id', userId); } catch(e) { console.error('[storage] deleteNightCard error:', e); }
 };
 
 // ── Library: DB row mapper ────────────────────────────────────────────────

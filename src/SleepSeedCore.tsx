@@ -2053,7 +2053,7 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     inp.type = "file"; inp.accept = "image/*";
     inp.onchange = async (e) => {
       const file = e.target.files[0]; if(!file) return;
-      try { const photo = await compressImage(file); updateExtraChar(charId,{photo}); } catch(_) {}
+      try { const photo = await compressImage(file); updateExtraChar(charId,{photo}); } catch(e) { console.error('[Char] Photo compress failed:', e); }
     };
     inp.click();
   };
@@ -2214,7 +2214,7 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
           const desc = parsed.desc||"";
           visualDescs[c.id] = desc;
           if(fp){ await sSet(`char_${fp}`,{description:desc}); setCachedChars(p=>({...p,[fp]:{description:desc}})); }
-        } catch(_) {}
+        } catch(e) { console.error('[Gen] Character description failed:', e); }
       }
 
       // Per-classify voice/behaviour seeds so the model writes distinct characters
@@ -2464,7 +2464,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       sSet(bKey,bookData).catch(()=>{});
 
       // ── Auto-save story to library ────────────────────────────────────
-      try { await saveMemory(bookData); } catch(_) {}
+      try { await saveMemory(bookData); } catch(e) { console.error('[Story] saveMemory failed:', e); }
 
     } catch(e) {
       console.error("SleepSeed error:",e);
@@ -3560,7 +3560,7 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                           photo:ncPhoto,
                           ...ncResult,
                         };
-                        try { await saveNightCard(ncData); } catch(_) {}
+                        try { await saveNightCard(ncData); } catch(e) { console.error('[NC-old] saveNightCard failed:', e); }
                         // Attach Night Card to book and re-save story
                         const updatedBook = {...book, nightCard:ncData};
                         setBook(updatedBook);
@@ -3570,13 +3570,13 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                             ? {...m, bookData:updatedBook} : m
                         );
                         setMemories(updatedMemories);
-                        try { await sSet("memories",{items:updatedMemories}); } catch(_) {}
+                        try { await sSet("memories",{items:updatedMemories}); } catch(e) { console.error('[NC-old] sSet memories failed:', e); }
                         // Update cache
                         try {
                           const s = makeStorySeed(book.heroName,theme,extraChars,occasion,occasionCustom,
                             Array.isArray(lessons)?lessons.join("|"):lessons,adventure,storyLen,heroGender,heroClassify,storyGuidance);
                           sSet(`book_${s}`,updatedBook).catch(()=>{});
-                        } catch(_) {}
+                        } catch(e) { console.error('[NC-old] cache update failed:', e); }
                         setStage("book"); setPageIdx(totalPages-1);
                       }}>
                         ✓ Save &amp; Done
