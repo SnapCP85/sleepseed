@@ -2093,7 +2093,8 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
           storyLength: storyLen || undefined,
           lessons: Array.isArray(lessons) && lessons.length > 0 ? lessons : undefined,
         });
-      } catch(e) { console.error('SleepSeedCore dbSaveStory:', e); }
+        console.log('[Story] Saved to Supabase:', entry.id);
+      } catch(e) { console.error('[Story] dbSaveStory failed:', e); }
     }
   },[memories,occasion,occasionCustom,userId,preloadedCharacter,ageGroup,storyMood,storyBrief2,theme,storyStyle,storyLen,lessons]);
 
@@ -2187,26 +2188,13 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     const bKey = `book_${seed}`;
     const mk = (n,st="p") => Array.from({length:n},()=>st);
 
-    setGen({stepIdx:0,progress:6,label:"Checking story memory…",dots:[]});
+    // Clear cached story so a fresh one is always generated
+    try { await sDel(bKey); } catch(_) {}
+
+    setGen({stepIdx:0,progress:6,label:"Writing a brand new story…",dots:[]});
 
     try {
-      const cached = await sGet(bKey);
-      if(cached?.title){
-        setGen(g => ({...g,stepIdx:3,progress:88,label:"Opening your book…"}));
-        const pages = cached.pages||[...(cached.setup_pages||[]),...(cached.path_a||[]),...(cached.path_b||[])];
-        const allUrls = [cached.coverUrl,...pages.map(p=>p.imgUrl)];
-        const dots = mk(allUrls.length,"p");
-        setGen(g => ({...g,dots:[...dots]}));
-        allUrls.forEach((url,i) => setTimeout(() => preloadImg(url,
-          () => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:true})); },
-          () => { dots[i]="e"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:"e"})); }
-        ), i * 800));
-        setBook(cached); setPageIdx(0); setFromCache(true);
-        await new Promise(r => setTimeout(r,180));
-        setStage("book");
-        return;
-      }
-
+      // Cache disabled — always generate fresh stories
       const allChars = [
         {id:"hero",name,type:"hero",photo:null,classify:heroClassify,gender:heroGender},
         ...resolvedChars,
@@ -3285,10 +3273,10 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
                   <button className="nc-action-btn nc-btn-done" onClick={async()=>{
                     const ncData={heroName:book.heroName,storyTitle:book.title,refrain:book.refrain||"",
                       bondingQ:ncBondingQ,bondingA:ncBondingA,gratitude:ncGratitude,extra:ncExtra,photo:ncPhoto,...ncResult};
-                    try{await saveNightCard(ncData);}catch(_){}
+                    try{await saveNightCard(ncData);console.log('[NC] Night card saved successfully');}catch(err){console.error('[NC] saveNightCard failed:',err);}
                     const updatedBook={...book,nightCard:ncData};setBook(updatedBook);
                     const updatedMemories=memories.map(m=>m.bookData?.title===book.title&&m.heroName===book.heroName?{...m,bookData:updatedBook}:m);
-                    setMemories(updatedMemories);try{await sSet("memories",{items:updatedMemories});}catch(_){}
+                    setMemories(updatedMemories);try{await sSet("memories",{items:updatedMemories});console.log('[NC] Memories updated');}catch(err){console.error('[NC] sSet memories failed:',err);}
                     onHome?onHome():setStage("home");
                   }}>
                     <span style={{fontSize:16}}>✓</span><span>Save & Done</span>
