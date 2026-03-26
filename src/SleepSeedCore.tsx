@@ -1416,8 +1416,7 @@ export default function SleepSeed({
 
   useEffect(() => {
     if (!builderChoices || hasAutoGenRef.current) return;
-    const name = heroName.trim() || builderChoices.heroName || '';
-    if (!name) return;
+    const name = heroName.trim() || builderChoices.heroName || 'friend';
     hasAutoGenRef.current = true;
     // Set hero state for display purposes
     if (builderChoices.heroName && !heroName.trim()) {
