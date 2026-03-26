@@ -428,6 +428,17 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
   background:linear-gradient(135deg,var(--gold3),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .brand-tag{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dimmer)}
 
+/* ── NO SCREEN BEDTIME MODE ── */
+.no-screen-overlay{position:fixed;inset:0;z-index:50;background:linear-gradient(160deg,#020408,#030610);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;cursor:pointer;animation:fup .5s ease}
+.no-screen-moon{font-size:52px;animation:mfloat 5s ease-in-out infinite,gAGen 5s ease-in-out infinite}
+.no-screen-title{font-family:'Fraunces',serif;font-size:14px;font-style:italic;color:rgba(245,184,76,.65);text-align:center;line-height:1.6}
+.no-screen-dots{display:flex;gap:8px;align-items:center}
+.no-screen-dot{width:6px;height:6px;border-radius:50%;background:rgba(245,184,76,.35);animation:nsDotPulse 1.8s ease-in-out infinite}
+.no-screen-dot:nth-child(2){animation-delay:.3s}
+.no-screen-dot:nth-child(3){animation-delay:.6s}
+@keyframes nsDotPulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+.no-screen-tap{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.2);text-align:center;margin-top:8px}
+
 /* ── GENERATION SCREEN MAGIC ── */
 @keyframes genAuAmber{0%,100%{opacity:.06;transform:translateX(-50%) scale(1)}50%{opacity:.2;transform:translateX(-50%) scale(1.1)}}
 @keyframes genAuGreen{0%,100%{opacity:.08;transform:translateX(-50%) scale(1)}50%{opacity:.28;transform:translateX(-50%) scale(1.12)}}
@@ -1380,6 +1391,7 @@ export default function SleepSeed({
   const [libSubmitMood,    setLibSubmitMood]    = useState('');
   const [showToolbar,      setShowToolbar]      = useState(false);     // collapsed toolbar expanded
   const [warmMode,         setWarmMode]         = useState(false);     // warm sepia filter on story pages
+  const [noScreenMode,     setNoScreenMode]     = useState(false);     // near-black overlay, listen only
   const [ambientOn,        setAmbientOn]        = useState(false);     // cozy night ambient sound
   const [ncPhotoMode,      setNcPhotoMode]      = useState<'idle'|'camera'|'upload'>('idle');
   const [shareToLibrary,   setShareToLibrary]   = useState(false);
@@ -3128,6 +3140,9 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                   <button className="rd-exp-btn" onClick={()=>setWarmMode(w=>!w)} style={warmMode?{color:'#ffb868',background:'rgba(255,140,60,.1)'}:{}}>
                     {warmMode ? '🌅 Warm Mode · On' : '🌅 Warm Mode'}
                   </button>
+                  <button className="rd-exp-btn" onClick={()=>{setNoScreenMode(true);setShowToolbar(false);}} style={{color:'rgba(20,216,144,.85)'}}>
+                    🌙 No Screen Mode
+                  </button>
                   <button className="rd-exp-btn" onClick={toggleAmbient} style={ambientOn?{color:'var(--gold2)',background:'rgba(212,160,48,.08)'}:{}}>
                     {ambientOn ? '🌧 Cozy Night · On' : '🌧 Cozy Night'}
                   </button>
@@ -3146,6 +3161,23 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                 </div>
               )}
             </div>
+
+            {/* ── No Screen Bedtime Mode ── */}
+            {noScreenMode && (
+              <div className="no-screen-overlay" onClick={()=>setNoScreenMode(false)}>
+                <div className="no-screen-moon">🌙</div>
+                <div className="no-screen-title">
+                  Listening to<br/>
+                  <em style={{color:'rgba(245,184,76,.7)',fontStyle:'italic',fontFamily:"'Fraunces',serif",fontSize:17,fontWeight:700}}>
+                    {book.heroName}'s story
+                  </em>
+                </div>
+                <div className="no-screen-dots">
+                  <div className="no-screen-dot"/><div className="no-screen-dot"/><div className="no-screen-dot"/>
+                </div>
+                <div className="no-screen-tap">tap anywhere to return</div>
+              </div>
+            )}
 
             {/* ── Voice Picker Modal ── */}
             {showVoicePicker && (
