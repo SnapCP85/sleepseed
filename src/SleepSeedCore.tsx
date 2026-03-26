@@ -206,7 +206,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .img-dot.done{border-color:rgba(76,200,144,.6);background:rgba(76,200,144,.12)}
 @keyframes dotPulse{0%,100%{opacity:.5}50%{opacity:1}}
 .err-box{background:rgba(192,64,48,.14);border:1px solid rgba(192,64,48,.28);border-radius:10px;padding:10px 14px;font-size:13px;color:#f09080;margin-bottom:14px}
-.book-shell{width:100%;max-width:500px;position:relative;animation:fup .4s cubic-bezier(.16,1,.3,1) both;height:calc(var(--vh,1vh) * 72);max-height:580px;overflow:hidden}
+.book-shell{width:100%;max-width:500px;position:relative;animation:fup .4s cubic-bezier(.16,1,.3,1) both;height:calc(var(--vh,1vh) * 58);max-height:520px;overflow:hidden}
 .book-3d{border-radius:18px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.7);
   height:100%;position:relative;background:#0e1428;cursor:pointer}
 .bpage{position:absolute;inset:0;width:100%;height:100%;animation:pageFade .3s ease both}
@@ -2127,19 +2127,9 @@ export default function SleepSeed({
     return()=>window.removeEventListener('resize',setVh);
   },[]);
 
-  // ── Scroll to top on stage change + lock body scroll during book ──
+  // ── Scroll to top on stage change ──
   useEffect(()=>{
     window.scrollTo({top:0,behavior:'instant'});
-    if(stage==='book'){
-      document.body.style.overflow='hidden';
-      document.body.style.position='fixed';
-      document.body.style.width='100%';
-    } else {
-      document.body.style.overflow='';
-      document.body.style.position='';
-      document.body.style.width='';
-    }
-    return ()=>{document.body.style.overflow='';document.body.style.position='';document.body.style.width='';};
   },[stage]);
 
   // ── Portal stars for generation screen ──
