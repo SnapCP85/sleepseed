@@ -428,28 +428,84 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
   background:linear-gradient(135deg,var(--gold3),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .brand-tag{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dimmer)}
 
-/* ── GENERATION SCREEN ── */
-.gen-creature-zone{display:flex;flex-direction:column;align-items:center;position:relative;margin-bottom:8px}
-.gen-aura{position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(245,184,76,.08),transparent 70%);top:-50px;left:50%;animation:genAu 6s ease-in-out infinite;pointer-events:none}
-@keyframes genAu{0%,100%{opacity:.06;transform:translateX(-50%) scale(1)}50%{opacity:.22;transform:translateX(-50%) scale(1.1)}}
-.gen-creature-main{font-size:96px;line-height:1;display:inline-block;position:relative;z-index:2;animation:mfloat 5s ease-in-out infinite,gAGen 5s ease-in-out infinite}
-@keyframes gAGen{0%,100%{filter:drop-shadow(0 0 14px rgba(245,184,76,.5))}50%{filter:drop-shadow(0 0 40px rgba(245,184,76,1))}}
-.gen-creature-name{font-family:'Fraunces',serif;font-size:15px;font-weight:700;color:rgba(245,184,76,.85);margin-top:6px;letter-spacing:.02em}
-.gen-speech{background:rgba(14,22,54,.88);border:1px solid rgba(245,184,76,.2);border-radius:18px 18px 18px 4px;padding:10px 14px;margin-top:10px;max-width:260px;position:relative;animation:fup .4s ease both}
-.gen-speech-txt{font-family:'Fraunces',serif;font-size:12px;font-style:italic;color:rgba(245,184,76,.9);line-height:1.6;text-align:center}
-.gen-speech-txt em{color:var(--cream);font-style:normal;font-weight:700}
-.gen-bond-card{background:rgba(160,120,255,.06);border:1px solid rgba(160,120,255,.18);border-radius:14px;padding:11px 13px;margin-top:14px;width:100%;max-width:280px;animation:fup .5s ease .8s both}
-.gen-bond-lbl{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(160,120,255,.55);margin-bottom:5px}
-.gen-bond-q{font-family:'Fraunces',serif;font-size:13px;font-style:italic;color:rgba(200,180,255,.85);line-height:1.55}
-.gen-steps-list{display:flex;flex-direction:column;gap:6px;margin-top:16px;width:100%;max-width:280px}
-.gen-step-row{display:flex;align-items:center;gap:9px;font-family:'Kalam',cursive;font-size:12px;color:rgba(255,255,255,.26);transition:all .4s}
-.gen-step-row.step-done{color:rgba(76,200,144,.7)}
-.gen-step-row.step-active{color:rgba(245,184,76,.85);font-size:13px}
-.gen-step-ico{width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:8px;flex-shrink:0;transition:all .4s}
-.gen-step-row.step-active .gen-step-ico{background:rgba(245,184,76,.12)}
-.gen-step-row.step-done .gen-step-ico{background:rgba(76,200,144,.12)}
-.gen-progress-line{width:100%;max-width:280px;height:2px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-top:14px}
-.gen-progress-fill{height:100%;background:linear-gradient(90deg,rgba(245,184,76,.4),rgba(245,184,76,.85));border-radius:2px;transition:width 1.5s ease}
+/* ── GENERATION SCREEN MAGIC ── */
+@keyframes genAuAmber{0%,100%{opacity:.06;transform:translateX(-50%) scale(1)}50%{opacity:.2;transform:translateX(-50%) scale(1.1)}}
+@keyframes genAuGreen{0%,100%{opacity:.08;transform:translateX(-50%) scale(1)}50%{opacity:.28;transform:translateX(-50%) scale(1.12)}}
+@keyframes genGlowAmber{0%,100%{filter:drop-shadow(0 0 12px rgba(245,184,76,.5))}50%{filter:drop-shadow(0 0 36px rgba(245,184,76,.95))}}
+@keyframes genGlowGreen{0%,100%{filter:drop-shadow(0 0 14px rgba(76,200,144,.5))}50%{filter:drop-shadow(0 0 42px rgba(76,200,144,.95))}}
+@keyframes genGlowTeal{0%,100%{filter:drop-shadow(0 0 14px rgba(20,216,144,.5))}50%{filter:drop-shadow(0 0 44px rgba(20,216,144,.95))}}
+@keyframes genFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes genReadyExcite{0%,100%{filter:drop-shadow(0 0 20px rgba(20,216,144,.7));transform:translateY(0) scale(1)}30%{transform:translateY(-12px) scale(1.08)}50%{filter:drop-shadow(0 0 60px rgba(20,216,144,1));transform:translateY(-14px) scale(1.1)}}
+@keyframes genBubbleIn{0%{opacity:0;transform:scale(.88) translateY(4px)}60%{transform:scale(1.04)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes genReactionIn{0%{opacity:0;transform:scale(.85)}60%{transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+@keyframes genThoughtIn{0%{opacity:0;transform:translateX(-10px) scale(.95)}100%{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes genThinkDot{0%,80%,100%{opacity:.3;transform:scale(.7)}40%{opacity:1;transform:scale(1.2)}}
+@keyframes genPortalPulse{0%,100%{box-shadow:0 0 0 2px rgba(245,184,76,.18),0 0 28px rgba(245,184,76,.07)}50%{box-shadow:0 0 0 2px rgba(245,184,76,.38),0 0 48px rgba(245,184,76,.16)}}
+@keyframes genPortalPulseTeal{0%,100%{box-shadow:0 0 0 2.5px rgba(20,216,144,.28),0 0 40px rgba(20,216,144,.12)}50%{box-shadow:0 0 0 2.5px rgba(20,216,144,.5),0 0 60px rgba(20,216,144,.22)}}
+@keyframes genRingRotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes genRingRev{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+@keyframes genMoonBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes genCloudDrift{0%,100%{transform:translateX(0)}50%{transform:translateX(8px)}}
+@keyframes genCreatureWalk{0%{transform:translateX(-48px) scaleX(1)}49%{transform:translateX(48px) scaleX(1)}50%{transform:translateX(48px) scaleX(-1)}99%{transform:translateX(-48px) scaleX(-1)}100%{transform:translateX(-48px) scaleX(1)}}
+@keyframes genGrassWave{0%,100%{transform:scaleY(1) rotate(0deg)}50%{transform:scaleY(.82) rotate(2deg)}}
+@keyframes genPortalStarTw{0%,100%{opacity:.15}50%{opacity:.85}}
+@keyframes genAutoAdvance{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:translateY(0)}}
+.gen-cz{display:flex;flex-direction:column;align-items:center;position:relative;z-index:5;margin-bottom:4px}
+.gen-aura{position:absolute;width:160px;height:160px;border-radius:50%;top:-36px;left:50%;pointer-events:none}
+.gen-aura.amber{background:radial-gradient(circle,rgba(245,184,76,.08),transparent 70%);animation:genAuAmber 6s ease-in-out infinite}
+.gen-aura.green{background:radial-gradient(circle,rgba(76,200,144,.1),transparent 70%);animation:genAuGreen 6s ease-in-out infinite}
+.gen-aura.teal{background:radial-gradient(circle,rgba(20,216,144,.12),transparent 70%);animation:genAuGreen 5s ease-in-out infinite}
+.gen-creature-emo{display:inline-block;position:relative;z-index:2;font-size:68px;animation:genFloat 5s ease-in-out infinite,genGlowAmber 5s ease-in-out infinite}
+.gen-creature-emo.react{animation:genFloat 5s ease-in-out infinite,genGlowGreen 5s ease-in-out infinite}
+.gen-creature-emo.ready{animation:genReadyExcite 2s ease-in-out 3,genFloat 5s ease-in-out 6s infinite,genGlowTeal 5s ease-in-out 6s infinite}
+.gen-creature-nm{font-family:'Fraunces',serif;font-size:12px;font-weight:700;letter-spacing:.02em;position:relative;z-index:2;margin-top:2px}
+.gen-creature-nm.amber{color:rgba(245,184,76,.78)}
+.gen-creature-nm.react{color:rgba(76,200,144,.78)}
+.gen-creature-nm.ready{color:rgba(20,216,144,.8)}
+.gen-bub{background:rgba(12,18,48,.92);border:1px solid rgba(245,184,76,.2);border-radius:18px 18px 18px 4px;padding:8px 13px;max-width:230px;position:relative;z-index:5;margin-bottom:8px;animation:genBubbleIn .35s cubic-bezier(.16,1,.3,1) both}
+.gen-bub::before{content:'';position:absolute;bottom:-7px;left:14px;width:12px;height:7px;background:rgba(12,18,48,.92);clip-path:polygon(0 0,100% 0,0 100%);border-left:1px solid rgba(245,184,76,.2)}
+.gen-bub-txt{font-family:'Fraunces',serif;font-size:11.5px;font-style:italic;color:rgba(245,184,76,.9);line-height:1.6;text-align:center}
+.gen-bub-txt em{color:#f5e8c8;font-style:normal;font-weight:700}
+.gen-bub.react{border-color:rgba(76,200,144,.32);background:rgba(8,22,14,.92);animation:genReactionIn .38s cubic-bezier(.16,1,.3,1) both}
+.gen-bub.react::before{background:rgba(8,22,14,.92);border-left-color:rgba(76,200,144,.32)}
+.gen-bub.react .gen-bub-txt{color:rgba(76,200,144,.88)}
+.gen-bub.ready{border-color:rgba(20,216,144,.35);background:rgba(6,20,12,.92);animation:genReactionIn .38s cubic-bezier(.16,1,.3,1) both}
+.gen-bub.ready .gen-bub-txt{color:rgba(20,216,144,.88)}
+.gen-portal-wrap{position:relative;z-index:5;display:flex;flex-direction:column;align-items:center;margin-bottom:6px}
+.gen-portal-eyebrow{font-family:'DM Mono',monospace;font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,184,76,.35);margin-bottom:5px;display:flex;align-items:center;gap:6px;width:180px}
+.gen-portal-eyebrow::before,.gen-portal-eyebrow::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,.2),transparent)}
+.gen-portal-eyebrow.teal{color:rgba(20,216,144,.45)}
+.gen-portal{width:168px;height:168px;border-radius:50%;overflow:hidden;position:relative;background:radial-gradient(circle at 42% 35%,#1c2d6a 0%,#0c1838 45%,#07101e 100%);animation:genPortalPulse 4.5s ease-in-out infinite;flex-shrink:0}
+.gen-portal.ready{animation:genPortalPulseTeal 2.8s ease-in-out infinite}
+.gen-portal-ring{position:absolute;inset:-2.5px;border-radius:50%;border:1.5px solid transparent;border-top-color:rgba(245,184,76,.55);border-right-color:rgba(245,184,76,.18);animation:genRingRotate 7s linear infinite;pointer-events:none;z-index:12}
+.gen-portal-ring.teal{border-top-color:rgba(20,216,144,.55);border-right-color:rgba(20,216,144,.18);animation-duration:5s}
+.gen-portal-ring2{position:absolute;inset:-5px;border-radius:50%;border:1px solid transparent;border-bottom-color:rgba(245,184,76,.2);border-left-color:rgba(245,184,76,.08);animation:genRingRev 12s linear infinite;pointer-events:none;z-index:12}
+.gen-portal-ring2.teal{border-bottom-color:rgba(20,216,144,.2);border-left-color:rgba(20,216,144,.08)}
+.gen-portal-sky{position:absolute;inset:0;overflow:hidden;border-radius:50%}
+.gen-portal-moon{position:absolute;border-radius:50%;background:radial-gradient(circle at 36% 34%,#fef0b8,#e8c040);box-shadow:0 0 10px rgba(240,190,50,.45);width:24px;height:24px;top:16px;right:28px;animation:genMoonBob 5s ease-in-out infinite}
+.gen-portal-moon::after{content:'';position:absolute;border-radius:50%;background:#0c1838;top:-20%;left:-22%;width:88%;height:88%}
+.gen-portal-ground{position:absolute;bottom:0;left:0;right:0;height:46px;background:linear-gradient(0deg,#1e3d22,#142a18);border-radius:0 0 50% 50%}
+.gen-portal-grass{position:absolute;bottom:44px;left:0;right:0;display:flex;justify-content:space-around;padding:0 8px}
+.gen-gblade{width:2px;border-radius:2px 2px 0 0;background:linear-gradient(0deg,#1e3d22,rgba(76,200,144,.65));transform-origin:bottom center;animation:genGrassWave var(--gd) var(--gl) ease-in-out infinite}
+.gen-portal-creature{position:absolute;bottom:46px;z-index:4;line-height:1;animation:genCreatureWalk 7s linear infinite;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+.gen-portal-cloud{position:absolute;opacity:.38;line-height:1;animation:genCloudDrift var(--cd) var(--cdl) ease-in-out infinite alternate}
+.gen-portal-vignette{position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 36px rgba(4,6,20,.72);pointer-events:none;z-index:10}
+.gen-portal-title{position:absolute;bottom:5px;left:0;right:0;font-family:'Fraunces',serif;font-style:italic;color:rgba(245,184,76,.58);text-align:center;z-index:8;text-shadow:0 1px 6px rgba(0,0,0,.7);line-height:1;font-size:8px}
+.gen-portal-title.teal{color:rgba(20,216,144,.58)}
+.gen-thoughts{width:100%;display:flex;flex-direction:column;gap:5px;position:relative;z-index:5;margin-bottom:8px}
+.gen-thought{display:flex;align-items:flex-start;gap:7px;padding:7px 10px;border-radius:11px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);position:relative;overflow:hidden;animation:genThoughtIn var(--ti) var(--td) cubic-bezier(.16,1,.3,1) both}
+.gen-thought.active{border-color:rgba(245,184,76,.14);background:rgba(245,184,76,.04)}
+.gen-thought-ico{font-size:13px;flex-shrink:0;margin-top:1px;line-height:1}
+.gen-thought-txt{font-family:'Fraunces',serif;font-size:10.5px;font-style:italic;color:rgba(255,255,255,.48);line-height:1.55;flex:1}
+.gen-thought-txt em{color:rgba(245,184,76,.75);font-style:normal;font-weight:700}
+.gen-thought-txt .done{color:rgba(76,200,144,.7);font-style:normal}
+.gen-thought.active .gen-thought-txt{color:rgba(245,184,76,.6)}
+.gen-think-dots{display:flex;gap:3px;align-items:center;margin-top:4px}
+.gen-think-dot{width:4px;height:4px;border-radius:50%;background:rgba(245,184,76,.4)}
+.gen-think-dot:nth-child(1){animation:genThinkDot 1.4s 0s ease-in-out infinite}
+.gen-think-dot:nth-child(2){animation:genThinkDot 1.4s .22s ease-in-out infinite}
+.gen-think-dot:nth-child(3){animation:genThinkDot 1.4s .44s ease-in-out infinite}
+.gen-auto-advance{font-family:'Kalam',cursive;font-size:12px;color:rgba(20,216,144,.55);text-align:center;position:relative;z-index:5;animation:genAutoAdvance .6s ease .3s both}
 
 /* ── FULL SCREEN BOOK ── */
 .book-cover-full{position:relative;height:100%;overflow:hidden;cursor:pointer;background:#0a0f24}
@@ -657,6 +713,21 @@ STORY HOOKS — use one or blend several:
 • The oldest thing in the kitchen — the battered pot, the chipped mug, the wooden board — has the best story.
 • An ingredient has gone missing and every kitchen object has a completely different theory.`},
 ];
+// Luna's creative thought lines per generation step
+const GEN_THOUGHTS = [
+  [{ico:'\uD83C\uDF19',done:true,text:(n:string,a:string)=>a?`${a.split(' ').slice(0,3).join(' ')}. That goes in first.`:`Setting: somewhere ${n} knows well.`}],
+  [{ico:'\u2728',done:true,text:(n:string)=>`The story belongs to ${n}. Everything else orbits that.`},{ico:'\uD83D\uDCAD',done:false,text:()=>`The ending needs to carry them to sleep\u2026`}],
+  [{ico:'\uD83C\uDF19',done:true,text:(n:string,a:string)=>a?`${a.split(' ').slice(0,4).join(' ')}. That's the heart.`:`${n}'s story is finding its shape.`},{ico:'\u2728',done:true,text:(n:string)=>`${n} is at the centre. The world bends toward her.`},{ico:'\uD83C\uDF19',done:true,text:()=>`The ending is quiet. The right kind of quiet.`}],
+];
+const GEN_REACTIONS = [
+  (a:string)=>`${a.split(' ').slice(0,3).join(' ')}. That's going in. \u2726`,
+  ()=>`That's the heart of tonight's story. \u2726`,
+  ()=>`Perfect. The story already knows. \u2726`,
+  ()=>`That belongs in the book. \u2726`,
+  ()=>`Noted. That matters. \u2726`,
+];
+function pickReaction(answer:string):string{return GEN_REACTIONS[Math.floor(Math.random()*GEN_REACTIONS.length)](answer);}
+
 const DEMO_BOOK = {
   title:"The Stone in Her Pocket",
   heroName:"Adina",
@@ -1312,6 +1383,8 @@ export default function SleepSeed({
   const [ncPhotoMode,      setNcPhotoMode]      = useState<'idle'|'camera'|'upload'>('idle');
   const [shareToLibrary,   setShareToLibrary]   = useState(false);
   const [storyRating,      setStoryRating]      = useState<number|null>(null);
+  const [bondingAnswered,  setBondingAnswered]   = useState(false);
+  const [bondingReaction,  setBondingReaction]   = useState('');
 
   const totalPagesRef = useRef(0);
   const fileRefs      = useRef({});
@@ -2047,6 +2120,17 @@ export default function SleepSeed({
     setTimeout(() => setSparkles(s => s.filter(sp => sp.id!==id)),700);
   },[]);
 
+  // ── Portal stars for generation screen ──
+  useEffect(()=>{
+    if(stage!=='generating')return;
+    const container=document.getElementById('gen-portal-stars');if(!container)return;
+    container.innerHTML='';
+    const colours=['#fff8e0','#e8d8ff','#d0f0e8','#c8e8ff','#fff'];
+    for(let i=0;i<22;i++){const s=document.createElement('div');const sz=Math.random()<.35?2:1.2;
+      s.style.cssText=`position:absolute;border-radius:50%;width:${sz}px;height:${sz}px;left:${(Math.random()*100).toFixed(1)}%;top:${(Math.random()*55).toFixed(1)}%;background:${colours[i%colours.length]};animation:genPortalStarTw ${(1.8+Math.random()*2.2).toFixed(1)}s ${(Math.random()*3).toFixed(1)}s ease-in-out infinite`;
+      container.appendChild(s);}
+  },[stage]);
+
   // ── Night Card camera effect ──
   useEffect(() => {
     if(ncPhotoMode !== 'camera' || ncPhoto) return;
@@ -2227,7 +2311,7 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     // Pick and store bonding question for Night Card flow
     const bondingIdx = Math.floor(Date.now()/1000) % BONDING_QUESTIONS.length;
     setNcBondingQ(BONDING_QUESTIONS[bondingIdx]);
-    setNcBondingSaved(false); setNcBondingA("");
+    setNcBondingSaved(false); setNcBondingA(""); setBondingAnswered(false); setBondingReaction('');
     const name = overrides.heroNameOverride || heroName.trim();
     const seed = makeStorySeed(name,resolvedTheme,resolvedChars,resolvedOcc,resolvedOccCust,Array.isArray(resolvedLesson)?resolvedLesson.join("|"):resolvedLesson,resolvedAdv,resolvedLen,heroGender,heroClassify,resolvedGuidance);
     const bKey = `book_${seed}`;
@@ -2469,10 +2553,11 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
         };
       }
 
-      // Show book immediately — no parentNote delay, no image preloading
+      // Book data ready — show "ready" state on gen screen, then auto-advance
       setBook(bookData); setPageIdx(0);
-      setGen(g => ({...g,stepIdx:3,progress:94,label:"Enjoy your story!"}));
-      await new Promise(r => setTimeout(r,200));
+      setGen(g => ({...g,stepIdx:4,progress:100,label:"Your story is ready!"}));
+      // Auto-advance to book after 1.2s — no button needed
+      await new Promise(r => setTimeout(r,1200));
       setStage("book");
       sSet(bKey,bookData).catch(()=>{});
 
@@ -2880,67 +2965,95 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
         {/* HOME/QUICK/BUILDER stages removed — handled by StoryWizard */}
         {/* GENERATING */}
         {/* GENERATING */}
-        {stage==="generating" && (
+        {stage==="generating" && (()=>{
+          const isReady=gen.stepIdx>=4;const isReacted=bondingAnswered&&!isReady;
+          const auraClass=isReady?'teal':isReacted?'green':'amber';
+          const emoClass=isReady?'ready':isReacted?'react':'';
+          const nameClass=isReady?'ready':isReacted?'react':'amber';
+          const bubClass=isReady?'ready':isReacted?'react':'';
+          const thoughtSet=gen.stepIdx<=1?GEN_THOUGHTS[0]:gen.stepIdx===2?[...GEN_THOUGHTS[0],...GEN_THOUGHTS[1]]:[...GEN_THOUGHTS[0],...GEN_THOUGHTS[1].map(t=>({...t,done:true})),...GEN_THOUGHTS[2]];
+          const ringClass=isReady?'teal':'';const portalClass=isReady?'ready':'';const titleClass=isReady?'teal':'';
+          return(
           <div className="screen" style={{maxWidth:420}}>
-            <div className="card" style={{textAlign:'center',padding:'28px 20px 24px',display:'flex',flexDirection:'column',alignItems:'center'}}>
+            <div className="card" style={{textAlign:'center',padding:'20px 16px 18px',display:'flex',flexDirection:'column',alignItems:'center',position:'relative',zIndex:2}}>
 
-              <div className="gen-creature-zone">
-                <div className="gen-aura" />
-                <div className="gen-creature-main">{companionCreature?.creatureEmoji ?? '🥚'}</div>
-                <div className="gen-creature-name">{companionCreature?.name ?? 'Your creature'}</div>
+              {/* CREATURE */}
+              <div className="gen-cz">
+                <div className={`gen-aura ${auraClass}`}/>
+                <div className={`gen-creature-emo ${emoClass}`}>{companionCreature?.creatureEmoji??'\uD83E\uDD5A'}</div>
+                <div className={`gen-creature-nm ${nameClass}`}>{companionCreature?.name??'Your creature'}</div>
               </div>
 
-              <div className="gen-speech">
-                <div className="gen-speech-txt">
-                  {gen.stepIdx <= 1
-                    ? <>{`Writing `}<em>{heroName}</em>{`'s story right now… ✦`}</>
-                    : gen.stepIdx === 2
-                    ? <>Painting the illustrations… ✨</>
-                    : <>{heroName}{`'s book is `}<em>ready</em>{` ✦`}</>}
+              {/* SPEECH BUBBLE */}
+              <div className={`gen-bub ${bubClass}`}>
+                <div className="gen-bub-txt">
+                  {isReady?<>{heroName}'s story is <em>ready</em> &#10022;</>
+                   :isReacted&&bondingReaction?<>{bondingReaction}</>
+                   :gen.stepIdx<=1?<>Writing <em>{heroName}</em>'s story right now&#8230; &#10022;</>
+                   :gen.stepIdx===2?<>Painting the world now&#8230; &#10022;</>
+                   :<>{heroName}'s story is <em>almost</em> ready&#8230; &#10022;</>}
                 </div>
               </div>
 
-              {gen.stepIdx <= 2 && ncBondingQ && (
-                <div className="gen-bond-card">
-                  <div className="gen-bond-lbl">{companionCreature?.name ?? 'Luna'} wants to know</div>
-                  <div className="gen-bond-q">"{ncBondingQ}"</div>
-                  {!ncBondingSaved ? (
-                    <div style={{marginTop:8}}>
-                      <textarea className="ftarea" placeholder={`What did ${heroName} say?`}
-                        value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)}
-                        style={{minHeight:48,fontSize:13,background:"rgba(255,255,255,.04)",border:"1px solid rgba(160,120,255,.15)",
-                          borderRadius:10,padding:"10px 12px",color:"var(--cream)",fontFamily:"'Kalam',cursive",lineHeight:1.6,resize:"none",marginBottom:8}} />
-                      <button className="btn-ghost" disabled={!ncBondingA.trim()}
-                        style={{width:"100%",fontSize:12,padding:"8px 12px",
-                          ...(ncBondingA.trim()?{borderColor:"rgba(76,200,144,.4)",color:"#80d8a8",background:"rgba(76,200,144,.06)"}:{})}}
-                        onClick={()=>{if(ncBondingA.trim()) setNcBondingSaved(true);}}>
-                        {ncBondingA.trim()?"✓ Save answer":"Type an answer above"}
-                      </button>
+              {/* PORTAL */}
+              <div className="gen-portal-wrap">
+                <div className={`gen-portal-eyebrow ${titleClass}`}>{heroName}'s story world</div>
+                <div className={`gen-portal ${portalClass}`}>
+                  <div className={`gen-portal-ring ${ringClass}`}/><div className={`gen-portal-ring2 ${ringClass}`}/>
+                  <div className="gen-portal-sky">
+                    <div id="gen-portal-stars" style={{position:'absolute',inset:0}}/>
+                    <div className="gen-portal-moon"/>
+                    <div className="gen-portal-cloud" style={{left:14,top:38,fontSize:16,'--cd':'5s','--cdl':'0s'} as any}>&#9729;</div>
+                    <div className="gen-portal-cloud" style={{right:18,top:52,fontSize:11,'--cd':'7s','--cdl':'1.5s'} as any}>&#9729;</div>
+                    {isReady&&<div style={{position:'absolute',bottom:46,left:22,fontSize:13,animation:'genMoonBob 3s ease-in-out infinite'}}>{'\uD83C\uDF38'}</div>}
+                    <div className="gen-portal-ground"/>
+                    <div className="gen-portal-grass">
+                      {[12,16,11,14,18,13,17,12,15].map((h,i)=><div key={i} className="gen-gblade" style={{height:h,'--gd':`${2.1+i*.08}s`,'--gl':`${i*.22}s`} as any}/>)}
                     </div>
-                  ) : (
-                    <div style={{marginTop:8,background:"rgba(76,200,144,.08)",border:"1px solid rgba(76,200,144,.2)",borderRadius:10,padding:"8px 10px"}}>
-                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(76,200,144,.6)",marginBottom:3}}>✓ Saved</div>
-                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>"{ncBondingA}"</div>
-                    </div>
-                  )}
+                    <div className="gen-portal-creature" style={{fontSize:22}}>{companionCreature?.creatureEmoji??'\uD83E\uDD5A'}</div>
+                    {ncBondingA?.trim()&&<div style={{position:'absolute',bottom:46,left:10,zIndex:4,lineHeight:1,fontSize:11,animation:'genCreatureWalk 12s linear infinite'}}>{'\uD83D\uDC0C'}</div>}
+                    <div className={`gen-portal-title ${titleClass}`}>{book?.title?book.title:`A story for ${heroName}`}</div>
+                  </div>
+                  <div className="gen-portal-vignette"/>
+                </div>
+              </div>
+
+              {/* THOUGHTS */}
+              {!isReady&&<div className="gen-thoughts" style={{maxWidth:262}}>
+                {thoughtSet.map((t,i)=><div key={i} className={`gen-thought${!t.done?' active':''}`} style={{'--ti':'.38s','--td':`${i*.55}s`} as any}>
+                  <div className="gen-thought-ico">{t.ico}</div>
+                  <div className="gen-thought-txt">
+                    {t.done&&<span className="done">&#10003; </span>}
+                    {t.text(heroName,ncBondingA??'')}
+                    {!t.done&&<div className="gen-think-dots"><div className="gen-think-dot"/><div className="gen-think-dot"/><div className="gen-think-dot"/></div>}
+                  </div>
+                </div>)}
+              </div>}
+
+              {/* STEPS + PROGRESS */}
+              <div style={{display:'flex',flexDirection:'column',gap:4,width:'100%',maxWidth:262,position:'relative',zIndex:5}}>
+                {['Setting the scene\u2026','Writing the story\u2026','Painting illustrations\u2026','Book is ready!'].map((s,i)=>(
+                  <div key={i} className={`pstep${i===gen.stepIdx?' active':i<gen.stepIdx?' done':''}`}><div className="pstep-dot"/><span>{i<gen.stepIdx?'\u2713 ':''}{s}</span></div>
+                ))}
+              </div>
+              <div className="pbar" style={{maxWidth:262,marginTop:8}}><div className="pfill" style={{width:`${gen.progress}%`}}/></div>
+
+              {/* BONDING QUESTION */}
+              {gen.stepIdx<=2&&ncBondingQ&&!bondingAnswered&&(
+                <div style={{background:'rgba(160,120,255,.06)',border:'1px solid rgba(160,120,255,.18)',borderRadius:14,padding:'11px 13px',marginTop:12,width:'100%',maxWidth:262,animation:'fup .5s ease .8s both'}}>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:'7.5px',letterSpacing:'.1em',textTransform:'uppercase',color:'rgba(160,120,255,.55)',marginBottom:4}}>{companionCreature?.name??'Luna'} wants to know</div>
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:'12.5px',fontStyle:'italic',color:'rgba(200,180,255,.85)',lineHeight:1.5,marginBottom:8}}>"{ncBondingQ}"</div>
+                  <textarea className="ftarea" placeholder={`${heroName} said\u2026`} value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)}
+                    onBlur={()=>{if(ncBondingA?.trim()&&!bondingAnswered){setBondingAnswered(true);setBondingReaction(pickReaction(ncBondingA.trim()));}}}
+                    style={{marginBottom:0,minHeight:44,fontSize:13}} rows={2}/>
                 </div>
               )}
 
-              <div className="gen-steps-list">
-                {['Setting the scene…','Writing the story…','Painting illustrations…','Book is ready!'].map((s,i)=>(
-                  <div key={i} className={`gen-step-row${i<gen.stepIdx?' step-done':i===gen.stepIdx?' step-active':''}`}>
-                    <div className="gen-step-ico">{i<gen.stepIdx?'✓':i===gen.stepIdx?'✦':'·'}</div>
-                    <span>{s}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="gen-progress-line">
-                <div className="gen-progress-fill" style={{width:`${gen.progress}%`}} />
-              </div>
+              {/* AUTO-ADVANCE */}
+              {isReady&&<div className="gen-auto-advance">Opening your story&#8230;</div>}
             </div>
-          </div>
-        )}
+          </div>);
+        })()}
 
         {/* ERROR RECOVERY */}
         {stage==="error" && (
