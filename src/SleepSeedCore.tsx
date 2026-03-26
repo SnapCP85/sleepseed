@@ -25,7 +25,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
   background:radial-gradient(circle at 34% 32%,#fdf0c0,#e2c050,#b07818);
   box-shadow:0 0 40px 12px rgba(210,170,50,.2);animation:mfloat 9s ease-in-out infinite}
 @keyframes mfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-.app{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px}
+.app{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px 16px 20px}
 .screen{width:100%;max-width:540px;animation:fup .5s cubic-bezier(.16,1,.3,1) both}
 @keyframes fup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
@@ -206,9 +206,9 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .img-dot.done{border-color:rgba(76,200,144,.6);background:rgba(76,200,144,.12)}
 @keyframes dotPulse{0%,100%{opacity:.5}50%{opacity:1}}
 .err-box{background:rgba(192,64,48,.14);border:1px solid rgba(192,64,48,.28);border-radius:10px;padding:10px 14px;font-size:13px;color:#f09080;margin-bottom:14px}
-.book-shell{width:100%;max-width:500px;position:relative;animation:fup .4s cubic-bezier(.16,1,.3,1) both}
+.book-shell{width:100%;max-width:500px;position:relative;animation:fup .4s cubic-bezier(.16,1,.3,1) both;height:calc(var(--vh,1vh) * 72);max-height:580px;overflow:hidden}
 .book-3d{border-radius:18px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.7);
-  height:min(520px,78vh);position:relative;background:#0e1428;cursor:pointer}
+  height:100%;position:relative;background:#0e1428;cursor:pointer}
 .bpage{position:absolute;inset:0;width:100%;height:100%;animation:pageFade .3s ease both}
 @keyframes pageFade{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
 .pinset{position:absolute;inset:10px;border:1px solid rgba(212,160,48,.1);border-radius:8px;pointer-events:none;z-index:2}
@@ -2120,6 +2120,13 @@ export default function SleepSeed({
     setTimeout(() => setSparkles(s => s.filter(sp => sp.id!==id)),700);
   },[]);
 
+  // ── Pin viewport height for mobile address bar resilience ──
+  useEffect(()=>{
+    const setVh=()=>{document.documentElement.style.setProperty('--vh',`${window.innerHeight*0.01}px`);};
+    setVh();window.addEventListener('resize',setVh,{passive:true});
+    return()=>window.removeEventListener('resize',setVh);
+  },[]);
+
   // ── Scroll to top on stage change + lock body scroll during book ──
   useEffect(()=>{
     window.scrollTo({top:0,behavior:'instant'});
@@ -2962,8 +2969,8 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
           const thoughtSet=gen.stepIdx<=1?GEN_THOUGHTS[0]:gen.stepIdx===2?[...GEN_THOUGHTS[0],...GEN_THOUGHTS[1]]:[...GEN_THOUGHTS[0],...GEN_THOUGHTS[1].map(t=>({...t,done:true})),...GEN_THOUGHTS[2]];
           const ringClass=isReady?'teal':'';const portalClass=isReady?'ready':'';const titleClass=isReady?'teal':'';
           return(
-          <div className="screen" style={{maxWidth:420}}>
-            <div className="card" style={{textAlign:'center',padding:'14px 16px 16px',display:'flex',flexDirection:'column',alignItems:'center',position:'relative',zIndex:2}}>
+          <div className="screen" style={{maxWidth:400}}>
+            <div className="card" style={{textAlign:'center',padding:'12px 16px 14px',display:'flex',flexDirection:'column',alignItems:'center',position:'relative',zIndex:2,gap:4}}>
 
               {/* CREATURE */}
               <div className="gen-cz">
