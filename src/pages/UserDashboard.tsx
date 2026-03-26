@@ -128,7 +128,9 @@ const CSS=`
 .dash-nav-child-name{font-family:var(--cta);font-size:11px;font-weight:800;color:rgba(255,255,255,.6)}
 
 /* ── SKELETON ── */
-.dash-skel{background:rgba(255,255,255,.04);border-radius:8px;animation:shimmer 1.5s ease-in-out infinite}
+.dash-skel{background:rgba(255,255,255,.05);border-radius:8px;overflow:hidden;position:relative}
+.dash-skel::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%);animation:skelMove 1.6s ease-in-out infinite}
+@keyframes skelMove{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
 
 /* ── CONTENT ── */
 .dash-inner{max-width:860px;margin:0 auto;padding:0 5% 110px;position:relative;z-index:5}
@@ -714,17 +716,42 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   // ── LOADING ────────────────────────────────────────────────────────────────
   if(!user) return null;
   if(loading) return(
-    <div className="dash" style={{minHeight:'100vh'}}>
+    <div className="dash">
       <style>{CSS}</style>
       <div className="dash-sky"/>
-      <div className="dash-stars">{STARS.map(s=><div key={s.id} className={s.t===1?'dash-star':s.t===2?'dash-star2':'dash-star3'} style={{left:`${s.x}%`,top:`${s.y}%`,width:s.size,height:s.size,'--d':s.d,'--dl':s.dl} as any}/>)}</div>
-      <nav className="dash-nav"><div className="dash-logo"><div className="dash-logo-moon"><div className="dash-logo-moon-sh"/></div>SleepSeed</div></nav>
-      <div className="dash-inner" style={{paddingTop:20}}>
-        <div className="dash-skel" style={{height:22,width:'55%',marginBottom:8}}/>
-        <div className="dash-skel" style={{height:12,width:'30%',marginBottom:18}}/>
-        <div className="dash-skel" style={{height:180,borderRadius:24,marginBottom:11}}/>
-        <div className="dash-skel" style={{height:56,borderRadius:20,marginBottom:11}}/>
-        <div className="dash-skel" style={{height:60,borderRadius:16}}/>
+      <div className="dash-stars">{STARS.slice(0,12).map(s=><div key={s.id} className={s.t===1?'dash-star':s.t===2?'dash-star2':'dash-star3'} style={{left:`${s.x}%`,top:`${s.y}%`,width:s.size,height:s.size,'--d':s.d,'--dl':s.dl} as any}/>)}</div>
+      {/* Real nav — same height as loaded state */}
+      <nav className="dash-nav" style={{background:'rgba(4,8,22,.9)',borderBottom:'1px solid rgba(245,184,76,.07)'}}>
+        <div className="dash-logo"><div className="dash-logo-moon"><div className="dash-logo-moon-sh"/></div>SleepSeed</div>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div className="dash-skel" style={{width:70,height:24,borderRadius:20}}/>
+          <div className="dash-skel" style={{width:60,height:10,borderRadius:4}}/>
+        </div>
+      </nav>
+      {/* Content skeleton — heights match real content exactly */}
+      <div className="dash-inner">
+        {/* Greeting: paddingTop 18 + time label 14 + title 28 + marginBottom 10 = ~55px */}
+        <div style={{paddingTop:18,marginBottom:10}}>
+          <div className="dash-skel" style={{height:10,width:'35%',marginBottom:6,borderRadius:4}}/>
+          <div className="dash-skel" style={{height:24,width:'65%',borderRadius:8}}/>
+        </div>
+        {/* Creature card: matches .dash-ac padding + internal content = ~223px */}
+        <div className="dash-skel" style={{height:223,borderRadius:24,marginBottom:10}}/>
+        {/* CTA button: matches .dash-ritual-cta = ~60px */}
+        <div className="dash-skel" style={{height:58,borderRadius:20,marginBottom:10}}/>
+        {/* Week bar: header + bars = ~78px */}
+        <div style={{marginBottom:10}}>
+          <div className="dash-skel" style={{height:14,width:'30%',marginBottom:8,borderRadius:4}}/>
+          <div style={{display:'flex',gap:4}}>
+            {Array.from({length:7}).map((_,i)=><div key={i} style={{flex:1}}><div className="dash-skel" style={{height:36,borderRadius:7}}/></div>)}
+          </div>
+        </div>
+      </div>
+      {/* Bottom nav — visible and static during skeleton */}
+      <div className="dash-navbar" style={{pointerEvents:'none'}}>
+        <div className="dash-nav-tab"><NavIconDiscover/><div className="dash-nav-tab-lbl">Discover</div></div>
+        <div className="dash-nav-create"><div className="dash-nav-create-btn"><NavIconCreate/></div><div className="dash-nav-create-lbl">Create a story</div></div>
+        <div className="dash-nav-tab"><NavIconMyStuff/><div className="dash-nav-tab-lbl">My Stuff</div></div>
       </div>
     </div>
   );
