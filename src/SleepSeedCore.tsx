@@ -208,7 +208,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .err-box{background:rgba(192,64,48,.14);border:1px solid rgba(192,64,48,.28);border-radius:10px;padding:10px 14px;font-size:13px;color:#f09080;margin-bottom:14px}
 .book-shell{width:100%;max-width:500px;position:relative;animation:fup .4s cubic-bezier(.16,1,.3,1) both}
 .book-3d{border-radius:18px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.7);
-  height:520px;position:relative;background:#0e1428;cursor:pointer}
+  height:min(520px,78vh);position:relative;background:#0e1428;cursor:pointer}
 .bpage{position:absolute;inset:0;width:100%;height:100%;animation:pageFade .3s ease both}
 @keyframes pageFade{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
 .pinset{position:absolute;inset:10px;border:1px solid rgba(212,160,48,.1);border-radius:8px;pointer-events:none;z-index:2}
@@ -450,6 +450,52 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .gen-step-row.step-done .gen-step-ico{background:rgba(76,200,144,.12)}
 .gen-progress-line{width:100%;max-width:280px;height:2px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-top:14px}
 .gen-progress-fill{height:100%;background:linear-gradient(90deg,rgba(245,184,76,.4),rgba(245,184,76,.85));border-radius:2px;transition:width 1.5s ease}
+
+/* ── FULL SCREEN BOOK ── */
+.book-cover-full{position:relative;height:100%;overflow:hidden;cursor:pointer;background:#0a0f24}
+.book-cover-gradient{position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(0deg,rgba(4,7,20,.98) 0%,rgba(4,7,20,.82) 40%,transparent 100%);z-index:2}
+.book-cover-text{position:absolute;bottom:0;left:0;right:0;padding:22px 20px 28px;z-index:3;text-align:center}
+.book-cover-btns{display:flex;gap:8px;margin-top:14px;margin-bottom:6px}
+.book-cover-btn-read{flex:1;padding:13px 8px;border-radius:14px;border:none;background:linear-gradient(145deg,#7a4808,#F5B84C 48%,#7a4808);color:#050100;font-family:'Fraunces',serif;font-size:13px;font-weight:700;font-style:italic;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;box-shadow:0 6px 24px rgba(200,130,20,.45)}
+.book-cover-btn-listen{flex:1;padding:13px 8px;border-radius:14px;border:1.5px solid rgba(255,255,255,.18);background:rgba(255,255,255,.09);color:rgba(255,255,255,.85);font-family:'Fraunces',serif;font-size:13px;font-weight:700;font-style:italic;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;backdrop-filter:blur(8px)}
+.book-cover-btn-ico{font-size:18px;line-height:1}
+.book-menu-pill{display:flex;align-items:center;gap:4px;padding:5px 10px;border-radius:20px;font-family:'DM Mono',monospace;font-size:8.5px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:all .2s}
+.book-menu-pill.dark{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.72)}
+.book-menu-pill.dark:hover{background:rgba(255,255,255,.18);color:rgba(255,255,255,.9)}
+.book-menu-pill.parch{background:rgba(90,56,10,.08);border:1px solid rgba(90,56,10,.22);color:rgba(90,56,10,.55)}
+.book-menu-pill.parch:hover{background:rgba(90,56,10,.14);color:rgba(90,56,10,.8)}
+.book-menu-pill-ico{font-size:11px;line-height:1}
+
+/* ── STORY PAGE FULL ── */
+.story-page-full{position:absolute;inset:0;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;animation:pageFade .3s ease both}
+.story-page-full.warm{filter:sepia(38%) saturate(.8) hue-rotate(-18deg) brightness(.86)}
+.story-illo-area{flex:0 0 55%;position:relative;overflow:hidden;background:linear-gradient(160deg,#e8ddb0,#d4c890)}
+.story-illo-content{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.story-illo-fade{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(0deg,#fef4e0,transparent)}
+.story-text-area{flex:1;min-height:0;display:flex;flex-direction:column;padding:14px 18px 36px;background:linear-gradient(160deg,#fef8e8,#f5e8c0);overflow:hidden;position:relative}
+.page-num-kalam{font-family:'Kalam',cursive;font-size:10px;color:rgba(90,56,10,.32);text-align:center;margin-bottom:8px;letter-spacing:.08em;flex-shrink:0}
+.story-text-main{font-family:'Patrick Hand',cursive;font-size:clamp(17px,3.6vw,19px);color:var(--ink);line-height:1.85;flex:1;min-height:0;overflow-y:hidden}
+.story-refrain-cg{font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;font-weight:500;color:rgba(90,56,10,.45);text-align:center;padding:7px 0 0;border-top:1px solid rgba(90,56,10,.08);margin-top:8px;line-height:1.6;flex-shrink:0}
+.page-nav-corners{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 14px;pointer-events:none;z-index:8}
+.page-nav-corner{font-family:'Kalam',cursive;font-size:11px;color:rgba(90,56,10,.32);display:flex;align-items:center;gap:3px}
+.page-nav-corner-arr{font-size:13px}
+.book-read-pill{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:15;display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:99px;background:rgba(245,184,76,.12);border:1.5px solid rgba(245,184,76,.3);cursor:pointer;backdrop-filter:blur(8px);white-space:nowrap;transition:all .2s;font-family:'Fraunces',serif;font-size:12px;font-style:italic;color:rgba(245,184,76,.9);font-weight:700}
+.book-read-pill:hover{background:rgba(245,184,76,.2);border-color:rgba(245,184,76,.55)}
+.book-read-pill.playing{background:rgba(245,184,76,.22);border-color:rgba(245,184,76,.65)}
+.book-read-pill-ico{font-size:14px;line-height:1}
+.book-reading-bar{position:absolute;top:0;left:0;right:0;height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:linear-gradient(180deg,rgba(250,240,210,.5) 0%,transparent 100%);z-index:10}
+.book-page-info{font-family:'Kalam',cursive;font-size:10px;color:rgba(90,56,10,.4);font-style:italic}
+.book-dots-row{display:flex;gap:4px;align-items:center}
+.book-dot{width:5px;height:5px;border-radius:50%;background:rgba(90,56,10,.18);cursor:pointer;transition:all .2s;flex-shrink:0}
+.book-dot.on{background:rgba(90,56,10,.45);transform:scale(1.35)}
+.book-ctrl-sheet{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(175deg,#080b20,#06091a);border-radius:18px 18px 0 0;border-top:1px solid rgba(245,184,76,.14);padding:12px 16px 24px;z-index:20;animation:sheetUp .22s cubic-bezier(.22,.68,0,1.2)}
+.book-ctrl-handle{width:30px;height:3px;border-radius:2px;background:rgba(255,255,255,.14);margin:0 auto 12px}
+.book-ctrl-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.book-ctrl-btn{display:flex;align-items:center;gap:5px;padding:8px 12px;border-radius:10px;font-family:'Nunito',sans-serif;font-size:11.5px;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .2s;flex-shrink:0}
+.bctrl-warm{background:rgba(255,140,60,.08);border-color:rgba(255,140,60,.22);color:rgba(255,180,100,.85)}
+.bctrl-warm.on{background:rgba(255,140,60,.2);border-color:rgba(255,140,60,.55)}
+.bctrl-noscreen{background:rgba(20,216,144,.07);border-color:rgba(20,216,144,.2);color:rgba(20,216,144,.85)}
+.bctrl-new{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.4)}
 
 /* ── END CEREMONY ── */
 .end-ceremony{min-height:100%;background:radial-gradient(ellipse 100% 60% at 50% 10%,#0d1840 0%,#050a18 45%,#020508 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 22px;position:relative;overflow:hidden}
@@ -2511,22 +2557,60 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
   /* ── Story page ── */
   const StoryPage = ({pg,pgNum,refrain}) => (
-    <div className="bpage story-bg">
-      <div className="pinset" />
-      <div className="story-lay">
-        <div className="story-illo">
-          {StoryScene && <StoryScene />}
+    <div className="story-page-full">
+      {/* Tap zones */}
+      <div style={{position:'absolute',top:0,left:0,width:'40%',height:'100%',zIndex:5,cursor:'pointer'}} onClick={()=>goPage(-1)} />
+      <div style={{position:'absolute',top:0,right:0,width:'40%',height:'100%',zIndex:5,cursor:'pointer'}} onClick={()=>{if(onChoicePg&&!chosenPath)return;goPage(1);}} />
+
+      {/* Reading bar */}
+      <div className="book-reading-bar">
+        <div className="book-page-info">Page {pgNum} of {totalPages-1}</div>
+        <div className="book-dots-row">
+          {Array.from({length:Math.min(totalPages,8)}).map((_,i)=>(
+            <div key={i} className={`book-dot${i===pageIdx?' on':''}`} onClick={()=>{if(i<=pageIdx)setPageIdx(i);}} />
+          ))}
         </div>
-        <div className="story-txt-col">
-          <div className="s-pgnum">Page {pgNum}</div>
-          <div className="s-text">{pg.text}</div>
-          <div className="s-foot">
-            <div className="orn">✦ ✦ ✦</div>
-            <div className="orn-num">{pgNum}</div>
-          </div>
-          {refrain && <div className="s-refrain">✦ {refrain} ✦</div>}
+        <div className="book-menu-pill parch" onClick={()=>setShowToolbar(m=>!m)}><span className="book-menu-pill-ico">&#9881;</span> Menu</div>
+      </div>
+
+      {/* Illustration area — 55% */}
+      <div className="story-illo-area">
+        <div className="story-illo-content">
+          {StoryScene ? <StoryScene /> : <div style={{fontSize:'clamp(72px,14vw,110px)',lineHeight:1}}>&#10024;</div>}
+        </div>
+        <div className="story-illo-fade" />
+      </div>
+
+      {/* Text area — 45% */}
+      <div className="story-text-area">
+        <div className="page-num-kalam">&middot; {pgNum} &middot;</div>
+        <div className="story-text-main">{pg.text}</div>
+        {refrain && pgNum % 2 === 0 && <div className="story-refrain-cg">&ldquo;{refrain}&rdquo;</div>}
+        {/* Corner nav labels */}
+        <div className="page-nav-corners">
+          <div className="page-nav-corner"><span className="page-nav-corner-arr">&lsaquo;</span> prev</div>
+          <div className="page-nav-corner">next <span className="page-nav-corner-arr">&rsaquo;</span></div>
         </div>
       </div>
+
+      {/* Floating Read Aloud pill */}
+      <div className={`book-read-pill${isReading?' playing':''}`} onClick={()=>toggleRead(pg.text||'',pageIdx/(totalPages-1))}>
+        <span className="book-read-pill-ico">{isReading ? '\u23F8' : '\uD83D\uDD0A'}</span>
+        {isReading ? 'Pause' : 'Read aloud'}
+      </div>
+
+      {/* Controls sheet */}
+      {showToolbar && (
+        <div className="book-ctrl-sheet">
+          <div className="book-ctrl-handle" />
+          <div className="book-ctrl-row">
+            <button className="book-ctrl-btn bctrl-new"
+              onClick={()=>{window.speechSynthesis?.cancel();if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}setStage('home');setBook(null);setShowToolbar(false);}}>
+              &#128260; New story
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -2535,18 +2619,30 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
     if(!book) return null;
 
     if(pageIdx===0) return (
-      <div className="bpage cover-bg">
-        <div className="pinset" style={{borderColor:"rgba(212,160,48,.15)"}} />
-        <div className="cover-lay">
-          <div className="cover-art">
-            {StoryScene && <StoryScene />}
+      <div className="bpage cover-bg book-cover-full">
+        {/* Full bleed illustration */}
+        <div style={{position:'absolute',inset:0}}>
+          {StoryScene && <StoryScene />}
+        </div>
+        {/* Top bar */}
+        <div style={{position:'absolute',top:0,left:0,right:0,height:46,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 14px',background:'linear-gradient(180deg,rgba(3,6,16,.7) 0%,transparent 100%)',zIndex:10}}>
+          <div style={{fontFamily:"'Fraunces',serif",fontSize:12,color:'rgba(245,232,200,.6)',fontWeight:700}}>SleepSeed</div>
+          <div className="book-menu-pill dark" onClick={()=>setShowToolbar(m=>!m)}><span className="book-menu-pill-ico">&#9881;</span> Menu</div>
+        </div>
+        <div className="book-cover-gradient" />
+        <div className="book-cover-text">
+          <div className="c-stars">&#10022; &middot; &#10022; &middot; &#10022;</div>
+          <div className="c-title" style={{fontSize:'clamp(18px,5vw,26px)',fontWeight:900}}>{book.title}</div>
+          <div className="c-for">A story for {book.heroName}</div>
+          <div className="book-cover-btns">
+            <button className="book-cover-btn-read" onClick={()=>setPageIdx(1)}>
+              <span className="book-cover-btn-ico">&#128214;</span>Read together
+            </button>
+            <button className="book-cover-btn-listen" onClick={()=>{setPageIdx(1);const text=book.pages?.[0]?.text??book.title;toggleRead(text,0);}}>
+              <span className="book-cover-btn-ico">&#128266;</span>Listen together
+            </button>
           </div>
-          <div className="cover-bot">
-            <div className="c-stars">✦ ★ ✦</div>
-            <div className="c-title">{book.title}</div>
-            <div className="c-for">A bedtime story for {book.heroName}</div>
-            <div className="c-brand">🌙 SleepSeed</div>
-          </div>
+          <div className="c-brand">SleepSeed &middot; Made tonight</div>
         </div>
       </div>
     );
