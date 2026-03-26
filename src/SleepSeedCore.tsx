@@ -1422,12 +1422,15 @@ export default function SleepSeed({
   },[userId]);
 
   // Open directly to book stage when a saved story is passed in
-  const hasLoadedBookRef = useRef(false);
+  const lastPreloadedRef = useRef<any>(null);
   useEffect(() => {
-    if (!preloadedBook || hasLoadedBookRef.current) return;
-    hasLoadedBookRef.current = true;
+    if (!preloadedBook) return;
+    // Skip if this is the same preloadedBook we already loaded
+    if (preloadedBook === lastPreloadedRef.current) return;
+    lastPreloadedRef.current = preloadedBook;
     setBook(preloadedBook);
     setPageIdx(0);
+    setChosenPath(null);
     setFromCache(true);
     setStage("book");
   }, [preloadedBook]);
