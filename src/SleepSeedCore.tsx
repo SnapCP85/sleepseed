@@ -427,6 +427,98 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .brand-name{font-family:'Fraunces',serif;font-size:22px;font-weight:700;
   background:linear-gradient(135deg,var(--gold3),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .brand-tag{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dimmer)}
+
+/* ── GENERATION SCREEN ── */
+.gen-creature-zone{display:flex;flex-direction:column;align-items:center;position:relative;margin-bottom:8px}
+.gen-aura{position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(245,184,76,.08),transparent 70%);top:-50px;left:50%;animation:genAu 6s ease-in-out infinite;pointer-events:none}
+@keyframes genAu{0%,100%{opacity:.06;transform:translateX(-50%) scale(1)}50%{opacity:.22;transform:translateX(-50%) scale(1.1)}}
+.gen-creature-main{font-size:96px;line-height:1;display:inline-block;position:relative;z-index:2;animation:mfloat 5s ease-in-out infinite,gAGen 5s ease-in-out infinite}
+@keyframes gAGen{0%,100%{filter:drop-shadow(0 0 14px rgba(245,184,76,.5))}50%{filter:drop-shadow(0 0 40px rgba(245,184,76,1))}}
+.gen-creature-name{font-family:'Fraunces',serif;font-size:15px;font-weight:700;color:rgba(245,184,76,.85);margin-top:6px;letter-spacing:.02em}
+.gen-speech{background:rgba(14,22,54,.88);border:1px solid rgba(245,184,76,.2);border-radius:18px 18px 18px 4px;padding:10px 14px;margin-top:10px;max-width:260px;position:relative;animation:fup .4s ease both}
+.gen-speech-txt{font-family:'Fraunces',serif;font-size:12px;font-style:italic;color:rgba(245,184,76,.9);line-height:1.6;text-align:center}
+.gen-speech-txt em{color:var(--cream);font-style:normal;font-weight:700}
+.gen-bond-card{background:rgba(160,120,255,.06);border:1px solid rgba(160,120,255,.18);border-radius:14px;padding:11px 13px;margin-top:14px;width:100%;max-width:280px;animation:fup .5s ease .8s both}
+.gen-bond-lbl{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(160,120,255,.55);margin-bottom:5px}
+.gen-bond-q{font-family:'Fraunces',serif;font-size:13px;font-style:italic;color:rgba(200,180,255,.85);line-height:1.55}
+.gen-steps-list{display:flex;flex-direction:column;gap:6px;margin-top:16px;width:100%;max-width:280px}
+.gen-step-row{display:flex;align-items:center;gap:9px;font-family:'Kalam',cursive;font-size:12px;color:rgba(255,255,255,.26);transition:all .4s}
+.gen-step-row.step-done{color:rgba(76,200,144,.7)}
+.gen-step-row.step-active{color:rgba(245,184,76,.85);font-size:13px}
+.gen-step-ico{width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:8px;flex-shrink:0;transition:all .4s}
+.gen-step-row.step-active .gen-step-ico{background:rgba(245,184,76,.12)}
+.gen-step-row.step-done .gen-step-ico{background:rgba(76,200,144,.12)}
+.gen-progress-line{width:100%;max-width:280px;height:2px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-top:14px}
+.gen-progress-fill{height:100%;background:linear-gradient(90deg,rgba(245,184,76,.4),rgba(245,184,76,.85));border-radius:2px;transition:width 1.5s ease}
+
+/* ── END CEREMONY ── */
+.end-ceremony{min-height:100%;background:radial-gradient(ellipse 100% 60% at 50% 10%,#0d1840 0%,#050a18 45%,#020508 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 22px;position:relative;overflow:hidden}
+.end-cover-ghost{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:200px;opacity:.04;pointer-events:none}
+.end-moon-big{font-size:52px;animation:mfloat 6s ease-in-out infinite,gAGen 6s ease-in-out infinite;margin-bottom:16px}
+.end-the-end{font-family:'Fraunces',serif;font-size:36px;font-weight:900;font-style:italic;color:#fae9a8;animation:endFadeIn .8s ease both;margin-bottom:4px;text-shadow:0 0 40px rgba(245,184,76,.3)}
+@keyframes endFadeIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+.end-sweet-dreams{font-family:'Kalam',cursive;font-size:15px;color:rgba(245,184,76,.65);animation:endFadeIn .8s ease .6s both;margin-bottom:18px}
+.end-refrain-quote{font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;font-weight:500;color:rgba(240,220,160,.72);line-height:1.75;text-align:center;max-width:280px;animation:endFadeIn .8s ease 1.2s both;border-top:1px solid rgba(245,184,76,.12);border-bottom:1px solid rgba(245,184,76,.12);padding:12px 0;margin-bottom:28px}
+.end-nc-cta{width:100%;max-width:280px;padding:16px;border:none;border-radius:18px;background:linear-gradient(145deg,#7a4808,#F5B84C 48%,#7a4808);color:#050100;font-family:'Fraunces',serif;font-size:16px;font-weight:700;font-style:italic;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 10px 40px rgba(200,130,20,.45);animation:endFadeIn .8s ease 1.8s both}
+.end-nc-cta::after{content:'';position:absolute;top:0;left:-130%;width:55%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.15),transparent);animation:shimmerMove 3.5s ease-in-out infinite}
+.end-skip-lnk{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-top:12px;cursor:pointer;animation:endFadeIn .8s ease 2.2s both}
+
+/* ── NIGHT CARD SINGLE PAGE ── */
+.nc-single-page{min-height:100vh;max-height:700px;display:flex;flex-direction:column;background:linear-gradient(160deg,#080c24,#060918,#040714);padding:22px 18px 24px;position:relative;overflow:hidden}
+.nc-creature-corner{position:absolute;top:16px;right:16px;font-size:28px;opacity:.6;animation:mfloat 5s ease-in-out infinite,gAGen 5s ease-in-out infinite}
+.nc-single-label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:rgba(245,184,76,.45);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.nc-single-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(245,184,76,.2),transparent)}
+.nc-single-q{font-family:'Fraunces',serif;font-size:22px;font-weight:700;font-style:italic;color:#f5e8c8;line-height:1.3;margin-bottom:6px}
+.nc-single-who{font-family:'Kalam',cursive;font-size:12px;color:rgba(245,184,76,.55);margin-bottom:18px}
+.nc-single-input{width:100%;padding:12px 14px;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:13px;color:#f5e8c8;font-family:'Kalam',cursive;font-size:15px;outline:none;transition:border-color .2s;resize:none;min-height:52px;line-height:1.6}
+.nc-single-input::placeholder{color:rgba(245,184,76,.3)}
+.nc-single-input:focus{border-color:rgba(245,184,76,.4)}
+.nc-photo-choices{display:flex;gap:8px;margin-top:14px;margin-bottom:20px}
+.nc-photo-choice{flex:1;padding:12px 10px;border-radius:13px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);transition:all .2s}
+.nc-photo-choice:hover{border-color:rgba(245,184,76,.3);background:rgba(245,184,76,.05)}
+.nc-photo-choice-ico{font-size:22px}
+.nc-photo-choice-lbl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.nc-single-btn{width:100%;padding:15px;border:none;border-radius:16px;background:linear-gradient(145deg,#7a4808,#F5B84C 48%,#7a4808);color:#050100;font-family:'Fraunces',serif;font-size:16px;font-weight:700;font-style:italic;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(200,130,20,.4)}
+.nc-single-btn::after{content:'';position:absolute;top:0;left:-130%;width:55%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.15),transparent);animation:shimmerMove 3.5s ease-in-out infinite}
+.nc-single-skip{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.18);text-align:center;margin-top:12px;cursor:pointer}
+
+/* ── NIGHT CARD REVEAL ── */
+.nc-reveal-card{background:linear-gradient(148deg,#0d1030,#12183c);border:1px solid rgba(245,184,76,.22);border-radius:20px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 0 1px rgba(245,184,76,.08);animation:cardReveal .55s cubic-bezier(.16,1,.3,1) .1s both;margin-bottom:12px}
+@keyframes cardReveal{from{opacity:0;transform:scale(.94) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.nc-reveal-shimmer{position:absolute;inset:0;background:linear-gradient(105deg,transparent 0%,rgba(255,244,200,.04) 50%,transparent 100%);width:60%;animation:shimmerMove 4s ease-in-out infinite;pointer-events:none}
+.nc-reveal-photo{height:145px;background:linear-gradient(160deg,#1a1240,#120c2c);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;border-bottom:1px solid rgba(245,184,76,.1)}
+.nc-reveal-photo-overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(8,10,28,.6) 0%,transparent 50%)}
+.nc-reveal-photo-date{position:absolute;bottom:8px;right:10px;font-family:'Kalam',cursive;font-size:9px;color:rgba(245,184,76,.5)}
+.nc-reveal-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px}
+.nc-reveal-eyebrow{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(245,184,76,.4);display:flex;align-items:center;gap:6px}
+.nc-reveal-eyebrow::after{content:'';flex:1;height:1px;background:rgba(245,184,76,.1)}
+.nc-reveal-headline{font-family:'Fraunces',serif;font-size:20px;font-weight:700;font-style:italic;color:#fae9a8;line-height:1.25}
+.nc-reveal-rule{width:32px;height:1.5px;background:linear-gradient(90deg,rgba(245,184,76,.4),transparent);margin:2px 0}
+.nc-reveal-quote{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;font-weight:500;color:rgba(240,210,160,.8);line-height:1.7}
+.nc-reveal-memory{font-family:'Kalam',cursive;font-size:12px;color:rgba(200,180,255,.7);line-height:1.5}
+.nc-reveal-reflect{background:rgba(160,120,255,.07);border:1px solid rgba(160,120,255,.18);border-radius:10px;padding:8px 10px}
+.nc-reveal-reflect-lbl{font-family:'DM Mono',monospace;font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:rgba(160,120,255,.5);margin-bottom:3px}
+.nc-reveal-reflect-q{font-family:'Kalam',cursive;font-size:11px;color:rgba(200,180,255,.75);line-height:1.5}
+.nc-reveal-footer{display:flex;align-items:center;justify-content:space-between;padding-top:6px}
+.nc-reveal-brand{font-family:'Fraunces',serif;font-size:9px;color:rgba(245,184,76,.3)}
+.nc-reveal-memnum{font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.2)}
+.nc-action-row{display:flex;gap:6px;margin-bottom:10px}
+.nc-action-btn{flex:1;padding:11px 8px;border-radius:13px;font-family:'Fraunces',serif;font-size:11px;font-style:italic;font-weight:700;cursor:pointer;border:1.5px solid;text-align:center;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:3px}
+.nc-action-btn:hover{transform:translateY(-1px)}
+.nc-btn-share{background:rgba(245,184,76,.08);border-color:rgba(245,184,76,.22);color:rgba(245,184,76,.82)}
+.nc-btn-done{background:rgba(20,216,144,.08);border-color:rgba(20,216,144,.22);color:rgba(20,216,144,.82)}
+.nc-rating-strip{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
+.nc-rating-lbl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.2)}
+.nc-stars-row{display:flex;gap:4px}
+.nc-star-btn{font-size:18px;cursor:pointer;opacity:.28;transition:opacity .15s,transform .15s;background:none;border:none;color:var(--gold2)}
+.nc-star-btn.lit{opacity:1}
+.nc-star-btn:hover{transform:scale(1.15)}
+.nc-library-row{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px 13px}
+.nc-library-txt{font-family:'Fraunces',serif;font-size:11px;font-style:italic;color:rgba(255,255,255,.45);line-height:1.4}
+.nc-toggle{width:36px;height:20px;border-radius:99px;background:rgba(255,255,255,.1);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.nc-toggle.on{background:rgba(20,216,144,.3)}
+.nc-toggle-thumb{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s;pointer-events:none}
+.nc-toggle.on .nc-toggle-thumb{left:19px}
 `;
 
 /* ── Data ── */
@@ -1171,6 +1263,9 @@ export default function SleepSeed({
   const [libSubmitMood,    setLibSubmitMood]    = useState('');
   const [showToolbar,      setShowToolbar]      = useState(false);     // collapsed toolbar expanded
   const [ambientOn,        setAmbientOn]        = useState(false);     // cozy night ambient sound
+  const [ncPhotoMode,      setNcPhotoMode]      = useState<'idle'|'camera'|'upload'>('idle');
+  const [shareToLibrary,   setShareToLibrary]   = useState(false);
+  const [storyRating,      setStoryRating]      = useState<number|null>(null);
 
   const totalPagesRef = useRef(0);
   const fileRefs      = useRef({});
@@ -1909,7 +2004,7 @@ export default function SleepSeed({
 
   // ── Night Card camera effect ──
   useEffect(() => {
-    if(stage!=="nightcard" || ncStep!==3 || ncPhoto) return;
+    if(ncPhotoMode !== 'camera' || ncPhoto) return;
     let cancelled = false;
     navigator.mediaDevices?.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480}}})
       .then(stream => {
@@ -2420,6 +2515,18 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
     if(dir>0&&onChoicePg&&!chosenPath) return;
     setPageIdx(p => Math.max(0,Math.min(totalPages-1,p+dir)));
   };
+  // Helper functions for night card actions
+  async function shareNightCard() {
+    if(!ncResult) return;
+    try { await navigator.share?.({title:`${book?.heroName}'s Night Card`,text:`"${ncResult.headline}" — ${ncResult.quote}`,url:window.location.href}); }
+    catch(_) { navigator.clipboard?.writeText(`${ncResult.headline}\n"${ncResult.quote}"\n${ncResult.memory_line||''}`); }
+  }
+  function saveAndExitNc() {
+    setStage('home'); setBook(null);
+    setNcStep(0); setNcResult(null); setNcPhoto(null);
+    setNcBondingA(''); setNcGratitude(''); setNcExtra('');
+    setShareToLibrary(false); setStoryRating(null); setNcPhotoMode('idle');
+  }
   goPageRef.current = goPage;
 
   const handleChoice = (path) => { setChosenPath(path); setPageIdx(choicePgIdx+1); };
@@ -2561,113 +2668,41 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
     // ── The End page ──
     return (
-      <div className="bpage end-bg" style={{overflowY:"auto"}}>
-        <div className="pinset" />
-        <div className="end-lay" style={{gap:14,paddingTop:20,paddingBottom:20}}>
-          <div className="end-moon">🌙</div>
-          <div className="end-title">The End</div>
-          <div className="end-msg">
-            Sweet dreams, {book.heroName}.<br />
-            Tomorrow night, another adventure awaits…
-          </div>
+      <div className="bpage end-bg end-ceremony">
+        <div className="end-cover-ghost">{companionCreature?.creatureEmoji ?? '🌙'}</div>
+        <div className="end-moon-big">🌙</div>
+        <div className="end-the-end">The End.</div>
+        <div className="end-sweet-dreams">Sweet dreams, {book.heroName}.</div>
+        {book.refrain && <div className="end-refrain-quote">"{book.refrain}"</div>}
 
-          {book.parentNote && (
-            <div style={{width:"100%",background:"rgba(212,160,48,.08)",border:"1px solid rgba(212,160,48,.2)",
-              borderRadius:14,padding:"12px 16px",marginTop:4}}>
-              <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                color:"rgba(212,160,48,.7)",marginBottom:6}}>A note for you 👋</div>
-              <div style={{fontSize:12,color:"var(--cream)",lineHeight:1.7,fontFamily:"'Nunito',sans-serif"}}>
-                {book.parentNote}
-              </div>
-            </div>
-          )}
-
-          {book.nightCard ? (
-            /* Show existing Night Card inline */
-            <div style={{width:"100%",marginTop:8,background:"rgba(212,160,48,.06)",
-              border:"1px solid rgba(212,160,48,.18)",borderRadius:16,padding:"16px",textAlign:"center"}}>
-              <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
-                color:"rgba(212,160,48,.55)",marginBottom:8}}>Tonight's Night Card</div>
-              {book.nightCard.photo && (
-                <div style={{width:100,margin:"0 auto 10px",borderRadius:4,overflow:"hidden",
-                  background:"#faf8f2",padding:"4px 4px 8px",boxShadow:"0 2px 8px rgba(0,0,0,.3)"}}>
-                  <img src={book.nightCard.photo} alt="" style={{width:"100%",borderRadius:2}} />
-                </div>
-              )}
-              <div style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700,fontStyle:"italic",
-                color:"var(--gold3)",marginBottom:4}}>{book.nightCard.headline}</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontStyle:"italic",
-                color:"rgba(240,220,160,.8)",lineHeight:1.6}}>"{book.nightCard.quote}"</div>
-              {book.nightCard.memory_line && (
-                <div style={{fontFamily:"'Kalam',cursive",fontSize:11,color:"rgba(200,180,255,.7)",
-                  lineHeight:1.5,marginTop:4}}>{book.nightCard.memory_line}</div>
-              )}
-              {/* Q&A sections */}
-              {(book.nightCard.bondingA || book.nightCard.gratitude || book.nightCard.extra) && (
-                <div style={{textAlign:"left",marginTop:10,paddingTop:10,
-                  borderTop:"1px solid rgba(212,160,48,.12)",display:"flex",flexDirection:"column",gap:8}}>
-                  {book.nightCard.bondingQ && book.nightCard.bondingA && (
-                    <div>
-                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                        color:"rgba(160,120,255,.5)",marginBottom:2}}>Asked: "{book.nightCard.bondingQ}"</div>
-                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
-                        {book.nightCard.bondingA}
-                      </div>
-                    </div>
-                  )}
-                  {book.nightCard.gratitude && (
-                    <div>
-                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                        color:"rgba(212,160,48,.5)",marginBottom:2}}>Best three seconds</div>
-                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
-                        {book.nightCard.gratitude}
-                      </div>
-                    </div>
-                  )}
-                  {book.nightCard.extra && (
-                    <div>
-                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                        color:"rgba(76,200,144,.5)",marginBottom:2}}>Extra note</div>
-                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>
-                        {book.nightCard.extra}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <button className="btn" style={{width:"100%",marginTop:8,fontSize:15,padding:"14px 20px"}}
-              onClick={()=>{
-                setNcStep(0); setNcBondingA(ncBondingA||""); setNcGratitude(""); setNcExtra("");
-                setNcPhoto(null); setNcCountdown(0); setNcGenerating(false);
-                setNcResult(null); setNcRevealed(false);
-                window.speechSynthesis?.cancel();
-                if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
-                autoReadRef.current = false; setIsReading(false);
-                setStage("nightcard");
-              }}>
-              🌙 Make Tonight's Night Card
-            </button>
-          )}
-
-          <div style={{display:"flex",gap:8,width:"100%",marginTop:4}}>
+        {book.nightCard ? (
+          <div style={{display:"flex",gap:8,width:"100%",maxWidth:280}}>
+            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"10px 14px"}} onClick={downloadStory}>📄 Download</button>
             <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"10px 14px"}}
-              onClick={downloadStory}>
-              📄 Download
-            </button>
-            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"10px 14px"}}
-              onClick={()=>{
-                window.speechSynthesis?.cancel();
-                if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
-                autoReadRef.current = false; setIsReading(false);
-                onHome ? onHome() : setStage("home");
-              }}>
+              onClick={()=>{window.speechSynthesis?.cancel();if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}autoReadRef.current=false;setIsReading(false);onHome?onHome():setStage("home");}}>
               🏠 Home
             </button>
           </div>
+        ) : (
+          <>
+            <button className="end-nc-cta"
+              onClick={()=>{
+                setNcStep(0);setNcBondingA(ncBondingA||"");setNcGratitude("");setNcExtra("");
+                setNcPhoto(null);setNcCountdown(0);setNcGenerating(false);
+                setNcResult(null);setNcRevealed(false);setNcPhotoMode('idle');
+                window.speechSynthesis?.cancel();
+                if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}
+                autoReadRef.current=false;setIsReading(false);
+                setStage("nightcard");
+              }}>
+              ✦ Save tonight's Night Card
+            </button>
+            <div className="end-skip-lnk" onClick={()=>{onHome?onHome():setStage("home");}}>skip for now</div>
+          </>
+        )}
 
-          <button className="btn-ghost" style={{width:"100%",marginTop:6,fontSize:12,padding:"10px 14px",
+        {/* Keep existing feedback button below */}
+        <button className="btn-ghost" style={{width:"100%",maxWidth:280,marginTop:12,fontSize:12,padding:"10px 14px",
             borderColor:"rgba(217,119,6,.3)",color:"rgba(217,119,6,.8)"}}
             onClick={()=>setShowFeedback(true)}>
             ⭐ How was this story?
@@ -2777,7 +2812,6 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
               </button>
             </div>
           )}
-        </div>
       </div>
     );
   };
@@ -2799,79 +2833,61 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
         {/* GENERATING */}
         {stage==="generating" && (
           <div className="screen" style={{maxWidth:420}}>
-            <div className="card gen-wrap">
-              <div className="gen-orb" />
-              <div className="gen-title">{gen.label||"Writing the story…"}</div>
-              <div className="gen-sub">
-                A one-of-a-kind picture book for{" "}
-                <strong style={{color:"var(--gold2)"}}>{heroName}</strong>
-                {adventure && <span style={{display:"block",fontSize:12,color:"var(--gold)",marginTop:3}}>🔀 Choose-Your-Adventure mode</span>}
-              </div>
-              <div className="pbar">
-                <div className="pfill" style={{width:`${gen.progress}%`}} />
-              </div>
-              <div className="plabel" style={{marginBottom:12}}>{gen.progress}%</div>
+            <div className="card" style={{textAlign:'center',padding:'28px 20px 24px',display:'flex',flexDirection:'column',alignItems:'center'}}>
 
-              {/* Bonding question card — visible during writing step */}
+              <div className="gen-creature-zone">
+                <div className="gen-aura" />
+                <div className="gen-creature-main">{companionCreature?.creatureEmoji ?? '🥚'}</div>
+                <div className="gen-creature-name">{companionCreature?.name ?? 'Your creature'}</div>
+              </div>
+
+              <div className="gen-speech">
+                <div className="gen-speech-txt">
+                  {gen.stepIdx <= 1
+                    ? <>{`Writing `}<em>{heroName}</em>{`'s story right now… ✦`}</>
+                    : gen.stepIdx === 2
+                    ? <>Painting the illustrations… ✨</>
+                    : <>{heroName}{`'s book is `}<em>ready</em>{` ✦`}</>}
+                </div>
+              </div>
+
               {gen.stepIdx <= 2 && ncBondingQ && (
-                <div style={{background:"rgba(160,120,255,.06)",border:"1px solid rgba(160,120,255,.18)",
-                  borderRadius:14,padding:"13px 15px",marginBottom:12}}>
-                  <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
-                    color:"rgba(160,120,255,.55)",marginBottom:6}}>While you wait…</div>
-                  <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:"italic",
-                    color:"rgba(210,200,245,.88)",lineHeight:1.75,marginBottom:10}}>
-                    Snuggle in close and ask{" "}
-                    <span style={{color:"var(--gold2)",fontWeight:700}}>{heroName}</span>:{" "}
-                    <span style={{color:"#c0a8ff"}}>"{ncBondingQ}"</span>
-                  </div>
-                  {ncBondingSaved ? (
-                    <div style={{background:"rgba(76,200,144,.08)",border:"1px solid rgba(76,200,144,.2)",
-                      borderRadius:10,padding:"10px 12px"}}>
-                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",
-                        color:"rgba(76,200,144,.6)",marginBottom:4}}>✓ Saved for Night Card</div>
-                      <div style={{fontFamily:"'Kalam',cursive",fontSize:13,color:"var(--cream)",lineHeight:1.6}}>
-                        "{ncBondingA}"
-                      </div>
+                <div className="gen-bond-card">
+                  <div className="gen-bond-lbl">{companionCreature?.name ?? 'Luna'} wants to know</div>
+                  <div className="gen-bond-q">"{ncBondingQ}"</div>
+                  {!ncBondingSaved ? (
+                    <div style={{marginTop:8}}>
+                      <textarea className="ftarea" placeholder={`What did ${heroName} say?`}
+                        value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)}
+                        style={{minHeight:48,fontSize:13,background:"rgba(255,255,255,.04)",border:"1px solid rgba(160,120,255,.15)",
+                          borderRadius:10,padding:"10px 12px",color:"var(--cream)",fontFamily:"'Kalam',cursive",lineHeight:1.6,resize:"none",marginBottom:8}} />
+                      <button className="btn-ghost" disabled={!ncBondingA.trim()}
+                        style={{width:"100%",fontSize:12,padding:"8px 12px",
+                          ...(ncBondingA.trim()?{borderColor:"rgba(76,200,144,.4)",color:"#80d8a8",background:"rgba(76,200,144,.06)"}:{})}}
+                        onClick={()=>{if(ncBondingA.trim()) setNcBondingSaved(true);}}>
+                        {ncBondingA.trim()?"✓ Save answer":"Type an answer above"}
+                      </button>
                     </div>
                   ) : (
-                    <>
-                      <textarea
-                        className="ftarea"
-                        placeholder={`What did ${heroName} say?`}
-                        value={ncBondingA}
-                        onChange={e=>setNcBondingA(e.target.value)}
-                        style={{minHeight:48,fontSize:13,background:"rgba(255,255,255,.04)",
-                          border:"1px solid rgba(160,120,255,.15)",borderRadius:10,
-                          padding:"10px 12px",color:"var(--cream)",
-                          fontFamily:"'Kalam',cursive",lineHeight:1.6,resize:"none",marginBottom:8}}
-                      />
-                      <button
-                        className="btn-ghost"
-                        disabled={!ncBondingA.trim()}
-                        style={{width:"100%",fontSize:12,padding:"8px 12px",
-                          ...(ncBondingA.trim() ? {borderColor:"rgba(76,200,144,.4)",color:"#80d8a8",background:"rgba(76,200,144,.06)"} : {})}}
-                        onClick={()=>{ if(ncBondingA.trim()) setNcBondingSaved(true); }}>
-                        {ncBondingA.trim() ? "✓ Save answer for Night Card" : "Type an answer above"}
-                      </button>
-                    </>
+                    <div style={{marginTop:8,background:"rgba(76,200,144,.08)",border:"1px solid rgba(76,200,144,.2)",borderRadius:10,padding:"8px 10px"}}>
+                      <div style={{fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(76,200,144,.6)",marginBottom:3}}>✓ Saved</div>
+                      <div style={{fontFamily:"'Kalam',cursive",fontSize:12,color:"var(--cream)",lineHeight:1.5}}>"{ncBondingA}"</div>
+                    </div>
                   )}
                 </div>
               )}
 
-              {gen.dots.length>0 && (
-                <div style={{display:"flex",gap:5,flexWrap:"wrap",justifyContent:"center",marginBottom:10}}>
-                  {gen.dots.map((s,i) => (
-                    <div key={i} className={`img-dot ${s==="p"?"busy":"done"}`}>{s==="d"?"✓":"…"}</div>
-                  ))}
-                </div>
-              )}
-              <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                {["Setting the scene…","Writing the story…","Painting illustrations…","Book is ready!"].map((s,i) => (
-                  <div key={i} className={`pstep ${i===gen.stepIdx?"active":i<gen.stepIdx?"done":""}`}>
-                    <div className="pstep-dot" />
-                    <span>{i<gen.stepIdx?"✓ ":""}{s}</span>
+              <div className="gen-steps-list">
+                {['Setting the scene…','Writing the story…','Painting illustrations…','Book is ready!'].map((s,i)=>(
+                  <div key={i} className={`gen-step-row${i<gen.stepIdx?' step-done':i===gen.stepIdx?' step-active':''}`}>
+                    <div className="gen-step-ico">{i<gen.stepIdx?'✓':i===gen.stepIdx?'✦':'·'}</div>
+                    <span>{s}</span>
                   </div>
                 ))}
+              </div>
+
+              <div className="gen-progress-line">
+                <div className="gen-progress-fill" style={{width:`${gen.progress}%`}} />
               </div>
             </div>
           </div>
@@ -3151,7 +3167,158 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
 
         {/* NIGHT CARD FLOW */}
         {stage==="nightcard" && book && (
-          <div className="nc-flow">
+          <div className="screen" style={{maxWidth:480}}>
+
+            {/* SINGLE INPUT PAGE — replaces steps 0–3 */}
+            {!ncGenerating && !ncResult && (
+              <div className="nc-single-page">
+                <div className="nc-creature-corner">{companionCreature?.creatureEmoji ?? '🌙'}</div>
+                <div className="nc-single-label">✦ Tonight's Night Card</div>
+                <div className="nc-single-q">"{ncBondingQ || 'What made you smile today?'}"</div>
+                <div className="nc-single-who">{companionCreature?.name ?? 'Your creature'} wants to know what {book.heroName} said</div>
+                <textarea className="nc-single-input" placeholder={`${book.heroName} said…`}
+                  value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)} rows={2} />
+
+                <div className="nc-photo-choices">
+                  <div className="nc-photo-choice" onClick={()=>setNcPhotoMode('camera')}>
+                    <div className="nc-photo-choice-ico">📸</div>
+                    <div className="nc-photo-choice-lbl">Take photo</div>
+                  </div>
+                  <div className="nc-photo-choice" onClick={()=>{
+                    const input=document.createElement('input');
+                    input.type='file';input.accept='image/*';
+                    input.onchange=(e:any)=>{const file=e.target.files?.[0];if(!file)return;
+                      const reader=new FileReader();reader.onload=(ev)=>setNcPhoto(ev.target?.result as string);reader.readAsDataURL(file);};
+                    input.click();
+                  }}>
+                    <div className="nc-photo-choice-ico">🖼️</div>
+                    <div className="nc-photo-choice-lbl">Upload photo</div>
+                  </div>
+                </div>
+
+                {ncPhoto && (
+                  <div style={{marginBottom:12,borderRadius:12,overflow:'hidden',position:'relative'}}>
+                    <img src={ncPhoto} alt="Tonight" style={{width:'100%',height:100,objectFit:'cover',display:'block'}} />
+                    <button onClick={()=>setNcPhoto(null)}
+                      style={{position:'absolute',top:6,right:6,width:22,height:22,borderRadius:'50%',
+                        background:'rgba(0,0,0,.6)',border:'none',color:'#fff',fontSize:10,cursor:'pointer'}}>✕</button>
+                  </div>
+                )}
+
+                {ncPhotoMode==='camera'&&!ncPhoto&&(
+                  <div style={{marginBottom:12}}>
+                    <video ref={ncVideoRef} autoPlay playsInline muted
+                      style={{width:'100%',borderRadius:12,display:'block',maxHeight:160,objectFit:'cover'}} />
+                    <div style={{display:'flex',gap:8,marginTop:8}}>
+                      <button className="btn-ghost" style={{flex:1,fontSize:12}}
+                        onClick={()=>{ncStreamRef.current?.getTracks().forEach(t=>t.stop());setNcPhotoMode('idle');}}>Cancel</button>
+                      <button className="btn" style={{flex:2,fontSize:13}} onClick={()=>{
+                        const video=ncVideoRef.current;if(!video?.videoWidth)return;
+                        const canvas=document.createElement('canvas');
+                        const scale=Math.min(480/video.videoWidth,480/video.videoHeight,1);
+                        canvas.width=Math.round(video.videoWidth*scale);canvas.height=Math.round(video.videoHeight*scale);
+                        const ctx=canvas.getContext('2d')!;ctx.translate(canvas.width,0);ctx.scale(-1,1);
+                        ctx.drawImage(video,0,0,canvas.width,canvas.height);
+                        setNcPhoto(canvas.toDataURL('image/jpeg',.82));
+                        ncStreamRef.current?.getTracks().forEach(t=>t.stop());setNcPhotoMode('idle');
+                      }}>📸 Capture</button>
+                    </div>
+                  </div>
+                )}
+
+                <button className="nc-single-btn" onClick={()=>setNcStep(4)}>✦ Make our Night Card</button>
+                <div className="nc-single-skip" onClick={()=>{ncStreamRef.current?.getTracks().forEach(t=>t.stop());onHome?onHome():setStage('home');}}>skip night card</div>
+              </div>
+            )}
+
+            {/* GENERATING */}
+            {ncGenerating && !ncResult && (
+              <div style={{textAlign:'center',padding:'32px 20px'}}>
+                <div style={{fontSize:72,lineHeight:1,marginBottom:16,animation:'mfloat 4s ease-in-out infinite,gAGen 4s ease-in-out infinite',display:'inline-block'}}>
+                  {companionCreature?.creatureEmoji ?? '🌙'}
+                </div>
+                <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontStyle:'italic',color:'var(--cream)',marginBottom:6}}>
+                  {companionCreature?.name ?? 'Your creature'} is making your Night Card…
+                </div>
+                <div style={{fontSize:12,color:'var(--dimmer)'}}>This only takes a moment ✦</div>
+              </div>
+            )}
+
+            {/* REVEAL */}
+            {ncResult && (
+              <div style={{padding:'16px 16px 20px'}}>
+                <div className="nc-reveal-card">
+                  <div className="nc-reveal-shimmer" />
+                  <div className="nc-reveal-photo">
+                    {ncPhoto ? (
+                      <img src={ncPhoto} alt="Tonight" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} />
+                    ) : (
+                      <div style={{fontSize:72,lineHeight:1,animation:'mfloat 5s ease-in-out infinite',opacity:.85}}>
+                        {ncResult.emoji ?? '👨‍👧'}
+                      </div>
+                    )}
+                    <div className="nc-reveal-photo-overlay" />
+                    <div className="nc-reveal-photo-date">Tonight</div>
+                  </div>
+                  <div className="nc-reveal-body">
+                    <div className="nc-reveal-eyebrow">✦ Night Card</div>
+                    <div className="nc-reveal-headline">{ncResult.headline}</div>
+                    <div className="nc-reveal-rule" />
+                    <div className="nc-reveal-quote">"{ncResult.quote}"</div>
+                    {ncResult.memory_line && <div className="nc-reveal-memory">{ncResult.memory_line}</div>}
+                    {ncResult.reflection && (
+                      <div className="nc-reveal-reflect">
+                        <div className="nc-reveal-reflect-lbl">Tonight's whisper</div>
+                        <div className="nc-reveal-reflect-q">{ncResult.reflection}</div>
+                      </div>
+                    )}
+                    <div className="nc-reveal-footer">
+                      <div className="nc-reveal-brand">SleepSeed</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="nc-action-row">
+                  <button className="nc-action-btn nc-btn-share" onClick={shareNightCard}>
+                    <span style={{fontSize:16}}>🌟</span><span>Share</span>
+                  </button>
+                  <button className="nc-action-btn nc-btn-done" onClick={async()=>{
+                    const ncData={heroName:book.heroName,storyTitle:book.title,refrain:book.refrain||"",
+                      bondingQ:ncBondingQ,bondingA:ncBondingA,gratitude:ncGratitude,extra:ncExtra,photo:ncPhoto,...ncResult};
+                    try{await saveNightCard(ncData);}catch(_){}
+                    const updatedBook={...book,nightCard:ncData};setBook(updatedBook);
+                    const updatedMemories=memories.map(m=>m.bookData?.title===book.title&&m.heroName===book.heroName?{...m,bookData:updatedBook}:m);
+                    setMemories(updatedMemories);try{await sSet("memories",{items:updatedMemories});}catch(_){}
+                    onHome?onHome():setStage("home");
+                  }}>
+                    <span style={{fontSize:16}}>✓</span><span>Save & Done</span>
+                  </button>
+                </div>
+
+                <div className="nc-rating-strip">
+                  <div className="nc-rating-lbl">Tonight's story</div>
+                  <div className="nc-stars-row">
+                    {[1,2,3,4,5].map(n=>(
+                      <button key={n} className={`nc-star-btn${storyRating&&n<=storyRating?' lit':''}`}
+                        onClick={()=>{setStoryRating(n);if(n<=3)setShowFeedback(true);}}>★</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="nc-library-row">
+                  <div className="nc-library-txt">Share this story with other<br/>SleepSeed families?</div>
+                  <button className={`nc-toggle${shareToLibrary?' on':''}`} onClick={()=>setShareToLibrary(l=>!l)}>
+                    <div className="nc-toggle-thumb" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {/* Old nightcard flow deleted — replaced by single-page above */}
+        {false && (<div className="nc-flow-old-removed">
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
               <div style={{display:"flex",alignItems:"center",gap:7}}>
                 <div className="brand-gem" style={{width:30,height:30,fontSize:15,borderRadius:9}}>🌙</div>
