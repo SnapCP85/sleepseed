@@ -1379,6 +1379,7 @@ export default function SleepSeed({
   const [libSubmitAge,     setLibSubmitAge]     = useState('');
   const [libSubmitMood,    setLibSubmitMood]    = useState('');
   const [showToolbar,      setShowToolbar]      = useState(false);     // collapsed toolbar expanded
+  const [warmMode,         setWarmMode]         = useState(false);     // warm sepia filter on story pages
   const [ambientOn,        setAmbientOn]        = useState(false);     // cozy night ambient sound
   const [ncPhotoMode,      setNcPhotoMode]      = useState<'idle'|'camera'|'upload'>('idle');
   const [shareToLibrary,   setShareToLibrary]   = useState(false);
@@ -2657,7 +2658,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
   /* ── Story page — inline helper (not a component) to avoid remount flicker ── */
   const renderStoryPage = (pg: any, pgNum: number, refrain: string|undefined) => (
-    <div className="story-page-full" key={`sp-${pgNum}`}>
+    <div className={`story-page-full${warmMode?' warm':''}`} key={`sp-${pgNum}`}>
       {/* Tap zones */}
       <div style={{position:'absolute',top:0,left:0,width:'40%',height:'100%',zIndex:5,cursor:'pointer'}} onClick={()=>goPage(-1)} />
       <div style={{position:'absolute',top:0,right:0,width:'40%',height:'100%',zIndex:5,cursor:'pointer'}} onClick={()=>{if(onChoicePg&&!chosenPath)return;goPage(1);}} />
@@ -3124,6 +3125,9 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
               </button>
               {showToolbar && (
                 <div className="rd-expanded" onClick={e=>e.stopPropagation()}>
+                  <button className="rd-exp-btn" onClick={()=>setWarmMode(w=>!w)} style={warmMode?{color:'#ffb868',background:'rgba(255,140,60,.1)'}:{}}>
+                    {warmMode ? '🌅 Warm Mode · On' : '🌅 Warm Mode'}
+                  </button>
                   <button className="rd-exp-btn" onClick={toggleAmbient} style={ambientOn?{color:'var(--gold2)',background:'rgba(212,160,48,.08)'}:{}}>
                     {ambientOn ? '🌧 Cozy Night · On' : '🌧 Cozy Night'}
                   </button>
