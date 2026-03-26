@@ -2639,9 +2639,9 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
   const storyVibe = storyMood || (storyBrief2 ? storyBrief2.split(' ')[0].toLowerCase() : '');
   const StoryScene = book ? getSceneByVibe(storySceneSeed, storyVibe) : null;
 
-  /* ── Story page ── */
-  const StoryPage = ({pg,pgNum,refrain}) => (
-    <div className="story-page-full">
+  /* ── Story page — inline helper (not a component) to avoid remount flicker ── */
+  const renderStoryPage = (pg: any, pgNum: number, refrain: string|undefined) => (
+    <div className="story-page-full" key={`sp-${pgNum}`}>
       {/* Tap zones */}
       <div style={{position:'absolute',top:0,left:0,width:'40%',height:'100%',zIndex:5,cursor:'pointer'}} onClick={()=>goPage(-1)} />
       <div style={{position:'absolute',top:0,right:0,width:'40%',height:'100%',zIndex:5,cursor:'pointer'}} onClick={()=>{if(onChoicePg&&!chosenPath)return;goPage(1);}} />
@@ -2670,7 +2670,6 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
         <div className="page-num-kalam">&middot; {pgNum} &middot;</div>
         <div className="story-text-main">{pg.text}</div>
         {refrain && pgNum % 2 === 0 && <div className="story-refrain-cg">&ldquo;{refrain}&rdquo;</div>}
-        {/* Corner nav labels */}
         <div className="page-nav-corners">
           <div className="page-nav-corner"><span className="page-nav-corner-arr">&lsaquo;</span> prev</div>
           <div className="page-nav-corner">next <span className="page-nav-corner-arr">&rsaquo;</span></div>
@@ -2757,7 +2756,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
     );
 
     if(isAdv && pageIdx>=2 && pageIdx<2+setupLen) {
-      return <StoryPage pg={book.setup_pages[pageIdx-2]} pgNum={pageIdx-1} refrain={book.refrain} />;
+      return renderStoryPage(book.setup_pages[pageIdx-2], pageIdx-1, book.refrain);
     }
 
     if(isAdv && onChoicePg) return (
@@ -2792,12 +2791,12 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
     if(isAdv && pageIdx>choicePgIdx && chosenPath){
       const ri = pageIdx-(choicePgIdx+1);
-      if(ri<resPages.length) return <StoryPage pg={resPages[ri]} pgNum={setupLen+ri+1} refrain={book.refrain} />;
+      if(ri<resPages.length) return renderStoryPage(resPages[ri], setupLen+ri+1, book.refrain);
     }
 
     if(!isAdv && pageIdx>=2 && pageIdx<=1+(book.pages?.length||0)) {
       const pg = book.pages?.[pageIdx-2];
-      if(pg) return <StoryPage pg={pg} pgNum={pageIdx-1} refrain={book.refrain} />;
+      if(pg) return renderStoryPage(pg, pageIdx-1, book.refrain);
     }
 
     // ── The End page ──
