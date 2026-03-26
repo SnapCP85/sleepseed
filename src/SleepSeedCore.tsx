@@ -206,9 +206,9 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .img-dot.done{border-color:rgba(76,200,144,.6);background:rgba(76,200,144,.12)}
 @keyframes dotPulse{0%,100%{opacity:.5}50%{opacity:1}}
 .err-box{background:rgba(192,64,48,.14);border:1px solid rgba(192,64,48,.28);border-radius:10px;padding:10px 14px;font-size:13px;color:#f09080;margin-bottom:14px}
-.book-shell{width:100%;max-width:500px;position:relative;animation:fup .4s cubic-bezier(.16,1,.3,1) both;height:calc(var(--vh,1vh) * 58);max-height:520px;overflow:hidden}
+.book-shell{width:100%;max-width:500px;position:relative;animation:fup .4s cubic-bezier(.16,1,.3,1) both}
 .book-3d{border-radius:18px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.7);
-  height:100%;position:relative;background:#0e1428;cursor:pointer}
+  height:calc(var(--vh,1vh) * 58);max-height:520px;position:relative;background:#0e1428;cursor:pointer}
 .bpage{position:absolute;inset:0;width:100%;height:100%;animation:pageFade .3s ease both}
 @keyframes pageFade{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
 .pinset{position:absolute;inset:10px;border:1px solid rgba(212,160,48,.1);border-radius:8px;pointer-events:none;z-index:2}
