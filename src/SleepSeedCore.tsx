@@ -455,7 +455,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .gen-aura.amber{background:radial-gradient(circle,rgba(245,184,76,.08),transparent 70%);animation:genAuAmber 6s ease-in-out infinite}
 .gen-aura.green{background:radial-gradient(circle,rgba(76,200,144,.1),transparent 70%);animation:genAuGreen 6s ease-in-out infinite}
 .gen-aura.teal{background:radial-gradient(circle,rgba(20,216,144,.12),transparent 70%);animation:genAuGreen 5s ease-in-out infinite}
-.gen-creature-emo{display:inline-block;position:relative;z-index:2;font-size:68px;animation:genFloat 5s ease-in-out infinite,genGlowAmber 5s ease-in-out infinite}
+.gen-creature-emo{display:inline-block;position:relative;z-index:2;font-size:58px;animation:genFloat 5s ease-in-out infinite,genGlowAmber 5s ease-in-out infinite}
 .gen-creature-emo.react{animation:genFloat 5s ease-in-out infinite,genGlowGreen 5s ease-in-out infinite}
 .gen-creature-emo.ready{animation:genReadyExcite 2s ease-in-out 3,genFloat 5s ease-in-out 6s infinite,genGlowTeal 5s ease-in-out 6s infinite}
 .gen-creature-nm{font-family:'Fraunces',serif;font-size:12px;font-weight:700;letter-spacing:.02em;position:relative;z-index:2;margin-top:2px}
@@ -475,7 +475,7 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .gen-portal-eyebrow{font-family:'DM Mono',monospace;font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,184,76,.35);margin-bottom:5px;display:flex;align-items:center;gap:6px;width:180px}
 .gen-portal-eyebrow::before,.gen-portal-eyebrow::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,.2),transparent)}
 .gen-portal-eyebrow.teal{color:rgba(20,216,144,.45)}
-.gen-portal{width:168px;height:168px;border-radius:50%;overflow:hidden;position:relative;background:radial-gradient(circle at 42% 35%,#1c2d6a 0%,#0c1838 45%,#07101e 100%);animation:genPortalPulse 4.5s ease-in-out infinite;flex-shrink:0}
+.gen-portal{width:148px;height:148px;border-radius:50%;overflow:hidden;position:relative;background:radial-gradient(circle at 42% 35%,#1c2d6a 0%,#0c1838 45%,#07101e 100%);animation:genPortalPulse 4.5s ease-in-out infinite;flex-shrink:0}
 .gen-portal.ready{animation:genPortalPulseTeal 2.8s ease-in-out infinite}
 .gen-portal-ring{position:absolute;inset:-2.5px;border-radius:50%;border:1.5px solid transparent;border-top-color:rgba(245,184,76,.55);border-right-color:rgba(245,184,76,.18);animation:genRingRotate 7s linear infinite;pointer-events:none;z-index:12}
 .gen-portal-ring.teal{border-top-color:rgba(20,216,144,.55);border-right-color:rgba(20,216,144,.18);animation-duration:5s}
@@ -2120,8 +2120,20 @@ export default function SleepSeed({
     setTimeout(() => setSparkles(s => s.filter(sp => sp.id!==id)),700);
   },[]);
 
-  // ── Scroll to top on stage change ──
-  useEffect(()=>{window.scrollTo({top:0,behavior:'instant'});},[stage]);
+  // ── Scroll to top on stage change + lock body scroll during book ──
+  useEffect(()=>{
+    window.scrollTo({top:0,behavior:'instant'});
+    if(stage==='book'){
+      document.body.style.overflow='hidden';
+      document.body.style.position='fixed';
+      document.body.style.width='100%';
+    } else {
+      document.body.style.overflow='';
+      document.body.style.position='';
+      document.body.style.width='';
+    }
+    return ()=>{document.body.style.overflow='';document.body.style.position='';document.body.style.width='';};
+  },[stage]);
 
   // ── Portal stars for generation screen ──
   useEffect(()=>{
@@ -2951,7 +2963,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
           const ringClass=isReady?'teal':'';const portalClass=isReady?'ready':'';const titleClass=isReady?'teal':'';
           return(
           <div className="screen" style={{maxWidth:420}}>
-            <div className="card" style={{textAlign:'center',padding:'20px 16px 18px',display:'flex',flexDirection:'column',alignItems:'center',position:'relative',zIndex:2}}>
+            <div className="card" style={{textAlign:'center',padding:'14px 16px 16px',display:'flex',flexDirection:'column',alignItems:'center',position:'relative',zIndex:2}}>
 
               {/* CREATURE */}
               <div className="gen-cz">
