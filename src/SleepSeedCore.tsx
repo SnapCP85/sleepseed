@@ -3071,24 +3071,6 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
         {/* BOOK */}
         {stage==="book" && book && (
           <div className="book-shell">
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-              <div style={{display:"flex",alignItems:"center",gap:7,cursor:"pointer"}}
-                onClick={()=>{
-                  window.speechSynthesis?.cancel();
-                  if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
-                  autoReadRef.current = false; setIsReading(false);
-                  onHome ? onHome() : setStage("home");
-                }}>
-                <div className="brand-gem" style={{width:30,height:30,fontSize:15,borderRadius:9}}>🌙</div>
-                <span className="brand-name" style={{fontSize:16}}>SleepSeed</span>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:6}}>
-                {fromCache && <div style={{fontSize:10,background:"rgba(76,200,144,.12)",border:"1px solid rgba(76,200,144,.28)",borderRadius:6,padding:"3px 7px",color:"var(--green2)",fontWeight:700}}>⚡ Saved</div>}
-                {voiceId && <div style={{fontSize:10,background:"rgba(240,100,120,.12)",border:"1px solid rgba(240,100,120,.28)",borderRadius:6,padding:"3px 7px",color:"#f8a0b0",fontWeight:700}}>🎤 Your Voice</div>}
-                {isAdv&&chosenPath && <div style={{fontSize:10,background:"rgba(112,80,192,.12)",border:"1px solid rgba(112,80,192,.28)",borderRadius:6,padding:"3px 7px",color:"#c0a8ff",fontWeight:700}}>Path {chosenPath.toUpperCase()}</div>}
-                <div style={{fontSize:11,color:"var(--dim)",fontFamily:"'Kalam',cursive",fontStyle:"italic"}}>{book.heroName}'s story</div>
-              </div>
-            </div>
 
             <div className="book-3d" onClick={addSparkle}>
               {/* Reading progress bar */}
