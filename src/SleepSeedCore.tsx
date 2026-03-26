@@ -2402,63 +2402,31 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
       if(!resolvedAdv && (!Array.isArray(story.pages)||story.pages.length===0)) throw new Error("Response missing pages array");
       if(resolvedAdv && (!Array.isArray(story.setup_pages)||!Array.isArray(story.path_a)||!Array.isArray(story.path_b))) throw new Error("Response missing adventure paths");
 
-      setGen(g => ({...g,stepIdx:2,progress:65,label:"Painting the illustrations…"}));
+      setGen(g => ({...g,stepIdx:2,progress:80,label:"Your book is ready!"}));
 
-      const g = heroGender || "girl";
-      const coverUrl = illoUrlTracked(story.cover_prompt, seed, 640, 280, g);
-      let bookData, allUrls;
+      // Build book data — SVG scenes provide illustrations (no Pollinations calls)
+      let bookData;
 
       if(resolvedAdv && story.setup_pages){
-        const sU = story.setup_pages.map((p,i) => illoUrlTracked(p.illustration_prompt, seed+i+1, 480, 220, g));
-        const aU = story.path_a.map((p,i) => illoUrlTracked(p.illustration_prompt, seed+100+i, 480, 220, g));
-        const bU = story.path_b.map((p,i) => illoUrlTracked(p.illustration_prompt, seed+200+i, 480, 220, g));
-        allUrls = [coverUrl,...sU,...aU,...bU];
         bookData = {
-          title:story.title,heroName:name,coverUrl,allChars,isAdventure:true,
+          title:story.title,heroName:name,allChars,isAdventure:true,
           refrain:story.refrain||"",
-          setup_pages:story.setup_pages.map((p,i) => ({text:p.text,imgUrl:sU[i]})),
+          setup_pages:story.setup_pages.map(p => ({text:p.text})),
           choice:story.choice,
-          path_a:story.path_a.map((p,i) => ({text:p.text,imgUrl:aU[i]})),
-          path_b:story.path_b.map((p,i) => ({text:p.text,imgUrl:bU[i]})),
+          path_a:story.path_a.map(p => ({text:p.text})),
+          path_b:story.path_b.map(p => ({text:p.text})),
         };
       } else {
-        const pU = story.pages.map((p,i) => illoUrlTracked(p.illustration_prompt, seed+i+1, 480, 220, g));
-        allUrls = [coverUrl,...pU];
         bookData = {
-          title:story.title,heroName:name,coverUrl,allChars,
+          title:story.title,heroName:name,allChars,
           refrain:story.refrain||"",
-          pages:story.pages.map((p,i) => ({text:p.text,imgUrl:pU[i]})),
+          pages:story.pages.map(p => ({text:p.text})),
         };
       }
 
-      const dots = mk(allUrls.length,"p");
-      setGen(g => ({...g,progress:80,label:"Story ready! Illustrations loading…",dots:[...dots]}));
-      // Stagger requests by 800ms each — flux-pro on the free tier rate-limits
-      // simultaneous requests, causing silent failures. Sequential loading means
-      // images appear one by one rather than all failing at once.
-      allUrls.forEach((url,i) => {
-        setTimeout(() => {
-          preloadImg(url,
-            (_resolvedUrl) => { dots[i]="d"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:true})); },
-            (_resolvedUrl) => { dots[i]="e"; setGen(g=>({...g,dots:[...dots]})); setImgLoaded(p=>({...p,[strHash(url)]:"e"})); }
-          );
-        }, i * 800);
-      });
-
-      // ── Generate parent note ──────────────────────────────────────────
-      let parentNote = "";
-      try {
-        const lessonSummary = lesArr.length ? lesArr.map(l=>l.split("—")[0].trim()).join(", ") : "";
-        const notePrompt = `A child named ${name} just heard a personalised bedtime story called "${story.title}". ${lessonSummary ? `The story gently explored: ${lessonSummary}.` : ""} ${brief1Safe ? `Tonight's story was about: ${name} ${brief1Safe}.` : ""}
-
-Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1: name the emotional theme the story carried tonight in plain, warm language — what ${name} experienced emotionally through the story. Sentence 2: one gentle, practical suggestion for a brief real-world conversation or bedtime ritual that builds on what the story explored. Keep it under 40 words total. Warm but not clinical. Never use the word "lesson". Return only the note text, no labels, no quotes.`;
-        const noteRaw = await callClaude([{role:"user",content:notePrompt}], "You write brief, warm, practical notes to parents after their child's personalised bedtime story. You are a trusted friend who understands child development, not a therapist. Keep it human and brief.", 200);
-        parentNote = noteRaw.trim().replace(/^["“”]|["“”]$/g,"");
-      } catch(_) {}
-      bookData.parentNote = parentNote;
-
+      // Show book immediately — no parentNote delay, no image preloading
       setBook(bookData); setPageIdx(0);
-      setGen(g => ({...g,stepIdx:3,progress:94,label:"Enjoy your story!",dots:[...dots]}));
+      setGen(g => ({...g,stepIdx:3,progress:94,label:"Enjoy your story!"}));
       await new Promise(r => setTimeout(r,200));
       setStage("book");
       sSet(bKey,bookData).catch(()=>{});
@@ -2548,7 +2516,6 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
       <div className="story-lay">
         <div className="story-illo">
           {StoryScene && <StoryScene />}
-          {pg?.imgUrl && <div style={{position:'absolute',inset:0,zIndex:2}}><Illo url={pg.imgUrl} loaded={imgReady(pg.imgUrl)} /></div>}
         </div>
         <div className="story-txt-col">
           <div className="s-pgnum">Page {pgNum}</div>
@@ -2573,7 +2540,6 @@ Write a warm 2-sentence note addressed to the parent (not the child). Sentence 1
         <div className="cover-lay">
           <div className="cover-art">
             {StoryScene && <StoryScene />}
-            {book.coverUrl && <div style={{position:'absolute',inset:0,zIndex:2}}><Illo url={book.coverUrl} loaded={imgReady(book.coverUrl)} /></div>}
           </div>
           <div className="cover-bot">
             <div className="c-stars">✦ ★ ✦</div>
