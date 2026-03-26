@@ -3025,17 +3025,9 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                 </div>)}
               </div>}
 
-              {/* STEPS + PROGRESS */}
-              <div style={{display:'flex',flexDirection:'column',gap:4,width:'100%',maxWidth:262,position:'relative',zIndex:5}}>
-                {['Setting the scene\u2026','Writing the story\u2026','Painting illustrations\u2026','Book is ready!'].map((s,i)=>(
-                  <div key={i} className={`pstep${i===gen.stepIdx?' active':i<gen.stepIdx?' done':''}`}><div className="pstep-dot"/><span>{i<gen.stepIdx?'\u2713 ':''}{s}</span></div>
-                ))}
-              </div>
-              <div className="pbar" style={{maxWidth:262,marginTop:8}}><div className="pfill" style={{width:`${gen.progress}%`}}/></div>
-
-              {/* BONDING QUESTION */}
+              {/* BONDING QUESTION — above the loading steps */}
               {gen.stepIdx<=2&&ncBondingQ&&!bondingAnswered&&(
-                <div style={{background:'rgba(160,120,255,.06)',border:'1px solid rgba(160,120,255,.18)',borderRadius:14,padding:'11px 13px',marginTop:12,width:'100%',maxWidth:262,animation:'fup .5s ease .8s both'}}>
+                <div style={{background:'rgba(160,120,255,.06)',border:'1px solid rgba(160,120,255,.18)',borderRadius:14,padding:'11px 13px',width:'100%',maxWidth:262,animation:'fup .5s ease .8s both'}}>
                   <div style={{fontFamily:"'DM Mono',monospace",fontSize:'7.5px',letterSpacing:'.1em',textTransform:'uppercase',color:'rgba(160,120,255,.55)',marginBottom:4}}>{companionCreature?.name??'Luna'} wants to know</div>
                   <div style={{fontFamily:"'Fraunces',serif",fontSize:'12.5px',fontStyle:'italic',color:'rgba(200,180,255,.85)',lineHeight:1.5,marginBottom:8}}>"{ncBondingQ}"</div>
                   <textarea className="ftarea" placeholder={`${heroName} said\u2026`} value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)}
@@ -3043,6 +3035,14 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                     style={{marginBottom:0,minHeight:44,fontSize:13}} rows={2}/>
                 </div>
               )}
+
+              {/* STEPS + PROGRESS */}
+              <div style={{display:'flex',flexDirection:'column',gap:4,width:'100%',maxWidth:262,position:'relative',zIndex:5}}>
+                {['Setting the scene\u2026','Writing the story\u2026','Painting illustrations\u2026','Book is ready!'].map((s,i)=>(
+                  <div key={i} className={`pstep${i===gen.stepIdx?' active':i<gen.stepIdx?' done':''}`}><div className="pstep-dot"/><span>{i<gen.stepIdx?'\u2713 ':''}{s}</span></div>
+                ))}
+              </div>
+              <div className="pbar" style={{maxWidth:262,marginTop:8}}><div className="pfill" style={{width:`${gen.progress}%`}}/></div>
 
               {/* AUTO-ADVANCE */}
               {isReady&&<div className="gen-auto-advance">Opening your story&#8230;</div>}
