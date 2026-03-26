@@ -523,14 +523,14 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .book-menu-pill-ico{font-size:11px;line-height:1}
 
 /* ── STORY PAGE FULL ── */
-.story-page-full{position:absolute;inset:0;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;animation:pageFade .3s ease both}
+.story-page-full{position:absolute;inset:0;width:100%;height:100%;max-height:700px;display:flex;flex-direction:column;overflow:hidden;animation:pageFade .3s ease both}
 .story-page-full.warm{filter:sepia(38%) saturate(.8) hue-rotate(-18deg) brightness(.86)}
 .story-illo-area{flex:0 0 55%;position:relative;overflow:hidden;background:linear-gradient(160deg,#e8ddb0,#d4c890)}
 .story-illo-content{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
 .story-illo-fade{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(0deg,#fef4e0,transparent)}
 .story-text-area{flex:1;min-height:0;display:flex;flex-direction:column;padding:14px 18px 36px;background:linear-gradient(160deg,#fef8e8,#f5e8c0);overflow:hidden;position:relative}
 .page-num-kalam{font-family:'Kalam',cursive;font-size:10px;color:rgba(90,56,10,.32);text-align:center;margin-bottom:8px;letter-spacing:.08em;flex-shrink:0}
-.story-text-main{font-family:'Patrick Hand',cursive;font-size:clamp(17px,3.6vw,19px);color:var(--ink);line-height:1.85;flex:1;min-height:0;overflow-y:hidden}
+.story-text-main{font-family:'Patrick Hand',cursive;font-size:clamp(14px,3.2vw,17px);color:var(--ink);line-height:1.75;flex:1;min-height:0;overflow:hidden}
 .story-refrain-cg{font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;font-weight:500;color:rgba(90,56,10,.45);text-align:center;padding:7px 0 0;border-top:1px solid rgba(90,56,10,.08);margin-top:8px;line-height:1.6;flex-shrink:0}
 .page-nav-corners{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 14px;pointer-events:none;z-index:8}
 .page-nav-corner{font-family:'Kalam',cursive;font-size:11px;color:rgba(90,56,10,.32);display:flex;align-items:center;gap:3px}
@@ -2120,6 +2120,9 @@ export default function SleepSeed({
     setTimeout(() => setSparkles(s => s.filter(sp => sp.id!==id)),700);
   },[]);
 
+  // ── Scroll to top on stage change ──
+  useEffect(()=>{window.scrollTo({top:0,behavior:'instant'});},[stage]);
+
   // ── Portal stars for generation screen ──
   useEffect(()=>{
     if(stage!=='generating')return;
@@ -2600,6 +2603,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
   const goPage = (dir) => {
     if(dir>0&&onChoicePg&&!chosenPath) return;
     setPageIdx(p => Math.max(0,Math.min(totalPages-1,p+dir)));
+    window.scrollTo({top:0,behavior:'instant'});
   };
   // Helper functions for night card actions
   async function shareNightCard() {
@@ -2654,7 +2658,6 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
             <div key={i} className={`book-dot${i===pageIdx?' on':''}`} onClick={()=>{if(i<=pageIdx)setPageIdx(i);}} />
           ))}
         </div>
-        <div className="book-menu-pill parch" onClick={()=>setShowToolbar(m=>!m)}><span className="book-menu-pill-ico">&#9881;</span> Menu</div>
       </div>
 
       {/* Illustration area — 55% */}
@@ -2676,24 +2679,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
         </div>
       </div>
 
-      {/* Floating Read Aloud pill */}
-      <div className={`book-read-pill${isReading?' playing':''}`} onClick={()=>toggleRead(pg.text||'',pageIdx/(totalPages-1))}>
-        <span className="book-read-pill-ico">{isReading ? '\u23F8' : '\uD83D\uDD0A'}</span>
-        {isReading ? 'Pause' : 'Read aloud'}
-      </div>
-
-      {/* Controls sheet */}
-      {showToolbar && (
-        <div className="book-ctrl-sheet">
-          <div className="book-ctrl-handle" />
-          <div className="book-ctrl-row">
-            <button className="book-ctrl-btn bctrl-new"
-              onClick={()=>{window.speechSynthesis?.cancel();if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}setStage('home');setBook(null);setShowToolbar(false);}}>
-              &#128260; New story
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Controls are in the toolbar below the book */}
     </div>
   );
 
@@ -2710,21 +2696,12 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
         {/* Top bar */}
         <div style={{position:'absolute',top:0,left:0,right:0,height:46,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 14px',background:'linear-gradient(180deg,rgba(3,6,16,.7) 0%,transparent 100%)',zIndex:10}}>
           <div style={{fontFamily:"'Fraunces',serif",fontSize:12,color:'rgba(245,232,200,.6)',fontWeight:700}}>SleepSeed</div>
-          <div className="book-menu-pill dark" onClick={()=>setShowToolbar(m=>!m)}><span className="book-menu-pill-ico">&#9881;</span> Menu</div>
         </div>
         <div className="book-cover-gradient" />
         <div className="book-cover-text">
           <div className="c-stars">&#10022; &middot; &#10022; &middot; &#10022;</div>
           <div className="c-title" style={{fontSize:'clamp(18px,5vw,26px)',fontWeight:900}}>{book.title}</div>
           <div className="c-for">A story for {book.heroName}</div>
-          <div className="book-cover-btns">
-            <button className="book-cover-btn-read" onClick={()=>setPageIdx(1)}>
-              <span className="book-cover-btn-ico">&#128214;</span>Read together
-            </button>
-            <button className="book-cover-btn-listen" onClick={()=>{setPageIdx(1);const text=book.pages?.[0]?.text??book.title;toggleRead(text,0);}}>
-              <span className="book-cover-btn-ico">&#128266;</span>Listen together
-            </button>
-          </div>
           <div className="c-brand">SleepSeed &middot; Made tonight</div>
         </div>
       </div>

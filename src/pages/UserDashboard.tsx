@@ -774,14 +774,23 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
       </nav>
 
       {familyChars.length>1&&(
-        <div style={{padding:'10px 5% 0',position:'relative',zIndex:5}}>
-          <div className="dash-pods">
+        <div style={{padding:'10px 16px 0',position:'relative',zIndex:5,overflowX:'auto',WebkitOverflowScrolling:'touch',scrollbarWidth:'none'}}>
+          <div style={{display:'flex',gap:14,alignItems:'center'}}>
             {familyChars.map(c=>{const isOn=primary?.id===c.id;return(
-              <div key={c.id} className={`dash-pod${isOn?' on':''}`} onClick={()=>{setSelectedCharacters([c]);setWeekViewId(c.id);}}>
-                <div className="dash-pod-emoji">{c.emoji||'\uD83E\uDDD2'}</div>
-                <div className="dash-pod-name">{c.name}</div>
+              <div key={c.id} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4,cursor:'pointer',flexShrink:0}} onClick={()=>{setSelectedCharacters([c]);setWeekViewId(c.id);}}>
+                <div style={{width:48,height:48,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:c.photo?0:c.emoji?22:18,overflow:'hidden',
+                  border:isOn?'2px solid #F5B84C':'1.5px solid rgba(255,255,255,.12)',
+                  boxShadow:isOn?'0 0 0 3px rgba(245,184,76,.18)':'none',
+                  background:c.photo?'none':c.color||'rgba(255,255,255,.06)',transition:'all .2s'}}>
+                  {c.photo?<img src={c.photo} alt={c.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+                   :c.emoji?c.emoji
+                   :<span style={{fontFamily:'var(--serif)',fontWeight:700,color:'rgba(255,255,255,.5)'}}>{c.name?.charAt(0)||'?'}</span>}
+                </div>
+                <div style={{fontFamily:'var(--sans)',fontSize:11,fontWeight:700,color:isOn?'#F5B84C':'rgba(255,255,255,.4)',transition:'color .2s',textAlign:'center',maxWidth:56,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.name}</div>
               </div>
             );})}
+            <div style={{width:48,height:48,borderRadius:'50%',border:'1.5px dashed rgba(255,255,255,.18)',background:'rgba(255,255,255,.04)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,color:'rgba(255,255,255,.25)',cursor:'pointer',flexShrink:0}}
+              onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>+</div>
           </div>
         </div>
       )}
@@ -858,7 +867,13 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
                       <span className="dash-info-lbl amber">Dream Shards</span>
                       <div className={`dash-info-ico amber${shardsInfoOpen?' open':''}${shardsFirstTime?' first-time':''}`}>{shardsInfoOpen?'✕':'ⓘ'}</div>
                     </div>
-                    <div className="dash-shard-pos" onClick={toggleShardsInfo}>Shard {eggStage} of 7 ✦</div>
+                    <div style={{display:'flex',alignItems:'center',gap:6}}>
+                      {glow>0&&<div style={{display:'flex',alignItems:'center',gap:4,padding:'3px 9px',borderRadius:99,background:'rgba(245,184,76,.12)',border:'1.5px solid rgba(245,184,76,.3)',flexShrink:0}}>
+                        <span style={{fontSize:12}}>🔥</span>
+                        <span style={{fontFamily:'var(--mono)',fontSize:11,fontWeight:700,color:'rgba(245,184,76,.9)',letterSpacing:'.02em'}}>{glow}</span>
+                      </div>}
+                      <div className="dash-shard-pos" onClick={toggleShardsInfo}>Shard {eggStage} of 7 ✦</div>
+                    </div>
                   </div>
 
                   <div className={`dash-explain${shardsInfoOpen?' open':''}`}>
@@ -917,32 +932,6 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
                 <span style={{fontSize:9.5,fontWeight:600,opacity:.58,marginTop:3,fontFamily:'var(--sans)'}}>{hatchedCreature.name} is waiting · ~10 minutes</span>
               </button>
             )}
-
-            {/* WEEK BAR */}
-            <div className="dash-wkbar">
-              <div className="dash-wkbar-hd">
-                <div className="dash-info-trigger" onClick={toggleWeekInfo}>
-                  <span className="dash-info-lbl muted">This week</span>
-                  <div className={`dash-info-ico muted${weekInfoOpen?' open muted':''}`}>{weekInfoOpen?'✕':'ⓘ'}</div>
-                </div>
-                <div className="dash-wkbar-meta amber">· Memory {totalMemories}</div>
-              </div>
-              <div className={`dash-explain${weekInfoOpen?' open':''}`}>
-                <div className="dash-explain-inner muted">
-                  <div className="dash-exp-title">📅 This week's ritual</div>
-                  <div className="dash-exp-row"><div className="dash-exp-ico" style={{fontSize:13}}>⭐</div><div className="dash-exp-txt" style={{color:'rgba(255,255,255,.62)'}}>Shows Monday to Sunday. Each bar is one night — fill means ritual completed.</div></div>
-                  <div className="dash-exp-row"><div className="dash-exp-ico" style={{fontSize:13}}>✦</div><div className="dash-exp-txt" style={{color:'rgba(255,255,255,.62)'}}>Tonight's bar pulses. After the ritual it turns <em className="teal">teal</em>.</div></div>
-                  <div className="dash-exp-divider"/><div className="dash-exp-sublbl muted">Legend</div>
-                  <div className="dash-exp-legend">
-                    <div className="dash-leg-row"><div className="dash-leg-ico">⭐</div><div className="dash-leg-txt">Ritual completed</div></div>
-                    <div className="dash-leg-row"><div className="dash-leg-ico" style={{fontSize:11,color:'rgba(245,184,76,.5)'}}>✦</div><div className="dash-leg-txt">Tonight · not yet</div></div>
-                    <div className="dash-leg-row"><div className="dash-leg-ico" style={{fontSize:10,color:'rgba(255,80,80,.4)'}}>✕</div><div className="dash-leg-txt">Missed night</div></div>
-                  </div>
-                  <button className="dash-exp-dismiss muted" onClick={toggleWeekInfo}>Got it ✓</button>
-                </div>
-              </div>
-              {renderWeekBar()}
-            </div>
 
             {/* RE-READ */}
             {lastStory&&lastStory.bookData&&onReadStory&&(
@@ -1021,26 +1010,6 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
                 </div>
               </div>
             )}
-
-            {/* TEAL WEEK BAR */}
-            <div className="dash-wkbar">
-              <div className="dash-wkbar-hd">
-                <div className="dash-info-trigger" onClick={toggleWeekInfo}>
-                  <span className="dash-info-lbl muted">This week</span>
-                  <div className={`dash-info-ico muted${weekInfoOpen?' open muted':''}`}>{weekInfoOpen?'✕':'ⓘ'}</div>
-                </div>
-                <div className="dash-wkbar-meta teal">· Memory {totalMemories}</div>
-              </div>
-              <div className={`dash-explain${weekInfoOpen?' open':''}`}>
-                <div className="dash-explain-inner muted">
-                  <div className="dash-exp-title">📅 This week's ritual</div>
-                  <div className="dash-exp-row"><div className="dash-exp-ico" style={{fontSize:13}}>⭐</div><div className="dash-exp-txt" style={{color:'rgba(255,255,255,.62)'}}>Each bar is one night. Fill means ritual completed.</div></div>
-                  <div className="dash-exp-row"><div className="dash-exp-ico" style={{fontSize:13}}>📊</div><div className="dash-exp-txt" style={{color:'rgba(255,255,255,.62)'}}>"Memory {totalMemories}" is your all-time count — every ritual ever completed.</div></div>
-                  <button className="dash-exp-dismiss muted" onClick={toggleWeekInfo}>Got it ✓</button>
-                </div>
-              </div>
-              {renderWeekBar()}
-            </div>
 
             <div style={{textAlign:'center',padding:'6px 0 14px',position:'relative',zIndex:5}}>
               <button className="dash-week-lnk" onClick={()=>setView('hatchery')}>View hatchery →</button>
