@@ -1,80 +1,97 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../AppContext';
 import { getCharacters, getStories, getNightCards, getFriends, ensureRefCode } from '../lib/storage';
 import type { Friend } from '../lib/storage';
 import { BASE_URL } from '../lib/config';
 import { supabase } from '../lib/supabase';
-import type { Character, SavedStory, SavedNightCard } from '../lib/types';
+import { getAllHatchedCreatures } from '../lib/hatchery';
+import { getCreature } from '../lib/creatures';
+import type { Character, SavedStory, SavedNightCard, HatchedCreature } from '../lib/types';
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=Nunito:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--night:#080C18;--amber:#E8972A;--amber2:#F5B84C;--cream:#F4EFE8;--dim:#C8BFB0;--muted:#3A4270;--serif:'Playfair Display',Georgia,serif;--sans:'Plus Jakarta Sans',system-ui,sans-serif;--mono:'DM Mono',monospace}
-.up{min-height:100vh;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;padding-bottom:68px}
-.up-nav{display:flex;align-items:center;justify-content:space-between;padding:0 6%;height:56px;border-bottom:1px solid rgba(232,151,42,.08);background:rgba(8,12,24,.97);position:sticky;top:0;z-index:20;backdrop-filter:blur(20px)}
-.up-nav-title{font-family:var(--serif);font-size:17px;font-weight:700;color:var(--cream)}
-.up-nav-r{display:flex;align-items:center;gap:10px}
-.up-nav-user{font-size:11px;color:rgba(244,239,232,.25);font-family:var(--mono)}
-.up-nav-out{background:transparent;border:1px solid rgba(255,255,255,.07);color:rgba(244,239,232,.32);font-size:11px;cursor:pointer;font-family:var(--sans);padding:5px 13px;border-radius:7px;transition:all .2s}
-.up-nav-out:hover{border-color:rgba(255,255,255,.18);color:rgba(244,239,232,.65)}
-.up-inner{max-width:860px;margin:0 auto;padding:24px 6% 24px;position:relative;z-index:5}
-.up-section{margin-bottom:28px}
-.up-sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.04)}
-.up-sec-title{font-family:var(--serif);font-size:17px;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:9px}
-.up-sec-count{font-size:10px;color:rgba(244,239,232,.22);font-family:var(--mono);background:rgba(255,255,255,.04);padding:2px 9px;border-radius:50px;border:1px solid rgba(255,255,255,.05)}
-.up-sec-link{font-size:12px;color:rgba(232,151,42,.65);cursor:pointer;font-weight:500;background:none;border:none;font-family:var(--sans);transition:color .15s}
-.up-sec-link:hover{color:var(--amber)}
-.up-empty{font-size:12.5px;color:rgba(244,239,232,.25);font-weight:300;line-height:1.65;font-style:italic;padding:4px 0}
-.up-add-btn{background:rgba(232,151,42,.07);border:1px solid rgba(232,151,42,.16);color:rgba(232,151,42,.72);border-radius:9px;padding:8px 15px;font-size:12px;cursor:pointer;font-family:var(--sans);font-weight:500;transition:all .2s;margin-top:8px}
-.up-add-btn:hover{background:rgba(232,151,42,.13);color:var(--amber2)}
-.up-char-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-ms-overflow-style:none;scrollbar-width:none}
-.up-char-strip::-webkit-scrollbar{display:none}
-.up-char-chip{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;transition:transform .15s;width:66px}
-.up-char-chip:hover{transform:translateY(-2px)}
-.up-char-av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid rgba(232,151,42,.12)}
-.up-char-nm{font-size:10px;color:rgba(244,239,232,.48);text-align:center;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%}
-.up-char-add .up-char-av{background:rgba(232,151,42,.05);border:1.5px dashed rgba(232,151,42,.2)}
-.up-char-add .up-char-nm{color:rgba(232,151,42,.45)}
-.up-story-item{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:opacity .15s}
-.up-story-item:last-child{border-bottom:none}
-.up-story-item:hover{opacity:.72}
-.up-story-ico{font-size:17px;width:34px;height:34px;background:rgba(255,255,255,.04);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.up-story-info{flex:1;min-width:0}
-.up-story-title{font-size:13px;font-weight:500;color:var(--cream);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--serif)}
-.up-story-meta{font-size:10px;color:rgba(244,239,232,.28);margin-top:2px;font-family:var(--mono)}
-.up-story-arrow{font-size:11px;color:rgba(244,239,232,.18);flex-shrink:0}
-.up-nc-strip{display:flex;gap:10px;overflow-x:auto;padding:4px 0 8px;-ms-overflow-style:none;scrollbar-width:none}
-.up-nc-strip::-webkit-scrollbar{display:none}
-.up-nc-pol{flex-shrink:0;background:#F4EFE2;border-radius:3px;padding:8px 8px 22px;cursor:pointer;transition:transform .2s;box-shadow:0 4px 16px rgba(0,0,0,.5)}
-.up-nc-pol:hover{transform:translateY(-3px) rotate(0deg) !important}
-.up-nc-img{width:88px;aspect-ratio:1;border-radius:2px;overflow:hidden}
-.up-nc-img-bg{width:100%;height:100%;background:linear-gradient(145deg,#1A1C2A,#1C1430);display:flex;align-items:center;justify-content:center;font-size:22px}
-.up-nc-caption{font-family:Georgia,serif;font-size:8.5px;color:#3A2600;text-align:center;font-style:italic;line-height:1.4;margin-top:7px}
-.up-account{background:rgba(255,255,255,.017);border:1px solid rgba(255,255,255,.04);border-radius:14px;padding:16px 20px}
-.up-account-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:.5px solid rgba(255,255,255,.04)}
-.up-account-row:last-child{border-bottom:none}
-.up-account-label{font-size:12px;color:rgba(244,239,232,.35);font-weight:300}
-.up-account-value{font-size:12px;color:rgba(244,239,232,.65);font-family:var(--mono)}
-.up-bnav{position:fixed;bottom:0;left:0;right:0;height:62px;background:rgba(5,7,16,.98);border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:space-around;padding:0 8%;z-index:20;backdrop-filter:blur(20px)}
-.up-bni{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;min-width:58px;padding:3px 0;transition:opacity .15s}
-.up-bni:hover{opacity:.75}
-.up-bni-ico{width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px}
-.up-bni-on .up-bni-ico{background:rgba(20,26,50,.9);box-shadow:0 0 10px rgba(232,151,42,.16)}
-.up-bni-lbl{font-size:7.5px;font-weight:500;font-family:var(--mono)}
-.up-bni-on .up-bni-lbl{color:var(--amber)}
-.up-bni:not(.up-bni-on) .up-bni-lbl{color:rgba(255,255,255,.16)}
-`;
+:root{--night:#080C18;--night-mid:#0D1120;--night-card:#0f1525;--amber:#F5B84C;--amber-deep:#E8972A;--cream:#F4EFE8;--cream-dim:rgba(244,239,232,0.6);--cream-faint:rgba(244,239,232,0.28);--teal:#14d890;--purple:#9482ff;--serif:'Fraunces',Georgia,serif;--sans:'Nunito',system-ui,sans-serif;--mono:'DM Mono',monospace}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
-const ROTS = [-2.1, 1.4, -0.8, 2.2, -1.6, 0.9, -2.8, 1.1];
+.up{min-height:100vh;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;padding-bottom:80px}
+
+/* Nav */
+.up-nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;border-bottom:1px solid rgba(245,184,76,.07);background:rgba(8,12,24,.92);position:sticky;top:0;z-index:20;backdrop-filter:blur(20px)}
+.up-nav-title{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--cream)}
+.up-nav-title span{color:var(--amber)}
+.up-nav-settings{width:34px;height:34px;border-radius:50%;background:rgba(244,239,232,.06);border:none;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--cream-faint);transition:all .18s}
+.up-nav-settings:hover{background:rgba(244,239,232,.1);color:var(--cream-dim)}
+
+/* Inner */
+.up-inner{max-width:500px;margin:0 auto;padding:0 20px;position:relative;z-index:5}
+
+/* Profile Hero */
+.up-hero{text-align:center;padding:28px 0 8px;animation:fadeUp .6s ease}
+.up-avatar{width:72px;height:72px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:30px;border:2px solid rgba(245,184,76,.3);box-shadow:0 0 24px rgba(245,184,76,.12)}
+.up-hero-name{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--cream);margin-bottom:4px}
+.up-hero-since{font-family:var(--mono);font-size:10px;color:var(--cream-faint);letter-spacing:1.5px;text-transform:uppercase}
+
+/* Stats Row */
+.up-stats{display:flex;margin:20px 0 0;background:var(--night-card);border:1px solid rgba(244,239,232,.07);border-radius:18px;overflow:hidden;animation:fadeUp .6s .05s ease both}
+.up-stat{flex:1;padding:14px 10px;text-align:center}
+.up-stat:not(:last-child){border-right:1px solid rgba(244,239,232,.07)}
+.up-stat-num{font-family:var(--serif);font-size:22px;font-weight:600;color:var(--amber)}
+.up-stat-lbl{font-family:var(--sans);font-size:9px;font-weight:700;color:var(--cream-faint);text-transform:uppercase;margin-top:2px}
+
+/* Section */
+.up-sec{margin-top:20px;animation:fadeUp .6s .1s ease both}
+.up-sec-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--cream-faint);margin-bottom:10px;padding:0 2px}
+
+/* Memory Grid */
+.up-mem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.up-mem-thumb{aspect-ratio:1;border-radius:10px;overflow:hidden;cursor:pointer;position:relative;transition:all .18s}
+.up-mem-thumb:hover{transform:scale(1.04)}
+.up-mem-thumb-bg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:22px;position:relative}
+.up-mem-thumb-bg::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(transparent,rgba(0,0,0,.5))}
+.up-mem-thumb-title{position:absolute;bottom:4px;left:6px;font-family:var(--sans);font-size:7px;color:rgba(255,255,255,.8);z-index:1}
+.up-mem-overflow{aspect-ratio:1;border-radius:10px;border:1.5px dashed rgba(244,239,232,.09);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s}
+.up-mem-overflow:hover{border-color:rgba(244,239,232,.2)}
+.up-mem-overflow-num{font-family:var(--serif);font-size:18px;font-weight:600;color:var(--amber-deep)}
+.up-see-all{width:100%;padding:10px;background:transparent;border:1.5px dashed rgba(244,239,232,.09);border-radius:12px;font-family:var(--sans);font-size:12px;color:var(--cream-faint);cursor:pointer;transition:all .18s;text-align:center}
+.up-see-all:hover{border-color:rgba(244,239,232,.18);color:var(--cream-dim)}
+
+/* Children Cards */
+.up-child-card{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--night-card);border:1px solid rgba(244,239,232,.07);border-radius:16px;cursor:pointer;transition:all .18s;margin-bottom:8px}
+.up-child-card:hover{transform:translateX(2px);border-color:rgba(244,239,232,.14)}
+.up-child-av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.up-child-info{flex:1;min-width:0}
+.up-child-name{font-family:var(--serif);font-size:15px;font-weight:500;color:var(--cream)}
+.up-child-meta{font-family:var(--sans);font-size:11px;color:var(--cream-faint);margin-top:2px}
+.up-child-streak{font-family:var(--mono);font-size:11px;color:var(--amber);display:flex;align-items:center;gap:4px;flex-shrink:0}
+.up-child-add{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px dashed rgba(244,239,232,.09);border-radius:16px;cursor:pointer;transition:all .18s;margin-bottom:8px}
+.up-child-add:hover{border-color:rgba(244,239,232,.2);background:rgba(244,239,232,.02)}
+.up-child-add-av{width:46px;height:46px;border-radius:50%;border:1.5px dashed rgba(244,239,232,.15);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--cream-faint);flex-shrink:0}
+.up-child-add-lbl{font-family:var(--sans);font-size:13px;font-weight:500;color:var(--cream-faint)}
+
+/* Settings List */
+.up-settings{display:flex;flex-direction:column;gap:2px}
+.up-set-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;cursor:pointer;transition:background .15s}
+.up-set-row:hover{background:rgba(244,239,232,.04)}
+.up-set-ico{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.up-set-lbl{font-family:var(--sans);font-size:13px;font-weight:500;color:var(--cream-dim);flex:1}
+.up-set-val{font-family:var(--mono);font-size:10px;color:var(--cream-faint)}
+.up-set-divider{height:1px;background:rgba(244,239,232,.04);margin:4px 14px}
+.up-set-danger .up-set-lbl{color:rgba(255,90,90,.7)}
+
+/* Dev section */
+.up-dev{border:2px solid rgba(255,60,60,.3);border-radius:14px;padding:14px;background:rgba(255,60,60,.03);margin-top:20px}
+`;
 
 export default function UserProfile() {
   const { user, logout, setView, setEditingCharacter, isSubscribed, setIsSubscribed } = useApp();
   const [characters, setCharacters] = useState<Character[]>([]);
-  const [stories,    setStories]    = useState<SavedStory[]>([]);
-  const [nightCards, setNightCards] = useState<SavedNightCard[]>([]);
+  const [allStories, setAllStories] = useState<SavedStory[]>([]);
+  const [allNightCards, setAllNightCards] = useState<SavedNightCard[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [inviteLink, setInviteLink] = useState('');
   const [copied, setCopied] = useState(false);
+  const [creatures, setCreatures] = useState<HatchedCreature[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -83,206 +100,222 @@ export default function UserProfile() {
       getStories(user.id),
       getNightCards(user.id),
       getFriends(user.id),
-    ]).then(([chars, strs, ncs, frs]) => {
+      getAllHatchedCreatures(user.id),
+    ]).then(([chars, strs, ncs, frs, crs]) => {
       setCharacters(chars);
-      setStories(strs.slice(0, 5));
-      setNightCards(ncs.slice(0, 8));
+      setAllStories(strs);
+      setAllNightCards(ncs);
       setFriends(frs);
+      setCreatures(crs);
     });
-    // Generate invite link
     ensureRefCode(user.id).then(code => {
       setInviteLink(`${BASE_URL}?friend=${code}`);
     }).catch(() => {});
   }, [user]);
 
+  const familyChars = useMemo(() => characters.filter(c => c.isFamily === true || (c.isFamily === undefined && c.type === 'human')), [characters]);
+
+  // Streak calculation
+  const bestStreak = useMemo(() => {
+    const dates = new Set(allNightCards.map(c => c.date.split('T')[0]));
+    let best = 0, cur = 0;
+    const sorted = [...dates].sort();
+    for (let i = 0; i < sorted.length; i++) {
+      if (i === 0) { cur = 1; } else {
+        const prev = new Date(sorted[i - 1]); prev.setDate(prev.getDate() + 1);
+        cur = prev.toISOString().split('T')[0] === sorted[i] ? cur + 1 : 1;
+      }
+      if (cur > best) best = cur;
+    }
+    return best;
+  }, [allNightCards]);
+
+  const favCount = useMemo(() => {
+    try { return JSON.parse(localStorage.getItem(`ss_fav_stories_${user?.id}`) || '[]').length; } catch { return 0; }
+  }, [user?.id]);
+
+  // Get creature for each family child
+  const childCreatureMap = useMemo(() => {
+    const map: Record<string, HatchedCreature | undefined> = {};
+    familyChars.forEach(c => {
+      map[c.id] = creatures.find(cr => cr.characterId === c.id);
+    });
+    return map;
+  }, [familyChars, creatures]);
+
   if (!user) return null;
+
+  const memberSince = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
+  const displayCards = allNightCards.slice(0, 5);
+  const remainingCards = Math.max(0, allNightCards.length - 5);
 
   return (
     <div className="up">
       <style>{CSS}</style>
+
+      {/* Nav */}
       <nav className="up-nav">
-        <button className="up-nav-out" onClick={() => setView('dashboard')} style={{marginRight:'auto'}}>← Home</button>
-        <div className="up-nav-title">My Profile</div>
-        <div className="up-nav-r">
-          <span className="up-nav-user">{user.displayName}</span>
-          <button className="up-nav-out" onClick={logout}>Sign out</button>
-        </div>
+        <div className="up-nav-title">My <span>Space</span></div>
+        <button className="up-nav-settings" onClick={() => {}} title="Settings">⚙️</button>
       </nav>
 
       <div className="up-inner">
 
-        {/* Characters */}
-        <div className="up-section">
-          <div className="up-sec-head">
-            <div className="up-sec-title">
-              Characters
-              <span className="up-sec-count">{characters.length}</span>
-            </div>
-            <button className="up-sec-link" onClick={() => setView('characters')}>Manage all</button>
+        {/* Profile Hero */}
+        <div className="up-hero">
+          <div className="up-avatar" style={{ background: 'linear-gradient(145deg,#1a0e32,#2e1858)' }}>
+            {user.displayName?.charAt(0)?.toUpperCase() || '?'}
           </div>
-          {characters.length === 0 ? (
+          <div className="up-hero-name">{user.displayName}</div>
+          {memberSince && <div className="up-hero-since">Member since {memberSince}</div>}
+        </div>
+
+        {/* Stats Row */}
+        <div className="up-stats">
+          <div className="up-stat">
+            <div className="up-stat-num">{allStories.length}</div>
+            <div className="up-stat-lbl">Stories</div>
+          </div>
+          <div className="up-stat">
+            <div className="up-stat-num">{bestStreak}</div>
+            <div className="up-stat-lbl">Best Streak</div>
+          </div>
+          <div className="up-stat">
+            <div className="up-stat-num">{allNightCards.length}</div>
+            <div className="up-stat-lbl">Memories</div>
+          </div>
+        </div>
+
+        {/* Night Cards — FIRST section */}
+        <div className="up-sec">
+          <div className="up-sec-lbl">Our Night Cards</div>
+          {allNightCards.length === 0 ? (
+            <div style={{ fontSize: 12, color: 'var(--cream-faint)', fontStyle: 'italic', padding: '4px 0' }}>
+              Night Cards are saved at the end of each story — your child's words, captured forever.
+            </div>
+          ) : (
             <>
-              <div className="up-empty">Save your child's details once — used in every story automatically.</div>
-              <button className="up-add-btn" onClick={() => { setEditingCharacter(null); setView('onboarding'); }}>
-                + Create first character
+              <div className="up-mem-grid">
+                {displayCards.map(nc => (
+                  <div key={nc.id} className="up-mem-thumb" onClick={() => setView('nightcard-library')}>
+                    <div className="up-mem-thumb-bg" style={{ background: `linear-gradient(145deg, ${nc.emoji ? '#1a1c2a' : '#201830'}, #1c1430)` }}>
+                      {nc.photo
+                        ? <img src={nc.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <span>{nc.emoji || '🌙'}</span>}
+                    </div>
+                    {nc.storyTitle && <div className="up-mem-thumb-title">{nc.storyTitle.slice(0, 18)}</div>}
+                  </div>
+                ))}
+                {remainingCards > 0 && (
+                  <div className="up-mem-overflow" onClick={() => setView('nightcard-library')}>
+                    <div className="up-mem-overflow-num">+{remainingCards}</div>
+                  </div>
+                )}
+              </div>
+              <button className="up-see-all" onClick={() => setView('nightcard-library')}>
+                See all {allNightCards.length} memories →
               </button>
             </>
-          ) : (
-            <div className="up-char-strip">
-              {characters.map(c => (
-                <div key={c.id} className="up-char-chip" onClick={() => { setEditingCharacter(c); setView('character-builder'); }}>
-                  <div className="up-char-av" style={{ background: c.color }}>
-                    {c.photo
-                      ? <img src={c.photo} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} alt="" />
-                      : c.emoji}
-                  </div>
-                  <div className="up-char-nm">{c.name}</div>
-                </div>
-              ))}
-              <div className="up-char-chip up-char-add" onClick={() => { setEditingCharacter(null); setView('onboarding'); }}>
-                <div className="up-char-av"><span style={{ fontSize: 18 }}>+</span></div>
-                <div className="up-char-nm">Add</div>
-              </div>
-            </div>
           )}
         </div>
 
-        {/* Story Library */}
-        <div className="up-section">
-          <div className="up-sec-head">
-            <div className="up-sec-title">
-              Story Library
-              <span className="up-sec-count">{stories.length}</span>
+        {/* Children */}
+        <div className="up-sec" style={{ animationDelay: '.15s' }}>
+          <div className="up-sec-lbl">Our Children</div>
+          {familyChars.length === 0 ? (
+            <div style={{ fontSize: 12, color: 'var(--cream-faint)', fontStyle: 'italic', padding: '4px 0 8px' }}>
+              Save your child's details once — used in every story automatically.
             </div>
-            <button className="up-sec-link" onClick={() => setView('story-library')}>See all</button>
-          </div>
-          {stories.length === 0 ? (
-            <div className="up-empty">Your stories will appear here after you create the first one tonight.</div>
           ) : (
-            stories.map(s => (
-              <div key={s.id} className="up-story-item" onClick={() => setView('story-library')}>
-                <div className="up-story-ico">{s.occasion ? '🎉' : '🌙'}</div>
-                <div className="up-story-info">
-                  <div className="up-story-title">{s.title}</div>
-                  <div className="up-story-meta">{s.heroName} · {s.date?.split('T')[0]}</div>
+            familyChars.map(c => {
+              const cr = childCreatureMap[c.id];
+              const crDef = cr ? getCreature(cr.creatureType) : null;
+              // Simple streak for this child
+              const childCards = allNightCards.filter(nc => nc.characterIds?.includes(c.id));
+              let streak = 0;
+              const d = new Date(); d.setHours(0, 0, 0, 0);
+              for (let i = 0; i < 365; i++) {
+                const ds = d.toISOString().split('T')[0];
+                if (childCards.some(nc => nc.date.split('T')[0] === ds)) { streak++; d.setDate(d.getDate() - 1); }
+                else if (i === 0) { d.setDate(d.getDate() - 1); }
+                else break;
+              }
+              return (
+                <div key={c.id} className="up-child-card" onClick={() => { setView('characters'); }}>
+                  <div className="up-child-av" style={{ background: c.color || 'rgba(255,255,255,.06)', border: `2px solid ${c.color ? c.color + '40' : 'rgba(244,239,232,.1)'}` }}>
+                    {c.photo ? <img src={c.photo} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (c.emoji || c.name?.charAt(0))}
+                  </div>
+                  <div className="up-child-info">
+                    <div className="up-child-name">{c.name}</div>
+                    <div className="up-child-meta">
+                      {c.ageDescription ? `Age ${c.ageDescription}` : ''}
+                      {cr ? ` · DreamKeeper: ${cr.name}` : ''}
+                      {crDef ? ` · Night ${Math.min(childCards.length, 7)}/7` : ''}
+                    </div>
+                  </div>
+                  {streak > 0 && (
+                    <div className="up-child-streak">🔥 {streak}</div>
+                  )}
                 </div>
-                <div className="up-story-arrow">›</div>
-              </div>
-            ))
+              );
+            })
           )}
+          <div className="up-child-add" onClick={() => { setEditingCharacter(null); setView('onboarding'); }}>
+            <div className="up-child-add-av">+</div>
+            <div className="up-child-add-lbl">+ Add another child</div>
+          </div>
         </div>
 
-        {/* Night Cards */}
-        <div className="up-section">
-          <div className="up-sec-head">
-            <div className="up-sec-title">
-              Night Cards
-              <span className="up-sec-count">{nightCards.length}</span>
+        {/* Settings */}
+        <div className="up-sec" style={{ animationDelay: '.2s' }}>
+          <div className="up-sec-lbl">Account</div>
+          <div className="up-settings">
+            <div className="up-set-row" onClick={() => {
+              if (inviteLink) { navigator.clipboard.writeText(inviteLink).catch(() => {}); setCopied(true); setTimeout(() => setCopied(false), 2000); }
+            }}>
+              <div className="up-set-ico">🔗</div>
+              <div className="up-set-lbl">{copied ? 'Link copied!' : 'Invite a friend'}</div>
+              {copied && <div className="up-set-val" style={{ color: '#14d890' }}>✓</div>}
             </div>
-            <button className="up-sec-link" onClick={() => setView('nightcard-library')}>See all</button>
-          </div>
-          {nightCards.length === 0 ? (
-            <div className="up-empty">Night Cards are saved at the end of each story — your child's words, captured forever.</div>
-          ) : (
-            <div className="up-nc-strip">
-              {nightCards.map((nc, i) => (
-                <div key={nc.id} className="up-nc-pol"
-                  style={{ transform: `rotate(${ROTS[i % ROTS.length]}deg)` }}
-                  onClick={() => setView('nightcard-library')}>
-                  <div className="up-nc-img">
-                    {nc.photo
-                      ? <img src={nc.photo} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt="" />
-                      : <div className="up-nc-img-bg">{nc.emoji || '🌙'}</div>
-                    }
-                  </div>
-                  <div className="up-nc-caption">{nc.heroName}<br />{nc.date?.split('T')[0]}</div>
-                </div>
-              ))}
+            <div className="up-set-divider" />
+            <div className="up-set-row">
+              <div className="up-set-ico">🔔</div>
+              <div className="up-set-lbl">Bedtime reminder</div>
+              <div className="up-set-val" style={{ color: 'var(--cream-faint)' }}>OFF</div>
             </div>
-          )}
-        </div>
-
-        {/* Friends */}
-        <div className="up-section">
-          <div className="up-sec-head">
-            <div className="up-sec-title">
-              Friends
-              <span className="up-sec-count">{friends.length}</span>
+            <div className="up-set-row">
+              <div className="up-set-ico">🌐</div>
+              <div className="up-set-lbl">Language</div>
+              <div className="up-set-val">EN</div>
             </div>
-          </div>
-
-          {/* Invite link */}
-          <div style={{background:'rgba(232,151,42,.04)',border:'1px solid rgba(232,151,42,.15)',borderRadius:14,padding:'14px 16px',marginBottom:14}}>
-            <div style={{fontSize:12,fontWeight:600,color:'rgba(244,239,232,.65)',marginBottom:8}}>Invite a friend to SleepSeed</div>
-            <div style={{fontSize:11,color:'rgba(244,239,232,.35)',lineHeight:1.5,marginBottom:10}}>Share this link — when they sign up, you'll be connected and can send stories to each other.</div>
-            <div style={{display:'flex',gap:8}}>
-              <div style={{flex:1,fontSize:10,fontFamily:'var(--mono)',color:'rgba(245,184,76,.6)',background:'rgba(0,0,0,.25)',borderRadius:8,padding:'8px 10px',wordBreak:'break-all',lineHeight:1.4}}>
-                {inviteLink || 'Generating...'}
-              </div>
-              <button onClick={() => {
-                if (inviteLink) { navigator.clipboard.writeText(inviteLink).catch(() => {}); setCopied(true); setTimeout(() => setCopied(false), 2000); }
-              }} style={{padding:'8px 16px',borderRadius:8,border:'none',background:copied?'rgba(20,216,144,.15)':'rgba(232,151,42,.12)',color:copied?'#14d890':'rgba(232,151,42,.8)',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'var(--sans)',whiteSpace:'nowrap',transition:'all .2s'}}>
-                {copied ? 'Copied!' : 'Copy'}
-              </button>
+            <div className="up-set-divider" />
+            <div className="up-set-row">
+              <div className="up-set-ico">💳</div>
+              <div className="up-set-lbl">Subscription</div>
+              <div className="up-set-val" style={{ color: isSubscribed ? '#14d890' : 'var(--cream-faint)' }}>{isSubscribed ? 'Active' : 'Free'}</div>
             </div>
-          </div>
-
-          {/* Friend list */}
-          {friends.length === 0 ? (
-            <div className="up-empty">No friends yet. Share your invite link to connect!</div>
-          ) : (
-            <div style={{display:'flex',flexDirection:'column',gap:6}}>
-              {friends.map(f => (
-                <div key={f.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:10,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.05)'}}>
-                  <div style={{width:30,height:30,borderRadius:'50%',background:'linear-gradient(135deg,#D4A060,#B07020)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,color:'#fff',fontWeight:700,flexShrink:0}}>
-                    {f.friendDisplayName.charAt(0).toUpperCase()}
-                  </div>
-                  <div style={{fontSize:13,fontWeight:600,color:'var(--cream)'}}>{f.friendDisplayName}</div>
-                  <div style={{marginLeft:'auto',fontSize:9,color:'rgba(244,239,232,.2)',fontFamily:'var(--mono)'}}>
-                    {f.createdAt?.split('T')[0]}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Account info */}
-        <div className="up-section">
-          <div className="up-sec-head">
-            <div className="up-sec-title">Account</div>
-          </div>
-          <div className="up-account">
-            <div className="up-account-row">
-              <div className="up-account-label">Display name</div>
-              <div className="up-account-value">{user.displayName}</div>
-            </div>
-            <div className="up-account-row">
-              <div className="up-account-label">Email</div>
-              <div className="up-account-value">{user.email || '—'}</div>
-            </div>
-            <div className="up-account-row">
-              <div className="up-account-label">Member since</div>
-              <div className="up-account-value">{user.createdAt?.split('T')[0] || '—'}</div>
+            <div className="up-set-row up-set-danger" onClick={logout}>
+              <div className="up-set-ico">🚪</div>
+              <div className="up-set-lbl">Sign out</div>
             </div>
           </div>
         </div>
 
         {/* Dev subscription toggle */}
-        <div className="up-section" style={{border:'2px solid rgba(255,60,60,.3)',borderRadius:14,padding:14,background:'rgba(255,60,60,.03)'}}>
-          <div style={{fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'rgba(255,60,60,.6)',marginBottom:8,fontFamily:'var(--mono)'}}>
+        <div className="up-dev">
+          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(255,60,60,.6)', marginBottom: 8, fontFamily: 'var(--mono)' }}>
             DEV ONLY
           </div>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-            <div style={{fontSize:12,color:'rgba(244,239,232,.5)'}}>
-              Subscription: <strong style={{color:isSubscribed?'#14d890':'rgba(244,239,232,.3)'}}>{isSubscribed ? 'Paid' : 'Free'}</strong>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: 12, color: 'rgba(244,239,232,.5)' }}>
+              Subscription: <strong style={{ color: isSubscribed ? '#14d890' : 'rgba(244,239,232,.3)' }}>{isSubscribed ? 'Paid' : 'Free'}</strong>
             </div>
-            <button style={{padding:'6px 14px',borderRadius:8,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',
-              color:'rgba(244,239,232,.5)',fontSize:11,cursor:'pointer',fontFamily:'var(--sans)'}}
-              onClick={async()=>{
+            <button style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.05)',
+              color: 'rgba(244,239,232,.5)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--sans)' }}
+              onClick={async () => {
                 const next = !isSubscribed;
                 setIsSubscribed(next);
-                try { await supabase.from('profiles').update({is_subscribed:next}).eq('id',user.id); } catch{}
+                try { await supabase.from('profiles').update({ is_subscribed: next }).eq('id', user.id); } catch {}
               }}>
               Toggle
             </button>
@@ -290,7 +323,6 @@ export default function UserProfile() {
         </div>
 
       </div>
-
     </div>
   );
 }

@@ -31,11 +31,11 @@ const TABS_CSS = `
 .btab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 0 2px;-webkit-tap-highlight-color:transparent;transition:all .2s}
 .btab-ico{width:24px;height:24px;display:flex;align-items:center;justify-content:center;transition:all .2s}
 .btab-ico svg{transition:all .2s}
-.btab:not(.on) .btab-ico svg{opacity:.35}
-.btab.on .btab-ico svg{opacity:1;filter:drop-shadow(0 0 6px rgba(245,184,76,.4))}
-.btab-lbl{font-size:10px;font-weight:700;letter-spacing:.03em;font-family:'Plus Jakarta Sans',system-ui,sans-serif;transition:color .2s}
+.btab:not(.on) .btab-ico svg{opacity:.38}
+.btab.on .btab-ico svg{opacity:1;filter:drop-shadow(0 0 6px rgba(245,184,76,.55))}
+.btab-lbl{font-size:10px;font-weight:700;letter-spacing:.03em;font-family:'Nunito',system-ui,sans-serif;transition:color .2s}
 .btab.on .btab-lbl{color:#F5B84C}
-.btab:not(.on) .btab-lbl{color:rgba(255,255,255,.28)}
+.btab:not(.on) .btab-lbl{color:rgba(255,255,255,.38)}
 .btab:hover{transform:scale(1.08)}
 .btab:hover:not(.on) .btab-ico svg{opacity:.6}
 .btab:hover:not(.on) .btab-lbl{color:rgba(255,255,255,.5)}
@@ -45,7 +45,7 @@ const TABS_CSS = `
 .btab-create-btn svg{width:24px;height:24px}
 .btab-create-btn:hover{transform:scale(1.08);filter:brightness(1.1)}
 .btab-create-btn:active{transform:scale(.9)}
-.btab-create-lbl{font-size:10px;font-weight:700;letter-spacing:.03em;color:#F5B84C;margin-top:1px;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.btab-create-lbl{font-size:10px;font-weight:700;letter-spacing:.03em;color:#F5B84C;margin-top:1px;font-family:'Nunito',system-ui,sans-serif}
 `;
 
 const DiscoverIcon = ({ active }: { active: boolean }) => (
@@ -60,15 +60,14 @@ const DiscoverIcon = ({ active }: { active: boolean }) => (
   </svg>
 );
 
-const MyStuffIcon = ({ active }: { active: boolean }) => (
+const HomeIcon = ({ active }: { active: boolean }) => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="8" r="4"
-      stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.8"
+    <path d="M4 11.5L12 4l8 7.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"
+      stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.8" strokeLinejoin="round"
+      fill={active ? 'rgba(245,184,76,.08)' : 'none'} />
+    <rect x="9" y="14" width="6" height="7" rx="1"
+      stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.5"
       fill={active ? 'rgba(245,184,76,.15)' : 'none'} />
-    <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"
-      stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.8" strokeLinecap="round" />
-    <path d="M15 3.5l1.5 1L18 3"
-      stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -81,7 +80,7 @@ const CreateIcon = () => (
 
 function BottomTabs({ current, onNav }: { current: string; onNav: (v: string) => void }) {
   const isLib = current === 'library';
-  const isMe = current === 'user-profile';
+  const isHome = current === 'dashboard';
   return (
     <>
       <style>{TABS_CSS}</style>
@@ -94,9 +93,9 @@ function BottomTabs({ current, onNav }: { current: string; onNav: (v: string) =>
           <div className="btab-create-btn"><CreateIcon /></div>
           <div className="btab-create-lbl">Create</div>
         </div>
-        <div className={`btab${isMe?' on':''}`} onClick={()=>onNav('user-profile')}>
-          <div className="btab-ico"><MyStuffIcon active={isMe} /></div>
-          <div className="btab-lbl">My Stuff</div>
+        <div className={`btab${isHome?' on':''}`} onClick={()=>onNav('dashboard')}>
+          <div className="btab-ico"><HomeIcon active={isHome} /></div>
+          <div className="btab-lbl">Home</div>
         </div>
       </div>
     </>
@@ -263,19 +262,21 @@ function AppInner() {
 
     try {
       const fs = result.firstStory;
+      const nc = result.nightCard;
       const nightCard: SavedNightCard = {
         id: crypto.randomUUID?.() || `${Date.now()}`,
         userId: user.id,
         heroName: result.character.name,
         storyTitle: fs?.title || 'Night 1',
         characterIds: [result.character.id],
-        headline: fs?.headline || `The night ${result.creature.name} arrived.`,
-        quote: fs?.quote || result.dreamAnswer,
-        memory_line: fs?.memoryLine || `${result.character.name} said it so quietly — like they already knew.`,
-        emoji: result.creature.creatureEmoji,
+        headline: nc?.headline || fs?.headline || `The night ${result.creature.name} arrived.`,
+        quote: nc?.quote || fs?.quote || result.dreamAnswer,
+        memory_line: nc?.memory_line || fs?.memoryLine || `${result.character.name} said it so quietly — like they already knew.`,
+        whisper: nc?.whisper,
+        emoji: nc?.emoji || result.creature.creatureEmoji,
         date: new Date().toISOString(),
         isOrigin: true,
-        photo: result.photoDataUrl,
+        photo: nc?.photo || result.photoDataUrl,
       };
       await saveNightCard(nightCard);
     } catch (e) { console.error('[onboarding] saveNightCard failed:', e); }
@@ -321,7 +322,7 @@ function AppInner() {
     ? !!localStorage.getItem(`sleepseed_parent_setup_${user.id}`)
     : false;
 
-  // Handle parent setup completion
+  // Handle parent setup completion — go straight to child onboarding
   const handleParentSetup = (result: ParentSetupResult) => {
     if (!user) return;
     setParentSetupData(result);
@@ -330,7 +331,7 @@ function AppInner() {
       localStorage.setItem(`sleepseed_parent_setup_${user.id}`, '1');
       localStorage.setItem(`sleepseed_child_profile_${user.id}`, JSON.stringify(result));
     } catch {}
-    setView('dashboard');
+    setView('onboarding');
   };
 
   // Friend-added toast (renders as overlay on any view)
@@ -462,7 +463,7 @@ function AppInner() {
   if (view === 'user-profile') return (
     <div style={{paddingBottom:70}}>
       <UserProfile />
-      <BottomTabs current="user-profile" onNav={v=>setView(v as any)} />
+      <BottomTabs current="dashboard" onNav={v=>setView(v as any)} />
     </div>
   );
 
@@ -495,7 +496,7 @@ function AppInner() {
       onReadStory={openSavedStory}
       onCreateStory={() => setView('ritual-starter')}
     />
-    <BottomTabs current="user-profile" onNav={v=>setView(v as any)} />
+    <BottomTabs current="dashboard" onNav={v=>setView(v as any)} />
     </div>
   );
 
@@ -506,7 +507,7 @@ function AppInner() {
       onBack={goDashboard}
       filterCharacterId={nightCardFilter}
     />
-    <BottomTabs current="user-profile" onNav={v=>setView(v as any)} />
+    <BottomTabs current="dashboard" onNav={v=>setView(v as any)} />
     </div>
   );
 

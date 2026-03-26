@@ -84,65 +84,160 @@ const CSS=`
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,700&family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --night:#080C18;--amber:#E8972A;--amber2:#F5B84C;
-  --teal:#1D9E75;--teal2:#5DCAA5;
-  --cream:#F4EFE8;--dim:#C8BFB0;--muted:#3A4270;
+  --night:#080C18;--night-mid:#0D1120;--night-card:#0f1525;
+  --amber:#F5B84C;--amber-deep:#E8972A;
+  --cream:#F4EFE8;--cream-dim:rgba(244,239,232,0.6);--cream-faint:rgba(244,239,232,0.28);
+  --teal:#14d890;--purple:#9482ff;
   --serif:'Fraunces',Georgia,serif;
   --sans:'Nunito',system-ui,sans-serif;
   --cta:'Baloo 2',system-ui,sans-serif;
   --mono:'DM Mono',monospace;
 }
-.dash{min-height:100vh;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;padding-bottom:100px}
+.dash{min-height:100vh;min-height:100dvh;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;padding-bottom:100px}
+
+/* ── Animations ── */
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes shimmer{0%{transform:translateX(-100%)}60%,100%{transform:translateX(200%)}}
+@keyframes pulse-ring{0%,100%{box-shadow:0 0 0 0 rgba(245,184,76,0.4)}50%{box-shadow:0 0 0 6px rgba(245,184,76,0)}}
+@keyframes pulse-ring-teal{0%,100%{box-shadow:0 0 0 0 rgba(20,216,144,0.4)}50%{box-shadow:0 0 0 6px rgba(20,216,144,0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes twk{0%,100%{opacity:.15}50%{opacity:.85}}
 @keyframes twk2{0%,100%{opacity:.35}60%{opacity:.1}}
-@keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-@keyframes pring{0%,100%{box-shadow:0 0 0 2px rgba(232,151,42,.55)}50%{box-shadow:0 0 0 8px rgba(232,151,42,0)}}
-@keyframes pring-t{0%,100%{box-shadow:0 0 0 2px rgba(29,158,117,.55)}50%{box-shadow:0 0 0 8px rgba(29,158,117,0)}}
-@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
 @keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@keyframes shimmer{0%{transform:translateX(-120%)}100%{transform:translateX(260%)}}
-@keyframes miss-fade{0%{opacity:0;transform:translateY(-4px)}15%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0}}
 @keyframes hatchBurst{0%{transform:scale(1)}30%{transform:scale(1.15) rotate(3deg)}60%{transform:scale(1.08) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}
-@keyframes gA{0%,100%{filter:drop-shadow(0 0 14px rgba(245,184,76,.5))}50%{filter:drop-shadow(0 0 40px rgba(245,184,76,1))}}
-@keyframes gT{0%,100%{filter:drop-shadow(0 0 12px rgba(20,216,144,.45))}50%{filter:drop-shadow(0 0 38px rgba(20,216,144,.95))}}
-@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes zzz{0%{opacity:0;transform:translate(0,0) scale(.45)}35%{opacity:.78}100%{opacity:0;transform:translate(12px,-20px) scale(1.25)}}
-@keyframes cel{0%{transform:scale(0) rotate(-20deg);opacity:0}55%{transform:scale(1.14) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
-@keyframes progFill{from{width:0}to{width:var(--pw)}}
-@keyframes au{0%,100%{opacity:.07;transform:translateX(-50%) scale(1)}50%{opacity:.24;transform:translateX(-50%) scale(1.08)}}
-@keyframes iconPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes cBreathe{0%,100%{box-shadow:0 0 0 1.5px rgba(255,218,80,.3),0 6px 22px rgba(160,95,0,.65),0 0 32px rgba(245,184,76,.15),inset 0 1px 0 rgba(255,245,160,.25)}50%{box-shadow:0 0 0 1.5px rgba(255,218,80,.48),0 10px 30px rgba(160,95,0,.85),0 0 50px rgba(245,184,76,.28),inset 0 1px 0 rgba(255,245,160,.3)}}
+@keyframes skelMove{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
 
+/* ── Stars ── */
 .dash-stars{position:fixed;inset:0;pointer-events:none;z-index:0}
 .dash-star{position:absolute;border-radius:50%;background:#fff;animation:twk var(--d,3s) var(--dl,0s) ease-in-out infinite}
 .dash-star2{position:absolute;border-radius:50%;background:#E8D8FF;animation:twk2 var(--d,4.5s) var(--dl,0s) ease-in-out infinite}
 .dash-star3{position:absolute;border-radius:50%;background:#fde68a;animation:twk var(--d,2.5s) var(--dl,0s) ease-in-out infinite}
 .dash-sky{position:fixed;top:0;left:0;right:0;height:300px;background:linear-gradient(180deg,#050916 0%,#080C18 100%);z-index:0;pointer-events:none}
 
-/* ── TOP NAV ── */
-.dash-nav{display:flex;align-items:center;justify-content:space-between;padding:0 5%;height:56px;border-bottom:1px solid rgba(232,151,42,.07);background:rgba(8,12,24,.97);position:sticky;top:0;z-index:20;backdrop-filter:blur(20px)}
+/* ── Skeleton ── */
+.dash-skel{background:rgba(255,255,255,.05);border-radius:8px;overflow:hidden;position:relative}
+.dash-skel::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%);animation:skelMove 1.6s ease-in-out infinite}
+
+/* ── Top Nav ── */
+.dash-nav{display:flex;align-items:center;justify-content:space-between;padding:0 5%;height:56px;border-bottom:1px solid rgba(245,184,76,.07);background:rgba(8,12,24,.97);position:sticky;top:0;z-index:20;backdrop-filter:blur(20px)}
 .dash-logo{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:7px;flex-shrink:0}
 .dash-logo-moon{width:15px;height:15px;border-radius:50%;background:#F5B84C;position:relative;overflow:hidden;flex-shrink:0}
 .dash-logo-moon-sh{position:absolute;width:14px;height:14px;border-radius:50%;background:#050916;top:-3px;left:-6px}
-.dash-nav-child{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:4px 10px 4px 7px;cursor:pointer}
-.dash-nav-child-name{font-family:var(--cta);font-size:11px;font-weight:800;color:rgba(255,255,255,.6)}
+.dash-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(145deg,#1a0e32,#2e1858);border:1.5px solid rgba(160,96,240,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .22s;flex-shrink:0;position:relative}
+.dash-avatar:hover{border-color:rgba(160,96,240,.62);background:linear-gradient(145deg,#2e1858,#4818a0)}
+.dash-avatar-pip{position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:#14d890;border:1.5px solid var(--night)}
 
-/* ── SKELETON ── */
-.dash-skel{background:rgba(255,255,255,.05);border-radius:8px;overflow:hidden;position:relative}
-.dash-skel::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%);animation:skelMove 1.6s ease-in-out infinite}
-@keyframes skelMove{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+/* ── Inner ── */
+.dash-inner{max-width:480px;margin:0 auto;padding:0 20px 110px;position:relative;z-index:5}
 
-/* ── CONTENT ── */
-.dash-inner{max-width:860px;margin:0 auto;padding:0 5% 110px;position:relative;z-index:5}
-.dash-greet-row{padding-top:18px;margin-bottom:10px;position:relative;z-index:5}
-.dash-greet-time{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(245,184,76,.44);margin-bottom:3px}
-.dash-greet{font-family:var(--serif);font-size:clamp(19px,3.2vw,28px);font-weight:700;color:var(--cream);letter-spacing:-.02em;line-height:1.2}
-.dash-greet em{font-style:italic;color:var(--amber2)}
-.dash-greet em.done{color:var(--teal2)}
-.dash-date{font-size:9px;color:rgba(244,239,232,.18);font-family:var(--mono);letter-spacing:.05em}
+/* ══════════════════════════════════════════════════════════════════════════════
+   ZONE 1 — Greeting
+   ══════════════════════════════════════════════════════════════════════════════ */
+.z1-greeting{padding-top:24px;margin-bottom:20px;animation:fadeUp .5s ease-out both}
+.z1-time{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--amber);opacity:.75;margin-bottom:6px}
+.z1-heading{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--cream);line-height:1.25;letter-spacing:-.02em;margin-bottom:6px}
+.z1-heading em{font-style:italic;color:var(--amber)}
+.z1-heading em.done{color:var(--teal)}
+.z1-date{font-size:12px;color:var(--cream-faint);font-family:var(--mono);letter-spacing:.04em}
 
-/* guest */
-.dash-guest{background:rgba(232,151,42,.04);border:1px solid rgba(232,151,42,.13);border-radius:12px;padding:11px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+/* ══════════════════════════════════════════════════════════════════════════════
+   ZONE 2 — Creature Portal
+   ══════════════════════════════════════════════════════════════════════════════ */
+.z2-portal{border-radius:20px;overflow:hidden;position:relative;padding:20px 18px 18px;margin-bottom:16px;animation:fadeUp .55s ease-out both;animation-delay:.05s}
+.z2-portal.amber-mode{background:linear-gradient(168deg,rgba(15,21,37,.95),rgba(10,14,28,.98));border:1px solid rgba(245,184,76,.14)}
+.z2-portal.teal-mode{background:linear-gradient(168deg,rgba(4,14,12,.95),rgba(6,16,14,.98));border:1px solid rgba(20,216,144,.18)}
+
+.z2-stage-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.z2-stage-badge{font-family:var(--mono);font-size:10px;letter-spacing:.06em;padding:3px 10px;border-radius:20px;font-weight:500}
+.z2-stage-badge.amber{background:rgba(245,184,76,.1);border:1px solid rgba(245,184,76,.22);color:rgba(245,184,76,.72)}
+.z2-stage-badge.teal{background:rgba(20,216,144,.1);border:1px solid rgba(20,216,144,.22);color:rgba(20,216,144,.72)}
+.z2-nights-left{font-family:var(--serif);font-size:12px;font-style:italic;color:var(--cream-faint)}
+
+.z2-creature-row{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:16px}
+.z2-emoji{font-size:68px;line-height:1;display:inline-block;animation:float 5s ease-in-out infinite;margin-bottom:8px}
+.z2-emoji.amber{filter:drop-shadow(0 0 18px rgba(245,184,76,.4))}
+.z2-emoji.teal{filter:drop-shadow(0 0 18px rgba(20,216,144,.4))}
+.z2-type-label{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.z2-type-label.amber{color:rgba(245,184,76,.4)}
+.z2-type-label.teal{color:rgba(20,216,144,.4)}
+.z2-creature-name{font-family:var(--serif);font-size:22px;font-weight:700;color:var(--cream);margin-bottom:8px}
+.z2-wisdom{font-family:var(--serif);font-size:13px;font-style:italic;color:rgba(255,255,255,.52);line-height:1.6;max-width:320px;margin:0 auto;padding-left:12px;position:relative}
+.z2-wisdom::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:2px;border-radius:1px}
+.z2-wisdom.amber::before{background:rgba(245,184,76,.28)}
+.z2-wisdom.teal::before{background:rgba(20,216,144,.28)}
+
+/* Progress dots */
+.z2-dots{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px}
+.z2-dot{width:10px;height:10px;border-radius:50%;transition:all .3s}
+.z2-dot.done-amber{background:var(--amber);box-shadow:0 0 8px rgba(245,184,76,.45)}
+.z2-dot.done-teal{background:var(--teal);box-shadow:0 0 8px rgba(20,216,144,.45)}
+.z2-dot.tonight{background:rgba(245,184,76,.2);border:1.5px solid rgba(245,184,76,.5);animation:pulse-ring 2.5s ease-in-out infinite}
+.z2-dot.tonight-done{background:rgba(20,216,144,.35);border:1.5px solid rgba(20,216,144,.6);animation:pulse-ring-teal 2.5s ease-in-out infinite}
+.z2-dot.future{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1)}
+.z2-dot.tappable{cursor:pointer;transition:transform .15s}
+.z2-dot.tappable:hover{transform:scale(1.3)}
+
+/* CTA button */
+.z2-cta{width:100%;padding:16px;border:none;border-radius:16px;background:linear-gradient(145deg,#8a4808,#F5B84C 45%,#E8972A);color:#080200;font-family:var(--cta);font-size:17px;font-weight:800;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 10px 36px rgba(200,130,20,.45);transition:transform .18s,filter .18s}
+.z2-cta::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.18),transparent);animation:shimmer 3.5s ease-in-out infinite}
+.z2-cta:hover{transform:scale(1.02) translateY(-1px);filter:brightness(1.08)}
+.z2-cta:active{transform:scale(.97)}
+.z2-cta-sub{display:block;font-size:10px;font-weight:600;opacity:.5;margin-top:3px;font-family:var(--sans)}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ZONE 3 — Journey Bar (streak + week)
+   ══════════════════════════════════════════════════════════════════════════════ */
+.z3-journey{display:flex;align-items:center;gap:12px;margin-bottom:16px;animation:fadeUp .6s ease-out both;animation-delay:.1s}
+.z3-streak{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;flex-shrink:0}
+.z3-streak.amber{background:rgba(245,184,76,.08);border:1px solid rgba(245,184,76,.18)}
+.z3-streak.teal{background:rgba(20,216,144,.08);border:1px solid rgba(20,216,144,.18)}
+.z3-streak-num{font-family:var(--mono);font-size:13px;font-weight:700}
+.z3-streak-num.amber{color:var(--amber)}
+.z3-streak-num.teal{color:var(--teal)}
+.z3-streak-lbl{font-family:var(--sans);font-size:10px;color:var(--cream-dim);font-weight:600}
+.z3-week{display:flex;align-items:center;gap:4px;flex:1;justify-content:flex-end}
+.z3-week-lbl{font-family:var(--mono);font-size:7px;color:rgba(255,255,255,.2);text-align:center;width:10px;margin-bottom:2px;letter-spacing:0}
+.z3-week-col{display:flex;flex-direction:column;align-items:center;gap:2px}
+.z3-wdot{width:10px;height:10px;border-radius:50%}
+.z3-wdot.done{background:var(--amber);box-shadow:0 0 6px rgba(245,184,76,.3)}
+.z3-wdot.done-teal{background:var(--teal);box-shadow:0 0 6px rgba(20,216,144,.3)}
+.z3-wdot.tonight{background:rgba(245,184,76,.15);border:1.5px solid rgba(245,184,76,.4);animation:pulse-ring 2.5s ease-in-out infinite}
+.z3-wdot.tonight-done{background:rgba(20,216,144,.25);border:1.5px solid rgba(20,216,144,.5)}
+.z3-wdot.missed{background:rgba(255,60,60,.15);border:1px solid rgba(255,60,60,.25)}
+.z3-wdot.future{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ZONE 4 — Memory Peek
+   ══════════════════════════════════════════════════════════════════════════════ */
+.z4-memory{margin-bottom:16px;animation:fadeUp .65s ease-out both;animation-delay:.15s}
+.z4-label{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:8px}
+.z4-cards{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px}
+.z4-cards::-webkit-scrollbar{display:none}
+.z4-card{flex:0 0 auto;width:200px;background:linear-gradient(148deg,rgba(8,12,32,.96),rgba(14,18,46,.96));border:1px solid rgba(160,96,240,.18);border-radius:14px;padding:12px;cursor:pointer;transition:border-color .2s,transform .2s}
+.z4-card:hover{border-color:rgba(160,96,240,.35);transform:translateY(-2px)}
+.z4-card-title{font-family:var(--serif);font-size:12px;font-weight:700;color:var(--cream);line-height:1.3;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.z4-card-quote{font-family:var(--serif);font-size:11px;font-style:italic;color:rgba(255,255,255,.45);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px}
+.z4-card-date{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.2)}
+.z4-more{background:none;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 16px;font-family:var(--serif);font-size:12px;font-style:italic;color:var(--cream-dim);cursor:pointer;transition:all .18s;margin-top:8px}
+.z4-more:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.18)}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Done state — creature sleeping
+   ══════════════════════════════════════════════════════════════════════════════ */
+.done-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(20,216,144,.07);border:1px solid rgba(20,216,144,.24);border-radius:20px;padding:4px 14px;margin-bottom:8px}
+.done-badge-dot{width:5px;height:5px;border-radius:50%;background:#14d890;animation:twk 2.2s ease-in-out infinite}
+.done-badge-txt{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(20,216,144,.7)}
+.done-zzz{position:absolute;font-family:var(--serif);font-style:italic;pointer-events:none}
+.done-zzz.z1{font-size:14px;top:6px;right:2px;color:rgba(20,216,144,.52);animation:zzz 3.2s 0s ease-out infinite}
+.done-zzz.z2{font-size:10px;top:18px;right:14px;color:rgba(20,216,144,.38);animation:zzz 3.2s 1s ease-out infinite}
+.done-zzz.z3{font-size:8px;top:24px;right:4px;color:rgba(20,216,144,.26);animation:zzz 3.2s 2s ease-out infinite}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Guest state
+   ══════════════════════════════════════════════════════════════════════════════ */
 .dash-u-btn{width:100%;padding:18px 20px;border:none;border-radius:17px;cursor:pointer;position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;transition:transform .18s,filter .2s;box-shadow:0 1px 0 rgba(255,255,255,.18) inset}
 .dash-u-btn:hover{transform:scale(1.02) translateY(-1px);filter:brightness(1.1)}
 .dash-u-btn:active{transform:scale(.97)}
@@ -153,168 +248,9 @@ const CSS=`
 .dash-u-btn-sub{font-size:10px;font-weight:700;display:block;opacity:.5}
 .dash-u-btn-arr{font-size:24px;flex-shrink:0;position:relative;z-index:1;opacity:.38}
 
-/* ── PODS ── */
-.dash-pods{display:flex;gap:8px;padding:0 0 6px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.dash-pod{flex:0 0 auto;min-width:80px;max-width:140px;border-radius:20px;padding:10px 10px 9px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;border:2px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);transition:all .28s}
-.dash-pod.on{transform:scale(1.05);box-shadow:0 0 20px rgba(245,184,76,.2),0 0 0 1px rgba(245,184,76,.1) inset}
-.dash-pod-emoji{font-size:32px;line-height:1;transition:all .25s}
-.dash-pod.on .dash-pod-emoji{filter:drop-shadow(0 0 11px rgba(245,184,76,.4));animation:flt 3.5s ease-in-out infinite}
-.dash-pod-name{font-size:12px;font-weight:800;color:rgba(255,255,255,.5);transition:color .25s}
-.dash-pod.on .dash-pod-name{color:#FFE080}
-
-/* ── CREATURE CARD ── */
-.dash-ac{border-radius:24px;overflow:hidden;position:relative;background:rgba(6,10,30,.88);border:1px solid rgba(245,184,76,.11);padding:18px 16px 16px;margin-bottom:10px}
-.dash-ac-aura{position:absolute;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(245,184,76,.06),transparent 70%);top:-70px;left:50%;animation:au 7s ease-in-out infinite;pointer-events:none;transform:translateX(-50%)}
-.dash-ac-aura.teal{background:radial-gradient(circle,rgba(20,216,144,.07),transparent 70%)}
-.dash-ac-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
-.dash-ac-emowrap{position:relative;flex-shrink:0}
-.dash-ac-emo{font-size:68px;line-height:1;display:inline-block;animation:flt 5s ease-in-out infinite,gA 5s ease-in-out infinite}
-.dash-ac-emo.teal{animation:flt 5s ease-in-out infinite,gT 4.5s ease-in-out infinite}
-.dash-ac-stagebadge{position:absolute;bottom:-2px;right:-4px;background:linear-gradient(135deg,#8a4a08,#F5B84C);border-radius:10px;padding:2px 7px;font-family:var(--mono);font-size:7.5px;color:#020100;letter-spacing:.04em;font-weight:500}
-.dash-ac-cname{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--cream);margin-bottom:2px;line-height:1.1}
-.dash-ac-ctype{font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:rgba(245,184,76,.42);margin-bottom:7px}
-.dash-ac-ctype.teal{color:rgba(20,216,144,.42)}
-.dash-ac-wisdom{font-family:var(--serif);font-size:12px;font-style:italic;color:rgba(255,255,255,.56);line-height:1.65;border-left:2px solid rgba(245,184,76,.28);padding-left:9px}
-.dash-ac-wisdom.teal{border-left-color:rgba(20,216,144,.28)}
-
-/* ── INFO ICON ── */
-.dash-info-trigger{display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;-webkit-user-select:none;padding:2px 0;transition:opacity .18s}
-.dash-info-trigger:hover{opacity:.82}
-.dash-info-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.09em;text-transform:uppercase;transition:color .18s}
-.dash-info-lbl.amber{color:rgba(245,184,76,.5)}
-.dash-info-lbl.teal{color:rgba(20,216,144,.45)}
-.dash-info-lbl.muted{color:rgba(255,255,255,.22)}
-.dash-info-ico{width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8px;font-weight:700;cursor:pointer;transition:all .18s;flex-shrink:0;line-height:1}
-.dash-info-ico.amber{border:1px solid rgba(245,184,76,.35);background:rgba(245,184,76,.08);color:rgba(245,184,76,.6)}
-.dash-info-ico.teal{border:1px solid rgba(20,216,144,.35);background:rgba(20,216,144,.08);color:rgba(20,216,144,.6)}
-.dash-info-ico.muted{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:rgba(255,255,255,.35)}
-.dash-info-ico.open{background:rgba(245,184,76,.18);border-color:rgba(245,184,76,.65);color:rgba(245,184,76,.95)}
-.dash-info-ico.open.muted{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.35);color:rgba(255,255,255,.7)}
-.dash-info-ico.first-time{animation:iconPulse 1.4s ease-in-out 3;background:rgba(245,184,76,.14);border-color:rgba(245,184,76,.5)}
-
-/* ── EXPLAIN PANEL ── */
-.dash-explain{overflow:hidden;max-height:0;opacity:0;transition:max-height .32s cubic-bezier(.4,0,.2,1),opacity .28s ease}
-.dash-explain.open{max-height:400px;opacity:1}
-.dash-explain-inner{border-radius:13px;padding:12px 13px;margin-bottom:9px;position:relative;overflow:hidden}
-.dash-explain-inner.amber{background:rgba(245,184,76,.05);border:1px solid rgba(245,184,76,.18)}
-.dash-explain-inner.teal{background:rgba(20,216,144,.05);border:1px solid rgba(20,216,144,.18)}
-.dash-explain-inner.muted{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
-.dash-exp-title{font-family:var(--serif);font-size:12.5px;font-weight:700;color:var(--cream);margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.dash-exp-row{display:flex;align-items:flex-start;gap:9px;margin-bottom:6px}
-.dash-exp-ico{width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;margin-top:2px;border-radius:50%}
-.dash-exp-txt{font-family:var(--serif);font-size:11.5px;font-style:italic;color:rgba(255,255,255,.62);line-height:1.6}
-.dash-exp-txt em{font-style:normal;font-weight:700;color:var(--amber2)}
-.dash-exp-txt em.teal{color:#14d890}
-.dash-exp-divider{height:1px;background:rgba(255,255,255,.07);margin:8px 0}
-.dash-exp-sublbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.09em;text-transform:uppercase;color:rgba(245,184,76,.4);margin-bottom:5px}
-.dash-exp-sublbl.muted{color:rgba(255,255,255,.2)}
-.dash-exp-swatches{display:flex;gap:6px;flex-wrap:wrap}
-.dash-swatch{display:flex;align-items:center;gap:4px}
-.dash-sw-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.dash-sw-txt{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.38);letter-spacing:.03em}
-.dash-exp-legend{display:flex;flex-direction:column;gap:4px}
-.dash-leg-row{display:flex;align-items:center;gap:7px}
-.dash-leg-ico{font-size:13px;flex-shrink:0;width:18px;text-align:center}
-.dash-leg-txt{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.38);letter-spacing:.03em}
-.dash-exp-dismiss{width:100%;margin-top:8px;padding:6px;background:none;border:1px solid rgba(245,184,76,.15);border-radius:8px;font-family:var(--serif);font-size:10px;font-style:italic;color:rgba(245,184,76,.45);cursor:pointer;transition:all .18s}
-.dash-exp-dismiss.muted{border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.3)}
-.dash-exp-dismiss:hover{background:rgba(245,184,76,.06);color:rgba(245,184,76,.7)}
-.dash-first-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(245,184,76,.1);border:1px solid rgba(245,184,76,.28);border-radius:20px;padding:3px 10px;margin-bottom:8px}
-.dash-first-badge-dot{width:4px;height:4px;border-radius:50%;background:var(--amber2);animation:twk 2s ease-in-out infinite}
-.dash-first-badge-txt{font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:rgba(245,184,76,.65)}
-
-/* ── SHARD TRACK ── */
-.dash-shard-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.dash-shard-pos{font-family:var(--serif);font-size:10px;font-style:italic;color:rgba(245,184,76,.62);cursor:pointer;transition:color .18s}
-.dash-shard-pos.teal{color:rgba(20,216,144,.6)}
-.dash-shard-wrap{position:relative;flex-shrink:0}
-.dash-shard{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;transition:transform .18s,box-shadow .18s}
-.dash-shard.done{border:2px solid rgba(245,184,76,.5);background:rgba(245,184,76,.12)}
-.dash-shard.done.teal{border-color:rgba(20,216,144,.55);background:rgba(20,216,144,.12)}
-.dash-shard.tonight{border:2px solid rgba(245,184,76,.42);background:rgba(245,184,76,.07);animation:pring 2.5s ease-in-out infinite}
-.dash-shard.tonight-done{border:2px solid rgba(20,216,144,.72);background:rgba(20,216,144,.18);animation:pop .5s ease .1s both}
-.dash-shard.future{background:rgba(245,184,76,.02);border:1.5px dashed rgba(245,184,76,.14);cursor:default}
-.dash-shard.future.teal{background:rgba(20,216,144,.02);border-color:rgba(20,216,144,.12)}
-.dash-shard.tapped{transform:scale(.9);box-shadow:0 0 0 3px rgba(20,216,144,.35)}
-.dash-shard:hover:not(.future){transform:scale(1.14)}
-.dash-shard-conn{flex:1;height:1px;background:rgba(245,184,76,.1)}
-.dash-shard-conn.teal{background:rgba(20,216,144,.1)}
-
-/* Progress bar */
-.dash-progbar{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:9px}
-.dash-progfill{height:100%;background:linear-gradient(90deg,#8a4808,#F5B84C);border-radius:3px;--pw:0%;width:0;animation:progFill 1.4s ease .6s forwards}
-.dash-progfill.teal{background:linear-gradient(90deg,#0a7a50,#14d890)}
-
-/* Streak row */
-.dash-streak{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(245,184,76,.04);border-radius:12px;border:1px solid rgba(245,184,76,.1)}
-.dash-streak.teal{background:rgba(20,216,144,.04);border-color:rgba(20,216,144,.1)}
-.dash-streak-txt{font-family:var(--cta);font-size:12px;font-weight:800;color:rgba(245,184,76,.76);flex:1}
-.dash-streak-txt.teal{color:rgba(20,216,144,.74)}
-.dash-streak-num{font-family:var(--serif);font-size:17px;font-weight:700;color:#14d890}
-
-/* ── RITUAL CTA ── */
-.dash-ritual-cta{width:100%;padding:17px;border:none;border-radius:20px;background:linear-gradient(145deg,#7a4808,#F5B84C 48%,#7a4808);color:#050100;font-family:var(--cta);font-size:17px;font-weight:800;cursor:pointer;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;box-shadow:0 12px 44px rgba(200,130,20,.48);transition:transform .18s,filter .18s;margin-bottom:10px}
-.dash-ritual-cta::after{content:'';position:absolute;top:0;left:-130%;width:55%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.16),transparent);animation:shimmer 3.5s ease-in-out infinite}
-.dash-ritual-cta:hover{transform:scale(1.02) translateY(-1px);filter:brightness(1.08)}
-.dash-ritual-cta:active{transform:scale(.97)}
-
-/* ── WEEK BAR ── */
-.dash-wkbar{margin-bottom:10px}
-.dash-wkbar-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.dash-wkbar-meta{font-family:var(--mono);font-size:8px;letter-spacing:.04em}
-.dash-wkbar-meta.amber{color:rgba(245,184,76,.45)}
-.dash-wkbar-meta.teal{color:rgba(20,216,144,.5)}
-.dash-wkdays{display:flex;gap:4px}
-.dash-wkday{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
-.dash-wkday-name{font-family:var(--mono);font-size:7px;color:rgba(255,255,255,.2);letter-spacing:.02em}
-.dash-wkday-bar{height:36px;width:100%;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .3s}
-.dash-wkday-bar.done{background:rgba(245,184,76,.08);border:1px solid rgba(245,184,76,.3)}
-.dash-wkday-bar.today{background:rgba(245,184,76,.04);border:1.5px solid rgba(245,184,76,.42);animation:pring 2.5s ease-in-out infinite;font-size:9px;color:rgba(245,184,76,.5)}
-.dash-wkday-bar.today-done{background:rgba(20,216,144,.08);border:1.5px solid rgba(20,216,144,.45)}
-.dash-wkday-bar.missed{background:rgba(255,50,50,.03);border:1px solid rgba(255,60,60,.12);font-size:9px;color:rgba(255,80,80,.3)}
-.dash-wkday-bar.future{background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.08)}
-
-/* ── DONE HEADER ── */
-.dash-done-hd{padding:12px 0 6px;text-align:center}
-.dash-done-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(20,216,144,.07);border:1px solid rgba(20,216,144,.24);border-radius:20px;padding:4px 14px;margin-bottom:9px}
-.dash-done-badge-dot{width:5px;height:5px;border-radius:50%;background:#14d890;animation:twk 2.2s ease-in-out infinite}
-.dash-done-badge-txt{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(20,216,144,.7)}
-.dash-done-title{font-family:var(--serif);font-size:22px;font-weight:700;color:var(--cream);line-height:1.2;margin-bottom:4px}
-.dash-done-title em{color:#14d890;font-style:italic}
-.dash-done-sub{font-family:var(--sans);font-size:11.5px;color:rgba(255,255,255,.34);line-height:1.55}
-
-/* Creature zone */
-.dash-done-cz{display:flex;flex-direction:column;align-items:center;position:relative;padding:8px 0 4px}
-.dash-done-aura{position:absolute;width:210px;height:210px;border-radius:50%;background:radial-gradient(circle,rgba(20,216,144,.09),transparent 70%);top:-40px;left:50%;animation:au 5.5s ease-in-out infinite;pointer-events:none}
-.dash-done-emowrap{position:relative;display:inline-block}
-.dash-done-emo{font-size:76px;line-height:1;display:inline-block;animation:flt 5s ease-in-out infinite,gT 4.5s ease-in-out infinite;position:relative;z-index:2}
-.dash-zzz-p{position:absolute;font-family:var(--serif);font-style:italic;pointer-events:none}
-.dash-zzz-p.z1{font-size:14px;top:6px;right:2px;color:rgba(20,216,144,.52);animation:zzz 3.2s 0s ease-out infinite}
-.dash-zzz-p.z2{font-size:10px;top:18px;right:14px;color:rgba(20,216,144,.38);animation:zzz 3.2s 1s ease-out infinite}
-.dash-zzz-p.z3{font-size:8px;top:24px;right:4px;color:rgba(20,216,144,.26);animation:zzz 3.2s 2s ease-out infinite}
-.dash-done-cname{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--cream);margin-top:6px}
-.dash-done-cstage{font-family:var(--mono);font-size:8px;letter-spacing:.09em;text-transform:uppercase;color:rgba(20,216,144,.46);margin-top:3px}
-
-/* ── MEMORY CARD ── */
-.dash-memory{margin-bottom:10px}
-.dash-memory-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:7px}
-.dash-memory-card{background:linear-gradient(148deg,rgba(8,12,32,.96),rgba(14,18,46,.96));border:1px solid rgba(160,96,240,.2);border-radius:18px;padding:14px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .2s}
-.dash-memory-card:hover{border-color:rgba(160,96,240,.38)}
-.dash-memory-card-sh{position:absolute;inset:0;background:linear-gradient(138deg,transparent 38%,rgba(160,96,240,.04) 50%,transparent 62%);pointer-events:none}
-.dash-memory-title{font-family:var(--serif);font-size:13px;font-weight:700;color:var(--cream);line-height:1.35;margin-bottom:8px}
-.dash-memory-quote{font-family:var(--serif);font-size:12.5px;font-style:italic;color:rgba(255,255,255,.68);line-height:1.68;border-left:2px solid rgba(160,96,240,.4);padding-left:10px;margin-bottom:10px}
-.dash-memory-date{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.22);letter-spacing:.04em}
-
-/* ── RE-READ ── */
-.dash-ly{background:rgba(10,12,24,.97);border:.5px solid rgba(255,255,255,.05);border-left:2.5px solid var(--amber);border-radius:0 10px 10px 0;padding:8px 13px;display:flex;align-items:flex-start;gap:8px;margin-bottom:11px;cursor:pointer;transition:background .18s}
-.dash-ly:hover{background:rgba(14,16,30,.97)}
-.dash-ly-ico{font-size:10px;color:var(--amber);flex-shrink:0;margin-top:1px}
-.dash-ly-text{font-size:10.5px;color:var(--dim);line-height:1.6}
-.dash-ly-text em{color:var(--amber2);font-style:italic}
-.dash-week-lnk{font-size:9px;color:var(--amber);cursor:pointer;background:none;border:none;font-family:var(--sans);transition:color .15s}
-.dash-week-lnk:hover{color:var(--amber2)}
-
-/* ── NC MODAL ── */
+/* ══════════════════════════════════════════════════════════════════════════════
+   Modals — Night Card, Hatch, Shard Sheet
+   ══════════════════════════════════════════════════════════════════════════════ */
 .dash-nc-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px);animation:fadein .18s ease}
 .dash-nc-modal{background:#0F1328;border:1px solid rgba(255,255,255,.07);border-radius:18px;max-width:380px;width:100%;overflow:hidden;animation:fadein .18s ease}
 .dash-nc-modal-top{background:linear-gradient(135deg,#C49018,#A87010);padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
@@ -322,13 +258,12 @@ const CSS=`
 .dash-nc-modal-date{font-size:8.5px;color:rgba(10,6,0,.5);font-family:var(--mono)}
 .dash-nc-modal-close{background:none;border:none;font-size:20px;color:rgba(10,6,0,.4);cursor:pointer;line-height:1;padding:0 2px}
 .dash-nc-modal-body{padding:15px 17px}
-.dash-nc-modal-fl{font-size:8px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;font-weight:500}
-.dash-nc-modal-fv{font-size:13px;color:var(--dim);line-height:1.65;font-style:italic;margin-bottom:12px}
-.dash-nc-modal-q{font-size:13px;color:var(--amber2);font-family:var(--serif);font-style:italic;margin-bottom:4px}
+.dash-nc-modal-fl{font-size:8px;color:rgba(58,66,112,1);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;font-weight:500}
+.dash-nc-modal-fv{font-size:13px;color:rgba(200,191,176,1);line-height:1.65;font-style:italic;margin-bottom:12px}
+.dash-nc-modal-q{font-size:13px;color:var(--amber);font-family:var(--serif);font-style:italic;margin-bottom:4px}
 .dash-nc-modal-a{font-size:13px;color:var(--cream);line-height:1.6}
-.dash-miss-tooltip{position:absolute;bottom:46px;left:50%;transform:translateX(-50%);background:#0F1328;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:5px 9px;font-size:8.5px;color:var(--dim);white-space:nowrap;font-style:italic;z-index:20;pointer-events:none;animation:miss-fade 2.2s ease-out forwards}
 
-/* ── HATCH MODAL ── */
+/* Hatch modal */
 .dash-hatch-modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.88);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;animation:fadein .3s ease}
 .dash-hatch-inner{text-align:center;animation:fadein .4s ease-out;max-width:340px;padding:24px}
 .dash-hatch-creature{font-size:96px;animation:hatchBurst .6s ease-out;display:inline-block;margin-bottom:18px;filter:drop-shadow(0 0 32px rgba(20,216,144,.6))}
@@ -338,7 +273,7 @@ const CSS=`
 .dash-hatch-btn{padding:16px 32px;border:none;border-radius:18px;font-size:17px;font-weight:800;cursor:pointer;font-family:var(--cta);background:linear-gradient(135deg,#0a7a50,#14d890 50%,#0a7a50);color:#041a0c;box-shadow:0 8px 28px rgba(20,200,130,.35);transition:transform .18s,filter .18s}
 .dash-hatch-btn:hover{transform:scale(1.03) translateY(-1px);filter:brightness(1.08)}
 
-/* ── BOTTOM SHEET ── */
+/* Shard bottom sheet */
 .dash-sheet-bd{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:60;animation:fadein .22s ease}
 .dash-sheet{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(168deg,#080c24,#060a1c);border-radius:22px 22px 0 0;border:1px solid rgba(160,96,240,.22);z-index:61;max-height:78vh;overflow-y:auto;scrollbar-width:none;animation:sheetUp .28s ease-out;padding-bottom:env(safe-area-inset-bottom,0px)}
 .dash-sheet::-webkit-scrollbar{display:none}
@@ -374,13 +309,9 @@ const CSS=`
 .dash-sh-bq{font-family:var(--serif);font-size:11px;font-style:italic;color:rgba(255,255,255,.38);margin-bottom:6px;line-height:1.5}
 .dash-sh-ba{font-family:var(--sans);font-size:13px;font-weight:700;color:rgba(255,255,255,.75);line-height:1.5}
 
-/* ── PROFILE AVATAR ── */
-.dash-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(145deg,#1a0e32,#2e1858);border:1.5px solid rgba(160,96,240,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .22s;flex-shrink:0;position:relative}
-.dash-avatar:hover{border-color:rgba(160,96,240,.62);background:linear-gradient(145deg,#2e1858,#4818a0)}
-.dash-avatar-pip{position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:#14d890;border:1.5px solid var(--night)}
-
-/* ── NAV BAR ── */
-@keyframes cBreathe{0%,100%{box-shadow:0 0 0 1.5px rgba(255,218,80,.3),0 6px 22px rgba(160,95,0,.65),0 0 32px rgba(245,184,76,.15),inset 0 1px 0 rgba(255,245,160,.25)}50%{box-shadow:0 0 0 1.5px rgba(255,218,80,.48),0 10px 30px rgba(160,95,0,.85),0 0 50px rgba(245,184,76,.28),inset 0 1px 0 rgba(255,245,160,.3)}}
+/* ══════════════════════════════════════════════════════════════════════════════
+   Bottom Navbar
+   ══════════════════════════════════════════════════════════════════════════════ */
 @keyframes pillIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
 .dash-navbar{position:fixed;bottom:0;left:0;right:0;height:74px;background:linear-gradient(180deg,rgba(4,6,18,.94) 0%,rgba(6,9,22,.98) 100%);border-top:1px solid rgba(245,184,76,.14);display:flex;align-items:center;justify-content:space-around;padding:0 8px;z-index:30;padding-bottom:max(0px,env(safe-area-inset-bottom))}
 .dash-nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:8px 4px 10px;position:relative;border-radius:14px;-webkit-tap-highlight-color:transparent;transition:opacity .15s}
@@ -389,12 +320,8 @@ const CSS=`
 .dash-nav-tab-lbl{font-family:var(--serif);font-style:italic;font-size:10px;color:rgba(255,255,255,.48);transition:color .2s;white-space:nowrap;line-height:1}
 .dash-nav-tab.on::before{content:'';position:absolute;inset:3px 0px;border-radius:12px;animation:pillIn .2s ease-out}
 .dash-nav-tab.on-amber::before{background:rgba(245,184,76,.15);border:1px solid rgba(245,184,76,.22);box-shadow:0 0 12px rgba(245,184,76,.08)}
-.dash-nav-tab.on-purple::before{background:rgba(160,96,240,.14);border:1px solid rgba(160,96,240,.2);box-shadow:0 0 12px rgba(160,96,240,.08)}
-.dash-nav-tab.on-amber svg,.dash-nav-tab.on-purple svg{opacity:1;transform:scale(1.08)}
+.dash-nav-tab.on-amber svg{opacity:1;transform:scale(1.08)}
 .dash-nav-tab.on-amber .dash-nav-tab-lbl{color:rgba(245,184,76,.95)}
-.dash-nav-tab.on-purple .dash-nav-tab-lbl{color:rgba(160,96,240,.92)}
-
-/* ── CENTRE CREATE ── */
 .dash-nav-create{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:-16px;padding-bottom:2px}
 .dash-nav-create-btn{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,242,150,.4) 0%,transparent 48%),linear-gradient(148deg,#c08020 0%,#F5B84C 35%,#F0A030 60%,#a06010 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform .18s,filter .18s;animation:cBreathe 4s ease-in-out infinite}
 .dash-nav-create-btn::before{content:'';position:absolute;top:0;left:0;right:0;height:55%;background:linear-gradient(180deg,rgba(255,250,180,.22) 0%,transparent 100%);border-radius:50% 50% 0 0;pointer-events:none}
@@ -402,37 +329,9 @@ const CSS=`
 .dash-nav-create-btn:active{transform:scale(.9);filter:brightness(.88)}
 .dash-nav-create-lbl{font-family:var(--serif);font-style:italic;font-size:10px;color:rgba(245,184,76,.65);white-space:nowrap;line-height:1}
 
-/* unread dot */
-.dash-nav-unread{position:absolute;top:8px;right:calc(50% - 17px);width:7px;height:7px;border-radius:50%;background:#c090ff;border:1.5px solid var(--night);animation:twk 2s ease-in-out infinite}
-
-/* ── MY STUFF SHEET ── */
-.dash-ms-bd{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:60;animation:fadein .22s ease}
-.dash-ms-sheet{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(175deg,#080b20 0%,#06091a 100%);border-radius:24px 24px 0 0;border-top:1px solid rgba(245,184,76,.12);z-index:61;padding-bottom:max(16px,env(safe-area-inset-bottom));animation:sheetUp .28s cubic-bezier(.22,.68,0,1.2);overflow:hidden}
-.dash-ms-sheet::before{content:'';position:absolute;top:0;left:25%;right:25%;height:1px;background:linear-gradient(90deg,transparent,rgba(160,96,240,.35),transparent)}
-@media(min-width:600px){.dash-ms-sheet{left:50%;right:auto;bottom:50%;transform:translateX(-50%) translateY(50%);width:100%;max-width:420px;border-radius:24px;animation:none;box-shadow:0 24px 80px rgba(0,0,0,.85),0 0 0 1px rgba(160,96,240,.22)}.dash-ms-sheet::before{display:none}}
-.dash-ms-handle{width:32px;height:3px;border-radius:2px;background:rgba(255,255,255,.12);margin:13px auto 10px}
-@media(min-width:600px){.dash-ms-handle{display:none}}
-.dash-ms-hd{display:flex;align-items:center;justify-content:space-between;padding:2px 18px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
-.dash-ms-title{font-family:var(--serif);font-size:17px;font-weight:700;color:var(--cream);font-style:italic}
-.dash-ms-close{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.35);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s}
-.dash-ms-close:hover{background:rgba(255,255,255,.11);color:rgba(255,255,255,.6)}
-.dash-ms-row{display:flex;align-items:center;gap:14px;padding:14px 18px;cursor:pointer;transition:background .18s;border-bottom:1px solid rgba(255,255,255,.04);position:relative;overflow:hidden}
-.dash-ms-row:last-child{border-bottom:none}
-.dash-ms-row:hover{background:rgba(255,255,255,.03)}
-.dash-ms-row:active{background:rgba(255,255,255,.06)}
-.dash-ms-row::before{content:'';position:absolute;left:0;top:18%;bottom:18%;width:2.5px;border-radius:2px;opacity:0;transition:opacity .2s}
-.dash-ms-row:hover::before{opacity:1}
-.dash-ms-row.books::before{background:#F5B84C}
-.dash-ms-row.cards::before{background:#c090ff}
-.dash-ms-row.hatch::before{background:#14d890}
-.dash-ms-ico{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.dash-ms-label{flex:1}
-.dash-ms-row-title{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--cream);margin-bottom:2px}
-.dash-ms-row-sub{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.26);letter-spacing:.04em}
-.dash-ms-badge{padding:2px 9px;border-radius:20px;font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.04em;flex-shrink:0}
-.dash-ms-arr{font-size:14px;color:rgba(255,255,255,.18);flex-shrink:0}
-
-@media(max-width:600px){.dash-pods{gap:6px}.dash-pod{min-width:72px}}
+/* ── Re-read link ── */
+.dash-reread{background:rgba(10,12,24,.97);border:.5px solid rgba(255,255,255,.05);border-left:2.5px solid var(--amber);border-radius:0 10px 10px 0;padding:8px 13px;display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer;transition:background .18s}
+.dash-reread:hover{background:rgba(14,16,30,.97)}
 `;
 
 // ── stars ─────────────────────────────────────────────────────────────────────
@@ -508,23 +407,19 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const userId = user?.id;
   useEffect(()=>{
     if(!userId) return;
-    // Fetch all data in parallel — one render when everything resolves
     Promise.all([
       getCharacters(userId),
       getNightCards(userId),
       getStories(userId),
       hasSupabase ? getAllHatchedCreatures(userId) : Promise.resolve([] as HatchedCreature[]),
     ]).then(async ([chars,cards,stories,creatures])=>{
-      // Determine primary character eagerly so we can fetch egg in the same pass
       const fc=chars.filter(c=>c.isFamily===true||(c.isFamily===undefined&&c.type==='human'));
       const pri=fc.length>0?fc[0]:chars.length>0?chars[0]:null;
-      // Fetch active egg immediately (no waterfall — same load pass)
       let egg: HatcheryEgg|null = null;
       if(hasSupabase&&pri){
         egg=await getActiveEgg(userId,pri.id);
         if(!egg){const rc=CREATURES[Math.floor(Math.random()*CREATURES.length)];try{egg=await createEgg(userId,pri.id,rc.id,1);}catch{}}
       }
-      // Set all state in one batch — single render
       setCharacters(chars);setAllCards(cards);setStoryCount(stories.length);
       setAllStories(stories);
       if(stories.length>0){const sorted=[...stories].sort((a,b)=>(b.date||'').localeCompare(a.date||''));setLastStory(sorted[0]);}
@@ -541,10 +436,8 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const isMulti=selectedCharacters.length>1;
   const weekChild=characters.find(c=>c.id===weekViewId)??primary;
 
-  // Fetch egg when child switches (initial egg is loaded in main Promise.all above)
   useEffect(()=>{
     if(!hasSupabase||!user||!primary) return;
-    // Skip if egg already loaded for this character (from initial fetch)
     if(activeEgg&&activeEgg.characterId===primary.id) return;
     getActiveEgg(user.id,primary.id).then(egg=>{
       if(egg){setActiveEgg(egg);}
@@ -596,7 +489,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const barWidth=`${Math.round((eggStage/7)*100)}%`;
   const nightsLeft=Math.max(0,7-eggStage);
   const nightsLeftLabel=nightsLeft===0?'Ready to hatch! \u2726':`${nightsLeft} night${nightsLeft!==1?'s':''} to hatch \u2726`;
-  const DAY_NAMES=['MON','TUE','WED','THU','FRI','SAT','SUN'];
+  const DAY_NAMES=['M','T','W','T','F','S','S'];
 
   const totalMemories=useMemo(()=>allCards.filter(c=>primary&&cardBelongsTo(c,primary.id)).length,[allCards,primary]);
 
@@ -654,64 +547,32 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
 
   useEffect(()=>{const h=(e:KeyboardEvent)=>{if(e.key==='Escape')closeSheet();};window.addEventListener('keydown',h);return()=>window.removeEventListener('keydown',h);},[]);
 
-  // ── Shard track renderer (shared between active & done) ────────────────────
-  function renderShardTrack(tealMode:boolean){
-    return(
-      <div style={{display:'flex',gap:4,alignItems:'center',marginBottom:9}}>
-        {Array.from({length:7},(_,i)=>{
-          const isDone=tealMode?(i<eggStage):(i<eggStage);
-          const isJustNow=tealMode&&i===eggStage-1;
-          const isTonight=!tealMode&&i===eggStage;
-          const isFuture=tealMode?(i>=eggStage):(!isDone&&!isTonight);
-          const colour=shardColour(eggCards[i]??null);
-          const tappable=isDone;
-          const isTapped=activeShardIdx===i;
-          let cls='future';
-          if(isJustNow) cls='tonight-done';
-          else if(isDone) cls='done';
-          else if(isTonight) cls='tonight';
-          if(tealMode&&isDone&&!isJustNow) cls='done teal';
-          if(tealMode&&isFuture) cls='future teal';
-          return(
-            <React.Fragment key={i}>
-              <div className="dash-shard-wrap">
-                <div className={`dash-shard ${cls}${isTapped?' tapped':''}`}
-                  style={(isDone||isJustNow)?{borderColor:colour,background:colour+'22',cursor:'pointer'}:undefined}
-                  onClick={()=>handleShardTap(i,tappable)}>
-                  {(isDone||isJustNow)?'\u2726':isTonight?'\u00B7':'\u00B7'}
-                </div>
-              </div>
-              {i<6&&<div className={`dash-shard-conn${tealMode?' teal':''}`}/>}
-            </React.Fragment>
-          );
-        })}
-      </div>
-    );
-  }
+  // ── Formatted date for greeting ──────────────────────────────────────────
+  const greetDate = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
 
-  // ── Week bar renderer (shared) ─────────────────────────────────────────────
-  function renderWeekBar(){
-    return(
-      <div className="dash-wkdays">
-        {Array.from({length:7},(_,i)=>{
-          const now=new Date();const dow=now.getDay();const mondayOff=(dow+6)%7;
-          const d=new Date(now);d.setDate(now.getDate()-mondayOff+i);
-          const ds=d.toISOString().split('T')[0];const ts=now.toISOString().split('T')[0];
-          const isPast=ds<ts;const isToday=ds===ts;
-          const done=primary&&allCards.some(c=>cardBelongsTo(c,primary.id)&&c.date.split('T')[0]===ds);
-          const cls=isToday?(tonightDone?'today-done':'today'):isPast&&done?'done':isPast?'missed':'future';
-          return(
-            <div key={i} className="dash-wkday">
-              <div className="dash-wkday-name">{DAY_NAMES[i]}</div>
-              <div className={`dash-wkday-bar ${cls}`}>
-                {done||(isToday&&tonightDone)?'\u2B50':cls==='missed'?'\u2715':cls==='today'?'\u2726':''}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
+  // ── Bedtime flavour text ─────────────────────────────────────────────────
+  const greetFlavour = hour>=20 ? "it's almost bedtime" : hour>=17 ? "it's almost bedtime" : hour>=12 ? "the stars are waiting" : "a new day begins";
+
+  // ── Recent memory cards (for Zone 4) ─────────────────────────────────────
+  const recentCards = useMemo(()=>{
+    if(!primary) return [];
+    return allCards.filter(c=>cardBelongsTo(c,primary.id)).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
+  },[allCards,primary]);
+
+  // ── Creature color helper ────────────────────────────────────────────────
+  const creatureColor = creatureDef?.color ?? '#F5B84C';
+
+  // ── Week dots data ───────────────────────────────────────────────────────
+  const weekDots = useMemo(()=>{
+    const now=new Date();const dow=now.getDay();const mondayOff=(dow+6)%7;
+    return Array.from({length:7},(_,i)=>{
+      const d=new Date(now);d.setDate(now.getDate()-mondayOff+i);
+      const ds=d.toISOString().split('T')[0];const ts=now.toISOString().split('T')[0];
+      const isPast=ds<ts;const isToday=ds===ts;
+      const done=primary&&allCards.some(c=>cardBelongsTo(c,primary.id)&&c.date.split('T')[0]===ds);
+      return {day:DAY_NAMES[i],done,isPast,isToday};
+    });
+  },[allCards,primary]);
 
   // ── LOADING ────────────────────────────────────────────────────────────────
   if(!user) return null;
@@ -720,7 +581,6 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
       <style>{CSS}</style>
       <div className="dash-sky"/>
       <div className="dash-stars">{STARS.slice(0,12).map(s=><div key={s.id} className={s.t===1?'dash-star':s.t===2?'dash-star2':'dash-star3'} style={{left:`${s.x}%`,top:`${s.y}%`,width:s.size,height:s.size,'--d':s.d,'--dl':s.dl} as any}/>)}</div>
-      {/* Real nav — same height as loaded state */}
       <nav className="dash-nav" style={{background:'rgba(4,8,22,.9)',borderBottom:'1px solid rgba(245,184,76,.07)'}}>
         <div className="dash-logo"><div className="dash-logo-moon"><div className="dash-logo-moon-sh"/></div>SleepSeed</div>
         <div style={{display:'flex',alignItems:'center',gap:8}}>
@@ -728,30 +588,23 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
           <div className="dash-skel" style={{width:60,height:10,borderRadius:4}}/>
         </div>
       </nav>
-      {/* Content skeleton — heights match real content exactly */}
       <div className="dash-inner">
-        {/* Greeting: paddingTop 18 + time label 14 + title 28 + marginBottom 10 = ~55px */}
-        <div style={{paddingTop:18,marginBottom:10}}>
-          <div className="dash-skel" style={{height:10,width:'35%',marginBottom:6,borderRadius:4}}/>
-          <div className="dash-skel" style={{height:24,width:'65%',borderRadius:8}}/>
+        <div style={{paddingTop:24,marginBottom:20}}>
+          <div className="dash-skel" style={{height:12,width:'55%',marginBottom:8,borderRadius:4}}/>
+          <div className="dash-skel" style={{height:26,width:'75%',borderRadius:8,marginBottom:6}}/>
+          <div className="dash-skel" style={{height:10,width:'35%',borderRadius:4}}/>
         </div>
-        {/* Creature card: matches .dash-ac padding + internal content = ~223px */}
-        <div className="dash-skel" style={{height:223,borderRadius:24,marginBottom:10}}/>
-        {/* CTA button: matches .dash-ritual-cta = ~60px */}
-        <div className="dash-skel" style={{height:58,borderRadius:20,marginBottom:10}}/>
-        {/* Week bar: header + bars = ~78px */}
-        <div style={{marginBottom:10}}>
-          <div className="dash-skel" style={{height:14,width:'30%',marginBottom:8,borderRadius:4}}/>
-          <div style={{display:'flex',gap:4}}>
-            {Array.from({length:7}).map((_,i)=><div key={i} style={{flex:1}}><div className="dash-skel" style={{height:36,borderRadius:7}}/></div>)}
-          </div>
+        <div className="dash-skel" style={{height:280,borderRadius:20,marginBottom:16}}/>
+        <div className="dash-skel" style={{height:36,borderRadius:20,marginBottom:16}}/>
+        <div style={{display:'flex',gap:8}}>
+          <div className="dash-skel" style={{height:100,flex:1,borderRadius:14}}/>
+          <div className="dash-skel" style={{height:100,width:80,borderRadius:14}}/>
         </div>
       </div>
-      {/* Bottom nav — visible and static during skeleton */}
       <div className="dash-navbar" style={{pointerEvents:'none'}}>
         <div className="dash-nav-tab"><NavIconDiscover/><div className="dash-nav-tab-lbl">Discover</div></div>
-        <div className="dash-nav-create"><div className="dash-nav-create-btn"><NavIconCreate/></div><div className="dash-nav-create-lbl">Create a story</div></div>
-        <div className="dash-nav-tab"><NavIconMyStuff/><div className="dash-nav-tab-lbl">My Stuff</div></div>
+        <div className="dash-nav-create"><div className="dash-nav-create-btn"><NavIconCreate/></div><div className="dash-nav-create-lbl">Create</div></div>
+        <div className="dash-nav-tab"><NavIconHome/><div className="dash-nav-tab-lbl">Home</div></div>
       </div>
     </div>
   );
@@ -763,16 +616,19 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
       <div className="dash-sky"/>
       <div className="dash-stars">{STARS.slice(0,20).map(s=><div key={s.id} className={s.t===1?'dash-star':s.t===2?'dash-star2':'dash-star3'} style={{left:`${s.x}%`,top:`${s.y}%`,width:s.size,height:s.size,'--d':s.d,'--dl':s.dl} as any}/>)}</div>
 
-      {/* NAV */}
+      {/* ── TOP NAV ── */}
       <nav className="dash-nav" style={{background:tonightDone?'rgba(3,8,18,.92)':'rgba(4,8,22,.9)',borderBottom:tonightDone?'1px solid rgba(20,216,144,.07)':'1px solid rgba(245,184,76,.07)'}}>
         <div className="dash-logo"><div className="dash-logo-moon"><div className="dash-logo-moon-sh"/></div>SleepSeed</div>
         <div style={{display:'flex',alignItems:'center',gap:8}}>
-          {primary&&<div className="dash-nav-child"><span style={{fontSize:14}}>{primary.emoji||'\uD83E\uDDD2'}</span><span className="dash-nav-child-name">{primary.name}</span></div>}
-          <div className="dash-date">{today}</div>
+          {primary&&<div style={{display:'flex',alignItems:'center',gap:5,background:'rgba(255,255,255,.07)',border:'1px solid rgba(255,255,255,.1)',borderRadius:20,padding:'4px 10px 4px 7px',cursor:'pointer'}} onClick={handleProfile}>
+            <span style={{fontSize:14}}>{primary.emoji||'\uD83E\uDDD2'}</span>
+            <span style={{fontFamily:'var(--cta)',fontSize:11,fontWeight:800,color:'rgba(255,255,255,.6)'}}>{primary.name}</span>
+          </div>}
           <div className="dash-avatar" onClick={handleProfile} title="Profile & settings"><NavIconProfile/><div className="dash-avatar-pip"/></div>
         </div>
       </nav>
 
+      {/* ── Multi-child picker ── */}
       {familyChars.length>1&&(
         <div style={{padding:'10px 16px 0',position:'relative',zIndex:5,overflowX:'auto',WebkitOverflowScrolling:'touch',scrollbarWidth:'none'}}>
           <div style={{display:'flex',gap:14,alignItems:'center'}}>
@@ -796,12 +652,12 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
       )}
 
       <div className="dash-inner">
-        {/* GUEST */}
+        {/* ── GUEST STATE ── */}
         {isGuest&&(
           <div style={{padding:'20px 0 0'}}>
             <div style={{textAlign:'center',marginBottom:20}}>
-              <div style={{fontSize:48,marginBottom:12,animation:'flt 3.5s ease-in-out infinite',filter:'drop-shadow(0 0 16px rgba(245,184,76,.3))'}}>🌙</div>
-              <div style={{fontFamily:'var(--serif)',fontSize:22,fontWeight:700,color:'var(--cream)',lineHeight:1.3,marginBottom:6}}>Tonight could be the night<br/><em style={{color:'var(--amber2)'}}>bedtime changes forever.</em></div>
+              <div style={{fontSize:48,marginBottom:12,animation:'float 3.5s ease-in-out infinite',filter:'drop-shadow(0 0 16px rgba(245,184,76,.3))'}}>🌙</div>
+              <div style={{fontFamily:'var(--serif)',fontSize:22,fontWeight:700,color:'var(--cream)',lineHeight:1.3,marginBottom:6}}>Tonight could be the night<br/><em style={{color:'var(--amber)'}}>bedtime changes forever.</em></div>
               <div style={{fontSize:13,color:'rgba(244,239,232,.35)',lineHeight:1.65}}>A personalised bedtime story starring your child — written in 60 seconds.</div>
             </div>
             <button className="dash-u-btn" style={{width:'100%',marginBottom:20,background:'linear-gradient(145deg,#a06010,#F5B84C 48%,#a06010)',boxShadow:'0 8px 30px rgba(200,130,20,.42)'}} onClick={()=>setView('story-wizard' as any)}>
@@ -825,200 +681,270 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
             <div style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:16,padding:'16px 18px',textAlign:'center',marginBottom:16}}>
               <div style={{fontSize:13,fontWeight:700,color:'var(--cream)',marginBottom:4}}>Ready to keep your stories?</div>
               <div style={{fontSize:11,color:'rgba(244,239,232,.3)',lineHeight:1.6,marginBottom:12}}>Create a free account to save stories and unlock Night Cards.</div>
-              <button style={{background:'rgba(245,184,76,.1)',border:'1px solid rgba(245,184,76,.25)',borderRadius:50,padding:'10px 24px',fontSize:13,fontWeight:600,color:'var(--amber2)',cursor:'pointer',fontFamily:'var(--sans)'}} onClick={onSignUp}>Create free account →</button>
+              <button style={{background:'rgba(245,184,76,.1)',border:'1px solid rgba(245,184,76,.25)',borderRadius:50,padding:'10px 24px',fontSize:13,fontWeight:600,color:'var(--amber)',cursor:'pointer',fontFamily:'var(--sans)'}} onClick={onSignUp}>Create free account →</button>
             </div>
             <div style={{textAlign:'center',marginBottom:8}}><button style={{background:'none',border:'none',color:'rgba(244,239,232,.25)',fontSize:12,cursor:'pointer',fontFamily:'var(--sans)'}} onClick={()=>setView('library')}>Or browse stories from other families →</button></div>
           </div>
         )}
 
-        {/* GREETING */}
+        {/* ══════════════════════════════════════════════════════════════════════
+            ZONE 1 — Greeting
+            ══════════════════════════════════════════════════════════════════════ */}
         {!isGuest&&(
-          <div className="dash-greet-row">
-            <div className="dash-greet-time">{greetWord}</div>
-            <div className="dash-greet">
-              {tonightDone?<>Sweet dreams, <em className="done">{childName}.</em></>:<>Time for <em>{childName}'s</em> story 🌙</>}
+          <div className="z1-greeting">
+            <div className="z1-time">{greetWord}, {greetFlavour} ✨</div>
+            <div className="z1-heading">
+              {tonightDone
+                ?<>Sweet dreams, <em className="done">{childName}.</em></>
+                :<>Ready for <em>{childName}'s</em> story tonight?</>
+              }
             </div>
+            <div className="z1-date">{greetDate}</div>
           </div>
         )}
 
-        {/* ══════════ ACTIVE STATE ══════════ */}
+        {/* ══════════════════════════════════════════════════════════════════════
+            ACTIVE STATE (tonight not yet done)
+            ══════════════════════════════════════════════════════════════════════ */}
         {!isGuest&&!tonightDone&&(
           <>
-            {/* CREATURE + SHARDS CARD */}
+            {/* ── ZONE 2 — Creature Portal ── */}
             {activeEgg&&hatchedCreature&&creatureDef&&(
-              <div className="dash-ac">
-                <div className="dash-ac-aura"/>
-                <div className="dash-ac-top">
-                  <div className="dash-ac-emowrap">
-                    <div className="dash-ac-emo">{hatchedCreature.creatureEmoji}</div>
-                    <div className="dash-ac-stagebadge">Night {eggStage+1} of 7</div>
-                  </div>
-                  <div style={{flex:1,minWidth:0,paddingTop:4}}>
-                    <div className="dash-ac-cname">{hatchedCreature.name}</div>
-                    <div className="dash-ac-ctype">{creatureDef.name} · {childName}'s companion</div>
-                    <div className="dash-ac-wisdom">"{creatureSpeech}"</div>
+              <div className="z2-portal amber-mode" style={{borderColor:hexToRgba(creatureColor,.18)}}>
+                {/* Stage row */}
+                <div className="z2-stage-row">
+                  <div className="z2-stage-badge amber">Night {eggStage+1} of 7</div>
+                  <div className="z2-nights-left">{nightsLeftLabel}</div>
+                </div>
+
+                {/* Creature display */}
+                <div className="z2-creature-row">
+                  <div className="z2-emoji amber" style={{filter:`drop-shadow(0 0 18px ${hexToRgba(creatureColor,.4)})`}}>{hatchedCreature.creatureEmoji}</div>
+                  <div className="z2-type-label amber" style={{color:hexToRgba(creatureColor,.4)}}>DreamKeeper</div>
+                  <div className="z2-creature-name">{hatchedCreature.name}</div>
+                  <div className="z2-wisdom amber" style={{'--border-c':hexToRgba(creatureColor,.28)} as any}>
+                    <span style={{position:'absolute',left:0,top:2,bottom:2,width:2,borderRadius:1,background:hexToRgba(creatureColor,.28)}}/>
+                    "{creatureSpeech}"
                   </div>
                 </div>
 
-                <div>
-                  {shardsFirstTime&&<div className="dash-first-badge"><div className="dash-first-badge-dot"/><span className="dash-first-badge-txt">New · Dream Shards</span></div>}
-                  <div className="dash-shard-hd">
-                    <div className="dash-info-trigger" onClick={toggleShardsInfo}>
-                      <span className="dash-info-lbl amber">Dream Shards</span>
-                      <div className={`dash-info-ico amber${shardsInfoOpen?' open':''}${shardsFirstTime?' first-time':''}`}>{shardsInfoOpen?'✕':'ⓘ'}</div>
-                    </div>
-                    <div style={{display:'flex',alignItems:'center',gap:6}}>
-                      {glow>0&&<div style={{display:'flex',alignItems:'center',gap:4,padding:'3px 9px',borderRadius:99,background:'rgba(245,184,76,.12)',border:'1.5px solid rgba(245,184,76,.3)',flexShrink:0}}>
-                        <span style={{fontSize:12}}>🔥</span>
-                        <span style={{fontFamily:'var(--mono)',fontSize:11,fontWeight:700,color:'rgba(245,184,76,.9)',letterSpacing:'.02em'}}>{glow}</span>
-                      </div>}
-                      <div className="dash-shard-pos" onClick={toggleShardsInfo}>Shard {eggStage} of 7 ✦</div>
-                    </div>
-                  </div>
-
-                  <div className={`dash-explain${shardsInfoOpen?' open':''}`}>
-                    <div className="dash-explain-inner amber">
-                      <div className="dash-exp-title">✦ What are Dream Shards?</div>
-                      <div className="dash-exp-row"><div className="dash-exp-ico" style={{border:'2px solid rgba(245,184,76,.5)',background:'rgba(245,184,76,.12)'}}>✦</div><div className="dash-exp-txt">Each completed ritual earns {hatchedCreature.name} <em>one Dream Shard.</em> Collect all 7 and a new creature hatches.</div></div>
-                      <div className="dash-exp-row"><div className="dash-exp-ico" style={{border:'2px solid rgba(96,200,255,.45)',background:'rgba(96,200,255,.1)'}}>✦</div><div className="dash-exp-txt">Shard <em>colours</em> reflect the mood of that night's story. Tap any completed shard to revisit that memory.</div></div>
-                      <div className="dash-exp-divider"/>
-                      <div className="dash-exp-sublbl">Shard colours</div>
-                      <div className="dash-exp-swatches">
-                        {[['#F5B84C','Heartfelt'],['#60C8FF','Adventure'],['#C090FF','Mysterious'],['#FFD060','Funny'],['#14d890','Cosy']].map(([c,l])=>(
-                          <div key={l} className="dash-swatch"><div className="dash-sw-dot" style={{background:c}}/><div className="dash-sw-txt">{l}</div></div>
-                        ))}
-                      </div>
-                      <button className="dash-exp-dismiss" onClick={()=>{setShardsInfoOpen(false);setShardsFirstTime(false);localStorage.setItem('ss_shards_explained','1');}}>Got it ✓</button>
-                    </div>
-                  </div>
-
-                  {renderShardTrack(false)}
-
-                  <div className="dash-progbar"><div className="dash-progfill" style={{'--pw':barWidth} as any}/></div>
-
-                  <div className="dash-streak">
-                    <span style={{fontSize:15}}>🔥</span>
-                    <span className="dash-streak-txt">{glow>0?`${glow} night${glow!==1?'s':''} in a row`:'Complete tonight to start your streak'}</span>
-                    {glow>1&&<span className="dash-streak-num">{glow}</span>}
-                  </div>
+                {/* Progress dots */}
+                <div className="z2-dots">
+                  {Array.from({length:7},(_,i)=>{
+                    const isDone=i<eggStage;
+                    const isTonight=i===eggStage;
+                    let cls='future';
+                    if(isDone) cls='done-amber tappable';
+                    else if(isTonight) cls='tonight';
+                    return(
+                      <div key={i}
+                        className={`z2-dot ${cls}`}
+                        onClick={()=>isDone&&handleShardTap(i,true)}
+                      />
+                    );
+                  })}
                 </div>
-              </div>
-            )}
 
-            {/* NO CREATURE */}
-            {!hatchedCreature&&familyChars.length>0&&(
-              <button className="dash-ritual-cta" onClick={startRitual}>
-                <span style={{fontSize:17,fontWeight:800,fontFamily:'var(--cta)'}}>✦ Begin tonight's ritual</span>
-                <span style={{fontSize:9.5,fontWeight:600,opacity:.58,marginTop:3,fontFamily:'var(--sans)'}}>Your story is waiting · ~10 minutes</span>
-              </button>
-            )}
-
-            {/* NO CHARACTERS */}
-            {familyChars.length===0&&(
-              <div style={{textAlign:'center',marginTop:20}}>
-                <div style={{fontSize:72,animation:'flt 3s ease-in-out infinite',filter:'drop-shadow(0 0 16px rgba(245,184,76,.3))',marginBottom:12}}>🥚</div>
-                <div style={{fontFamily:'var(--serif)',fontSize:22,fontWeight:700,color:'var(--amber2)',marginBottom:10}}>Your adventure begins tonight</div>
-                <button className="dash-ritual-cta" onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
-                  <span style={{fontSize:17,fontWeight:800,fontFamily:'var(--cta)'}}>✨ Start your first adventure</span>
-                  <span style={{fontSize:9.5,fontWeight:600,opacity:.58,marginTop:3,fontFamily:'var(--sans)'}}>Create a character and hatch your first Dreamkeeper</span>
+                {/* CTA button */}
+                <button className="z2-cta" onClick={startRitual}>
+                  Begin tonight's story
+                  <span className="z2-cta-sub">{hatchedCreature.name} is waiting · ~10 minutes</span>
                 </button>
               </div>
             )}
 
-            {/* CTA */}
-            {hatchedCreature&&(
-              <button className="dash-ritual-cta" onClick={startRitual}>
-                <span style={{fontSize:17,fontWeight:800,fontFamily:'var(--cta)'}}>✦ Begin tonight's ritual</span>
-                <span style={{fontSize:9.5,fontWeight:600,opacity:.58,marginTop:3,fontFamily:'var(--sans)'}}>{hatchedCreature.name} is waiting · ~10 minutes</span>
-              </button>
+            {/* No creature yet but has characters */}
+            {!hatchedCreature&&familyChars.length>0&&(
+              <div style={{marginBottom:16}}>
+                <button className="z2-cta" onClick={startRitual}>
+                  ✦ Begin tonight's ritual
+                  <span className="z2-cta-sub">Your story is waiting · ~10 minutes</span>
+                </button>
+              </div>
             )}
 
-            {/* RE-READ */}
+            {/* No characters at all */}
+            {familyChars.length===0&&(
+              <div style={{textAlign:'center',marginTop:20,marginBottom:16}}>
+                <div style={{fontSize:72,animation:'float 3s ease-in-out infinite',filter:'drop-shadow(0 0 16px rgba(245,184,76,.3))',marginBottom:12}}>🥚</div>
+                <div style={{fontFamily:'var(--serif)',fontSize:22,fontWeight:700,color:'var(--amber)',marginBottom:10}}>Your adventure begins tonight</div>
+                <button className="z2-cta" onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
+                  ✨ Start your first adventure
+                  <span className="z2-cta-sub">Create a character and hatch your first DreamKeeper</span>
+                </button>
+              </div>
+            )}
+
+            {/* ── ZONE 3 — Journey Bar ── */}
+            {(glow>0||weekDots.length>0)&&(
+              <div className="z3-journey">
+                <div className="z3-streak amber">
+                  <span style={{fontSize:14}}>🔥</span>
+                  <span className="z3-streak-num amber">{glow}</span>
+                  <span className="z3-streak-lbl">night{glow!==1?'s':''}</span>
+                </div>
+                <div className="z3-week">
+                  {weekDots.map((wd,i)=>{
+                    let cls='future';
+                    if(wd.isToday) cls=tonightDone?'tonight-done':'tonight';
+                    else if(wd.isPast&&wd.done) cls='done';
+                    else if(wd.isPast&&!wd.done) cls='missed';
+                    return(
+                      <div key={i} className="z3-week-col">
+                        <div className="z3-week-lbl">{wd.day}</div>
+                        <div className={`z3-wdot ${cls}`}/>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ── Re-read last story ── */}
             {lastStory&&lastStory.bookData&&onReadStory&&(
-              <div className="dash-ly" onClick={()=>onReadStory(lastStory.bookData)} style={{position:'relative',zIndex:5}}>
-                <span className="dash-ly-ico">📖</span>
-                <span className="dash-ly-text">Re-read last night: <em>{lastStory.title}</em></span>
+              <div className="dash-reread" onClick={()=>onReadStory(lastStory.bookData)} style={{position:'relative',zIndex:5}}>
+                <span style={{fontSize:10,color:'var(--amber)',flexShrink:0,marginTop:1}}>📖</span>
+                <span style={{fontSize:10.5,color:'rgba(200,191,176,1)',lineHeight:1.6}}>Re-read last night: <em style={{color:'var(--amber)',fontStyle:'italic'}}>{lastStory.title}</em></span>
+              </div>
+            )}
+
+            {/* ── ZONE 4 — Memory Peek ── */}
+            {recentCards.length>0&&(
+              <div className="z4-memory">
+                <div className="z4-label">Recent memories</div>
+                <div className="z4-cards">
+                  {recentCards.map((card,i)=>(
+                    <div key={card.id} className="z4-card" onClick={()=>setModalCard(card)}>
+                      <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:6}}>
+                        <span style={{fontSize:16}}>{card.emoji??'📖'}</span>
+                      </div>
+                      <div className="z4-card-title">{card.storyTitle||'A night to remember'}</div>
+                      {card.quote&&<div className="z4-card-quote">"{card.quote}"</div>}
+                      <div className="z4-card-date">{new Date(card.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</div>
+                    </div>
+                  ))}
+                </div>
+                {totalMemories>3&&(
+                  <button className="z4-more" onClick={()=>setView('nightcard-library' as any)}>See all memories →</button>
+                )}
               </div>
             )}
           </>
         )}
 
-        {/* ══════════ COMPLETED STATE ══════════ */}
+        {/* ══════════════════════════════════════════════════════════════════════
+            COMPLETED STATE (tonight done)
+            ══════════════════════════════════════════════════════════════════════ */}
         {!isGuest&&tonightDone&&(
           <>
-            <div className="dash-done-hd">
-              <div className="dash-done-badge"><div className="dash-done-badge-dot"/><span className="dash-done-badge-txt">Night {eggStage} Complete ✦</span></div>
-              <div className="dash-done-title">Well done, <em>{childName}.</em></div>
-              <div className="dash-done-sub">{hatchedCreature?.name??'Your companion'} heard every word of your story tonight.</div>
+            {/* Done badge */}
+            <div style={{textAlign:'center',marginBottom:12}}>
+              <div className="done-badge">
+                <div className="done-badge-dot"/>
+                <span className="done-badge-txt">Night {eggStage} Complete ✦</span>
+              </div>
             </div>
 
+            {/* ── ZONE 2 — Creature Portal (teal/done mode) ── */}
             {hatchedCreature&&(
-              <div className="dash-done-cz">
-                <div className="dash-done-aura" style={{transform:'translateX(-50%)'}}/>
-                <div className="dash-done-emowrap">
-                  <div className="dash-done-emo">{hatchedCreature.creatureEmoji}</div>
-                  <div className="dash-zzz-p z1">z</div><div className="dash-zzz-p z2">z</div><div className="dash-zzz-p z3">z</div>
+              <div className="z2-portal teal-mode">
+                {/* Stage row */}
+                <div className="z2-stage-row">
+                  <div className="z2-stage-badge teal">Night {eggStage} of 7</div>
+                  <div className="z2-nights-left">{nightsLeftLabel}</div>
                 </div>
-                <div className="dash-done-cname">{hatchedCreature.name}</div>
-                <div className="dash-done-cstage">{creatureDef?.name??''} · Night {eggStage} of 7</div>
+
+                {/* Sleeping creature */}
+                <div className="z2-creature-row">
+                  <div style={{position:'relative',display:'inline-block'}}>
+                    <div className="z2-emoji teal">{hatchedCreature.creatureEmoji}</div>
+                    <div className="done-zzz z1">z</div>
+                    <div className="done-zzz z2">z</div>
+                    <div className="done-zzz z3">z</div>
+                  </div>
+                  <div className="z2-type-label teal">DreamKeeper</div>
+                  <div className="z2-creature-name">{hatchedCreature.name}</div>
+                  <div className="z2-wisdom teal">
+                    "{creatureSpeech}"
+                  </div>
+                </div>
+
+                {/* Progress dots (teal) */}
+                <div className="z2-dots">
+                  {Array.from({length:7},(_,i)=>{
+                    const isDone=i<eggStage;
+                    const isJustNow=i===eggStage-1;
+                    let cls='future';
+                    if(isDone) cls='done-teal tappable';
+                    if(isJustNow) cls='tonight-done tappable';
+                    return(
+                      <div key={i}
+                        className={`z2-dot ${cls}`}
+                        onClick={()=>isDone&&handleShardTap(i,true)}
+                      />
+                    );
+                  })}
+                </div>
               </div>
             )}
 
-            {/* TEAL SHARDS CARD */}
-            <div className="dash-ac" style={{background:'rgba(4,14,12,.9)',borderColor:'rgba(20,216,144,.15)'}}>
-              <div className="dash-ac-aura teal"/>
-              <div className="dash-shard-hd">
-                <div className="dash-info-trigger" onClick={toggleShardsInfo}>
-                  <span className="dash-info-lbl teal">Dream Shards</span>
-                  <div className={`dash-info-ico teal${shardsInfoOpen?' open':''}`}>{shardsInfoOpen?'✕':'ⓘ'}</div>
-                </div>
-                <div className="dash-shard-pos teal">Shard {eggStage} of 7 ✦</div>
+            {/* ── ZONE 3 — Journey Bar (teal) ── */}
+            <div className="z3-journey">
+              <div className="z3-streak teal">
+                <span style={{fontSize:14}}>🔥</span>
+                <span className="z3-streak-num teal">{glow}</span>
+                <span className="z3-streak-lbl">night{glow!==1?'s':''}</span>
               </div>
-              <div className={`dash-explain${shardsInfoOpen?' open':''}`}>
-                <div className="dash-explain-inner teal">
-                  <div className="dash-exp-title">✦ Dream Shards</div>
-                  <div className="dash-exp-row"><div className="dash-exp-ico" style={{border:'2px solid rgba(20,216,144,.5)',background:'rgba(20,216,144,.12)'}}>✦</div><div className="dash-exp-txt">Collect all 7 and a new creature hatches in the Hatchery.</div></div>
-                  <div className="dash-exp-row"><div className="dash-exp-ico" style={{border:'2px solid rgba(20,216,144,.4)',background:'rgba(20,216,144,.08)'}}>✦</div><div className="dash-exp-txt">Tap any completed shard ✦ to open that night's memory.</div></div>
-                  <button className="dash-exp-dismiss" style={{borderColor:'rgba(20,216,144,.15)',color:'rgba(20,216,144,.45)'}} onClick={toggleShardsInfo}>Got it ✓</button>
-                </div>
-              </div>
-
-              {renderShardTrack(true)}
-              <div className="dash-progbar"><div className="dash-progfill teal" style={{'--pw':barWidth} as any}/></div>
-              <div className="dash-streak teal">
-                <span style={{fontSize:15}}>🔥</span>
-                <span className="dash-streak-txt teal">{glow>1?`${glow} nights in a row — keep it going!`:'First night complete — come back tomorrow!'}</span>
-                {glow>0&&<span className="dash-streak-num">{glow}</span>}
+              <div className="z3-week">
+                {weekDots.map((wd,i)=>{
+                  let cls='future';
+                  if(wd.isToday) cls='tonight-done';
+                  else if(wd.isPast&&wd.done) cls='done-teal';
+                  else if(wd.isPast&&!wd.done) cls='missed';
+                  return(
+                    <div key={i} className="z3-week-col">
+                      <div className="z3-week-lbl">{wd.day}</div>
+                      <div className={`z3-wdot ${cls}`}/>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* TONIGHT'S MEMORY */}
+            {/* Tonight's memory card */}
             {tonightCard&&(
-              <div className="dash-memory" style={{position:'relative',zIndex:5}}>
-                <div className="dash-memory-lbl">✦ Tonight's story</div>
-                <div className="dash-memory-card" onClick={()=>setModalCard(tonightCard)}>
-                  <div className="dash-memory-card-sh"/>
-                  <div style={{display:'flex',gap:8,marginBottom:9}}>
-                    <div className="dash-memory-title" style={{flex:1}}>{tonightCard.storyTitle}</div>
-                    <div style={{fontSize:20,flexShrink:0}}>{tonightCard.emoji??'📖'}</div>
-                  </div>
-                  {tonightCard.quote&&<div className="dash-memory-quote">"{tonightCard.quote}"</div>}
-                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                    <div className="dash-memory-date">{new Date(tonightCard.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} · Night {eggStage}</div>
-                    <div style={{fontSize:11,color:'rgba(160,96,240,.5)'}}>💜 saved</div>
+              <div className="z4-memory" style={{position:'relative',zIndex:5}}>
+                <div className="z4-label">✦ Tonight's story</div>
+                <div className="z4-cards">
+                  <div className="z4-card" style={{width:'100%',flex:'1 1 auto'}} onClick={()=>setModalCard(tonightCard)}>
+                    <div style={{display:'flex',gap:8,marginBottom:8}}>
+                      <div style={{flex:1}}>
+                        <div className="z4-card-title" style={{whiteSpace:'normal',fontSize:13}}>{tonightCard.storyTitle}</div>
+                      </div>
+                      <div style={{fontSize:20,flexShrink:0}}>{tonightCard.emoji??'📖'}</div>
+                    </div>
+                    {tonightCard.quote&&<div className="z4-card-quote" style={{WebkitLineClamp:3}}>"{tonightCard.quote}"</div>}
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                      <div className="z4-card-date">{new Date(tonightCard.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} · Night {eggStage}</div>
+                      <div style={{fontSize:11,color:'rgba(20,216,144,.5)'}}>✦ saved</div>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
             <div style={{textAlign:'center',padding:'6px 0 14px',position:'relative',zIndex:5}}>
-              <button className="dash-week-lnk" onClick={()=>setView('hatchery')}>View hatchery →</button>
+              <button style={{fontSize:9,color:'var(--teal)',cursor:'pointer',background:'none',border:'none',fontFamily:'var(--sans)',transition:'color .15s'}} onClick={()=>setView('hatchery')}>View hatchery →</button>
             </div>
           </>
         )}
       </div>
 
-      {/* ── MODALS ── */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          MODALS
+          ══════════════════════════════════════════════════════════════════════ */}
+
+      {/* Night Card modal */}
       {modalCard&&(
         <div className="dash-nc-modal-bg" onClick={()=>setModalCard(null)}>
           <div className="dash-nc-modal" onClick={e=>e.stopPropagation()}>
@@ -1032,7 +958,6 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
               {modalCard.quote&&<><div className="dash-nc-modal-fl">What they said</div><div className="dash-nc-modal-fv">"{modalCard.quote}"</div></>}
               {modalCard.bondingQuestion&&(<><div className="dash-nc-modal-q">"{modalCard.bondingQuestion}"</div>{modalCard.bondingAnswer&&<div className="dash-nc-modal-a">{modalCard.bondingAnswer}</div>}</>)}
               {!modalCard.quote&&!modalCard.bondingQuestion&&<div className="dash-nc-modal-fv">{modalCard.memory_line||'A night to remember'}</div>}
-              {/* Memory footer */}
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',paddingTop:10,marginTop:10,borderTop:'1px solid rgba(255,255,255,.06)'}}>
                 <div style={{fontFamily:'var(--serif)',fontSize:9,color:'rgba(255,255,255,.18)'}}>sleepseed.ai</div>
                 <div style={{fontFamily:'var(--serif)',fontSize:11,fontStyle:'italic',color:'rgba(255,255,255,.32)'}}>Memory <em style={{color:'rgba(245,184,76,.65)',fontStyle:'normal',fontWeight:700}}>{getMemoryNumber(modalCard)}</em> · {modalCard.heroName}'s journey</div>
@@ -1043,6 +968,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
         </div>
       )}
 
+      {/* Hatch modal */}
       {showHatchModal&&activeEgg&&(
         <div className="dash-hatch-modal" onClick={()=>setShowHatchModal(false)}>
           <div className="dash-hatch-inner" onClick={e=>e.stopPropagation()}>
@@ -1054,7 +980,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
         </div>
       )}
 
-      {/* SHARD BOTTOM SHEET */}
+      {/* Shard bottom sheet */}
       {activeShardIdx!==null&&activeShardCard&&(
         <>
           <div className="dash-sheet-bd" onClick={closeSheet}/>
@@ -1104,39 +1030,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
         </>
       )}
 
-      {/* ── MY STUFF SHEET ── */}
-      {myStuffOpen&&(
-        <>
-          <div className="dash-ms-bd" onClick={closeMyStuff}/>
-          <div className="dash-ms-sheet">
-            <div className="dash-ms-handle"/>
-            <div className="dash-ms-hd">
-              <div className="dash-ms-title">My Stuff</div>
-              <button className="dash-ms-close" onClick={closeMyStuff}>✕</button>
-            </div>
-            <div className="dash-ms-row books" onClick={handleMyBooks}>
-              <div className="dash-ms-ico" style={{background:'rgba(245,184,76,.08)',border:'1px solid rgba(245,184,76,.18)'}}><NavIconBooks/></div>
-              <div className="dash-ms-label"><div className="dash-ms-row-title">My Books</div><div className="dash-ms-row-sub">Stories your family has made</div></div>
-              {storyCount>0&&<div className="dash-ms-badge" style={{background:'rgba(245,184,76,.1)',border:'1px solid rgba(245,184,76,.22)',color:'rgba(245,184,76,.72)'}}>{storyCount}</div>}
-              <div className="dash-ms-arr">›</div>
-            </div>
-            <div className="dash-ms-row cards" onClick={handleNightCards}>
-              <div className="dash-ms-ico" style={{background:'rgba(160,96,240,.08)',border:'1px solid rgba(160,96,240,.18)'}}><NavIconNightCards/></div>
-              <div className="dash-ms-label"><div className="dash-ms-row-title">Night Cards</div><div className="dash-ms-row-sub">{primary?.name??'Your child'}'s bedtime memories</div></div>
-              {showMyStuffDot&&<div className="dash-ms-badge" style={{background:'rgba(160,96,240,.1)',border:'1px solid rgba(160,96,240,.22)',color:'#c090ff'}}>1 new</div>}
-              <div className="dash-ms-arr">›</div>
-            </div>
-            <div className="dash-ms-row hatch" onClick={handleHatchery}>
-              <div className="dash-ms-ico" style={{background:'rgba(20,216,144,.06)',border:'1px solid rgba(20,216,144,.18)'}}><NavIconHatchery/></div>
-              <div className="dash-ms-label"><div className="dash-ms-row-title">Hatchery</div><div className="dash-ms-row-sub">Creatures {primary?.name??'your child'} has earned</div></div>
-              <div className="dash-ms-arr">›</div>
-            </div>
-          </div>
-        </>
-      )}
-
       {/* ── BOTTOM NAV BAR ── */}
-      {/* BottomTabs replaced by dash-navbar inside UserDashboard.tsx */}
       <div className="dash-navbar">
         <div className="dash-nav-tab" onClick={handleNavDiscover}>
           <NavIconDiscover/>
@@ -1144,12 +1038,11 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
         </div>
         <div className="dash-nav-create" onClick={handleNavCreate}>
           <div className="dash-nav-create-btn"><NavIconCreate/></div>
-          <div className="dash-nav-create-lbl">Create a story</div>
+          <div className="dash-nav-create-lbl">Create</div>
         </div>
-        <div className={`dash-nav-tab${myStuffOpen?' on on-purple':''}`} onClick={handleNavMyStuff}>
-          <NavIconMyStuff color={myStuffOpen?'rgba(160,96,240,.85)':undefined}/>
-          <div className="dash-nav-tab-lbl">My Stuff</div>
-          {showMyStuffDot&&!myStuffOpen&&<div className="dash-nav-unread"/>}
+        <div className="dash-nav-tab on on-amber">
+          <NavIconHome color="rgba(245,184,76,.9)"/>
+          <div className="dash-nav-tab-lbl">Home</div>
         </div>
       </div>
     </div>
