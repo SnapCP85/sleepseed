@@ -215,11 +215,21 @@ const dbToCard = (row: any): SavedNightCard => {
   let extra = row.extra ?? undefined;
   let isOrigin: boolean | undefined;
   let whisper: string | undefined;
+  let occasion: string | undefined;
+  let streakCount: number | undefined;
+  let nightNumber: number | undefined;
+  let creatureEmoji: string | undefined;
+  let creatureColor: string | undefined;
   if (extra && extra.startsWith('{')) {
     try {
       const p = JSON.parse(extra);
       if (p.isOrigin) isOrigin = true;
       if (p.whisper)  whisper  = p.whisper;
+      if (p.occasion) occasion = p.occasion;
+      if (p.streakCount != null) streakCount = p.streakCount;
+      if (p.nightNumber != null) nightNumber = p.nightNumber;
+      if (p.creatureEmoji) creatureEmoji = p.creatureEmoji;
+      if (p.creatureColor) creatureColor = p.creatureColor;
       if (p.note)     extra    = p.note;
       else            extra    = undefined;
     } catch(_) {}
@@ -231,6 +241,7 @@ const dbToCard = (row: any): SavedNightCard => {
     bondingQuestion: row.bonding_question, bondingAnswer: row.bonding_answer,
     gratitude: row.gratitude, extra, photo: row.photo_url,
     emoji: row.emoji, date: row.date, isOrigin, whisper,
+    occasion, streakCount, nightNumber, creatureEmoji, creatureColor,
   };
 };
 
@@ -258,11 +269,16 @@ export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
     let photoUrl = nc.photo ?? null;
     if (photoUrl && photoUrl.startsWith('data:')) photoUrl = await uploadPhoto(nc.userId, photoUrl, `nc_${nc.id}`);
     let extraField = nc.extra ?? null;
-    if (nc.isOrigin || nc.whisper) {
+    if (nc.isOrigin || nc.whisper || nc.occasion || nc.streakCount != null || nc.nightNumber != null || nc.creatureEmoji || nc.creatureColor) {
       try {
         const packed: any = {};
         if (nc.isOrigin) packed.isOrigin = true;
         if (nc.whisper)  packed.whisper  = nc.whisper;
+        if (nc.occasion) packed.occasion = nc.occasion;
+        if (nc.streakCount != null) packed.streakCount = nc.streakCount;
+        if (nc.nightNumber != null) packed.nightNumber = nc.nightNumber;
+        if (nc.creatureEmoji) packed.creatureEmoji = nc.creatureEmoji;
+        if (nc.creatureColor) packed.creatureColor = nc.creatureColor;
         if (nc.extra)    packed.note     = nc.extra;
         extraField = JSON.stringify(packed);
       } catch(_) {}

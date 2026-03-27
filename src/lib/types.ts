@@ -147,7 +147,62 @@ export interface SavedNightCard {
   date: string;
   isOrigin?: boolean;   // the Night 0 / "where it began" card
   whisper?: string;     // the closing whisper line
+  occasion?: string;        // birthday, christmas, halloween, etc.
+  streakCount?: number;     // current streak at time of creation
+  nightNumber?: number;     // DreamKeeper night (1–7)
+  creatureEmoji?: string;   // creature emoji for card display
+  creatureColor?: string;   // creature color for card display
+  lessonTheme?: string;     // e.g. "Courage", "Kindness" — from DreamKeeper arc
 }
+
+// ── Night Card variant system ────────────────────────────────────────────────
+export type CardVariant = 'standard' | 'origin' | 'journey' | 'occasion' | 'streak';
+
+export function getCardVariant(card: SavedNightCard): CardVariant {
+  if (card.isOrigin === true) return 'origin';
+  if (card.nightNumber === 7 || (card.nightNumber && card.nightNumber % 7 === 0)) return 'journey';
+  if (card.occasion && card.occasion !== '') return 'occasion';
+  if (card.streakCount === 7 || card.streakCount === 14 ||
+      card.streakCount === 30 || card.streakCount === 100) return 'streak';
+  return 'standard';
+}
+
+export const CARD_VARIANT_STYLES: Record<CardVariant, {
+  skyGradient: string; glowColor: string; paperColor: string;
+  borderColor: string; headlineColor: string;
+  shadow: string;
+}> = {
+  standard: {
+    skyGradient: 'linear-gradient(to bottom, #0d1428, #1a1040)',
+    glowColor: '#9A7FD4', paperColor: '#faf6ee',
+    borderColor: 'rgba(154,127,212,0.2)', headlineColor: '#1a0f08',
+    shadow: '0 30px 60px rgba(0,0,0,0.6), 0 0 40px rgba(154,127,212,0.15)',
+  },
+  origin: {
+    skyGradient: 'linear-gradient(to bottom, #150e05, #2a1808)',
+    glowColor: '#F5B84C', paperColor: '#fdf8ee',
+    borderColor: 'rgba(245,184,76,0.35)', headlineColor: '#1a0e04',
+    shadow: '0 30px 60px rgba(0,0,0,0.6), 0 0 50px rgba(245,184,76,0.2)',
+  },
+  journey: {
+    skyGradient: 'linear-gradient(to bottom, #051510, #0a2a1a)',
+    glowColor: '#14d890', paperColor: '#f0faf5',
+    borderColor: 'rgba(20,216,144,0.3)', headlineColor: '#071a10',
+    shadow: '0 30px 60px rgba(0,0,0,0.6), 0 0 50px rgba(20,216,144,0.18)',
+  },
+  occasion: {
+    skyGradient: 'linear-gradient(to bottom, #1a0520, #2a0a3a)',
+    glowColor: '#9482ff', paperColor: '#faf6ff',
+    borderColor: 'rgba(148,130,255,0.3)', headlineColor: '#100820',
+    shadow: '0 30px 60px rgba(0,0,0,0.6), 0 0 50px rgba(148,130,255,0.18)',
+  },
+  streak: {
+    skyGradient: 'linear-gradient(to bottom, #180808, #2a1005)',
+    glowColor: '#F5B84C', paperColor: '#fef8f0',
+    borderColor: 'rgba(245,130,20,0.4)', headlineColor: '#1a0f08',
+    shadow: '0 30px 60px rgba(0,0,0,0.6), 0 0 50px rgba(245,130,20,0.22)',
+  },
+};
 
 // ── Hatchery ─────────────────────────────────────────────────────────────────
 export type CreatureRarity = 'common' | 'rare' | 'legendary';

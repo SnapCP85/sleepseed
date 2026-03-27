@@ -8,6 +8,7 @@ import { getAllHatchedCreatures } from '../lib/hatchery';
 import { getCreature } from '../lib/creatures';
 import type { Character, SavedStory, SavedNightCard, HatchedCreature } from '../lib/types';
 import NightCard from '../features/nightcards/NightCard';
+import { getBedtimeSettings, saveBedtimeSettings, requestNotificationPermission } from '../lib/bedtimeReminder';
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=Nunito:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap');
@@ -93,6 +94,9 @@ export default function UserProfile() {
   const [inviteLink, setInviteLink] = useState('');
   const [copied, setCopied] = useState(false);
   const [creatures, setCreatures] = useState<HatchedCreature[]>([]);
+  const [bedtimeOpen, setBedtimeOpen] = useState(false);
+  const [bedtime, setBedtime] = useState(() => user ? getBedtimeSettings(user.id) : { enabled: false, time: '19:30' });
+  const [bedtimeTime, setBedtimeTime] = useState(bedtime.time);
 
   useEffect(() => {
     if (!user) return;
@@ -274,10 +278,12 @@ export default function UserProfile() {
               {copied && <div className="up-set-val" style={{ color: '#14d890' }}>✓</div>}
             </div>
             <div className="up-set-divider" />
-            <div className="up-set-row">
+            <div className="up-set-row" onClick={() => setBedtimeOpen(true)} style={{ cursor: 'pointer' }}>
               <div className="up-set-ico">🔔</div>
               <div className="up-set-lbl">Bedtime reminder</div>
-              <div className="up-set-val" style={{ color: 'var(--cream-faint)' }}>OFF</div>
+              <div className="up-set-val" style={{ color: bedtime.enabled ? '#14d890' : 'var(--cream-faint)' }}>
+                {bedtime.enabled ? bedtime.time.replace(/^0/, '') : 'OFF'}
+              </div>
             </div>
             <div className="up-set-row">
               <div className="up-set-ico">🌐</div>
@@ -319,6 +325,85 @@ export default function UserProfile() {
         </div>
 
       </div>
+
+      {/* Bedtime reminder modal */}
+      {bedtimeOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, backdropFilter: 'blur(6px)' }}
+          onClick={() => setBedtimeOpen(false)}>
+          <div style={{ background: 'rgba(13,16,24,.98)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 18, padding: '28px 24px', maxWidth: 340, width: '100%', textAlign: 'center', boxShadow: '0 24px 80px rgba(0,0,0,.7)' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>🔔</div>
+            <div style={{ fontFamily: 'var(--serif)', fontSize: 18, fontWeight: 700, color: 'var(--cream)', marginBottom: 6 }}>Bedtime Reminder</div>
+            <div style={{ fontSize: 12, color: 'var(--cream-faint)', lineHeight: 1.6, marginBottom: 20 }}>
+              Get a notification when it's story time. Works while the app is open.
+            </div>
+
+            {/* Toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <span style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--cream-dim)' }}>Enable reminder</span>
+              <button onClick={async () => {
+                const next = !bedtime.enabled;
+                if (next) await requestNotificationPermission();
+                const updated = { ...bedtime, enabled: next };
+                setBedtime(updated);
+                if (user) saveBedtimeSettings(user.id, updated);
+              }} style={{
+                width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
+                background: bedtime.enabled ? '#14d890' : 'rgba(255,255,255,.15)',
+                position: 'relative', transition: 'background .2s',
+              }}>
+                <div style={{
+                  width: 18, height: 18, borderRadius: '50%', background: '#fff',
+                  position: 'absolute', top: 3,
+                  left: bedtime.enabled ? 23 : 3, transition: 'left .2s',
+                }} />
+              </button>
+            </div>
+
+            {/* Time picker */}
+            {bedtime.enabled && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--cream-faint)', marginBottom: 8 }}>Remind me at</div>
+                <input type="time" value={bedtimeTime} onChange={e => setBedtimeTime(e.target.value)}
+                  style={{
+                    width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid rgba(245,184,76,.25)',
+                    background: 'rgba(245,184,76,.06)', color: 'var(--amber)', fontFamily: 'var(--mono)',
+                    fontSize: 20, fontWeight: 600, textAlign: 'center', outline: 'none',
+                    WebkitAppearance: 'none',
+                  }} />
+              </div>
+            )}
+
+            {/* Notification permission status */}
+            {'Notification' in window && Notification.permission === 'denied' && bedtime.enabled && (
+              <div style={{ fontSize: 11, color: 'rgba(255,140,130,.7)', marginBottom: 12, lineHeight: 1.5 }}>
+                Notifications are blocked. Open your browser settings and allow notifications for this site.
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => {
+                const updated = { ...bedtime, time: bedtimeTime };
+                setBedtime(updated);
+                if (user) saveBedtimeSettings(user.id, updated);
+                setBedtimeOpen(false);
+              }} style={{
+                flex: 1, padding: 12, borderRadius: 12, background: '#E8972A', color: '#120800',
+                fontSize: 13, fontWeight: 700, cursor: 'pointer', border: 'none', fontFamily: 'var(--sans)',
+              }}>
+                Save
+              </button>
+              <button onClick={() => setBedtimeOpen(false)} style={{
+                padding: '12px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,.1)',
+                background: 'transparent', color: 'rgba(244,239,232,.5)', fontSize: 13,
+                cursor: 'pointer', fontFamily: 'var(--sans)',
+              }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
