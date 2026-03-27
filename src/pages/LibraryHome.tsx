@@ -18,7 +18,7 @@ function sceneSeed(title: string, heroName: string): number {
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=Nunito:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--night:#080C18;--night-card:#0f1525;--amber:#F5B84C;--amber-deep:#E8972A;--cream:#F4EFE8;--cream-dim:rgba(244,239,232,0.6);--cream-faint:rgba(244,239,232,0.28);--teal:#14d890;--purple:#9482ff;--serif:'Fraunces',Georgia,serif;--sans:'Nunito',system-ui,sans-serif;--mono:'DM Mono',monospace}
+:root{--night:#060912;--night-card:#0f1525;--night-raised:#141a2e;--amber:#F5B84C;--amber-deep:#E8972A;--cream:#F4EFE8;--cream-dim:rgba(244,239,232,0.6);--cream-faint:rgba(244,239,232,0.28);--teal:#14d890;--purple:#9482ff;--serif:'Fraunces',Georgia,serif;--sans:'Nunito',system-ui,sans-serif;--mono:'DM Mono',monospace}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes lFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @keyframes shimmer{0%{transform:translateX(-100%)}60%,100%{transform:translateX(200%)}}
@@ -48,6 +48,8 @@ const CSS = `
 .lh-pill.on{border-color:rgba(245,184,76,.5);background:rgba(245,184,76,.1);color:var(--amber)}
 .lh-pill.teal.on{border-color:rgba(20,216,144,.5);background:rgba(20,216,144,.1);color:var(--teal)}
 .lh-pill.purple.on{border-color:rgba(148,130,255,.5);background:rgba(148,130,255,.1);color:var(--purple)}
+.lh-pill.calm.on{border-color:rgba(20,216,144,.5);background:rgba(20,216,144,.1);color:var(--teal)}
+.lh-pill.wonder.on{border-color:rgba(148,130,255,.5);background:rgba(148,130,255,.1);color:var(--purple)}
 
 /* hero card — Story of the Night */
 .lh-hero{margin:16px 0;border-radius:24px;overflow:hidden;cursor:pointer;min-height:200px;box-shadow:0 12px 40px rgba(0,0,0,.5);position:relative;transition:all .22s;animation:fadeUp .5s ease}
@@ -127,12 +129,13 @@ const CSS = `
 `;
 
 const MOOD_FILTERS = [
-  { emoji: '✨', label: 'All', value: '' },
-  { emoji: '🌙', label: 'Calm', value: 'calm' },
-  { emoji: '🌟', label: 'Adventure', value: 'exciting' },
-  { emoji: '💛', label: 'Funny', value: 'funny' },
-  { emoji: '🦋', label: 'Wonder', value: 'heartfelt' },
-  { emoji: '🦁', label: 'Brave', value: 'brave' },
+  { emoji: '✨', label: 'All', value: '', cls: '' },
+  { emoji: '🌙', label: 'Calm', value: 'calm', cls: 'calm' },
+  { emoji: '🌟', label: 'Adventure', value: 'exciting', cls: '' },
+  { emoji: '💛', label: 'Funny', value: 'funny', cls: '' },
+  { emoji: '🦋', label: 'Wonder', value: 'heartfelt', cls: 'wonder' },
+  { emoji: '🦁', label: 'Brave', value: 'brave', cls: '' },
+  { emoji: '🌊', label: 'Dreamy', value: 'dreamy', cls: 'teal' },
 ];
 
 const AGE_FILTERS = [
@@ -267,7 +270,7 @@ export default function LibraryHome() {
         {/* Mood filters (primary) */}
         <div className="lh-filters">
           {MOOD_FILTERS.map(f => (
-            <button key={f.value} className={`lh-pill${filterMood === f.value ? ' on' : ''}`}
+            <button key={f.value} className={`lh-pill${f.cls ? ' ' + f.cls : ''}${filterMood === f.value ? ' on' : ''}`}
               onClick={() => setFilterMood(filterMood === f.value ? '' : f.value)}>
               {f.emoji} {f.label}
             </button>

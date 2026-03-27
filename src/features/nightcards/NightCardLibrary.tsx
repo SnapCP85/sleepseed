@@ -1,8 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { getNightCards, deleteNightCard, saveNightCard } from '../../lib/storage';
+import { supabase } from '../../lib/supabase';
 import type { SavedNightCard } from '../../lib/types';
+import { getCardVariant } from '../../lib/types';
+import NightCard, { getPinStyle } from './NightCard';
 
-// ── Date helper ──────────────────────────────────────────────────────────────
+// ── Date helpers ──
 function formatDate(iso: string): string {
   try {
     const d = new Date(iso);
@@ -28,7 +31,7 @@ function monthLabel(iso: string): string {
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=Nunito:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--night:#080C18;--night-card:#0f1525;--amber:#F5B84C;--amber-deep:#E8972A;--cream:#F4EFE8;--cream-dim:rgba(244,239,232,0.6);--cream-faint:rgba(244,239,232,0.28);--teal:#14d890;--purple:#9482ff;--serif:'Fraunces',Georgia,serif;--sans:'Nunito',system-ui,sans-serif;--mono:'DM Mono',monospace}
+:root{--night:#060912;--night-card:#0f1525;--night-raised:#141a2e;--amber:#F5B84C;--amber-deep:#E8972A;--cream:#F4EFE8;--cream-dim:rgba(244,239,232,0.6);--cream-faint:rgba(244,239,232,0.28);--teal:#14d890;--purple:#9482ff;--serif:'Fraunces',Georgia,serif;--sans:'Nunito',system-ui,sans-serif;--mono:'DM Mono',monospace}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 @keyframes slideup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
@@ -49,8 +52,8 @@ const CSS = `
 .ncl-inner{max-width:600px;margin:0 auto;padding:0 20px}
 
 /* Opening Statement */
-.ncl-opening{padding:16px 0 14px;animation:fadeUp .6s ease}
-.ncl-opening-h{font-family:var(--serif);font-size:22px;font-weight:400;color:var(--cream);line-height:1.35}
+.ncl-opening{padding:16px 0 14px;animation:fadeUp .4s ease}
+.ncl-opening-h{font-family:var(--serif);font-size:22px;font-weight:400;color:var(--cream);line-height:1.2}
 .ncl-opening-h em{font-style:italic;color:var(--amber)}
 .ncl-opening-sub{font-family:var(--sans);font-size:12px;color:var(--cream-faint);margin-top:6px}
 
@@ -72,33 +75,16 @@ const CSS = `
 .ncl-empty-sub{font-size:14px;color:var(--cream-faint);line-height:1.72;max-width:360px;margin:0 auto;font-weight:300}
 
 /* ── CORKBOARD ── */
-.ncl-cork{margin:0 -6px;background:#1a1208;border:1px solid rgba(245,184,76,.1);border-radius:20px;padding:20px 10px 24px;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-around;min-height:300px;position:relative;background-image:repeating-linear-gradient(45deg,transparent,transparent 35px,rgba(245,184,76,.015) 35px,rgba(245,184,76,.015) 70px)}
-@media(max-width:600px){.ncl-cork{padding:16px 8px 20px;gap:10px}}
-
-/* Polaroid */
-.ncl-pol{background:#f5f0e8;border-radius:3px;padding:8px 8px 22px;cursor:pointer;transition:transform .22s,box-shadow .22s,z-index 0s;position:relative;flex-shrink:0;width:130px}
-.ncl-pol:hover{box-shadow:0 20px 56px rgba(0,0,0,.8)!important;z-index:10;transform:rotate(0deg) scale(1.06) translateY(-6px)!important}
-
-/* Push pin */
-.ncl-pin{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.4);z-index:3}
-.ncl-pin.red{background:radial-gradient(circle at 35% 35%,#e84040,#a02020)}
-.ncl-pin.gold{background:radial-gradient(circle at 35% 35%,#F5B84C,#a06010)}
-
-/* New card badge */
-.ncl-new-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px rgba(20,216,144,.5);z-index:4}
-
-.ncl-pol-photo{width:114px;height:94px;border-radius:2px;overflow:hidden;margin:0 auto}
-.ncl-pol-img{width:100%;height:100%;object-fit:cover;display:block}
-.ncl-pol-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px}
-.ncl-pol-writing{padding:6px 4px 0;text-align:center}
-.ncl-pol-name{font-family:var(--sans);font-size:9px;font-weight:700;color:#3a2010;text-align:center}
-.ncl-pol-date{font-family:var(--mono);font-size:8px;color:rgba(60,30,10,.45);text-align:center;margin-top:1px}
-.ncl-origin-badge{position:absolute;top:6px;left:6px;background:rgba(232,151,42,.92);border-radius:4px;padding:2px 6px;font-size:6.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#120800;font-family:var(--sans);z-index:2}
-.ncl-pol-del{position:absolute;top:6px;right:6px;background:rgba(180,50,50,.8);border:none;border-radius:50%;width:22px;height:22px;font-size:10px;color:white;cursor:pointer;display:none;align-items:center;justify-content:center;font-family:var(--sans);z-index:2}
-.ncl-pol:hover .ncl-pol-del{display:flex}
+.ncl-cork{margin:0 -6px;background:#1a1208;border:1px solid rgba(245,184,76,.1);border-radius:20px;padding:20px 10px 24px;position:relative;overflow:hidden}
+.ncl-cork-texture{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(45deg,rgba(245,184,76,.015) 0px,transparent 2px,transparent 8px,rgba(245,184,76,.015) 10px)}
+.ncl-cork-grid{display:flex;flex-wrap:wrap;justify-content:space-around;padding:8px 4px;position:relative;z-index:1}
+.ncl-cork-card{margin:8px;position:relative;width:130px}
+.ncl-cork-pin{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.4);z-index:3}
+.ncl-cork-new{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px rgba(20,216,144,.6);z-index:4}
+.ncl-cork-footer{font-family:var(--serif);font-size:12px;color:rgba(245,184,76,.5);text-align:center;margin-top:12px;position:relative;z-index:1}
 
 /* ── TIMELINE ── */
-.ncl-timeline{display:flex;flex-direction:column;gap:0}
+.ncl-timeline{display:flex;flex-direction:column;gap:0;padding:0}
 .ncl-tl-month{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin:20px 0 10px 4px;font-weight:600}
 .ncl-tl-month:first-child{margin-top:0}
 .ncl-tl-card{display:flex;gap:14px;padding:14px;background:var(--night-card);border:1px solid rgba(244,239,232,.07);border-radius:18px;cursor:pointer;transition:all .18s;margin-bottom:8px}
@@ -107,7 +93,7 @@ const CSS = `
 .ncl-tl-photo{width:80px;min-height:88px;border-radius:10px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .ncl-tl-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:30px;border-radius:10px}
 .ncl-tl-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
-.ncl-tl-origin-badge{font-family:var(--mono);font-size:8px;color:var(--amber);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.ncl-tl-origin-badge{display:inline-block;font-family:var(--mono);font-size:8px;color:var(--amber);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;background:rgba(245,184,76,.08);padding:2px 7px;border-radius:6px;width:fit-content}
 .ncl-tl-headline{font-family:var(--serif);font-size:14px;font-weight:500;color:var(--cream);line-height:1.3;margin-bottom:4px}
 .ncl-tl-quote{font-family:var(--serif);font-size:11px;font-weight:300;font-style:italic;color:var(--cream-dim);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px}
 .ncl-tl-footer{display:flex;align-items:center;justify-content:space-between}
@@ -116,25 +102,21 @@ const CSS = `
 .ncl-tl-share:hover{opacity:.8}
 
 /* ── DETAIL MODAL ── */
-.ncl-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);animation:fadein .2s ease}
-.ncl-modal{background:#F4EFE2;border-radius:6px;padding:16px 16px 32px;width:100%;max-width:420px;box-shadow:0 40px 100px rgba(0,0,0,.9);position:relative;animation:slideup .3s cubic-bezier(.22,1,.36,1);max-height:90vh;overflow-y:auto}
-.ncl-modal-close{position:absolute;top:10px;right:10px;background:rgba(58,40,0,.1);border:none;border-radius:50%;width:28px;height:28px;font-size:12px;color:#3A2800;cursor:pointer;font-family:var(--sans);transition:background .15s;z-index:2}
-.ncl-modal-close:hover{background:rgba(58,40,0,.18)}
-.ncl-modal-photo{width:100%;border-radius:4px;overflow:hidden;margin-bottom:14px}
-.ncl-modal-photo img{width:100%;display:block;border-radius:3px}
-.ncl-modal-headline{font-family:var(--serif);font-size:16px;font-weight:700;color:#2A1600;text-align:center;margin-bottom:6px}
-.ncl-modal-quote{font-family:Georgia,serif;font-size:14px;font-style:italic;color:#3A2000;line-height:1.65;text-align:center;margin-bottom:14px;padding:0 8px}
-.ncl-modal-portrait{font-family:Georgia,serif;font-size:12px;font-style:italic;color:#3A2000;line-height:1.72;border-bottom:1px solid rgba(58,40,0,.09);padding-bottom:11px;margin-bottom:11px}
-.ncl-modal-chips{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
-.ncl-modal-chip{border-radius:8px;padding:10px 12px}
-.ncl-modal-chipq{font-size:8px;font-family:var(--mono);opacity:.5;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px;font-weight:600}
-.ncl-modal-chipa{font-family:Georgia,serif;font-size:12.5px;font-style:italic;line-height:1.5}
-.ncl-modal-actions{display:flex;gap:8px;margin-top:12px}
-.ncl-modal-action{flex:1;padding:9px 12px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .15s;text-align:center}
-.ncl-modal-stamp{font-size:8.5px;color:rgba(58,40,0,.22);font-family:var(--mono);text-align:right;margin-top:10px;padding-top:6px;border-top:1px solid rgba(58,40,0,.06)}
+.ncl-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px;backdrop-filter:blur(8px);animation:fadein .2s ease}
+.ncl-modal-actions{display:flex;gap:10px;margin-top:16px;justify-content:center;flex-wrap:wrap}
+.ncl-modal-action{padding:9px 14px;border-radius:10px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .15s;text-align:center;border:1px solid rgba(244,239,232,.15);background:rgba(244,239,232,.06);color:var(--cream-dim);display:flex;align-items:center;gap:5px}
+.ncl-modal-action:hover{background:rgba(244,239,232,.12);border-color:rgba(244,239,232,.25)}
+.ncl-modal-action.danger{border-color:rgba(200,80,80,.3);color:rgba(255,140,130,.6)}
+.ncl-modal-action.danger:hover{background:rgba(200,80,80,.1)}
+
+/* Edit modal */
+.ncl-edit-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px);animation:fadein .15s ease}
+.ncl-edit{background:#F4EFE2;border-radius:16px;padding:20px;width:100%;max-width:380px;box-shadow:0 40px 100px rgba(0,0,0,.9);animation:slideup .3s cubic-bezier(.22,1,.36,1);max-height:85vh;overflow-y:auto}
+.ncl-edit-field-label{font-size:8px;color:rgba(58,40,0,.4);font-family:var(--mono);margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+.ncl-edit-field textarea{width:100%;background:rgba(58,40,0,.04);border:1px solid rgba(58,40,0,.12);border-radius:6px;padding:8px 10px;font-size:12px;color:#3A2600;font-family:Georgia,serif;font-style:italic;resize:none;min-height:40px;line-height:1.5;outline:none}
 
 /* confirm */
-.ncl-confirm-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px);animation:fadein .15s ease}
+.ncl-confirm-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px);animation:fadein .15s ease}
 .ncl-confirm{background:rgba(13,16,24,.98);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:28px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.7);animation:slideup .2s cubic-bezier(.22,1,.36,1)}
 .ncl-confirm h3{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--cream);margin-bottom:8px}
 .ncl-confirm p{font-size:13px;color:var(--cream-faint);line-height:1.6;margin-bottom:20px}
@@ -143,20 +125,21 @@ const CSS = `
 .ncl-confirm-del{flex:1;padding:12px;border-radius:12px;border:none;background:rgba(200,70,60,.85);color:white;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans)}
 `;
 
-const ROTS = [-2.8, 1.6, -1.2, 2.4, -1.8, 0.8, -2.4, 1.0, -1.4, 2.0, -0.6, 2.8];
+const ROTS = [-2.8, 1.5, -1, 2.2, -3, 0.8];
+const OFFSETS = [0, 4, -2, 6, 2, -4];
 
 interface Props { userId: string; onBack: () => void; filterCharacterId?: string; }
 
 export default function NightCardLibrary({ userId, onBack, filterCharacterId }: Props) {
   const [cards, setCards] = useState<SavedNightCard[]>([]);
   const [viewing, setViewing] = useState<SavedNightCard | null>(null);
+  const [isFlipped, setIsFlipped] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editFields, setEditFields] = useState<any>({});
   const [viewMode, setViewMode] = useState<'cork' | 'timeline'>('cork');
   const [search, setSearch] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<SavedNightCard | null>(null);
   const [showSearch, setShowSearch] = useState(false);
-  const shareCanvas = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     getNightCards(userId).then(fetched => {
@@ -183,7 +166,6 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
       || (c.headline || '').toLowerCase().includes(s);
   });
 
-  // Determine primary child name
   const childName = cards.length > 0 ? cards.find(c => !c.isOrigin)?.heroName || cards[0]?.heroName || 'your child' : 'your child';
 
   const handleDelete = async (nc: SavedNightCard) => {
@@ -231,7 +213,7 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
     if (line.trim()) ctx.fillText(line === words.join(' ') + ' ' ? `"${line.trim()}"` : line.trim(), W / 2, lineY);
     ctx.fillStyle = 'rgba(58,38,0,.4)';
     ctx.font = '600 11px sans-serif';
-    ctx.fillText(`${nc.heroName}  ·  ${formatDate(nc.date)}`, W / 2, H - 50);
+    ctx.fillText(`${nc.heroName}  \u00B7  ${formatDate(nc.date)}`, W / 2, H - 50);
     ctx.fillStyle = 'rgba(58,38,0,.2)';
     ctx.font = '10px monospace';
     ctx.fillText('SleepSeed', W / 2, H - 28);
@@ -239,7 +221,7 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
       if (!blob) return;
       const file = new File([blob], `nightcard-${nc.heroName}-${nc.date}.png`, { type: 'image/png' });
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        try { await navigator.share({ files: [file], title: `Night Card — ${nc.heroName}` }); } catch {}
+        try { await navigator.share({ files: [file], title: `Night Card \u2014 ${nc.heroName}` }); } catch {}
       } else {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = file.name; a.click();
@@ -257,21 +239,41 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
     groupedByMonth[groupedByMonth.length - 1][1].push(nc);
   }
 
-  // Check for "new" cards (today)
   const todayStr = new Date().toISOString().split('T')[0];
+
+  const openDetail = (nc: SavedNightCard) => { setViewing(nc); setIsFlipped(false); setEditing(false); };
+
+  const shareToGrandparent = async (nc: SavedNightCard) => {
+    try {
+      const token = crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      await supabase.from('night_card_shares').upsert({
+        card_id: nc.id, share_token: token, created_at: new Date().toISOString(),
+      });
+      const url = `${window.location.origin}${window.location.pathname}?nc=${token}`;
+      if (navigator.share) {
+        try { await navigator.share({ title: `${nc.heroName}'s Night Card`, url }); } catch {}
+      } else {
+        await navigator.clipboard.writeText(url);
+        alert('Share link copied to clipboard!');
+      }
+    } catch (e) { console.error('Share to grandparent failed:', e); alert('Could not create share link.'); }
+  };
+
+  const openPrintView = (nc: SavedNightCard) => {
+    window.open(`${window.location.pathname}?printCard=${nc.id}&uid=${userId}`, '_blank');
+  };
 
   return (
     <div className="ncl">
       <style>{CSS}</style>
-      <canvas ref={shareCanvas} style={{ display: 'none' }} />
 
       <nav className="ncl-nav">
         <div className="ncl-nav-left">
-          <button className="ncl-back" onClick={onBack}>←</button>
+          <button className="ncl-back" onClick={onBack}>{'\u2190'}</button>
           <div className="ncl-title">Night <span>Cards</span></div>
         </div>
         <div className="ncl-nav-right">
-          <button className="ncl-nav-btn" onClick={() => setShowSearch(!showSearch)}>🔍</button>
+          <button className="ncl-nav-btn" onClick={() => setShowSearch(!showSearch)}>{'\uD83D\uDD0D'}</button>
         </div>
       </nav>
 
@@ -284,16 +286,14 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
           <div className="ncl-opening-sub">Every story leaves a mark. These are yours.</div>
         </div>
 
-        {/* Search (toggleable) */}
         {showSearch && (
           <input className="ncl-search" placeholder="Search cards, quotes, moments..." value={search} onChange={e => setSearch(e.target.value)} autoFocus />
         )}
 
-        {/* View Toggle */}
         {cards.length > 0 && (
           <div className="ncl-toggle">
-            <button className={`ncl-toggle-btn${viewMode === 'cork' ? ' on' : ''}`} onClick={() => setViewMode('cork')}>📌 Corkboard</button>
-            <button className={`ncl-toggle-btn${viewMode === 'timeline' ? ' on' : ''}`} onClick={() => setViewMode('timeline')}>📋 Timeline</button>
+            <button className={`ncl-toggle-btn${viewMode === 'cork' ? ' on' : ''}`} onClick={() => setViewMode('cork')}>{'\uD83D\uDCCC'} Corkboard</button>
+            <button className={`ncl-toggle-btn${viewMode === 'timeline' ? ' on' : ''}`} onClick={() => setViewMode('timeline')}>{'\uD83D\uDCCB'} Timeline</button>
           </div>
         )}
 
@@ -302,7 +302,7 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
             <div style={{ fontSize: 10, color: 'rgba(148,130,255,.75)', fontFamily: 'monospace', letterSpacing: '.04em' }}>
               Showing cards for this character only
             </div>
-            <button style={{ fontSize: 10, color: 'rgba(148,130,255,.5)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }} onClick={onBack}>← all cards</button>
+            <button style={{ fontSize: 10, color: 'rgba(148,130,255,.5)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }} onClick={onBack}>{'\u2190'} all cards</button>
           </div>
         )}
 
@@ -319,35 +319,25 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
         ) : viewMode === 'cork' ? (
           /* ── CORKBOARD VIEW ── */
           <div className="ncl-cork">
-            {displayed.map((nc, i) => {
-              const rot = ROTS[i % ROTS.length];
-              const isNew = nc.date.split('T')[0] === todayStr;
-              return (
-                <div key={nc.id} className="ncl-pol"
-                  style={{
-                    transform: nc.isOrigin ? 'rotate(-1deg)' : `rotate(${rot}deg)`,
-                    boxShadow: nc.isOrigin
-                      ? '0 8px 32px rgba(232,151,42,.25),0 4px 16px rgba(0,0,0,.6)'
-                      : `0 ${4 + (i % 3) * 2}px ${18 + (i % 4) * 5}px rgba(0,0,0,.6)`
-                  }}
-                  onClick={() => setViewing(nc)}>
-                  {/* Push pin */}
-                  <div className={`ncl-pin ${nc.isOrigin ? 'gold' : 'red'}`} />
-                  {isNew && !nc.isOrigin && <div className="ncl-new-dot" />}
-                  {nc.isOrigin && <div className="ncl-origin-badge">where it began</div>}
-                  <div className="ncl-pol-photo">
-                    {nc.photo
-                      ? <img className="ncl-pol-img" src={nc.photo} alt="" />
-                      : <div className="ncl-pol-fallback" style={{ background: `linear-gradient(145deg,#1A1C2A,#201830)` }}>{nc.emoji || '🌙'}</div>}
+            <div className="ncl-cork-texture" />
+            <div className="ncl-cork-grid">
+              {displayed.map((nc, i) => {
+                const variant = getCardVariant(nc);
+                const rot = ROTS[i % ROTS.length];
+                const offsetY = OFFSETS[i % OFFSETS.length];
+                const isNew = nc.date.split('T')[0] === todayStr;
+                return (
+                  <div key={nc.id} className="ncl-cork-card" style={{
+                    transform: `rotate(${rot}deg) translateY(${offsetY}px)`,
+                  }}>
+                    <div className="ncl-cork-pin" style={{ background: getPinStyle(variant) }} />
+                    {isNew && <div className="ncl-cork-new" />}
+                    <NightCard card={nc} size="mini" onTap={() => openDetail(nc)} />
                   </div>
-                  <div className="ncl-pol-writing">
-                    <div className="ncl-pol-name">{nc.headline || nc.heroName}</div>
-                    <div className="ncl-pol-date">{formatDate(nc.date)}</div>
-                  </div>
-                  <button className="ncl-pol-del" onClick={e => { e.stopPropagation(); setConfirmDelete(nc); }}>✕</button>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+            <div className="ncl-cork-footer">tap any card to open</div>
           </div>
         ) : (
           /* ── TIMELINE VIEW ── */
@@ -355,24 +345,32 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
             {groupedByMonth.map(([month, ncs]) => (
               <div key={month}>
                 <div className="ncl-tl-month">{month}</div>
-                {ncs.map(nc => (
-                  <div key={nc.id} className={`ncl-tl-card${nc.isOrigin ? ' origin' : ''}`} onClick={() => setViewing(nc)}>
-                    <div className="ncl-tl-photo" style={{ background: `linear-gradient(145deg,#1A1C2A,#201830)` }}>
-                      {nc.photo
-                        ? <img src={nc.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 10 }} />
-                        : <div className="ncl-tl-fallback">{nc.emoji || '🌙'}</div>}
-                    </div>
-                    <div className="ncl-tl-body">
-                      {nc.isOrigin && <div className="ncl-tl-origin-badge">Origin ✦</div>}
-                      <div className="ncl-tl-headline">{nc.headline || nc.storyTitle || nc.heroName}</div>
-                      {nc.quote && <div className="ncl-tl-quote">"{nc.quote}"</div>}
-                      <div className="ncl-tl-footer">
-                        <div className="ncl-tl-date">{formatDateLong(nc.date)}</div>
-                        <button className="ncl-tl-share" onClick={e => { e.stopPropagation(); shareCard(nc); }}>↗</button>
+                {ncs.map(nc => {
+                  const variant = getCardVariant(nc);
+                  const skyGradient = variant === 'standard' ? 'linear-gradient(145deg,#0d1428,#1a1040)'
+                    : variant === 'origin' ? 'linear-gradient(145deg,#150e05,#2a1808)'
+                    : variant === 'journey' ? 'linear-gradient(145deg,#051510,#0a2a1a)'
+                    : variant === 'occasion' ? 'linear-gradient(145deg,#1a0520,#2a0a3a)'
+                    : 'linear-gradient(145deg,#180808,#2a1005)';
+                  return (
+                    <div key={nc.id} className={`ncl-tl-card${nc.isOrigin ? ' origin' : ''}`} onClick={() => openDetail(nc)}>
+                      <div className="ncl-tl-photo" style={{ background: skyGradient }}>
+                        {nc.photo
+                          ? <img src={nc.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 10 }} />
+                          : <div className="ncl-tl-fallback">{nc.creatureEmoji || nc.emoji || '\uD83C\uDF19'}</div>}
+                      </div>
+                      <div className="ncl-tl-body">
+                        {nc.isOrigin && <div className="ncl-tl-origin-badge">Origin {'\u2726'}</div>}
+                        <div className="ncl-tl-headline">{nc.headline || nc.storyTitle || nc.heroName}</div>
+                        {nc.quote && <div className="ncl-tl-quote">{'\u201C'}{nc.quote}{'\u201D'}</div>}
+                        <div className="ncl-tl-footer">
+                          <div className="ncl-tl-date">{formatDateLong(nc.date)}</div>
+                          <button className="ncl-tl-share" onClick={e => { e.stopPropagation(); shareCard(nc); }}>{'\u2197'}</button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ))}
           </div>
@@ -380,79 +378,72 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
       </div>
 
       {/* ── DETAIL MODAL ── */}
-      {viewing && (
-        <div className="ncl-modal-bg" onClick={() => { setViewing(null); setEditing(false); }}>
-          <div className="ncl-modal" onClick={e => e.stopPropagation()}>
-            <button className="ncl-modal-close" onClick={() => { setViewing(null); setEditing(false); }}>✕</button>
-            {viewing.photo && (
-              <div className="ncl-modal-photo"><img src={viewing.photo} alt="" /></div>
-            )}
-            {viewing.headline && <div className="ncl-modal-headline">{viewing.headline}</div>}
-            {viewing.quote && <div className="ncl-modal-quote">"{viewing.quote}"</div>}
-            {viewing.memory_line && <div className="ncl-modal-portrait">{viewing.memory_line}</div>}
-            <div className="ncl-modal-chips">
-              {viewing.bondingAnswer && (
-                <div className="ncl-modal-chip" style={{ background: 'rgba(180,120,20,.07)', border: '1px solid rgba(180,120,20,.14)' }}>
-                  <div className="ncl-modal-chipq" style={{ color: '#7A5010' }}>{viewing.bondingQuestion || 'Bonding question'}</div>
-                  <div className="ncl-modal-chipa" style={{ color: '#4A3000' }}>{viewing.bondingAnswer}</div>
-                </div>
-              )}
-              {viewing.gratitude && (
-                <div className="ncl-modal-chip" style={{ background: 'rgba(80,90,160,.06)', border: '1px solid rgba(80,90,160,.13)' }}>
-                  <div className="ncl-modal-chipq" style={{ color: '#3A4080' }}>Best three seconds</div>
-                  <div className="ncl-modal-chipa" style={{ color: '#2A3060' }}>{viewing.gratitude}</div>
-                </div>
-              )}
-              {viewing.extra && (
-                <div className="ncl-modal-chip" style={{ background: 'rgba(20,100,60,.06)', border: '1px solid rgba(20,100,60,.13)' }}>
-                  <div className="ncl-modal-chipq" style={{ color: '#0A5030' }}>Also tonight</div>
-                  <div className="ncl-modal-chipa" style={{ color: '#083820' }}>{viewing.extra}</div>
-                </div>
-              )}
+      {viewing && !editing && (
+        <div className="ncl-modal-bg" onClick={() => { setViewing(null); setIsFlipped(false); }}>
+          <div onClick={e => e.stopPropagation()}>
+            <NightCard
+              card={viewing}
+              size="full"
+              flipped={isFlipped}
+              onFlip={() => setIsFlipped(!isFlipped)}
+            />
+          </div>
+          <div className="ncl-modal-actions" onClick={e => e.stopPropagation()}>
+            <button className="ncl-modal-action" onClick={() => shareCard(viewing)}>
+              {'\uD83D\uDCE4'} Share
+            </button>
+            <button className="ncl-modal-action" onClick={() => openPrintView(viewing)}>
+              {'\uD83D\uDDA8\uFE0F'} Print 5{'\u00D7'}7
+            </button>
+            <button className="ncl-modal-action" onClick={() => shareToGrandparent(viewing)}>
+              {'\uD83C\uDF81'} Send to Grandparent
+            </button>
+            <button className="ncl-modal-action" onClick={() => {
+              setEditing(true);
+              setEditFields({
+                headline: viewing.headline || '',
+                quote: viewing.quote || '',
+                memory_line: viewing.memory_line || '',
+                gratitude: viewing.gratitude || '',
+                extra: viewing.extra || '',
+              });
+            }}>
+              {'\u270F\uFE0F'} Edit
+            </button>
+            <button className="ncl-modal-action danger" onClick={() => setConfirmDelete(viewing)}>
+              {'\uD83D\uDDD1'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit modal */}
+      {editing && viewing && (
+        <div className="ncl-edit-bg" onClick={() => setEditing(false)}>
+          <div className="ncl-edit" onClick={e => e.stopPropagation()}>
+            {[{ k: 'headline', l: 'Headline' }, { k: 'quote', l: 'Quote' }, { k: 'memory_line', l: 'Memory line' }, { k: 'gratitude', l: 'Best three seconds' }, { k: 'extra', l: 'Extra note' }].map(f => (
+              <div key={f.k} style={{ marginBottom: 8 }}>
+                <div className="ncl-edit-field-label">{f.l}</div>
+                <textarea className="ncl-edit-field" value={editFields[f.k] || ''} onChange={e => setEditFields({ ...editFields, [f.k]: e.target.value })}
+                  style={{ width: '100%', background: 'rgba(58,40,0,.04)', border: '1px solid rgba(58,40,0,.12)', borderRadius: 6, padding: '8px 10px', fontSize: 12, color: '#3A2600', fontFamily: 'Georgia,serif', fontStyle: 'italic', resize: 'none', minHeight: 40, lineHeight: 1.5, outline: 'none' }} />
+              </div>
+            ))}
+            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+              <button onClick={async () => {
+                const updated = { ...viewing, ...editFields };
+                await saveNightCard(updated);
+                const fetched = await getNightCards(userId);
+                setCards(fetched);
+                setViewing(updated);
+                setEditing(false);
+              }} style={{ flex: 1, padding: 10, borderRadius: 8, background: '#E8972A', color: '#120800', fontSize: 12, fontWeight: 700, cursor: 'pointer', border: 'none', fontFamily: 'inherit' }}>
+                Save changes
+              </button>
+              <button onClick={() => setEditing(false)}
+                style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(58,40,0,.12)', background: 'transparent', color: 'rgba(58,40,0,.5)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+                Cancel
+              </button>
             </div>
-            {!editing ? (
-              <div className="ncl-modal-actions">
-                <button className="ncl-modal-action" onClick={() => shareCard(viewing)}
-                  style={{ border: '1px solid rgba(80,90,160,.25)', background: 'rgba(80,90,160,.06)', color: 'rgba(80,90,160,.8)' }}>
-                  Share
-                </button>
-                <button className="ncl-modal-action" onClick={() => { setEditing(true); setEditFields({ headline: viewing.headline || '', quote: viewing.quote || '', memory_line: viewing.memory_line || '', gratitude: viewing.gratitude || '', extra: viewing.extra || '' }); }}
-                  style={{ border: '1px solid rgba(232,151,42,.25)', background: 'rgba(232,151,42,.06)', color: 'rgba(232,151,42,.8)' }}>
-                  Edit
-                </button>
-                <button className="ncl-modal-action" onClick={() => setConfirmDelete(viewing)}
-                  style={{ border: '1px solid rgba(200,80,80,.2)', background: 'rgba(200,80,80,.05)', color: 'rgba(255,140,130,.6)', flex: 'none', padding: '9px 14px' }}>
-                  🗑
-                </button>
-              </div>
-            ) : (
-              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {[{ k: 'headline', l: 'Headline' }, { k: 'quote', l: 'Quote' }, { k: 'memory_line', l: 'Memory line' }, { k: 'gratitude', l: 'Best three seconds' }, { k: 'extra', l: 'Extra note' }].map(f => (
-                  <div key={f.k}>
-                    <div style={{ fontSize: 8, color: 'rgba(58,40,0,.4)', fontFamily: 'monospace', marginBottom: 3, textTransform: 'uppercase' as const, letterSpacing: '.5px' }}>{f.l}</div>
-                    <textarea value={editFields[f.k] || ''} onChange={e => setEditFields({ ...editFields, [f.k]: e.target.value })}
-                      style={{ width: '100%', background: 'rgba(58,40,0,.04)', border: '1px solid rgba(58,40,0,.12)', borderRadius: 6, padding: '8px 10px', fontSize: 12, color: '#3A2600', fontFamily: 'Georgia,serif', fontStyle: 'italic', resize: 'none' as const, minHeight: 40, lineHeight: 1.5, outline: 'none' }} />
-                  </div>
-                ))}
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button onClick={async () => {
-                    const updated = { ...viewing, ...editFields };
-                    await saveNightCard(updated);
-                    const fetched = await getNightCards(userId);
-                    setCards(fetched);
-                    setViewing(updated);
-                    setEditing(false);
-                  }} style={{ flex: 1, padding: '10px', borderRadius: 8, background: '#E8972A', color: '#120800', fontSize: 12, fontWeight: 700, cursor: 'pointer', border: 'none', fontFamily: 'inherit' }}>
-                    Save changes
-                  </button>
-                  <button onClick={() => setEditing(false)}
-                    style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(58,40,0,.12)', background: 'transparent', color: 'rgba(58,40,0,.5)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-            <div className="ncl-modal-stamp">SleepSeed · {viewing.heroName} · {formatDate(viewing.date)}{viewing.storyTitle ? ` · ${viewing.storyTitle}` : ''}</div>
           </div>
         </div>
       )}

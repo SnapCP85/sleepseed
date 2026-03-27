@@ -16,6 +16,8 @@ import StoryLibrary from './features/stories/StoryLibrary';
 import NightCardLibrary from './features/nightcards/NightCardLibrary';
 import SleepSeedCore from './SleepSeedCore';
 import SharedStoryViewer from './pages/SharedStoryViewer';
+import SharedNightCard from './pages/SharedNightCard';
+import PrintNightCard from './pages/PrintNightCard';
 import LibraryHome from './pages/LibraryHome';
 import LibraryStoryReader from './pages/LibraryStoryReader';
 import CharacterDetail from './features/characters/CharacterDetail';
@@ -103,6 +105,10 @@ function BottomTabs({ current, onNav }: { current: string; onNav: (v: string) =>
 }
 
 function AppInner() {
+  // Shared night card — public, no auth required
+  if (new URLSearchParams(window.location.search).get('nc')) return <SharedNightCard />;
+  // Print night card
+  if (new URLSearchParams(window.location.search).get('printCard')) return <PrintNightCard />;
   // DEV: instant route — no flash, no auth
   if (new URLSearchParams(window.location.search).get('view') === 'dev-story') return <DevStoryTest />;
 
@@ -204,7 +210,7 @@ function AppInner() {
       <OnboardingFlow childProfile={testChildProfile} onComplete={(result) => { console.log('[test] Onboarding complete:', result); setTestPhase('done'); }} />
     );
     return (
-      <div style={{minHeight:'100vh',background:'#080C18',color:'#F4EFE8',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',fontFamily:'system-ui',gap:16,padding:24,textAlign:'center'}}>
+      <div style={{minHeight:'100vh',background:'#060912',color:'#F4EFE8',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',fontFamily:'system-ui',gap:16,padding:24,textAlign:'center'}}>
         <div style={{fontSize:48}}>✅</div>
         <div style={{fontSize:24,fontWeight:700}}>Onboarding test complete!</div>
         <div style={{fontSize:14,color:'rgba(244,239,232,.5)'}}>Check console for the full result object.</div>
@@ -216,10 +222,10 @@ function AppInner() {
 
   // Show loading screen while auth is resolving — prevents flash of PublicHomepage
   if (authLoading) return (
-    <div style={{minHeight:'100vh',background:'#080C18',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:14}}>
+    <div style={{minHeight:'100vh',background:'#060912',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:14}}>
       <div style={{display:'flex',alignItems:'center',gap:9,animation:'ssLoadIn .6s ease-out'}}>
         <div style={{width:20,height:20,borderRadius:'50%',background:'#F5B84C',position:'relative',overflow:'hidden'}}>
-          <div style={{position:'absolute',width:19,height:19,borderRadius:'50%',background:'#080C18',top:-4,left:-7}}/>
+          <div style={{position:'absolute',width:19,height:19,borderRadius:'50%',background:'#060912',top:-4,left:-7}}/>
         </div>
         <div style={{fontFamily:"'Fraunces',Georgia,serif",fontSize:18,fontWeight:700,color:'#F4EFE8',letterSpacing:'-.02em'}}>SleepSeed</div>
       </div>
@@ -271,12 +277,16 @@ function AppInner() {
         characterIds: [result.character.id],
         headline: nc?.headline || fs?.headline || `The night ${result.creature.name} arrived.`,
         quote: nc?.quote || fs?.quote || result.dreamAnswer,
-        memory_line: nc?.memory_line || fs?.memoryLine || `${result.character.name} said it so quietly — like they already knew.`,
+        memory_line: nc?.memory_line || fs?.memoryLine || `${result.character.name} said it so quietly \u2014 like they already knew.`,
         whisper: nc?.whisper,
         emoji: nc?.emoji || result.creature.creatureEmoji,
         date: new Date().toISOString(),
         isOrigin: true,
         photo: nc?.photo || result.photoDataUrl,
+        nightNumber: 1,
+        streakCount: 1,
+        creatureEmoji: result.creature.creatureEmoji,
+        creatureColor: result.creature.color,
       };
       await saveNightCard(nightCard);
     } catch (e) { console.error('[onboarding] saveNightCard failed:', e); }

@@ -7,11 +7,12 @@ import { supabase } from '../lib/supabase';
 import { getAllHatchedCreatures } from '../lib/hatchery';
 import { getCreature } from '../lib/creatures';
 import type { Character, SavedStory, SavedNightCard, HatchedCreature } from '../lib/types';
+import NightCard from '../features/nightcards/NightCard';
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=Nunito:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--night:#080C18;--night-mid:#0D1120;--night-card:#0f1525;--amber:#F5B84C;--amber-deep:#E8972A;--cream:#F4EFE8;--cream-dim:rgba(244,239,232,0.6);--cream-faint:rgba(244,239,232,0.28);--teal:#14d890;--purple:#9482ff;--serif:'Fraunces',Georgia,serif;--sans:'Nunito',system-ui,sans-serif;--mono:'DM Mono',monospace}
+:root{--night:#060912;--night-mid:#0D1120;--night-card:#0f1525;--night-raised:#141a2e;--amber:#F5B84C;--amber-deep:#E8972A;--cream:#F4EFE8;--cream-dim:rgba(244,239,232,0.6);--cream-faint:rgba(244,239,232,0.28);--teal:#14d890;--purple:#9482ff;--serif:'Fraunces',Georgia,serif;--sans:'Nunito',system-ui,sans-serif;--mono:'DM Mono',monospace}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
 .up{min-height:100vh;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;padding-bottom:80px}
@@ -28,7 +29,7 @@ const CSS = `
 
 /* Profile Hero */
 .up-hero{text-align:center;padding:28px 0 8px;animation:fadeUp .6s ease}
-.up-avatar{width:72px;height:72px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:30px;border:2px solid rgba(245,184,76,.3);box-shadow:0 0 24px rgba(245,184,76,.12)}
+.up-avatar{width:72px;height:72px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:30px;border:2px solid rgba(245,184,76,.3);box-shadow:0 0 24px rgba(245,184,76,.15)}
 .up-hero-name{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--cream);margin-bottom:4px}
 .up-hero-since{font-family:var(--mono);font-size:10px;color:var(--cream-faint);letter-spacing:1.5px;text-transform:uppercase}
 
@@ -163,7 +164,7 @@ export default function UserProfile() {
 
         {/* Profile Hero */}
         <div className="up-hero">
-          <div className="up-avatar" style={{ background: 'linear-gradient(145deg,#1a0e32,#2e1858)' }}>
+          <div className="up-avatar" style={{ background: 'linear-gradient(145deg,#1a1408,#2a1a10)' }}>
             {user.displayName?.charAt(0)?.toUpperCase() || '?'}
           </div>
           <div className="up-hero-name">{user.displayName}</div>
@@ -197,13 +198,8 @@ export default function UserProfile() {
             <>
               <div className="up-mem-grid">
                 {displayCards.map(nc => (
-                  <div key={nc.id} className="up-mem-thumb" onClick={() => setView('nightcard-library')}>
-                    <div className="up-mem-thumb-bg" style={{ background: `linear-gradient(145deg, ${nc.emoji ? '#1a1c2a' : '#201830'}, #1c1430)` }}>
-                      {nc.photo
-                        ? <img src={nc.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <span>{nc.emoji || '🌙'}</span>}
-                    </div>
-                    {nc.storyTitle && <div className="up-mem-thumb-title">{nc.storyTitle.slice(0, 18)}</div>}
+                  <div key={nc.id} style={{ aspectRatio: '1', borderRadius: 10, overflow: 'hidden' }}>
+                    <NightCard card={nc} size="mini" onTap={() => setView('nightcard-library')} />
                   </div>
                 ))}
                 {remainingCards > 0 && (

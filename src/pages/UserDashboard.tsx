@@ -84,7 +84,7 @@ const CSS=`
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,700&family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --night:#080C18;--night-mid:#0D1120;--night-card:#0f1525;
+  --night:#060912;--night-mid:#0D1120;--night-card:#0f1525;--night-raised:#141a2e;
   --amber:#F5B84C;--amber-deep:#E8972A;
   --cream:#F4EFE8;--cream-dim:rgba(244,239,232,0.6);--cream-faint:rgba(244,239,232,0.28);
   --teal:#14d890;--purple:#9482ff;
@@ -112,10 +112,10 @@ const CSS=`
 
 /* ── Stars ── */
 .dash-stars{position:fixed;inset:0;pointer-events:none;z-index:0}
-.dash-star{position:absolute;border-radius:50%;background:#fff;animation:twk var(--d,3s) var(--dl,0s) ease-in-out infinite}
-.dash-star2{position:absolute;border-radius:50%;background:#E8D8FF;animation:twk2 var(--d,4.5s) var(--dl,0s) ease-in-out infinite}
-.dash-star3{position:absolute;border-radius:50%;background:#fde68a;animation:twk var(--d,2.5s) var(--dl,0s) ease-in-out infinite}
-.dash-sky{position:fixed;top:0;left:0;right:0;height:300px;background:linear-gradient(180deg,#050916 0%,#080C18 100%);z-index:0;pointer-events:none}
+.dash-star{position:absolute;border-radius:50%;background:rgba(244,239,232,.65);animation:twk var(--d,3s) var(--dl,0s) ease-in-out infinite}
+.dash-star2{position:absolute;border-radius:50%;background:rgba(244,239,232,.4);animation:twk2 var(--d,4.5s) var(--dl,0s) ease-in-out infinite}
+.dash-star3{position:absolute;border-radius:50%;background:rgba(244,239,232,.55);animation:twk var(--d,2.5s) var(--dl,0s) ease-in-out infinite}
+.dash-sky{position:fixed;top:0;left:0;right:0;height:300px;background:linear-gradient(180deg,#040710 0%,#060912 100%);z-index:0;pointer-events:none}
 
 /* ── Skeleton ── */
 .dash-skel{background:rgba(255,255,255,.05);border-radius:8px;overflow:hidden;position:relative}
@@ -138,7 +138,7 @@ const CSS=`
    ══════════════════════════════════════════════════════════════════════════════ */
 .z1-greeting{padding-top:24px;margin-bottom:20px;animation:fadeUp .5s ease-out both}
 .z1-time{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--amber);opacity:.75;margin-bottom:6px}
-.z1-heading{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--cream);line-height:1.25;letter-spacing:-.02em;margin-bottom:6px}
+.z1-heading{font-family:var(--serif);font-size:26px;font-weight:400;color:var(--cream);line-height:1.2;letter-spacing:-.02em;margin-bottom:6px}
 .z1-heading em{font-style:italic;color:var(--amber)}
 .z1-heading em.done{color:var(--teal)}
 .z1-date{font-size:12px;color:var(--cream-faint);font-family:var(--mono);letter-spacing:.04em}
@@ -146,7 +146,7 @@ const CSS=`
 /* ══════════════════════════════════════════════════════════════════════════════
    ZONE 2 — Creature Portal
    ══════════════════════════════════════════════════════════════════════════════ */
-.z2-portal{border-radius:20px;overflow:hidden;position:relative;padding:20px 18px 18px;margin-bottom:16px;animation:fadeUp .55s ease-out both;animation-delay:.05s}
+.z2-portal{border-radius:28px;overflow:hidden;position:relative;padding:32px 24px 28px;margin-bottom:16px;animation:fadeUp .55s ease-out both;animation-delay:.05s}
 .z2-portal.amber-mode{background:linear-gradient(168deg,rgba(15,21,37,.95),rgba(10,14,28,.98));border:1px solid rgba(245,184,76,.14)}
 .z2-portal.teal-mode{background:linear-gradient(168deg,rgba(4,14,12,.95),rgba(6,16,14,.98));border:1px solid rgba(20,216,144,.18)}
 
@@ -156,11 +156,11 @@ const CSS=`
 .z2-stage-badge.teal{background:rgba(20,216,144,.1);border:1px solid rgba(20,216,144,.22);color:rgba(20,216,144,.72)}
 .z2-nights-left{font-family:var(--serif);font-size:12px;font-style:italic;color:var(--cream-faint)}
 
-.z2-creature-row{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:16px}
+.z2-creature-row{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:24px}
 .z2-emoji{font-size:68px;line-height:1;display:inline-block;animation:float 5s ease-in-out infinite;margin-bottom:8px}
-.z2-emoji.amber{filter:drop-shadow(0 0 18px rgba(245,184,76,.4))}
-.z2-emoji.teal{filter:drop-shadow(0 0 18px rgba(20,216,144,.4))}
-.z2-type-label{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.z2-emoji.amber{filter:drop-shadow(0 0 24px rgba(245,184,76,.5))}
+.z2-emoji.teal{filter:drop-shadow(0 0 24px rgba(20,216,144,.5))}
+.z2-type-label{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:4px}
 .z2-type-label.amber{color:rgba(245,184,76,.4)}
 .z2-type-label.teal{color:rgba(20,216,144,.4)}
 .z2-creature-name{font-family:var(--serif);font-size:22px;font-weight:700;color:var(--cream);margin-bottom:8px}
@@ -170,8 +170,8 @@ const CSS=`
 .z2-wisdom.teal::before{background:rgba(20,216,144,.28)}
 
 /* Progress dots */
-.z2-dots{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px}
-.z2-dot{width:10px;height:10px;border-radius:50%;transition:all .3s}
+.z2-dots{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:24px}
+.z2-dot{width:8px;height:8px;border-radius:50%;transition:all .3s}
 .z2-dot.done-amber{background:var(--amber);box-shadow:0 0 8px rgba(245,184,76,.45)}
 .z2-dot.done-teal{background:var(--teal);box-shadow:0 0 8px rgba(20,216,144,.45)}
 .z2-dot.tonight{background:rgba(245,184,76,.2);border:1.5px solid rgba(245,184,76,.5);animation:pulse-ring 2.5s ease-in-out infinite}
@@ -181,7 +181,7 @@ const CSS=`
 .z2-dot.tappable:hover{transform:scale(1.3)}
 
 /* CTA button */
-.z2-cta{width:100%;padding:16px;border:none;border-radius:16px;background:linear-gradient(145deg,#8a4808,#F5B84C 45%,#E8972A);color:#080200;font-family:var(--cta);font-size:17px;font-weight:800;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 10px 36px rgba(200,130,20,.45);transition:transform .18s,filter .18s}
+.z2-cta{width:100%;padding:18px 24px;border:none;border-radius:18px;background:linear-gradient(135deg,#7a4808,#c4851c,#F5B84C);color:#1a0800;font-family:var(--serif);font-size:17px;font-weight:600;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(245,184,76,.25);transition:transform .18s,filter .18s}
 .z2-cta::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.18),transparent);animation:shimmer 3.5s ease-in-out infinite}
 .z2-cta:hover{transform:scale(1.02) translateY(-1px);filter:brightness(1.08)}
 .z2-cta:active{transform:scale(.97)}
@@ -190,7 +190,7 @@ const CSS=`
 /* ══════════════════════════════════════════════════════════════════════════════
    ZONE 3 — Journey Bar (streak + week)
    ══════════════════════════════════════════════════════════════════════════════ */
-.z3-journey{display:flex;align-items:center;gap:12px;margin-bottom:16px;animation:fadeUp .6s ease-out both;animation-delay:.1s}
+.z3-journey{display:flex;align-items:center;gap:14px;margin-bottom:16px;animation:fadeUp .6s ease-out both;animation-delay:.1s;background:rgba(13,17,32,.8);border:1px solid rgba(244,239,232,.06);border-radius:20px;padding:16px 18px}
 .z3-streak{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;flex-shrink:0}
 .z3-streak.amber{background:rgba(245,184,76,.08);border:1px solid rgba(245,184,76,.18)}
 .z3-streak.teal{background:rgba(20,216,144,.08);border:1px solid rgba(20,216,144,.18)}
