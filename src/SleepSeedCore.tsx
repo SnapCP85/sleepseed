@@ -671,9 +671,9 @@ body{background:var(--night);font-family:var(--sans);color:var(--cream);min-heig
 .ss-dot2.active{width:18px;border-radius:9px;background:var(--amber);animation:ssDotPop .3s ease}
 .ss-track{display:flex;height:100%;transition:transform 0.42s cubic-bezier(0.4,0,0.2,1);will-change:transform}
 .ss-page{width:100%;height:100dvh;flex-shrink:0;overflow:hidden;position:relative}
-.ss-tap{position:absolute;z-index:15;top:70px;bottom:80px}
-.ss-tap-l{left:0;width:40%}
-.ss-tap-r{right:0;width:40%}
+.ss-tap{position:absolute;z-index:5;top:70px;bottom:80px}
+.ss-tap-l{left:0;width:30%}
+.ss-tap-r{right:0;width:30%}
 .ss-sparkle{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:40;animation:ssSparkle 0.7s ease-out forwards}
 
 /* Cover */
@@ -2955,8 +2955,8 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
           <div className="ss-sp-refrain">{'\u201C'}{refrain}{'\u201D'}</div>
         )}
       </div>
-      <div className="ss-tap ss-tap-l" onTouchEnd={e=>{e.stopPropagation();goPage(-1);}} />
-      <div className="ss-tap ss-tap-r" onTouchEnd={e=>{e.stopPropagation();if(onChoicePg&&!chosenPath)return;goPage(1);}} />
+      <div className="ss-tap ss-tap-l" onClick={()=>goPage(-1)} onTouchEnd={e=>{e.stopPropagation();goPage(-1);}} />
+      <div className="ss-tap ss-tap-r" onClick={()=>{if(onChoicePg&&!chosenPath)return;goPage(1);}} onTouchEnd={e=>{e.stopPropagation();if(onChoicePg&&!chosenPath)return;goPage(1);}} />
     </div>
   );
 

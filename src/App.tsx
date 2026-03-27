@@ -544,7 +544,7 @@ function AppInner() {
     return (
       <div style={{ position: 'relative' }}>
         <div style={{
-          position: 'sticky', top: 0, zIndex: 999,
+          position: 'sticky', top: 0, zIndex: 40,
           background: 'rgba(13,16,24,.97)', backdropFilter: 'blur(16px)',
           borderBottom: '1px solid rgba(232,151,42,.1)',
           display: 'flex', alignItems: 'center', gap: 14, padding: '0 6%', height: 64,

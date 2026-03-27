@@ -78,9 +78,9 @@ const CSS = `
 .lr-page{width:100%;height:100dvh;flex-shrink:0;overflow:hidden;position:relative}
 
 /* ── Tap zones ── */
-.lr-tap{position:absolute;z-index:15;top:70px;bottom:80px}
-.lr-tap-l{left:0;width:40%}
-.lr-tap-r{right:0;width:40%}
+.lr-tap{position:absolute;z-index:5;top:70px;bottom:80px}
+.lr-tap-l{left:0;width:30%}
+.lr-tap-r{right:0;width:30%}
 
 /* ── Sparkles ── */
 .lr-sparkle{position:fixed;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:40;animation:lrSparkle 0.7s ease-out forwards}
@@ -534,8 +534,8 @@ export default function LibraryStoryReader({ slug }: Props) {
           {showRefrain && <div className="lr-sp-refrain">{'\u201C'}{personalise(story.refrain!)}{'\u201D'}</div>}
         </div>
         {/* Tap zones */}
-        <div className="lr-tap lr-tap-l" onTouchEnd={e => { e.stopPropagation(); goPage(-1); }} />
-        <div className="lr-tap lr-tap-r" onTouchEnd={e => { e.stopPropagation(); goPage(1); }} />
+        <div className="lr-tap lr-tap-l" onClick={() => goPage(-1)} onTouchEnd={e => { e.stopPropagation(); goPage(-1); }} />
+        <div className="lr-tap lr-tap-r" onClick={() => goPage(1)} onTouchEnd={e => { e.stopPropagation(); goPage(1); }} />
       </div>
     );
   };
