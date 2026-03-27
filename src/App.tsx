@@ -189,7 +189,7 @@ function AppInner() {
   // Test mode pages — render before auth so shareable links work without login
   if (testMode === 'onboarding') {
     if (testPhase === 'parent') return (
-      <ParentSetup displayName="Greg" onComplete={(result) => { setTestChildProfile(result); setTestPhase('child'); }} />
+      <ParentSetup onComplete={(result) => { setTestChildProfile(result); setTestPhase('child'); }} onSkip={() => setTestPhase('done')} onSaveLater={(result) => { setTestChildProfile(result); setTestPhase('done'); }} />
     );
     if (testPhase === 'child') return (
       <OnboardingFlow childProfile={testChildProfile} onComplete={(result) => { console.log('[test] Onboarding complete:', result); setTestPhase('done'); }} />
@@ -237,26 +237,36 @@ function AppInner() {
     else setView(v as any);
   };
 
-  // Handle onboarding completion — save character, creature, egg, night card
+  // Handle onboarding completion — save character, creature, egg, night card, story
+  // Tracks completed steps so partial failures can be diagnosed
   const handleOnboardingComplete = async (result: OnboardingResult) => {
     if (!user) return;
 
-    // Each save is independent — don't let one failure block others
+    const storyId = crypto.randomUUID?.() || `story_${Date.now()}`;
+    const errors: string[] = [];
+
+    // Step 1: Character
     try { await saveCharacter(result.character); }
-    catch (e) { console.error('[onboarding] saveCharacter failed:', e); }
+    catch (e) { console.error('[onboarding] saveCharacter failed:', e); errors.push('character'); }
 
+    // Step 2: Hatched creature
     try { await saveHatchedCreature(result.creature); }
-    catch (e) { console.error('[onboarding] saveHatchedCreature failed:', e); }
+    catch (e) { console.error('[onboarding] saveHatchedCreature failed:', e); errors.push('creature'); }
 
-    try { await createEgg(user.id, result.character.id, result.creature.creatureType, 2); }
-    catch (e) { console.error('[onboarding] createEgg failed:', e); }
+    // Step 3: Egg (only if character saved)
+    if (!errors.includes('character')) {
+      try { await createEgg(user.id, result.character.id, result.creature.creatureType, 1); }
+      catch (e) { console.error('[onboarding] createEgg failed:', e); errors.push('egg'); }
+    }
 
+    // Step 4: Night card
     try {
       const fs = result.firstStory;
       const nc = result.nightCard;
       const nightCard: SavedNightCard = {
         id: crypto.randomUUID?.() || `${Date.now()}`,
         userId: user.id,
+        storyId,
         heroName: result.character.name,
         storyTitle: fs?.title || 'Night 1',
         characterIds: [result.character.id],
@@ -274,13 +284,13 @@ function AppInner() {
         creatureColor: result.creature.color,
       };
       await saveNightCard(nightCard);
-    } catch (e) { console.error('[onboarding] saveNightCard failed:', e); }
+    } catch (e) { console.error('[onboarding] saveNightCard failed:', e); errors.push('nightCard'); }
 
-    // Save first story to library
+    // Step 5: Story
     if (result.firstStory) {
       try {
         await saveStory({
-          id: crypto.randomUUID?.() || `story_${Date.now()}`,
+          id: storyId,
           userId: user.id,
           title: result.firstStory.title,
           heroName: result.character.name,
@@ -288,15 +298,20 @@ function AppInner() {
           date: new Date().toISOString(),
           bookData: {
             title: result.firstStory.title,
-            pages: result.firstStory.text.split('\n\n').filter(Boolean).map(p => ({ text: p })),
+            pages: result.firstStory.pages || result.firstStory.text.split('\n\n').filter(Boolean).map(p => ({ text: p })),
             creatureName: result.creature.name,
             creatureEmoji: result.creature.creatureEmoji,
           },
         });
-      } catch (e) { console.error('[onboarding] saveStory failed:', e); }
+      } catch (e) { console.error('[onboarding] saveStory failed:', e); errors.push('story'); }
     }
 
-    // Always finish — set creature, flag, navigate to first-night choice
+    if (errors.length > 0) {
+      console.error(`[onboarding] Completed with ${errors.length} failed steps:`, errors);
+    }
+
+    // Always finish — even with partial failures, let the user proceed
+    // The data they have is better than being stuck on the onboarding screen
     setCompanionCreature(result.creature);
     setLastOnboardingResult(result);
     try { localStorage.setItem(`sleepseed_onboarding_${user.id}`, '1'); } catch {}
@@ -321,12 +336,43 @@ function AppInner() {
   const handleParentSetup = (result: ParentSetupResult) => {
     if (!user) return;
     setParentSetupData(result);
-    // Store in localStorage so kid onboarding can read it
     try {
       localStorage.setItem(`sleepseed_parent_setup_${user.id}`, '1');
       localStorage.setItem(`sleepseed_child_profile_${user.id}`, JSON.stringify(result));
     } catch {}
     setView('onboarding');
+  };
+
+  // Handle "come back later" — save parent data + draft character, go to dashboard
+  const handleParentSaveLater = async (result: ParentSetupResult) => {
+    if (!user) return;
+    setParentSetupData(result);
+    try {
+      localStorage.setItem(`sleepseed_parent_setup_${user.id}`, '1');
+      localStorage.setItem(`sleepseed_child_profile_${user.id}`, JSON.stringify(result));
+    } catch {}
+    // Save a draft character to Supabase so data persists across devices
+    try {
+      const { uid } = await import('./lib/storage');
+      await saveCharacter({
+        id: uid(),
+        userId: user.id,
+        name: result.childName,
+        type: 'human',
+        ageDescription: result.childAge,
+        pronouns: result.childPronouns as any,
+        personalityTags: [],
+        weirdDetail: result.parentSecret || '',
+        currentSituation: '',
+        color: '#F5B84C',
+        emoji: '🌙',
+        storyIds: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isFamily: true,
+      });
+    } catch (e) { console.error('[parent-setup] draft character save failed:', e); }
+    setView('dashboard');
   };
 
   // Friend-added toast (renders as overlay on any view)
@@ -375,9 +421,9 @@ function AppInner() {
   if (view === 'onboarding-tour')    { setView('dashboard'); return null; }
   if (view === 'onboarding-night0')  { setView('dashboard'); return null; }
 
-  // Parent setup — clean adult onboarding (3 screens)
+  // Parent setup — clean adult onboarding
   if (view === 'parent-setup') return (
-    <ParentSetup displayName={user?.displayName||''} onComplete={handleParentSetup} />
+    <ParentSetup onComplete={handleParentSetup} onSkip={() => setView('dashboard')} onSaveLater={handleParentSaveLater} />
   );
 
   // Kid onboarding — magical experience with child present
@@ -394,15 +440,45 @@ function AppInner() {
   }
 
   if (view === 'dashboard') {
-    // New user: parent setup not done → send to parent setup
-    if (user && !user.isGuest && !parentSetupDone && !onboardingDone) {
-      return <ParentSetup displayName={user.displayName||''} onComplete={handleParentSetup} />;
-    }
-    // Parent setup done but kid onboarding not done → show dashboard with egg/begin button
-    // (the existing dashboard handles this state — shows egg + "Begin your first night")
+    // Pending onboarding prompt — shown when setup is incomplete
+    const needsParentSetup = user && !user.isGuest && !parentSetupDone && !onboardingDone;
+    const needsChildOnboarding = user && !user.isGuest && parentSetupDone && !onboardingDone;
+
     return (
       <div style={{paddingBottom:74}}>
         {friendToast}
+
+        {/* Pending setup prompt */}
+        {(needsParentSetup || needsChildOnboarding) && (
+          <div style={{
+            margin: '16px 16px 0', padding: '20px 20px', borderRadius: 16,
+            background: 'rgba(245,184,76,.04)', border: '1px solid rgba(245,184,76,.12)',
+            display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer',
+            transition: 'background .2s',
+          }}
+            onClick={() => setView(needsParentSetup ? 'parent-setup' : 'onboarding')}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,184,76,.07)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(245,184,76,.04)')}
+          >
+            <div style={{ fontSize: 28, flexShrink: 0 }}>🌙</div>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontFamily: "'Fraunces',Georgia,serif", fontWeight: 400, fontSize: 15,
+                color: '#F4EFE8', marginBottom: 3,
+              }}>
+                {needsParentSetup ? 'Finish setting up' : 'Start your first night together'}
+              </div>
+              <div style={{
+                fontFamily: "'DM Mono',monospace", fontSize: 11,
+                color: 'rgba(244,239,232,.35)',
+              }}>
+                {needsParentSetup ? 'Takes about 3 minutes' : 'The part you do together \u2014 5 minutes'}
+              </div>
+            </div>
+            <div style={{ color: '#F5B84C', fontSize: 16, flexShrink: 0 }}>&rarr;</div>
+          </div>
+        )}
+
         <UserDashboard onSignUp={goAuth} onReadStory={openSavedStory} />
         <BottomNav current="dashboard" onNav={v => setView(v as any)} />
       </div>

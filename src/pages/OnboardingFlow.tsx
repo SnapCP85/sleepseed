@@ -1,7 +1,9 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useApp } from '../AppContext';
-import { uid } from '../lib/storage';
+import { uid, uploadPhoto } from '../lib/storage';
 import { CREATURES, getCreature } from '../lib/creatures';
+import { SceneLibrary } from '../lib/storyScenes';
+import NightCardComponent from '../features/nightcards/NightCard';
 import type { Character, PersonalityTag, HatchedCreature, SavedNightCard } from '../lib/types';
 
 // ── Result type ──────────────────────────────────────────────────────────────
@@ -11,7 +13,7 @@ export interface OnboardingResult {
   creature: HatchedCreature;
   dreamAnswer: string;
   photoDataUrl?: string;
-  firstStory?: { title: string; text: string; headline: string; quote: string; memoryLine: string };
+  firstStory?: { title: string; text: string; pages: { text: string }[]; headline: string; quote: string; memoryLine: string };
   nightCard?: Partial<SavedNightCard>;
 }
 
@@ -19,6 +21,7 @@ export interface ChildProfile {
   childName: string;
   childAge: string;
   childPronouns: string;
+  parentRole: string;
   parentSecret?: string;
 }
 
@@ -70,22 +73,30 @@ const PIXEL_FONT: Record<string, number[][]> = (() => {
   return result;
 })();
 
-function getNameStars(name: string): { x: number; y: number }[] {
+function getNameStars(name: string): { x: number; y: number; viewWidth: number }[] {
   const chars = name.toUpperCase().replace(/[^A-Z]/g, '').split('');
   if (!chars.length) return [];
-  const stars: { x: number; y: number }[] = [];
+  const raw: { x: number; y: number }[] = [];
   let offsetX = 0;
   chars.forEach(ch => {
     const pts = PIXEL_FONT[ch] || [];
-    pts.forEach(([cx, cy]) => stars.push({ x: offsetX + cx, y: cy }));
+    pts.forEach(([cx, cy]) => raw.push({ x: offsetX + cx, y: cy }));
     offsetX += 4; // 3 wide + 1 gap
   });
-  // Normalize to 0-100 range
-  const maxX = Math.max(...stars.map(s => s.x), 1);
-  const maxY = Math.max(...stars.map(s => s.y), 1);
-  return stars.map(s => ({
-    x: 15 + (s.x / maxX) * 70,
-    y: 25 + (s.y / maxY) * 50,
+  const rawMaxX = Math.max(...raw.map(s => s.x), 1);
+  const rawMaxY = Math.max(...raw.map(s => s.y), 1);
+  // Scale viewBox width so stars are never crammed — min 3px radius readable
+  // Short names (2-4 chars): use width 100. Long names scale proportionally.
+  const charCount = chars.length;
+  const viewWidth = Math.max(100, charCount * 14);
+  const padX = 8;
+  const padY = 15;
+  const usableW = viewWidth - padX * 2;
+  const usableH = 50 - padY; // viewBox height is always 50
+  return raw.map(s => ({
+    x: padX + (s.x / rawMaxX) * usableW,
+    y: padY + (s.y / rawMaxY) * usableH,
+    viewWidth,
   }));
 }
 
@@ -108,7 +119,7 @@ function buildStory(vars: {
     '🦕 Dinosaurs': 'ancient footprints and rumbling roars',
   };
   const favSmell = favMap[v.FAV_THING] || 'something wonderful and familiar';
-  const moodLower = (v.MOOD || 'happy').toLowerCase().replace(/^./, '');
+  const moodLower = (v.MOOD || 'happy').toLowerCase();
 
   return {
     cover: `The Night You Were Found`,
@@ -221,10 +232,13 @@ const CSS = `
 .ob-ccard.on .ob-ccard-name{color:var(--amber)}
 
 /* This-or-that */
-.ob-tot-card{width:100%;padding:20px;border-radius:16px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);cursor:pointer;text-align:center;font-size:16px;font-weight:600;color:var(--cream);transition:all .2s var(--ease-out);font-family:var(--sans)}
-.ob-tot-card:hover{background:rgba(255,255,255,.06);transform:scale(1.02)}
-.ob-tot-card:active{transform:scale(.97)}
-.ob-tot-or{font-family:var(--mono);font-size:11px;color:var(--cream-faint);text-align:center;padding:8px 0;text-transform:uppercase;letter-spacing:.1em}
+.ob-tot-card{width:100%;padding:22px 20px;border-radius:20px;border:2px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);cursor:pointer;text-align:center;transition:all .2s var(--ease-spring);font-family:var(--sans);display:flex;flex-direction:column;align-items:center;gap:8px;-webkit-tap-highlight-color:transparent}
+.ob-tot-card:hover{background:rgba(255,255,255,.06);transform:scale(1.03);border-color:rgba(255,255,255,.14)}
+.ob-tot-card:active{transform:scale(.93);background:rgba(245,184,76,.08);border-color:rgba(245,184,76,.25)}
+.ob-tot-emoji{font-size:36px;line-height:1}
+.ob-tot-label{font-size:15px;font-weight:600;color:#fff;line-height:1.3}
+.ob-tot-or{font-family:var(--mono);font-size:11px;color:var(--cream-faint);text-align:center;padding:6px 0;text-transform:uppercase;letter-spacing:.1em}
+@keyframes totPick{0%{transform:scale(1)}30%{transform:scale(1.08);border-color:rgba(245,184,76,.4);background:rgba(245,184,76,.1)}100%{transform:scale(.95);opacity:.5}}
 
 /* Pips */
 .ob-pips{display:flex;gap:6px;justify-content:center;margin-bottom:16px}
@@ -237,25 +251,31 @@ const CSS = `
 
 /* Chips */
 .ob-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0 16px}
-.ob-chip{padding:12px 18px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);cursor:pointer;text-align:center;font-size:14px;font-weight:500;transition:all .2s var(--ease-out)}
+.ob-chip{padding:14px 20px;min-height:48px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);cursor:pointer;text-align:center;font-size:15px;font-weight:500;transition:all .2s var(--ease-out);display:flex;align-items:center;justify-content:center}
 .ob-chip:hover{background:rgba(255,255,255,.06)}
-.ob-chip.on{border-color:var(--amber);background:rgba(245,184,76,.1);color:var(--amber)}
+.ob-chip:not(.on){opacity:.65}
+.ob-chip.on{border-color:var(--amber);background:rgba(245,184,76,.1);color:var(--amber);transform:scale(1.05);box-shadow:0 0 16px rgba(245,184,76,.15);opacity:1;animation:chipPop .3s var(--ease-spring)}
+@keyframes chipPop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1.05)}}
 
 /* Mood faces */
 .ob-moods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0 16px}
-.ob-mood{padding:14px 8px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);cursor:pointer;text-align:center;transition:all .2s var(--ease-out)}
+.ob-mood{padding:16px 8px;border-radius:16px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);cursor:pointer;text-align:center;transition:all .2s var(--ease-out)}
 .ob-mood:hover{background:rgba(255,255,255,.06)}
-.ob-mood.on{border-color:var(--amber);background:rgba(245,184,76,.1)}
-.ob-mood-emoji{font-size:28px;margin-bottom:4px}
-.ob-mood-label{font-size:11px;font-weight:600;color:var(--cream-faint)}
-.ob-mood.on .ob-mood-label{color:var(--amber)}
+.ob-mood:not(.on){opacity:.6}
+.ob-mood.on{border-color:var(--amber);background:rgba(245,184,76,.1);box-shadow:0 0 20px rgba(245,184,76,.12);animation:chipPop .3s var(--ease-spring)}
+.ob-mood-emoji{font-size:42px;margin-bottom:6px;transition:transform .2s var(--ease-spring)}
+.ob-mood.on .ob-mood-emoji{animation:moodBounce .4s var(--ease-spring)}
+.ob-mood-label{font-size:11px;font-weight:600;color:var(--cream-faint);transition:all .2s}
+.ob-mood.on .ob-mood-label{color:var(--amber);transform:translateY(-2px)}
+@keyframes moodBounce{0%{transform:scale(1)}40%{transform:scale(1.2)}100%{transform:scale(1)}}
 
 /* Textarea */
-.ob-textarea{width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--cream);font-family:var(--sans);font-size:14px;font-weight:400;outline:none;resize:none;min-height:80px;transition:border-color .2s;margin-bottom:12px}
-.ob-textarea:focus{border-color:rgba(245,184,76,.4)}
+.ob-textarea{width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--cream);font-family:var(--sans);font-size:14px;font-weight:400;outline:none;resize:none;min-height:80px;transition:border-color .2s,box-shadow .2s;margin-bottom:12px}
+.ob-textarea:focus{border-color:rgba(245,184,76,.4);box-shadow:0 0 16px rgba(245,184,76,.08)}
 .ob-textarea::placeholder{color:rgba(255,255,255,.18)}
 
 /* Speech bubble */
+@keyframes bubbleShimmer{0%,100%{border-color:rgba(245,184,76,.12)}50%{border-color:rgba(245,184,76,.3)}}
 .ob-bubble{position:relative;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;margin-top:12px}
 .ob-bubble::before{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid rgba(255,255,255,.08)}
 .ob-bubble-text{font-size:14px;font-weight:300;color:var(--cream-dim);line-height:1.7;font-style:italic}
@@ -282,8 +302,8 @@ const CSS = `
 .ob-reader-title{font-family:var(--serif);font-weight:300;font-size:17px;color:var(--cream)}
 .ob-reader-page-num{font-family:var(--mono);font-size:11px;color:rgba(244,239,232,.3)}
 .ob-reader-track{display:flex;height:100%;transition:transform .4s var(--ease-out)}
-.ob-reader-page{flex:0 0 100%;height:100%;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.ob-reader-scroll{max-width:380px;width:100%;padding:96px 28px 140px;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.ob-reader-page{flex:0 0 100vw;width:100vw;height:100%;overflow:visible;display:flex;align-items:flex-start;justify-content:center}
+.ob-reader-scroll{max-width:380px;width:100%;padding:96px 28px 140px;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column}
 .ob-reader-text{font-family:var(--serif);font-size:15px;font-weight:300;line-height:1.72;color:var(--cream);white-space:pre-line}
 .ob-reader-dialogue{font-family:var(--serif);font-style:italic;font-size:14px;font-weight:300;line-height:1.6;color:var(--cream-dim);border-left:2px solid rgba(245,184,76,.25);padding-left:16px;margin:16px 0}
 .ob-reader-closing{font-family:var(--serif);font-style:italic;font-size:15px;font-weight:300;line-height:1.8;color:var(--amber);text-align:center}
@@ -295,6 +315,8 @@ const CSS = `
 .ob-reader-center{display:flex;flex-direction:column;align-items:center;gap:2px}
 .ob-reader-center-emoji{font-size:24px}
 .ob-reader-center-label{font-family:var(--mono);font-size:9px;color:rgba(244,239,232,.3)}
+.ob-reader-pips{position:absolute;bottom:16px;left:0;right:0;display:flex;gap:8px;justify-content:center;z-index:25;pointer-events:none}
+.ob-reader-pip{height:3px;border-radius:2px;transition:all .3s var(--ease-out)}
 
 /* Cover page */
 .ob-cover{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 28px;gap:16px}
@@ -329,6 +351,10 @@ const CSS = `
 .ob-how-shard-ico{font-size:16px;flex-shrink:0;line-height:1.4}
 .ob-how-shard-text{font-size:12px;font-weight:400;color:var(--cream-dim);line-height:1.5}
 
+/* Back button */
+.ob-back{position:absolute;top:20px;left:20px;background:none;border:none;color:rgba(244,239,232,.4);font-size:18px;cursor:pointer;font-family:var(--sans);padding:8px;z-index:10;transition:color .15s;-webkit-tap-highlight-color:transparent}
+.ob-back:hover{color:rgba(244,239,232,.65)}
+
 /* Caption */
 .ob-caption{font-family:var(--mono);font-size:11px;font-weight:300;color:rgba(244,239,232,.25);text-align:center;margin-top:14px}
 `;
@@ -336,7 +362,28 @@ const CSS = `
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function OnboardingFlow({ onComplete, childProfile }: OnboardingFlowProps) {
-  const { user } = useApp();
+  const { user, setView } = useApp();
+
+  // ── Null guard: redirect to parent setup if childProfile is missing ────
+  if (!childProfile?.childName) {
+    return (
+      <div className="ob" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <style>{CSS}</style>
+        <div style={{ textAlign: 'center', padding: 40, maxWidth: 340 }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🌙</div>
+          <div style={{ fontFamily: 'var(--serif)', fontSize: 22, fontWeight: 300, color: 'var(--cream)', marginBottom: 12 }}>
+            Let's set things up first
+          </div>
+          <div style={{ fontSize: 14, color: 'var(--cream-dim)', lineHeight: 1.6, marginBottom: 24 }}>
+            We need a few details before the adventure can begin.
+          </div>
+          <button className="ob-btn ob-btn-amber" style={{ maxWidth: 280 }} onClick={() => setView('parent-setup')}>
+            Go to setup &rarr;
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // ── State ────────────────────────────────────────────────────────────────
   const [step, setStep] = useState(0);
@@ -377,20 +424,36 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
   const [ncMemory, setNcMemory] = useState('');
   const [ncGenerated, setNcGenerated] = useState<{ headline: string; quote: string; memory_line: string; whisper: string } | null>(null);
   const [ncRevealed, setNcRevealed] = useState(false);
+  const [ncLoading, setNcLoading] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Completion error state
+  const [saveError, setSaveError] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Night card flip state
+  const [ncFlipped, setNcFlipped] = useState(false);
+  const [nc13Flipped, setNc13Flipped] = useState(false);
+
+  // Stable IDs for retry safety — generated once, reused on retry
+  const charIdRef = useRef<string>('');
+  const creatureIdRef = useRef<string>('');
 
   // ── Derived ──────────────────────────────────────────────────────────────
   const childName = childProfile?.childName || '';
   const childAge = childProfile?.childAge || '';
   const childPronouns = childProfile?.childPronouns || '';
+  const parentRole = childProfile?.parentRole || 'Parent';
   const parentSecret = childProfile?.parentSecret || '';
 
   const selectedCreature = selectedCreatureId ? getCreature(selectedCreatureId) : null;
   const creatureEmoji = selectedCreature?.emoji || '🥚';
   const creatureType = selectedCreature?.name.split(' ').pop()?.toLowerCase() || 'creature';
   const creatureArticle = /^[aeiou]/i.test(creatureType) ? 'an' : 'a';
-
-  const parentRole = childPronouns === 'he/him' ? 'Dad' : childPronouns === 'she/her' ? 'Mum' : 'Parent';
   const fallbackSecretPhrase = 'the way they always did, at the end of every long and beautiful day';
 
   // Map personality answers to tags
@@ -559,9 +622,15 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
     };
   }, []);
 
+  // Cancel speech synthesis on unmount
+  useEffect(() => {
+    return () => { try { window.speechSynthesis?.cancel(); } catch {} };
+  }, []);
+
   // ── Night card generation ───────────────────────────────────────────────
   const generateNightCard = async () => {
     setNcRevealed(false);
+    setNcLoading(true);
     try {
       const prompt = `Generate a Night Card for a child's first bedtime story experience.\nChild's name: ${childName}\nStory title: "The Night You Were Found"\nParent's memory note: "${ncMemory}"\n\nReturn a JSON object with these fields:\n- headline: 3-6 words, warm title for this night\n- quote: 12-20 word sentence capturing the spirit of tonight\n- memory_line: 10-16 words, a gift to their future self\n- whisper: 8-14 words, a closing line for the parent\n\nReturn ONLY the JSON object, no explanation.`;
       const res = await fetch('/api/claude', {
@@ -595,30 +664,61 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
         whisper: 'You showed up. That\'s the whole thing.',
       });
     }
+    setNcLoading(false);
     setNcRevealed(true);
   };
 
   // ── Photo handlers ─────────────────────────────────────────────────────
-  const handleTakePhoto = async () => {
+  const openCamera = async (mode?: 'user' | 'environment') => {
+    const facing = mode || facingMode;
+    // Stop existing stream
+    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-      const video = document.createElement('video');
-      video.srcObject = stream;
-      video.setAttribute('playsinline', 'true');
-      await video.play();
-      await new Promise(r => setTimeout(r, 500));
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvas.getContext('2d')!.drawImage(video, 0, 0);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-      stream.getTracks().forEach(t => t.stop());
-      setNcPhoto(dataUrl);
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing } });
+      streamRef.current = stream;
+      setFacingMode(facing);
+      setCameraOpen(true);
+      // Wait for videoRef to be available, then attach
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+      }, 50);
     } catch {
-      // Fallback to file picker
+      // Camera unavailable — fall back to file picker
       fileRef.current?.click();
     }
   };
+
+  const capturePhoto = () => {
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d')!.drawImage(video, 0, 0);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    // Stop stream
+    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
+    setCameraOpen(false);
+    setNcPhoto(dataUrl);
+  };
+
+  const closeCamera = () => {
+    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
+    setCameraOpen(false);
+  };
+
+  const flipCamera = () => {
+    const next = facingMode === 'user' ? 'environment' : 'user';
+    openCamera(next);
+  };
+
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => { if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop()); };
+  }, []);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -629,12 +729,29 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
   };
 
   // ── Completion handler ─────────────────────────────────────────────────
-  const handleComplete = () => {
-    if (!user || !selectedCreature) return;
-    const charId = uid();
+  const handleComplete = async () => {
+    if (!selectedCreature) {
+      setSaveError(true);
+      return;
+    }
+    setSaveError(false);
+    setSaving(true);
+
+    const userId = user?.id || 'guest';
+
+    // Upload photo to Supabase Storage if present (replace base64 with URL)
+    let photoUrl = ncPhoto;
+    if (photoUrl && photoUrl.startsWith('data:') && user) {
+      photoUrl = await uploadPhoto(user.id, photoUrl, `onboarding_${Date.now()}`);
+    }
+
+    // Use stable IDs so retries don't create duplicates
+    if (!charIdRef.current) charIdRef.current = uid();
+    if (!creatureIdRef.current) creatureIdRef.current = crypto.randomUUID?.() || uid();
+    const charId = charIdRef.current;
     const character: Character = {
       id: charId,
-      userId: user.id,
+      userId,
       name: childName,
       type: 'human',
       ageDescription: childAge,
@@ -651,8 +768,8 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
     };
 
     const creature: HatchedCreature = {
-      id: crypto.randomUUID?.() || uid(),
-      userId: user.id,
+      id: creatureIdRef.current,
+      userId,
       characterId: charId,
       name: creatureName,
       creatureType: selectedCreature.id,
@@ -663,20 +780,22 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
       dreamAnswer: dayDetail || favThing,
       parentSecret: parentSecret || '',
       hatchedAt: new Date().toISOString(),
-      photoUrl: ncPhoto,
+      photoUrl,
       weekNumber: 1,
     };
 
     const storyText = storyData.pages.join('\n\n');
+    const structuredPages = storyData.pages.map(p => ({ text: p }));
 
     onComplete({
       character,
       creature,
       dreamAnswer: dayDetail || favThing,
-      photoDataUrl: ncPhoto,
+      photoDataUrl: photoUrl,
       firstStory: {
         title: storyData.cover,
         text: storyText,
+        pages: structuredPages,
         headline: ncGenerated?.headline || `The night ${creatureName} arrived.`,
         quote: ncGenerated?.quote || `${childName} met ${creatureName} and nothing was ever quite the same.`,
         memoryLine: ncGenerated?.memory_line || 'This was the first night.',
@@ -686,7 +805,7 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
         quote: ncGenerated.quote,
         memory_line: ncGenerated.memory_line,
         whisper: ncGenerated.whisper,
-        photo: ncPhoto,
+        photo: photoUrl,
         emoji: creatureEmoji,
       } : undefined,
     });
@@ -721,16 +840,20 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
             }}>WELCOME</div>
 
             {/* Star constellation of name */}
-            {(welcomePhase === 'stars' || welcomePhase === 'egg' || welcomePhase === 'text') && (
-              <svg viewBox="0 0 100 100" style={{ width: 240, height: 120, margin: '0 auto 20px' }}>
-                {nameStars.map((s, i) => (
-                  <circle key={i} cx={s.x} cy={s.y} r="1.5" fill="var(--amber)">
-                    <animate attributeName="opacity" from="0" to="1" begin={`${0.3 + i * stepDelay}s`} dur="0.3s" fill="freeze" />
-                    <animate attributeName="r" from="0" to="1.5" begin={`${0.3 + i * stepDelay}s`} dur="0.3s" fill="freeze" />
-                  </circle>
-                ))}
-              </svg>
-            )}
+            {(welcomePhase === 'stars' || welcomePhase === 'egg' || welcomePhase === 'text') && (() => {
+              const vw = nameStars[0]?.viewWidth || 100;
+              const svgWidth = Math.min(340, Math.max(200, vw * 2.4));
+              return (
+                <svg viewBox={`0 0 ${vw} 50`} style={{ width: svgWidth, height: svgWidth * (50 / vw), margin: '0 auto 20px' }}>
+                  {nameStars.map((s, i) => (
+                    <circle key={i} cx={s.x} cy={s.y} r="1.5" fill="var(--amber)">
+                      <animate attributeName="opacity" from="0" to="1" begin={`${0.3 + i * stepDelay}s`} dur="0.3s" fill="freeze" />
+                      <animate attributeName="r" from="0" to="1.5" begin={`${0.3 + i * stepDelay}s`} dur="0.3s" fill="freeze" />
+                    </circle>
+                  ))}
+                </svg>
+              );
+            })()}
 
             {/* Egg */}
             {(welcomePhase === 'egg' || welcomePhase === 'text') && (
@@ -766,6 +889,18 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
                 Something has been waiting for you, {childName}. It arrived last night, while you were sleeping.
               </div>
             )}
+
+            {/* Do this later */}
+            <button
+              style={{
+                background: 'none', border: 'none', color: 'rgba(244,239,232,.2)',
+                fontFamily: 'var(--mono)', fontSize: 11, cursor: 'pointer',
+                marginTop: 28, letterSpacing: '.03em', transition: 'color .15s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(244,239,232,.4)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(244,239,232,.2)')}
+              onClick={() => setView('dashboard')}
+            >Do this later</button>
           </div>
         </div>
       </div>
@@ -780,6 +915,7 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
       <style>{CSS}</style>
       {starField}
       <div className="ob-inner">
+        <button className="ob-back" onClick={goBack} aria-label="Back">&larr;</button>
         <div className="ob-screen" key="s1" style={{ animation: `${animClass} .4s var(--ease-out)` }}>
           <div className="ob-label" style={{ textAlign: 'center' }}>Your DreamKeeper</div>
           <div className="ob-h" style={{ textAlign: 'center' }}>
@@ -837,6 +973,7 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
         <style>{CSS}</style>
         {starField}
         <div className="ob-inner">
+          <button className="ob-back" onClick={goBack} aria-label="Back">&larr;</button>
           <div className="ob-screen" key={`s2-${totRound}`} style={{ justifyContent: 'center', animation: `${animClass} .35s var(--ease-out)` }}>
             <div className="ob-pips">
               {[0, 1, 2].map(i => (
@@ -853,15 +990,22 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
             </div>
             <div style={{ height: 20 }} />
 
-            <div className="ob-tot-card" onClick={() => pick(round.a)} role="button" tabIndex={0}
-              style={{ borderColor: isPurple ? 'rgba(148,130,255,.15)' : undefined }}>
-              {round.a}
-            </div>
-            <div className="ob-tot-or" style={{ color: isPurple ? 'var(--purple)' : undefined }}>or</div>
-            <div className="ob-tot-card" onClick={() => pick(round.b)} role="button" tabIndex={0}
-              style={{ borderColor: isPurple ? 'rgba(148,130,255,.15)' : undefined }}>
-              {round.b}
-            </div>
+            {[round.a, round.b].map((answer, idx) => {
+              const emoji = answer.match(/^(\S+)\s/)?.[1] || '';
+              const text = answer.replace(/^\S+\s/, '');
+              const purpleBorder = isPurple ? 'rgba(148,130,255,.18)' : undefined;
+              const purpleActive = isPurple ? 'rgba(148,130,255,.1)' : undefined;
+              return (
+                <div key={idx}>
+                  {idx === 1 && <div className="ob-tot-or" style={{ color: isPurple ? 'var(--purple)' : undefined }}>or</div>}
+                  <div className="ob-tot-card" onClick={() => pick(answer)} role="button" tabIndex={0}
+                    style={{ borderColor: purpleBorder, ['--active-bg' as any]: purpleActive }}>
+                    <div className="ob-tot-emoji">{emoji}</div>
+                    <div className="ob-tot-label">{text}</div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -883,6 +1027,7 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
         <style>{CSS}</style>
         {starField}
         <div className="ob-inner">
+          <button className="ob-back" onClick={goBack} aria-label="Back">&larr;</button>
           <div className="ob-screen" key="s3" style={{ justifyContent: 'center', alignItems: 'center', animation: `${animClass} .4s var(--ease-out)` }}>
             <div className="ob-sub" style={{ textAlign: 'center', maxWidth: 300, marginBottom: 40 }}>
               The egg knows who you are now. Hold it until it's ready.
@@ -949,6 +1094,7 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
       <style>{CSS}</style>
       {starField}
       <div className="ob-inner">
+        <button className="ob-back" onClick={goBack} aria-label="Back">&larr;</button>
         <div className="ob-screen" key="s4" style={{ justifyContent: 'center', alignItems: 'center', animation: `${animClass} .4s var(--ease-out)` }}>
           <div style={{ fontSize: 72, animation: 'creatureFloat 3s ease-in-out infinite', marginBottom: 16 }}>
             {creatureEmoji}
@@ -961,6 +1107,7 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
             placeholder="Their name"
             value={creatureName}
             onChange={e => setCreatureName(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && creatureName.trim()) goNext(); }}
             autoFocus
             aria-label="Name your DreamKeeper"
           />
@@ -981,6 +1128,7 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
       <style>{CSS}</style>
       {starField}
       <div className="ob-inner">
+        <button className="ob-back" onClick={goBack} aria-label="Back">&larr;</button>
         <div className="ob-screen" key="s5" style={{ justifyContent: 'center', animation: `${animClass} .4s var(--ease-out)` }}>
           {/* Creature + name row */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 12 }}>
@@ -996,9 +1144,9 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
           </div>
 
           {/* Speech bubble */}
-          <div className="ob-bubble">
+          <div className="ob-bubble" style={{ borderColor: 'rgba(245,184,76,.15)', animation: 'bubbleShimmer 3s ease-in-out infinite' }}>
             <div className="ob-bubble-text">
-              That's me! I've been waiting for you, {childName}. I knew you'd come. Every night, you bring me your day — and I'll turn it into something wonderful.
+              That's me! I've been waiting for you, {childName}. I knew you'd come. I know everything about adventure. And from now on — we go on every single one together.
             </div>
           </div>
 
@@ -1019,6 +1167,7 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
         <style>{CSS}</style>
         {starField}
         <div className="ob-inner">
+          <button className="ob-back" onClick={goBack} aria-label="Back">&larr;</button>
           <div className="ob-screen" key="s6" style={{ animation: `${animClass} .4s var(--ease-out)` }}>
             <div style={{ textAlign: 'center', fontSize: 40, animation: 'creatureFloat 3s ease-in-out infinite', margin: '8px 0 12px' }}>
               {creatureEmoji}
@@ -1057,6 +1206,7 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
         <style>{CSS}</style>
         {starField}
         <div className="ob-inner">
+          <button className="ob-back" onClick={goBack} aria-label="Back">&larr;</button>
           <div className="ob-screen" key="s7" style={{ animation: `${animClass} .4s var(--ease-out)` }}>
             <div style={{ textAlign: 'center', fontSize: 40, animation: 'creatureFloat 3s ease-in-out infinite', margin: '8px 0 12px' }}>
               {creatureEmoji}
@@ -1093,6 +1243,7 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
       <style>{CSS}</style>
       {starField}
       <div className="ob-inner">
+        <button className="ob-back" onClick={goBack} aria-label="Back">&larr;</button>
         <div className="ob-screen" key="s8" style={{ animation: `${animClass} .4s var(--ease-out)` }}>
           <div style={{ textAlign: 'center', fontSize: 40, animation: 'creatureFloat 3s ease-in-out infinite', margin: '8px 0 12px' }}>
             {creatureEmoji}
@@ -1133,6 +1284,7 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
         <style>{CSS}</style>
         {starField}
         <div className="ob-inner">
+          <button className="ob-back" onClick={goBack} aria-label="Back">&larr;</button>
           <div className="ob-screen" key="s9" style={{ justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
             {/* Creature with sparkles */}
             <div style={{ position: 'relative', width: 72, height: 72, margin: '0 auto 20px' }}>
@@ -1212,16 +1364,28 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
     // Parse pages: split dialogue from narrative
     const renderPage = (pageText: string, pageIdx: number) => {
       if (pageIdx === 10) {
-        // Last page — italic amber closing
+        // Last page — structured amber closing
         return (
-          <div className="ob-reader-scroll">
-            <div className="ob-reader-closing">{pageText}</div>
-            <div style={{ textAlign: 'center', marginTop: 24 }}>
-              <div style={{ fontSize: 36, animation: 'glowPulse 3s ease-in-out infinite', marginBottom: 16 }}>{creatureEmoji}</div>
-              <button className="ob-btn ob-btn-amber" style={{ maxWidth: 300 }} onClick={goNext}>
-                Capture this night &rarr;
-              </button>
+          <div className="ob-reader-scroll" style={{ justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 18, color: 'var(--amber)', lineHeight: 1.8, marginBottom: 20 }}>
+              This is what matters.
             </div>
+            <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 15, color: 'var(--cream-dim)', lineHeight: 1.8, marginBottom: 20 }}>
+              And this memory is what they held onto forever.
+            </div>
+            <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 14, color: 'var(--cream-faint)', lineHeight: 1.8, marginBottom: 28 }}>
+              The egg on the nightstand glowed once — soft and gold.
+            </div>
+            <div style={{ fontFamily: 'var(--serif)', fontSize: 16, color: 'var(--amber)', letterSpacing: '.1em', marginBottom: 24 }}>
+              ✦ The End ✦
+            </div>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'rgba(244,239,232,.3)', marginBottom: 28 }}>
+              Night 1 of {childName}'s story. There are many more to come.
+            </div>
+            <div style={{ fontSize: 36, animation: 'glowPulse 3s ease-in-out infinite', marginBottom: 16 }}>{creatureEmoji}</div>
+            <button className="ob-btn ob-btn-amber" style={{ maxWidth: 300 }} onClick={goNext}>
+              Capture this night &rarr;
+            </button>
           </div>
         );
       }
@@ -1276,14 +1440,34 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
         </div>
 
         {/* Page track */}
-        <div className="ob-reader-track" style={{ transform: `translateX(-${rPage * 100}%)`, width: `${totalPages * 100}%` }}>
+        <div className="ob-reader-track" style={{ transform: `translateX(-${rPage * 100}vw)` }}>
           {/* Cover */}
           <div className="ob-reader-page">
-            <div className="ob-cover">
-              <div className="ob-cover-eyebrow">✦ Night 1 ✦</div>
-              <div className="ob-cover-title">{storyData.cover}</div>
-              <div className="ob-cover-creature">{creatureEmoji}</div>
-              <div className="ob-cover-sub">A story written just for {childName}</div>
+            <div style={{ position: 'relative', width: '100%', height: '100dvh', overflow: 'hidden', background: 'var(--night)' }}>
+              {/* Scene background — Magic Library with floating candles & books */}
+              <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}><SceneLibrary /></div>
+              {/* Vignette */}
+              <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, transparent 30%, rgba(6,9,18,.6))', zIndex: 1 }} />
+              {/* Bottom gradient */}
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '65%', background: 'linear-gradient(to top, #060912 35%, transparent)', zIndex: 2 }} />
+
+              {/* Text content — matches library reader layout exactly */}
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 3, padding: '0 28px 108px', textAlign: 'center' }}>
+                <div style={{ fontSize: 10, color: 'var(--amber)', letterSpacing: 10, marginBottom: 10, opacity: 0.7 }}>
+                  ✦ · ✦ · ✦
+                </div>
+                <div style={{
+                  fontFamily: 'var(--serif)', fontWeight: 700, fontSize: 'clamp(26px,7.5vw,38px)',
+                  color: 'var(--cream)', lineHeight: 1.15, marginBottom: 10,
+                }}>{storyData.cover}</div>
+                <div style={{ fontFamily: 'var(--sans)', fontSize: 14, color: 'var(--cream-dim)' }}>
+                  A story for <span style={{ color: 'var(--amber)', fontWeight: 700 }}>{childName}</span>
+                </div>
+                <div style={{
+                  fontFamily: 'var(--serif)', fontSize: 10, color: 'var(--cream-faint)',
+                  textTransform: 'uppercase', letterSpacing: '.15em', marginTop: 14,
+                }}>SleepSeed · Made tonight</div>
+              </div>
             </div>
           </div>
 
@@ -1326,6 +1510,20 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
             >&rarr;</button>
           )}
         </div>
+
+        {/* Page progress pills */}
+        <div className="ob-reader-pips">
+          {Array.from({ length: 11 }, (_, i) => {
+            const isPast = i < rPage;
+            const isCurrent = i === rPage;
+            return (
+              <div key={i} className="ob-reader-pip" style={{
+                width: isCurrent ? 28 : 20,
+                background: isCurrent ? 'var(--amber)' : isPast ? 'rgba(245,184,76,.3)' : 'rgba(244,239,232,.12)',
+              }} />
+            );
+          })}
+        </div>
       </div>
     );
   }
@@ -1337,23 +1535,32 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
     const canSubmit = ncMemory.trim().length > 0 || ncPhoto;
 
     if (ncRevealed && ncGenerated) {
-      // Polaroid reveal
+      const previewCard: SavedNightCard = {
+        id: 'preview', userId: '', heroName: childName,
+        storyTitle: storyData.cover, characterIds: [],
+        headline: ncGenerated.headline, quote: ncGenerated.quote,
+        memory_line: ncGenerated.memory_line, whisper: ncGenerated.whisper,
+        emoji: creatureEmoji, date: new Date().toISOString(),
+        isOrigin: true, photo: ncPhoto,
+        nightNumber: 1, streakCount: 1,
+        creatureEmoji, creatureColor: selectedCreature?.color || '#F5B84C',
+      };
       return (
         <div className="ob">
           <style>{CSS}</style>
           {starField}
           <div className="ob-inner">
+            <button className="ob-back" onClick={() => { setNcRevealed(false); setNcFlipped(false); }} aria-label="Back">&larr;</button>
             <div className="ob-screen" key="s11r" style={{ justifyContent: 'center', alignItems: 'center' }}>
-              <div className="ob-polaroid">
-                <div className="ob-polaroid-photo">
-                  {ncPhoto ? <img src={ncPhoto} alt="Tonight" /> : creatureEmoji}
-                </div>
-                <div className="ob-polaroid-title">{ncGenerated.headline}</div>
-                <div className="ob-polaroid-date">{new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-                <div className="ob-polaroid-quote">"{ncGenerated.quote}"</div>
+              <div style={{ animation: 'polaroidDrop .5s var(--ease-out) both' }}>
+                <NightCardComponent card={previewCard} size="full" flipped={ncFlipped} onFlip={() => setNcFlipped(f => !f)} childAge={childAge} />
               </div>
+              <div style={{
+                fontFamily: 'var(--mono)', fontSize: 10, color: 'rgba(244,239,232,.3)',
+                marginTop: 10, textAlign: 'center', animation: 'breathe 2.5s ease-in-out infinite',
+              }}>Tap the card to flip it</div>
 
-              <button className="ob-btn ob-btn-amber" style={{ maxWidth: 320, marginTop: 24 }} onClick={goNext}>
+              <button className="ob-btn ob-btn-amber" style={{ maxWidth: 320, marginTop: 16 }} onClick={goNext}>
                 Continue &rarr;
               </button>
             </div>
@@ -1367,31 +1574,77 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
         <style>{CSS}</style>
         {starField}
         <div className="ob-inner">
+          <button className="ob-back" onClick={goBack} aria-label="Back">&larr;</button>
           <div className="ob-screen" key="s11" style={{ animation: `${animClass} .4s var(--ease-out)` }}>
-            <div className="ob-h" style={{ textAlign: 'center' }}>
-              Let's remember our first night and when we met.
+            <div className="ob-h" style={{ textAlign: 'center', fontSize: 'clamp(22px,5.5vw,28px)' }}>
+              This moment deserves to last forever.
             </div>
-            <div className="ob-sub" style={{ textAlign: 'center' }}>
-              A moment this good deserves to be kept.
+            <div className="ob-sub" style={{ textAlign: 'center', color: 'var(--amber)', fontSize: 13, fontStyle: 'italic' }}>
+              Take a photo together right now — this is the one you'll look back on.
             </div>
 
             <input type="file" ref={fileRef} accept="image/*" style={{ display: 'none' }}
               onChange={handleFileUpload} />
 
-            <div className="ob-photo-grid">
-              <div className="ob-photo-opt" onClick={handleTakePhoto} role="button" tabIndex={0} aria-label="Take a photo">
-                <div className="ob-photo-opt-emoji">📸</div>
-                <div className="ob-photo-opt-label">Take a photo together now</div>
+            {/* Camera view */}
+            {cameraOpen && (
+              <div style={{
+                position: 'relative', width: '100%', aspectRatio: '4/3', borderRadius: 16,
+                overflow: 'hidden', marginBottom: 12, background: '#000',
+              }}>
+                <video ref={videoRef} playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                {/* Flip camera button */}
+                <button onClick={flipCamera} aria-label="Flip camera" style={{
+                  position: 'absolute', top: 10, right: 10, width: 36, height: 36, borderRadius: '50%',
+                  background: 'rgba(0,0,0,.5)', border: 'none', color: '#fff', fontSize: 16,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  backdropFilter: 'blur(4px)',
+                }}>🔄</button>
+                {/* Capture + Cancel */}
+                <div style={{ position: 'absolute', bottom: 12, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 12 }}>
+                  <button onClick={closeCamera} style={{
+                    padding: '10px 20px', borderRadius: 50, border: '1px solid rgba(255,255,255,.3)',
+                    background: 'rgba(0,0,0,.5)', color: '#fff', fontSize: 13, fontWeight: 600,
+                    cursor: 'pointer', fontFamily: 'var(--sans)', backdropFilter: 'blur(4px)',
+                  }}>Cancel</button>
+                  <button onClick={capturePhoto} style={{
+                    padding: '10px 24px', borderRadius: 50, border: 'none',
+                    background: 'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)',
+                    color: '#080200', fontSize: 13, fontWeight: 700,
+                    cursor: 'pointer', fontFamily: 'var(--sans)',
+                  }}>Take a Photo</button>
+                </div>
               </div>
-              <div className="ob-photo-opt" onClick={() => fileRef.current?.click()} role="button" tabIndex={0} aria-label="Upload a photo">
-                <div className="ob-photo-opt-emoji">🖼️</div>
-                <div className="ob-photo-opt-label">Upload a photo from today</div>
-              </div>
-            </div>
+            )}
 
-            {ncPhoto && (
+            {/* Photo preview with retake */}
+            {ncPhoto && !cameraOpen && (
               <div style={{ textAlign: 'center', margin: '8px 0 12px' }}>
-                <img src={ncPhoto} alt="Preview" style={{ width: 80, height: 80, borderRadius: 12, objectFit: 'cover', border: '2px solid rgba(245,184,76,.2)' }} />
+                <img src={ncPhoto} alt="Preview" style={{ width: 120, height: 120, borderRadius: 14, objectFit: 'cover', border: '2px solid rgba(245,184,76,.2)' }} />
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 8 }}>
+                  <button onClick={() => { setNcPhoto(undefined); openCamera(); }} style={{
+                    background: 'none', border: 'none', color: 'var(--cream-faint)', fontSize: 11,
+                    fontFamily: 'var(--mono)', cursor: 'pointer', transition: 'color .15s',
+                  }}>Retake photo</button>
+                  <button onClick={() => setNcPhoto(undefined)} style={{
+                    background: 'none', border: 'none', color: 'var(--cream-faint)', fontSize: 11,
+                    fontFamily: 'var(--mono)', cursor: 'pointer', transition: 'color .15s',
+                  }}>Remove</button>
+                </div>
+              </div>
+            )}
+
+            {/* Photo options — only show if no photo and camera not open */}
+            {!ncPhoto && !cameraOpen && (
+              <div className="ob-photo-grid">
+                <div className="ob-photo-opt" onClick={() => openCamera()} role="button" tabIndex={0} aria-label="Take a photo">
+                  <div className="ob-photo-opt-emoji">📸</div>
+                  <div className="ob-photo-opt-label">Take a Photo</div>
+                </div>
+                <div className="ob-photo-opt" onClick={() => fileRef.current?.click()} role="button" tabIndex={0} aria-label="Upload a photo">
+                  <div className="ob-photo-opt-emoji">🖼️</div>
+                  <div className="ob-photo-opt-label">Upload a photo</div>
+                </div>
               </div>
             )}
 
@@ -1406,8 +1659,8 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
             />
 
             <button className="ob-btn ob-btn-amber" onClick={generateNightCard}
-              disabled={!canSubmit}>
-              Make our night card &rarr;
+              disabled={!canSubmit || ncLoading}>
+              {ncLoading ? 'Creating\u2026' : 'Make our night card \u2192'}
             </button>
             <button className="ob-skip" onClick={goNext}>Skip for tonight</button>
           </div>
@@ -1424,6 +1677,7 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
       <style>{CSS}</style>
       {starField}
       <div className="ob-inner">
+        <button className="ob-back" onClick={goBack} aria-label="Back">&larr;</button>
         <div className="ob-screen" key="s12" style={{ justifyContent: 'center', alignItems: 'center', textAlign: 'center', animation: `${animClass} .4s var(--ease-out)` }}>
           <div style={{ fontSize: 44, marginBottom: 8 }}>{creatureEmoji}</div>
           <div className="ob-label" style={{ textAlign: 'center' }}>✦ Night 1 complete</div>
@@ -1484,7 +1738,25 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
     <div className="ob">
       <style>{CSS}</style>
       {starField}
+      {saving && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 2000,
+          background: 'rgba(6,9,18,.92)', backdropFilter: 'blur(8px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16,
+        }}>
+          <div style={{
+            width: 12, height: 12, borderRadius: '50%', background: 'var(--amber)',
+            animation: 'breathe 1.5s ease-in-out infinite',
+            boxShadow: '0 0 24px rgba(245,184,76,.4)',
+          }} />
+          <div style={{
+            fontFamily: 'var(--serif)', fontWeight: 300, fontSize: 18,
+            color: 'var(--cream)', letterSpacing: '.01em',
+          }}>Saving your first night&hellip;</div>
+        </div>
+      )}
       <div className="ob-inner">
+        <button className="ob-back" onClick={goBack} aria-label="Back">&larr;</button>
         <div className="ob-screen" key="s13" style={{ justifyContent: 'center', alignItems: 'center', textAlign: 'center', animation: `${animClass} .4s var(--ease-out)` }}>
           <div style={{ fontSize: 56, animation: 'sleepFloat 4s ease-in-out infinite', marginBottom: 4 }}>
             {creatureEmoji}
@@ -1501,22 +1773,41 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
             {creatureName} is already curled up beside your bed, keeping watch.
           </div>
 
-          {/* Mini polaroid */}
-          <div className="ob-polaroid" style={{ transform: 'rotate(1deg)', maxWidth: 200 }}>
-            <div className="ob-polaroid-photo" style={{ fontSize: 36 }}>
-              {ncPhoto ? <img src={ncPhoto} alt="Tonight" /> : creatureEmoji}
-            </div>
-            <div className="ob-polaroid-title" style={{ fontSize: 11 }}>{storyData.cover}</div>
-            <div className="ob-polaroid-date">
-              {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-            </div>
-            {ncGenerated?.quote && (
-              <div className="ob-polaroid-quote" style={{ fontSize: 10 }}>"{ncGenerated.quote}"</div>
-            )}
-          </div>
+          {/* Night Card — real component with flip */}
+          {(() => {
+            const card13: SavedNightCard = {
+              id: 'preview-13', userId: '', heroName: childName,
+              storyTitle: storyData.cover, characterIds: [],
+              headline: ncGenerated?.headline || `The night ${creatureName} arrived`,
+              quote: ncGenerated?.quote || `${childName} met ${creatureName} and nothing was ever quite the same.`,
+              memory_line: ncGenerated?.memory_line, whisper: ncGenerated?.whisper,
+              emoji: creatureEmoji, date: new Date().toISOString(),
+              isOrigin: true, photo: ncPhoto,
+              nightNumber: 1, streakCount: 1,
+              creatureEmoji, creatureColor: selectedCreature?.color || '#F5B84C',
+            };
+            return (
+              <div style={{ transform: 'scale(0.78)', transformOrigin: 'top center', marginBottom: -20 }}>
+                <NightCardComponent card={card13} size="full" flipped={nc13Flipped} onFlip={() => setNc13Flipped(f => !f)} childAge={childAge} />
+              </div>
+            );
+          })()}
+          <div style={{
+            fontFamily: 'var(--mono)', fontSize: 10, color: 'rgba(244,239,232,.3)',
+            marginTop: 4, marginBottom: 12, textAlign: 'center', animation: 'breathe 2.5s ease-in-out infinite',
+          }}>Tap to flip</div>
 
-          <button className="ob-btn ob-btn-amber" style={{ marginTop: 20 }} onClick={handleComplete}>
-            See what we made &rarr;
+          {saveError && (
+            <div style={{
+              background: 'rgba(255,80,80,.08)', border: '1px solid rgba(255,80,80,.2)',
+              borderRadius: 12, padding: '12px 16px', marginBottom: 12, textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 13, color: '#ff8080', marginBottom: 4 }}>Something went wrong saving your night.</div>
+              <div style={{ fontSize: 11, color: 'var(--cream-faint)' }}>Tap below to try again.</div>
+            </div>
+          )}
+          <button className="ob-btn ob-btn-amber" style={{ marginTop: saveError ? 0 : 20 }} onClick={handleComplete}>
+            {saveError ? 'Try again \u2192' : 'See what we made \u2192'}
           </button>
           <div className="ob-caption">This is the part you did together.</div>
         </div>
