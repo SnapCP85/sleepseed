@@ -5,6 +5,7 @@ import { hasSupabase } from '../lib/supabase';
 import { getActiveEgg, createEgg, getAllHatchedCreatures } from '../lib/hatchery';
 import { CREATURES, getCreature } from '../lib/creatures';
 import { getCharacters, getNightCards, getStories } from '../lib/storage';
+import { checkBedtimeReminder, getBedtimeSettings } from '../lib/bedtimeReminder';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -505,6 +506,17 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   },[activeShardCard,allStories]);
   const activeShardWisdom=useMemo(()=>activeShardIdx===null?null:creatureDef?.dailyWisdom?.[activeShardIdx]??null,[activeShardIdx,creatureDef]);
 
+  // ── Bedtime reminder timer ──────────────────────────────────────────────────
+  const [bedtimeToast, setBedtimeToast] = useState(false);
+  useEffect(() => {
+    if (!userId) return;
+    const interval = setInterval(() => {
+      const fired = checkBedtimeReminder(userId, childName);
+      if (fired) { setBedtimeToast(true); setTimeout(() => setBedtimeToast(false), 8000); }
+    }, 30000); // check every 30s
+    return () => clearInterval(interval);
+  }, [userId, childName]);
+
   // ── Helpers ────────────────────────────────────────────────────────────────
   function shardColour(card: SavedNightCard|null): string {
     if(!card) return 'rgba(245,184,76,.5)';
@@ -619,26 +631,34 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
       {/* ── TOP NAV ── */}
       <nav className="dash-nav" style={{background:tonightDone?'rgba(3,8,18,.92)':'rgba(4,8,22,.9)',borderBottom:tonightDone?'1px solid rgba(20,216,144,.07)':'1px solid rgba(245,184,76,.07)'}}>
         <div className="dash-logo"><div className="dash-logo-moon"><div className="dash-logo-moon-sh"/></div>SleepSeed</div>
-        {primary&&(
-          <div style={{display:'flex',alignItems:'center',gap:8,background:`rgba(${hexToRgba(creatureColor,.12).slice(5,-1)})`,border:`1px solid ${hexToRgba(creatureColor,.25)}`,borderRadius:20,padding:'6px 12px 6px 6px',cursor:'pointer',transition:'background .2s'}}
-            onClick={()=>{
-              if(familyChars.length>1){
-                const idx=familyChars.findIndex(c=>c.id===primary.id);
-                const next=familyChars[(idx+1)%familyChars.length];
-                setSelectedCharacters([next]);setWeekViewId(next.id);
-              } else { handleProfile(); }
-            }}
-            onMouseEnter={e=>(e.currentTarget.style.background=hexToRgba(creatureColor,.2))}
-            onMouseLeave={e=>(e.currentTarget.style.background=hexToRgba(creatureColor,.12))}>
-            <div style={{width:26,height:26,borderRadius:'50%',background:`linear-gradient(135deg,${hexToRgba(creatureColor,.4)},${hexToRgba(creatureColor,.2)})`,display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',flexShrink:0}}>
-              {primary.photo
-                ? <img src={primary.photo} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}}/>
-                : <span style={{fontSize:14}}>{hatchedCreature?.creatureEmoji||primary.emoji||'\uD83E\uDDD2'}</span>}
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          {primary&&(
+            <div style={{display:'flex',alignItems:'center',gap:8,background:`rgba(${hexToRgba(creatureColor,.12).slice(5,-1)})`,border:`1px solid ${hexToRgba(creatureColor,.25)}`,borderRadius:20,padding:'6px 12px 6px 6px',cursor:'pointer',transition:'background .2s'}}
+              onClick={()=>{
+                if(familyChars.length>1){
+                  const idx=familyChars.findIndex(c=>c.id===primary.id);
+                  const next=familyChars[(idx+1)%familyChars.length];
+                  setSelectedCharacters([next]);setWeekViewId(next.id);
+                }
+              }}
+              onMouseEnter={e=>(e.currentTarget.style.background=hexToRgba(creatureColor,.2))}
+              onMouseLeave={e=>(e.currentTarget.style.background=hexToRgba(creatureColor,.12))}>
+              <div style={{width:26,height:26,borderRadius:'50%',background:`linear-gradient(135deg,${hexToRgba(creatureColor,.4)},${hexToRgba(creatureColor,.2)})`,display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',flexShrink:0}}>
+                {primary.photo
+                  ? <img src={primary.photo} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}}/>
+                  : <span style={{fontSize:14}}>{hatchedCreature?.creatureEmoji||primary.emoji||'\uD83E\uDDD2'}</span>}
+              </div>
+              <span style={{fontFamily:"'Nunito',sans-serif",fontSize:13,fontWeight:600,color:'#F4EFE8'}}>{primary.name}</span>
+              {familyChars.length>1&&<span style={{fontSize:10,color:'rgba(244,239,232,.4)',marginLeft:2}}>{'\u25BE'}</span>}
             </div>
-            <span style={{fontFamily:"'Nunito',sans-serif",fontSize:13,fontWeight:600,color:'#F4EFE8'}}>{primary.name}</span>
-            <span style={{fontSize:10,color:'rgba(244,239,232,.4)',marginLeft:2}}>{'\u25BE'}</span>
+          )}
+          <div style={{width:30,height:30,borderRadius:'50%',background:'rgba(244,239,232,.06)',border:'1px solid rgba(244,239,232,.08)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',transition:'all .2s',flexShrink:0}}
+            onClick={handleProfile}
+            onMouseEnter={e=>{e.currentTarget.style.background='rgba(244,239,232,.12)';e.currentTarget.style.borderColor='rgba(244,239,232,.18)';}}
+            onMouseLeave={e=>{e.currentTarget.style.background='rgba(244,239,232,.06)';e.currentTarget.style.borderColor='rgba(244,239,232,.08)';}}>
+            <NavIconProfile/>
           </div>
-        )}
+        </div>
       </nav>
 
       {/* Child switching is handled via the nav child pod — no separate row */}
@@ -1037,6 +1057,22 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
           <div className="dash-nav-tab-lbl">Home</div>
         </div>
       </div>
+
+      {/* Bedtime toast */}
+      {bedtimeToast && (
+        <div style={{position:'fixed',top:70,left:'50%',transform:'translateX(-50%)',zIndex:200,
+          background:'linear-gradient(135deg,#1a1040,#0d1428)',border:'1px solid rgba(245,184,76,.3)',
+          borderRadius:16,padding:'14px 20px',boxShadow:'0 12px 40px rgba(0,0,0,.6)',
+          display:'flex',alignItems:'center',gap:12,maxWidth:340,width:'90%',
+          animation:'slideup .3s ease-out'}}>
+          <span style={{fontSize:28}}>🌙</span>
+          <div>
+            <div style={{fontFamily:"'Fraunces',serif",fontSize:14,fontWeight:600,color:'#F4EFE8',marginBottom:2}}>Bedtime!</div>
+            <div style={{fontFamily:"'Nunito',sans-serif",fontSize:12,color:'rgba(244,239,232,.6)'}}>It's story time with {childName}.</div>
+          </div>
+          <button onClick={()=>setBedtimeToast(false)} style={{background:'none',border:'none',color:'rgba(244,239,232,.3)',fontSize:16,cursor:'pointer',marginLeft:'auto',padding:4}}>✕</button>
+        </div>
+      )}
     </div>
   );
 }
