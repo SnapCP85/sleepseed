@@ -196,6 +196,14 @@ function AppInner() {
     }).catch(e => console.warn('[friends] add failed:', e));
   }, [user]); // eslint-disable-line
 
+  // Clear stale story state whenever entering a fresh creation flow
+  useEffect(() => {
+    if (view === 'story-wizard' || view === 'ritual-starter') {
+      setPreloadedBook(null);
+      setWizardChoices(null);
+    }
+  }, [view]);
+
   // ── All hooks above this line ─────────────────────────────────────────────
 
   if (isSharedStory) return <SharedStoryViewer />;
