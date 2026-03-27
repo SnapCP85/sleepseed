@@ -66,10 +66,10 @@ const HomeIcon = ({ active }: { active: boolean }) => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M4 11.5L12 4l8 7.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"
       stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.8" strokeLinejoin="round"
-      fill="none" />
+      fill={active ? 'rgba(245,184,76,.08)' : 'none'} />
     <rect x="9" y="14" width="6" height="7" rx="1"
       stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.5"
-      fill="none" />
+      fill={active ? 'rgba(245,184,76,.15)' : 'none'} />
   </svg>
 );
 
