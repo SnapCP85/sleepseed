@@ -1162,7 +1162,7 @@ const elDeleteVoice = async (vid) => {
 
 /* ── API ── */
 const callClaude = async (messages, system="", maxTokens=4000, retries=2) => {
-  const body = {model:"claude-sonnet-4-6",max_tokens:maxTokens,messages};
+  const body: any = {model:"claude-sonnet-4-6",max_tokens:maxTokens,messages};
   if(system) body.system = system;
 
   let lastErr;
@@ -2217,26 +2217,30 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
 
   const saveMemory = useCallback(async (bookData) => {
     const occ = occasionCustom || occasion;
-    const entry = {id:uid(),title:bookData.title,heroName:bookData.heroName,
-      date:new Date().toISOString().split("T")[0],occasion:occ,bookData,
+    const storyId = uid();
+    const entry = {id:storyId,title:bookData.title,heroName:bookData.heroName,
+      date:new Date().toISOString(),occasion:occ,bookData,
       characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
       refrain: bookData.refrain || ""};
     const next = [entry,...memories];
     setMemories(next);
     await sSet("memories",{items:next},userId);
-    // Also mirror to v2 user-scoped storage so UserDashboard can read it
+    // Mirror to v2 user-scoped storage so UserDashboard can read it
+    const uid2 = userId || 'guest';
+    try {
+      const v2Key = `ss2_stories_${uid2}`;
+      const existing = JSON.parse(localStorage.getItem(v2Key) || "[]");
+      const v2Entry = {
+        id: entry.id, userId: uid2, title: entry.title,
+        heroName: entry.heroName, characterIds: entry.characterIds,
+        refrain: entry.refrain, date: entry.date,
+        occasion: occ, bookData
+      };
+      localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
+    } catch(e) { console.error('[Story] v2 localStorage save failed:', e); }
+    // Save to Supabase so dashboard reads it
     if (userId) {
       try {
-        const v2Key = `ss2_stories_${userId}`;
-        const existing = JSON.parse(localStorage.getItem(v2Key) || "[]");
-        const v2Entry = {
-          id: entry.id, userId, title: entry.title,
-          heroName: entry.heroName, characterIds: entry.characterIds,
-          refrain: entry.refrain, date: entry.date,
-          occasion: occ, bookData
-        };
-        localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
-        // ── Save to Supabase so dashboard reads it ──
         await dbSaveStory({
           id: entry.id, userId, title: entry.title,
           heroName: entry.heroName, characterIds: entry.characterIds,
@@ -2266,49 +2270,79 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     const next = [entry,...nightCards];
     setNightCards(next);
     await sSet("nightcards",{items:next},userId);
+
+    // Compute streak + night number for new fields
+    const charCards = nightCards.filter(c => preloadedCharacter && c.characterIds?.includes(preloadedCharacter.id));
+    const nightNum = Math.min((charCards.length + 1), 7); // current night in 7-night arc
+    const occasionVal = (occasionCustom || occasion || "").trim();
+
+    // Calculate current streak
+    let streakVal = 1;
+    const sortedDates = [...new Set(nightCards.map(c => c.date?.split?.("T")?.[0]).filter(Boolean))].sort().reverse();
+    const today = new Date().toISOString().split("T")[0];
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+    if (sortedDates[0] === today || sortedDates[0] === yesterday) {
+      streakVal = 1;
+      for (let i = 0; i < sortedDates.length - 1; i++) {
+        const cur = new Date(sortedDates[i]);
+        const prev = new Date(sortedDates[i + 1]);
+        const diff = Math.round((cur.getTime() - prev.getTime()) / 86400000);
+        if (diff <= 1) streakVal++;
+        else break;
+      }
+    }
+
     // Mirror to v2 user-scoped storage
+    const ncUid = userId || 'guest';
+    try {
+      const v2Key = `ss2_nightcards_${ncUid}`;
+      const existing = JSON.parse(localStorage.getItem(v2Key) || "[]");
+      const v2Entry = {
+        id: entry.id, userId: ncUid,
+        heroName: entry.heroName || cardData.heroName || "",
+        storyTitle: entry.storyTitle || "",
+        characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
+        headline: entry.headline || "",
+        quote: entry.quote || entry.bondingA || "",
+        memory_line: entry.memory_line || "",
+        bondingQuestion: entry.bondingQ || "",
+        bondingAnswer: entry.bondingA || "",
+        gratitude: entry.gratitude || "",
+        extra: entry.extra || "",
+        photo: entry.photo || null,
+        emoji: entry.emoji || "🌙",
+        date: entry.date
+      };
+      localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
+    } catch(e) { console.error('SleepSeedCore v2 localStorage save failed:', e); }
+    // Save to Supabase
     if (userId) {
       try {
-        const v2Key = `ss2_nightcards_${userId}`;
-        const existing = JSON.parse(localStorage.getItem(v2Key) || "[]");
-        const v2Entry = {
+        await dbSaveNightCard({
           id: entry.id, userId,
           heroName: entry.heroName || cardData.heroName || "",
           storyTitle: entry.storyTitle || "",
           characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
           headline: entry.headline || "",
-          quote: entry.quote || cardData.bondingA || "",
-          memory_line: entry.memory_line || "",
-          bondingQuestion: entry.bondingQ || "",
-          bondingAnswer: entry.bondingA || "",
-          gratitude: entry.gratitudeA || "",
-          extra: entry.extraA || "",
-          photo: entry.photo || null,
-          emoji: entry.emoji || "🌙",
-          date: entry.date
-        };
-        localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
-        // ── Save to Supabase so dashboard reads it ──
-        await dbSaveNightCard({
-          id: entry.id, userId,
-          heroName: entry.heroName || cardData.heroName || "",
-          storyTitle: entry.storyTitle || entry.storyTitle || "",
-          characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
-          headline: entry.headline || "",
-          quote: entry.quote || cardData.bondingA || "",
+          quote: entry.quote || entry.bondingA || "",
           memory_line: entry.memory_line || undefined,
           bondingQuestion: entry.bondingQ || undefined,
           bondingAnswer: entry.bondingA || undefined,
-          gratitude: entry.gratitudeA || undefined,
-          extra: entry.extraA || undefined,
+          gratitude: entry.gratitude || undefined,
+          extra: entry.extra || undefined,
           photo: entry.photo || undefined,
           emoji: entry.emoji || "🌙",
           date: entry.date,
+          occasion: occasionVal || undefined,
+          streakCount: streakVal,
+          nightNumber: nightNum,
+          creatureEmoji: companionCreature?.creatureEmoji || entry.emoji || "🌙",
+          creatureColor: companionCreature?.color || undefined,
         });
       } catch(e) { console.error('SleepSeedCore dbSaveNightCard:', e); }
     }
     return entry;
-  },[nightCards,userId,preloadedCharacter]);
+  },[nightCards,userId,preloadedCharacter,companionCreature,occasion,occasionCustom]);
 
   const deleteNightCard = useCallback(async (id) => {
     const next = nightCards.filter(c => c.id!==id);
