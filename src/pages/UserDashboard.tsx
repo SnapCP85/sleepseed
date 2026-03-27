@@ -612,11 +612,6 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
           <div className="dash-skel" style={{height:100,width:80,borderRadius:14}}/>
         </div>
       </div>
-      <div className="dash-navbar" style={{pointerEvents:'none'}}>
-        <div className="dash-nav-tab"><NavIconDiscover/><div className="dash-nav-tab-lbl">Discover</div></div>
-        <div className="dash-nav-create"><div className="dash-nav-create-btn"><NavIconCreate/></div><div className="dash-nav-create-lbl">Create</div></div>
-        <div className="dash-nav-tab"><NavIconHome/><div className="dash-nav-tab-lbl">Home</div></div>
-      </div>
     </div>
   );
 
@@ -1040,22 +1035,6 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
           </div>
         </>
       )}
-
-      {/* ── BOTTOM NAV BAR ── */}
-      <div className="dash-navbar">
-        <div className="dash-nav-tab" onClick={handleNavDiscover}>
-          <NavIconDiscover/>
-          <div className="dash-nav-tab-lbl">Discover</div>
-        </div>
-        <div className="dash-nav-create" onClick={handleNavCreate}>
-          <div className="dash-nav-create-btn"><NavIconCreate/></div>
-          <div className="dash-nav-create-lbl">Create</div>
-        </div>
-        <div className="dash-nav-tab on on-amber">
-          <NavIconHome color="rgba(245,184,76,.9)"/>
-          <div className="dash-nav-tab-lbl">Home</div>
-        </div>
-      </div>
 
       {/* Bedtime toast */}
       {bedtimeToast && (

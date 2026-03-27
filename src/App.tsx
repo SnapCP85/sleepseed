@@ -28,76 +28,53 @@ import { saveCharacter, saveNightCard, saveStory, addFriendByCode } from './lib/
 import { saveHatchedCreature, createEgg, getAllHatchedCreatures } from './lib/hatchery';
 import type { Character, HatchedCreature, SavedNightCard } from './lib/types';
 
-const TABS_CSS = `
-.btabs{display:flex;align-items:flex-end;background:rgba(6,10,20,.97);border-top:1px solid rgba(245,184,76,.06);padding:6px 0 max(6px,env(safe-area-inset-bottom));position:fixed;bottom:0;left:0;right:0;z-index:20;backdrop-filter:blur(20px)}
-.btab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 0 2px;-webkit-tap-highlight-color:transparent;transition:all .2s}
-.btab-ico{width:24px;height:24px;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.btab-ico svg{transition:all .2s}
-.btab:not(.on) .btab-ico svg{opacity:.38}
-.btab.on .btab-ico svg{opacity:1;filter:drop-shadow(0 0 6px rgba(245,184,76,.55))}
-.btab-lbl{font-size:10px;font-weight:700;letter-spacing:.03em;font-family:'Nunito',system-ui,sans-serif;transition:color .2s}
-.btab.on .btab-lbl{color:#F5B84C}
-.btab:not(.on) .btab-lbl{color:rgba(255,255,255,.38)}
-.btab:hover{transform:scale(1.08)}
-.btab:hover:not(.on) .btab-ico svg{opacity:.6}
-.btab:hover:not(.on) .btab-lbl{color:rgba(255,255,255,.5)}
-.btab:active{transform:scale(.92)}
-.btab-create{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:-22px}
-.btab-create-btn{width:52px;height:52px;border-radius:50%;background:linear-gradient(145deg,#a06010,#F5B84C 50%,#a06010);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(200,130,20,.45),0 0 0 3px rgba(6,10,20,.97);transition:transform .18s,filter .15s}
-.btab-create-btn svg{width:24px;height:24px}
-.btab-create-btn:hover{transform:scale(1.08);filter:brightness(1.1)}
-.btab-create-btn:active{transform:scale(.9)}
-.btab-create-lbl{font-size:10px;font-weight:700;letter-spacing:.03em;color:#F5B84C;margin-top:1px;font-family:'Nunito',system-ui,sans-serif}
+const NAV_CSS = `
+@keyframes bnPillIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+@keyframes bnBreathe{0%,100%{box-shadow:0 0 0 1.5px rgba(255,218,80,.3),0 6px 22px rgba(160,95,0,.65),0 0 32px rgba(245,184,76,.15),inset 0 1px 0 rgba(255,245,160,.25)}50%{box-shadow:0 0 0 1.5px rgba(255,218,80,.48),0 10px 30px rgba(160,95,0,.85),0 0 50px rgba(245,184,76,.28),inset 0 1px 0 rgba(255,245,160,.3)}}
+@keyframes bnShimmer{0%{transform:translateX(-100%)}60%,100%{transform:translateX(200%)}}
+.bn{position:fixed;bottom:0;left:0;right:0;height:74px;background:linear-gradient(180deg,rgba(4,6,18,.94) 0%,rgba(6,9,22,.98) 100%);border-top:1px solid rgba(245,184,76,.14);display:flex;align-items:center;justify-content:space-around;padding:0 8px;z-index:30;padding-bottom:max(0px,env(safe-area-inset-bottom))}
+.bn-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:8px 4px 10px;position:relative;border-radius:14px;-webkit-tap-highlight-color:transparent;transition:opacity .15s}
+.bn-tab:active{opacity:.65}
+.bn-tab svg{opacity:.58;transition:opacity .2s,transform .2s}
+.bn-tab-lbl{font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:10px;color:rgba(255,255,255,.48);transition:color .2s;white-space:nowrap;line-height:1}
+.bn-tab.on-amber svg{opacity:1;transform:scale(1.08)}
+.bn-tab.on-amber .bn-tab-lbl{color:rgba(255,255,255,.48)}
+.bn-create{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:-16px;padding-bottom:2px}
+.bn-create-btn{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,242,150,.4) 0%,transparent 48%),linear-gradient(148deg,#c08020 0%,#F5B84C 35%,#F0A030 60%,#a06010 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform .18s,filter .18s;animation:bnBreathe 4s ease-in-out infinite}
+.bn-create-btn::before{content:'';position:absolute;top:0;left:0;right:0;height:55%;background:linear-gradient(180deg,rgba(255,250,180,.22) 0%,transparent 100%);border-radius:50% 50% 0 0;pointer-events:none}
+.bn-create-btn::after{content:'';position:absolute;top:-20%;left:-65%;width:38%;height:140%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.16),transparent);transform:skewX(-15deg);animation:bnShimmer 3.4s ease-in-out infinite}
+.bn-create-btn:active{transform:scale(.9);filter:brightness(.88)}
+.bn-create-lbl{font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:10px;color:rgba(245,184,76,.65);white-space:nowrap;line-height:1}
 `;
 
-const DiscoverIcon = ({ active }: { active: boolean }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="12" r="9"
-      stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.8"
-      fill={active ? 'rgba(245,184,76,.08)' : 'none'} />
-    <path d="M14.5 9.5l-1.2 3.8-3.8 1.2 1.2-3.8 3.8-1.2Z"
-      stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.5" strokeLinejoin="round"
-      fill={active ? 'rgba(245,184,76,.25)' : 'none'} />
-    <circle cx="12" cy="12" r="1.2" fill={active ? '#F5B84C' : '#F4EFE8'} />
-  </svg>
+const BnIconDiscover = ({color='rgba(255,255,255,.9)'}:{color?:string}) => (
+  <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke={color} strokeWidth="1.4"/><path d="M11 3.5v1M11 17.5v1M3.5 11h1M17.5 11h1" stroke={color} strokeWidth="1.4" strokeLinecap="round"/><circle cx="11" cy="11" r="2.5" stroke={color} strokeWidth="1.3"/><path d="M13.5 8.5l-1.2 3.7-3.7 1.2 1.2-3.7z" fill={color}/></svg>
+);
+const BnIconHome = ({color='rgba(255,255,255,.9)'}:{color?:string}) => (
+  <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><path d="M4 10.5L11 4l7 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" stroke={color} strokeWidth="1.4" strokeLinejoin="round"/><rect x="8.5" y="14" width="5" height="6" rx="1" stroke={color} strokeWidth="1.3"/><circle cx="14.5" cy="8.5" r="1.8" fill={`${color}30`} stroke={color} strokeWidth=".9"/></svg>
+);
+const BnIconCreate = () => (
+  <svg width="26" height="26" viewBox="0 0 30 30" fill="none" style={{position:'relative',zIndex:2}}><path d="M15 4l2.7 8.2H26l-6.9 5 2.6 8.2L15 20.4l-6.7 5 2.6-8.2L4 12.2h8.3z" fill="rgba(8,4,0,.85)"/></svg>
 );
 
-const HomeIcon = ({ active }: { active: boolean }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4 11.5L12 4l8 7.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"
-      stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.8" strokeLinejoin="round"
-      fill={active ? 'rgba(245,184,76,.08)' : 'none'} />
-    <rect x="9" y="14" width="6" height="7" rx="1"
-      stroke={active ? '#F5B84C' : '#F4EFE8'} strokeWidth="1.5"
-      fill={active ? 'rgba(245,184,76,.15)' : 'none'} />
-  </svg>
-);
-
-const CreateIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 3l2.1 6.5H21l-5.6 4 2.2 6.5L12 16l-5.6 4 2.2-6.5L3 9.5h6.9L12 3Z"
-      fill="#120800" stroke="#120800" strokeWidth="1" strokeLinejoin="round" />
-  </svg>
-);
-
-function BottomTabs({ current, onNav }: { current: string; onNav: (v: string) => void }) {
+function BottomNav({ current, onNav }: { current: string; onNav: (v: string) => void }) {
   const isLib = current === 'library';
   const isHome = current === 'dashboard';
   return (
     <>
-      <style>{TABS_CSS}</style>
-      <div className="btabs">
-        <div className={`btab${isLib?' on':''}`} onClick={()=>onNav('library')}>
-          <div className="btab-ico"><DiscoverIcon active={isLib} /></div>
-          <div className="btab-lbl">Discover</div>
+      <style>{NAV_CSS}</style>
+      <div className="bn">
+        <div className={`bn-tab${isLib?' on on-amber':''}`} onClick={()=>onNav('library')}>
+          <BnIconDiscover color={isLib ? 'rgba(245,184,76,.9)' : undefined} />
+          <div className="bn-tab-lbl">Discover</div>
         </div>
-        <div className="btab-create" onClick={()=>onNav('story-wizard')}>
-          <div className="btab-create-btn"><CreateIcon /></div>
-          <div className="btab-create-lbl">Create</div>
+        <div className="bn-create" onClick={()=>onNav('story-wizard')}>
+          <div className="bn-create-btn"><BnIconCreate /></div>
+          <div className="bn-create-lbl">Create</div>
         </div>
-        <div className={`btab${isHome?' on':''}`} onClick={()=>onNav('dashboard')}>
-          <div className="btab-ico"><HomeIcon active={isHome} /></div>
-          <div className="btab-lbl">Home</div>
+        <div className={`bn-tab${isHome?' on on-amber':''}`} onClick={()=>onNav('dashboard')}>
+          <BnIconHome color={isHome ? 'rgba(245,184,76,.9)' : undefined} />
+          <div className="bn-tab-lbl">Home</div>
         </div>
       </div>
     </>
@@ -369,15 +346,15 @@ function AppInner() {
 
   // Library views — accessible to everyone (no auth required)
   if (view === 'library') return (
-    <div style={{paddingBottom: user && !user.isGuest ? 70 : 0}}>
+    <div style={{paddingBottom: user && !user.isGuest ? 74 : 0}}>
       <LibraryHome />
-      {user && !user.isGuest && <BottomTabs current="library" onNav={v => setView(v as any)} />}
+      {user && !user.isGuest && <BottomNav current="library" onNav={v => setView(v as any)} />}
     </div>
   );
   if (view === 'library-story') return (
-    <div style={{paddingBottom: user && !user.isGuest ? 70 : 0}}>
+    <div style={{paddingBottom: user && !user.isGuest ? 74 : 0}}>
       <LibraryStoryReader slug={libraryStorySlug ?? ''} />
-      {user && !user.isGuest && <BottomTabs current="library" onNav={v => setView(v as any)} />}
+      {user && !user.isGuest && <BottomNav current="library" onNav={v => setView(v as any)} />}
     </div>
   );
 
@@ -424,9 +401,10 @@ function AppInner() {
     // Parent setup done but kid onboarding not done → show dashboard with egg/begin button
     // (the existing dashboard handles this state — shows egg + "Begin your first night")
     return (
-      <div>
+      <div style={{paddingBottom:74}}>
         {friendToast}
         <UserDashboard onSignUp={goAuth} onReadStory={openSavedStory} />
+        <BottomNav current="dashboard" onNav={v => setView(v as any)} />
       </div>
     );
   }
@@ -451,9 +429,9 @@ function AppInner() {
   if (view === 'first-night') { setView('dashboard'); return null; }
 
   if (view === 'hatchery') return (
-    <div style={{paddingBottom:70}}>
+    <div style={{paddingBottom:74}}>
       <Hatchery user={user!} onBack={goDashboard} />
-      <BottomTabs current="" onNav={v=>setView(v as any)} />
+      <BottomNav current="" onNav={v=>setView(v as any)} />
     </div>
   );
   if (view === 'ritual-starter') return (
@@ -479,9 +457,9 @@ function AppInner() {
     />
   );
   if (view === 'user-profile') return (
-    <div style={{paddingBottom:70}}>
+    <div style={{paddingBottom:74}}>
       <UserProfile />
-      <BottomTabs current="dashboard" onNav={v=>setView(v as any)} />
+      <BottomNav current="dashboard" onNav={v=>setView(v as any)} />
     </div>
   );
 
@@ -507,25 +485,25 @@ function AppInner() {
   );
 
   if (view === 'story-library') return (
-    <div style={{paddingBottom:70}}>
+    <div style={{paddingBottom:74}}>
     <StoryLibrary
       userId={user!.id}
       onBack={goDashboard}
       onReadStory={openSavedStory}
       onCreateStory={() => setView('ritual-starter')}
     />
-    <BottomTabs current="dashboard" onNav={v=>setView(v as any)} />
+    <BottomNav current="dashboard" onNav={v=>setView(v as any)} />
     </div>
   );
 
   if (view === 'nightcard-library') return (
-    <div style={{paddingBottom:70}}>
+    <div style={{paddingBottom:74}}>
     <NightCardLibrary
       userId={user!.id}
       onBack={goDashboard}
       filterCharacterId={nightCardFilter}
     />
-    <BottomTabs current="dashboard" onNav={v=>setView(v as any)} />
+    <BottomNav current="dashboard" onNav={v=>setView(v as any)} />
     </div>
   );
 
