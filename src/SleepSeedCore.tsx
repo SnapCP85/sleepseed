@@ -2,22 +2,29 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import SleepSeedLibrary from "./sleepseed-library";
 import { buildStoryPrompt } from "./sleepseed-prompts";
 import { StoryFeedback, RereadCheck } from "./StoryFeedback";
+import NightCardComponent from "./features/nightcards/NightCard";
 import { saveStory as dbSaveStory, saveNightCard as dbSaveNightCard, submitStoryToLibrary, ensureRefCode } from "./lib/storage";
 import { BASE_URL } from "./lib/config";
 import { getSceneByVibe } from "./lib/storyScenes";
 import type { HatchedCreature } from "./lib/types";
 
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Cormorant+Garamond:ital,wght@1,600&family=Patrick+Hand&family=Nunito:wght@400;600;700&family=Kalam:wght@400;700&display=swap');`;
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Cormorant+Garamond:ital,wght@1,600&family=Patrick+Hand&family=Nunito:wght@400;600;700;800&family=Kalam:wght@300;400;700&family=Baloo+2:wght@600;700;800&family=DM+Mono:wght@400&display=swap');`;
 
 const CSS = `
 ${FONTS}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --night:#060b18;--gold:#d4a030;--gold2:#f0cc60;--gold3:#fae9a8;
-  --cream:#fdf5e0;--parch:#f5e8c0;--ink:#261600;--ink2:#5a380a;--ink3:#8a5a1a;
-  --ui:#c4d0f0;--dim:#6070a0;--dimmer:#3a4878;--green2:#4cc890;
+  --night:#060912;--night-mid:#0D1120;--night-card:#0f1525;--night-raised:#141a2e;
+  --amber:#F5B84C;--amber-deep:#E8972A;--amber-glow:rgba(245,184,76,0.18);--amber-glow2:rgba(245,184,76,0.08);
+  --cream:#F4EFE8;--cream-dim:rgba(244,239,232,0.60);--cream-faint:rgba(244,239,232,0.25);--cream-ghost:rgba(244,239,232,0.10);
+  --teal:#14d890;--purple:#9482ff;
+  --serif:'Fraunces',Georgia,serif;--sans:'Nunito',system-ui,sans-serif;
+  --hand:'Patrick Hand',cursive;--kalam:'Kalam',cursive;--cta:'Baloo 2',system-ui,sans-serif;
+  --gold:#d4a030;--gold2:#f0cc60;--gold3:#fae9a8;
+  --parch:#f5e8c0;--ink:#261600;--ink2:#5a380a;--ink3:#8a5a1a;
+  --dim:#6070a0;--dimmer:#3a4878;--green2:#4cc890;
 }
-body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);min-height:100vh;overflow-x:hidden}
+body{background:var(--night);font-family:var(--sans);color:var(--cream);min-height:100vh;overflow-x:hidden}
 .stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
 .star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d) ease-in-out infinite var(--dl)}
 @keyframes twinkle{0%,100%{opacity:var(--lo)}50%{opacity:var(--hi);transform:scale(1.4)}}
@@ -632,7 +639,145 @@ body{background:var(--night);font-family:'Nunito',sans-serif;color:var(--cream);
 .nc-toggle.on{background:rgba(20,216,144,.3)}
 .nc-toggle-thumb{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s;pointer-events:none}
 .nc-toggle.on .nc-toggle-thumb{left:19px}
+
+/* ════════════════════════════════════════════════════════
+   NEW READER DESIGN SYSTEM
+   ════════════════════════════════════════════════════════ */
+@keyframes ssSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes ssFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes ssFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-10px) rotate(5deg)}}
+@keyframes ssSparkle{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0)}}
+@keyframes ssDotPop{0%{transform:scale(0.7)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes ssStepIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ssStepOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-20px)}}
+@keyframes ssOrbPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes ssCardReveal{from{opacity:0;transform:scale(0.72) rotate(-3deg)}to{opacity:1;transform:scale(1) rotate(0deg)}}
+@keyframes ssBounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-4px)}}
+
+/* Reader shell */
+.ss-reader{position:fixed;inset:0;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;overflow:hidden;z-index:50}
+.ss-pbar{position:absolute;top:0;left:0;height:3px;z-index:30;background:linear-gradient(90deg,#E8972A,#F5B84C);transition:width 0.5s cubic-bezier(0.4,0,0.2,1);border-radius:0 2px 2px 0}
+.ss-top{position:absolute;top:0;left:0;right:0;z-index:25;padding:max(14px,env(safe-area-inset-top)) 20px 14px;display:flex;align-items:center;justify-content:space-between;transition:opacity 0.4s ease;pointer-events:none}
+.ss-top>*{pointer-events:auto}
+.ss-top-logo{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:6px;cursor:pointer;opacity:.8}
+.ss-top-moon{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020)}
+.ss-top-btn{width:36px;height:36px;border-radius:50%;border:1px solid rgba(244,239,232,.14);background:rgba(6,9,18,.5);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--cream-faint);font-size:16px;transition:all .18s;-webkit-tap-highlight-color:transparent}
+.ss-bot{position:absolute;bottom:0;left:0;right:0;z-index:25;padding:10px 20px max(20px,env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;gap:12px;pointer-events:none}
+.ss-bot>*{pointer-events:auto}
+.ss-arrow{width:44px;height:44px;border-radius:50%;border:1px solid rgba(244,239,232,.13);background:rgba(6,9,18,.5);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--cream);font-size:18px;transition:all .18s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.ss-arrow:disabled{opacity:.18;cursor:default}
+.ss-dots-wrap{display:flex;gap:6px;align-items:center;justify-content:center;flex:1;min-width:0;overflow:hidden}
+.ss-dot2{width:6px;height:6px;border-radius:50%;background:var(--cream-faint);cursor:pointer;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);flex-shrink:0}
+.ss-dot2.active{width:18px;border-radius:9px;background:var(--amber);animation:ssDotPop .3s ease}
+.ss-track{display:flex;height:100%;transition:transform 0.42s cubic-bezier(0.4,0,0.2,1);will-change:transform}
+.ss-page{width:100%;height:100dvh;flex-shrink:0;overflow:hidden;position:relative}
+.ss-tap{position:absolute;z-index:15;top:70px;bottom:80px}
+.ss-tap-l{left:0;width:40%}
+.ss-tap-r{right:0;width:40%}
+.ss-sparkle{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:40;animation:ssSparkle 0.7s ease-out forwards}
+
+/* Cover */
+.ss-cover{display:flex;flex-direction:column;height:100dvh;overflow:hidden;background:var(--night)}
+.ss-cover-scene{position:absolute;inset:0;z-index:0}
+.ss-cover-vig{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,transparent 30%,rgba(6,9,18,0.6));z-index:1}
+.ss-cover-grad{position:absolute;bottom:0;left:0;right:0;height:65%;background:linear-gradient(to top,#060912 35%,transparent);z-index:2}
+.ss-cover-text{position:absolute;bottom:0;left:0;right:0;z-index:3;padding:0 28px 108px;text-align:center}
+.ss-cover-stars{font-size:10px;color:var(--amber);letter-spacing:10px;margin-bottom:10px;opacity:.7}
+.ss-cover-title{font-family:var(--serif);font-weight:700;font-size:clamp(26px,7.5vw,38px);color:var(--cream);line-height:1.15;margin-bottom:10px}
+.ss-cover-for{font-family:var(--sans);font-size:14px;color:var(--cream-dim)}
+.ss-cover-for b{color:var(--amber);font-weight:700}
+.ss-cover-brand{font-family:var(--serif);font-size:10px;color:var(--cream-faint);text-transform:uppercase;letter-spacing:.15em;margin-top:14px}
+
+/* Cast */
+.ss-cast{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;overflow:hidden;background:var(--night-mid);padding:40px 28px}
+.ss-cast-eyebrow{font-family:var(--sans);font-size:10px;font-weight:800;color:var(--amber);letter-spacing:.18em;text-transform:uppercase;margin-bottom:14px}
+.ss-cast-h{font-family:var(--serif);font-size:clamp(20px,5vw,26px);font-weight:600;text-align:center;line-height:1.35;margin-bottom:32px}
+.ss-cast-grid{display:flex;flex-wrap:wrap;gap:32px;justify-content:center}
+.ss-cast-char{display:flex;flex-direction:column;align-items:center;gap:8px}
+.ss-cast-av{width:76px;height:76px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:32px;border:2px solid rgba(244,239,232,.12);background:var(--night-raised)}
+.ss-cast-av.hero{border-color:var(--amber);box-shadow:0 0 24px rgba(245,184,76,.2)}
+.ss-cast-av img{width:100%;height:100%;object-fit:cover}
+.ss-cast-name{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--cream);text-align:center;max-width:90px}
+.ss-cast-role{font-family:var(--sans);font-size:9px;font-weight:800;text-transform:uppercase;color:var(--cream-faint);letter-spacing:.08em}
+.ss-cast-type{font-family:var(--sans);font-size:11px;color:var(--cream-faint)}
+
+/* Story page */
+.ss-sp{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+.ss-sp.warm{filter:sepia(38%) saturate(.8) hue-rotate(-18deg) brightness(.86)}
+.ss-sp-scene{height:46%;flex-shrink:0;position:relative;overflow:hidden}
+.ss-sp-fade{position:absolute;bottom:0;left:0;right:0;height:56px;background:linear-gradient(to top,var(--night),transparent);z-index:1}
+.ss-sp-body{flex:1;display:flex;flex-direction:column;padding:16px 28px 0;overflow:hidden}
+.ss-sp-pgnum{font-family:var(--kalam);font-weight:300;font-size:12px;color:rgba(245,184,76,.55);text-align:center;margin-bottom:12px;flex-shrink:0}
+.ss-sp-text{font-family:var(--hand);font-size:clamp(17px,4.5vw,21px);line-height:1.75;color:var(--cream);flex:1;overflow:hidden}
+.ss-sp-refrain{font-family:var(--kalam);font-weight:300;font-size:14px;font-style:italic;color:rgba(245,184,76,.7);text-align:center;padding-top:14px;border-top:1px solid rgba(245,184,76,.12);flex-shrink:0;margin-top:14px}
+
+/* End page */
+.ss-end{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;background:var(--night);padding:60px 32px max(120px,calc(env(safe-area-inset-bottom) + 90px));text-align:center;overflow:hidden}
+.ss-end-moon{font-size:54px;animation:ssFloat 5s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(245,184,76,.3));margin-bottom:20px}
+.ss-end-title{font-family:var(--serif);font-weight:400;font-style:italic;font-size:34px;color:var(--amber);margin-bottom:16px}
+.ss-end-refrain{font-family:var(--kalam);font-weight:300;font-size:15px;font-style:italic;color:var(--cream-dim);line-height:1.7;max-width:280px;margin-bottom:16px}
+.ss-end-msg{font-family:var(--sans);font-size:15px;color:var(--cream-dim);line-height:1.75;margin-bottom:28px}
+.ss-end-btns{display:flex;flex-direction:column;gap:12px;width:100%;max-width:290px}
+.ss-amber-btn{width:100%;padding:16px;border:none;border-radius:16px;background:linear-gradient(145deg,#7a4808,#F5B84C 48%,#7a4808);color:#050100;font-family:var(--serif);font-size:16px;font-weight:700;font-style:italic;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(200,130,20,.4);transition:all .18s}
+.ss-amber-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.ss-ghost-btn{padding:13px 20px;border-radius:14px;border:1.5px solid rgba(244,239,232,.14);background:rgba(244,239,232,.04);color:var(--cream-dim);font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;text-align:center;width:100%}
+.ss-ghost-btn:hover{border-color:rgba(244,239,232,.25);color:var(--cream)}
+
+/* Controls sheet */
+.ss-sheet-bg{position:fixed;inset:0;background:rgba(6,9,18,.72);backdrop-filter:blur(4px);z-index:100;animation:ssFadeIn .15s ease}
+.ss-sheet{position:fixed;bottom:0;left:0;right:0;z-index:101;background:var(--night-card);border-radius:26px 26px 0 0;max-height:88dvh;display:flex;flex-direction:column;animation:ssSlideUp .25s cubic-bezier(0.22,0.68,0,1.2)}
+.ss-sheet-handle{width:38px;height:4px;border-radius:2px;background:rgba(244,239,232,.18);margin:14px auto}
+.ss-sheet-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 0 max(28px,env(safe-area-inset-bottom))}
+.ss-sheet-section{padding:6px 0}
+.ss-sheet-sep{height:6px;background:rgba(244,239,232,.04)}
+.ss-sheet-row{display:flex;align-items:center;gap:14px;padding:10px 20px;cursor:pointer;transition:background .12s;-webkit-tap-highlight-color:transparent}
+.ss-sheet-row:active{background:rgba(244,239,232,.04)}
+.ss-sheet-ico{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ss-sheet-body{flex:1;min-width:0}
+.ss-sheet-label{font-family:var(--sans);font-size:14px;font-weight:700;color:var(--cream)}
+.ss-sheet-sub{font-family:var(--sans);font-size:11px;color:var(--cream-dim);margin-top:1px}
+.ss-sheet-toggle{width:46px;height:27px;border-radius:14px;background:rgba(244,239,232,.14);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.ss-sheet-toggle.on{background:var(--amber)}
+.ss-sheet-knob{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,.25);transition:left 0.25s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
+.ss-sheet-toggle.on .ss-sheet-knob{left:22px}
+.ss-sheet-chevron{color:var(--cream-faint);font-size:16px;flex-shrink:0}
+
+/* Night card overlay */
+.ss-nc{position:fixed;inset:0;z-index:200;background:var(--night);overflow:hidden}
+.ss-nc-star{position:absolute;border-radius:50%;background:white;animation:twinkle var(--d) ease-in-out infinite var(--dl)}
+.ss-nc-dots{position:absolute;top:max(22px,env(safe-area-inset-top));left:0;right:0;z-index:5;display:flex;gap:8px;justify-content:center}
+.ss-nc-dot{width:6px;height:6px;border-radius:50%;background:rgba(244,239,232,.2);transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1)}
+.ss-nc-dot.done{background:var(--amber)}
+.ss-nc-dot.cur{width:18px;border-radius:9px;background:var(--amber)}
+.ss-nc-step{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 28px max(40px,env(safe-area-inset-bottom));animation:ssStepIn .4s ease both;z-index:3}
+.ss-nc-eyebrow{font-family:var(--sans);font-size:10px;font-weight:800;color:var(--amber);letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px}
+.ss-nc-q{font-family:var(--serif);font-size:clamp(21px,5.5vw,28px);font-weight:600;text-align:center;line-height:1.35;margin-bottom:24px}
+.ss-nc-ta{width:100%;max-width:380px;padding:14px 16px;border-radius:18px;border:1.5px solid rgba(244,239,232,.1);background:var(--night-raised);color:var(--cream);font-family:var(--hand);font-size:17px;outline:none;resize:none;min-height:100px;line-height:1.65;transition:border-color .2s}
+.ss-nc-ta:focus{border-color:var(--amber)}
+.ss-nc-ta::placeholder{color:var(--cream-faint)}
+.ss-nc-cta{width:100%;max-width:380px;padding:16px;border:none;border-radius:16px;background:linear-gradient(145deg,#7a4808,#F5B84C 48%,#7a4808);color:#050100;font-family:var(--serif);font-size:16px;font-weight:700;font-style:italic;cursor:pointer;box-shadow:0 8px 32px rgba(200,130,20,.4);margin-top:20px;transition:all .18s}
+.ss-nc-cta:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.ss-nc-skip{background:none;border:none;color:var(--cream-faint);font-size:12px;cursor:pointer;margin-top:14px;font-family:var(--sans)}
+.ss-nc-photo-zone{width:150px;height:150px;border-radius:22px;border:2px dashed rgba(245,184,76,.35);background:var(--night-raised);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;margin:0 auto 20px;transition:border-color .18s}
+.ss-nc-photo-zone:hover{border-color:var(--amber)}
+.ss-nc-orb{width:100px;height:100px;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(245,184,76,.3),rgba(148,130,255,.2));border:2px solid rgba(245,184,76,.25);display:flex;align-items:center;justify-content:center;font-size:44px;animation:ssOrbPulse 2s ease-in-out infinite;margin-bottom:16px}
+.ss-nc-bounce-dots{display:flex;gap:6px;margin-top:12px}
+.ss-nc-bounce-dot{width:6px;height:6px;border-radius:50%;background:var(--amber)}
+.ss-nc-bounce-dot:nth-child(1){animation:ssBounce 1.4s 0s ease-in-out infinite}
+.ss-nc-bounce-dot:nth-child(2){animation:ssBounce 1.4s .2s ease-in-out infinite}
+.ss-nc-bounce-dot:nth-child(3){animation:ssBounce 1.4s .4s ease-in-out infinite}
+.ss-nc-reveal{animation:ssCardReveal 0.9s cubic-bezier(0.34,1.56,0.64,1) both;margin-bottom:20px}
+.ss-nc-row{display:flex;gap:10px;width:100%;max-width:380px}
+.ss-nc-row .ss-ghost-btn{flex:1}
+
+/* No-screen overlay */
+.ss-noscreen{position:fixed;inset:0;z-index:60;background:rgba(6,9,18,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;cursor:pointer;animation:ssFadeIn .3s ease}
+.ss-noscreen-moon{font-size:52px;animation:ssFloat 5s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(245,184,76,.3))}
+.ss-noscreen-title{font-family:var(--sans);font-size:14px;color:var(--cream-dim);text-align:center;line-height:1.6}
+.ss-noscreen-title em{font-family:var(--serif);font-size:17px;font-weight:700;color:rgba(245,184,76,.7);font-style:italic;display:block;margin-top:4px}
+.ss-noscreen-tap{font-size:11px;color:var(--cream-faint);margin-top:20px}
 `;
+
 
 /* ── Data ── */
 const THEMES = [
@@ -1413,6 +1558,11 @@ export default function SleepSeed({
   const ambientSrcRef    = useRef<AudioBufferSourceNode|null>(null);
   const ncVideoRef       = useRef<HTMLVideoElement>(null);
   const ncStreamRef      = useRef<MediaStream|null>(null);
+  const ssReaderRef      = useRef<HTMLDivElement>(null);
+  const ssTouchStartX    = useRef(0);
+  const ssChromeFadeRef  = useRef<ReturnType<typeof setTimeout>|null>(null);
+  const [ssChromeVis,    setSsChromeVis]    = useState(true);
+  const [ssSheetOpen,    setSsSheetOpen]    = useState(false);
 
   const imgReady = (url) => !!imgLoaded[strHash(url)];
 
@@ -2664,6 +2814,49 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
     setPageIdx(p => Math.max(0,Math.min(totalPages-1,p+dir)));
     window.scrollTo({top:0,behavior:'instant'});
   };
+
+  // ── Sparkle emitter (appends to reader container) ──
+  const SPARKLE_COLORS_SS = ['#F5B84C','#9482ff','#14d890','#F5B84C','#9482ff','#14d890','#F5B84C','#9482ff'];
+  const emitSparklesSS = useCallback(() => {
+    const el = ssReaderRef.current;
+    if (!el) return;
+    const cx = el.offsetWidth / 2;
+    const cy = el.offsetHeight / 2;
+    for (let i = 0; i < 8; i++) {
+      const spark = document.createElement('div');
+      spark.className = 'ss-sparkle';
+      const angle = (i / 8) * Math.PI * 2;
+      const dist = 30 + Math.random() * 30;
+      spark.style.cssText = `left:${cx}px;top:${cy}px;background:${SPARKLE_COLORS_SS[i]};--sx:${Math.cos(angle)*dist}px;--sy:${Math.sin(angle)*dist}px`;
+      el.appendChild(spark);
+      setTimeout(() => spark.remove(), 700);
+    }
+  }, []);
+
+  // Emit sparkles on page change
+  useEffect(() => { if (stage === 'book' && pageIdx > 0) emitSparklesSS(); }, [pageIdx, stage]); // eslint-disable-line
+
+  // ── Chrome auto-fade on story pages ──
+  const resetSSChromeFade = useCallback(() => {
+    setSsChromeVis(true);
+    if (ssChromeFadeRef.current) clearTimeout(ssChromeFadeRef.current);
+    ssChromeFadeRef.current = setTimeout(() => setSsChromeVis(false), 3500);
+  }, []);
+
+  // ── Swipe gesture on reader ──
+  useEffect(() => {
+    const el = ssReaderRef.current;
+    if (!el || stage !== 'book') return;
+    const onTS = (e: TouchEvent) => { ssTouchStartX.current = e.touches[0].clientX; resetSSChromeFade(); };
+    const onTE = (e: TouchEvent) => {
+      const delta = e.changedTouches[0].clientX - ssTouchStartX.current;
+      if (Math.abs(delta) > 45) { if (delta < 0) goPage(1); else goPage(-1); }
+    };
+    el.addEventListener('touchstart', onTS, { passive: true });
+    el.addEventListener('touchend', onTE);
+    return () => { el.removeEventListener('touchstart', onTS); el.removeEventListener('touchend', onTE); };
+  }, [stage, goPage, resetSSChromeFade]);
+
   // Helper functions for night card actions
   async function shareNightCard() {
     if(!ncResult) return;
@@ -2703,286 +2896,129 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
   const StoryScene = book ? getSceneByVibe(storySceneSeed, storyVibe) : null;
 
   /* ── Story page — inline helper (not a component) to avoid remount flicker ── */
-  const renderStoryPage = (pg: any, pgNum: number, refrain: string|undefined) => (
-    <div className={`story-page-full${warmMode?' warm':''}`} key={`sp-${pgNum}`}>
-      {/* Tap zones */}
-      <div style={{position:'absolute',top:0,left:0,width:'40%',height:'100%',zIndex:5,cursor:'pointer'}} onClick={()=>goPage(-1)} />
-      <div style={{position:'absolute',top:0,right:0,width:'40%',height:'100%',zIndex:5,cursor:'pointer'}} onClick={()=>{if(onChoicePg&&!chosenPath)return;goPage(1);}} />
-
-      {/* Reading bar */}
-      <div className="book-reading-bar">
-        <div className="book-page-info">Page {pgNum} of {totalPages-1}</div>
-        <div className="book-dots-row">
-          {Array.from({length:Math.min(totalPages,8)}).map((_,i)=>(
-            <div key={i} className={`book-dot${i===pageIdx?' on':''}`} onClick={()=>{if(i<=pageIdx)setPageIdx(i);}} />
-          ))}
-        </div>
+  const renderSSStoryPage = (pg: any, pgNum: number, refrain: string|undefined) => (
+    <div className={`ss-page ss-sp${warmMode?' warm':''}`} key={`sp-${pgNum}`}>
+      <div className="ss-sp-scene">
+        {StoryScene ? <StoryScene /> : <div style={{fontSize:'clamp(72px,14vw,110px)',lineHeight:1,display:'flex',alignItems:'center',justifyContent:'center',height:'100%'}}>{'\u2728'}</div>}
+        <div className="ss-sp-fade" />
       </div>
-
-      {/* Illustration area — 55% */}
-      <div className="story-illo-area">
-        <div className="story-illo-content">
-          {StoryScene ? <StoryScene /> : <div style={{fontSize:'clamp(72px,14vw,110px)',lineHeight:1}}>&#10024;</div>}
-        </div>
-        <div className="story-illo-fade" />
+      <div className="ss-sp-body">
+        <div className="ss-sp-pgnum">{'\u00B7'} {pgNum} {'\u00B7'}</div>
+        <div className="ss-sp-text">{pg.text}</div>
+        {refrain && (pgNum % 2 === 0 || pgNum === (book?.pages?.length || 0)) && (
+          <div className="ss-sp-refrain">{'\u201C'}{refrain}{'\u201D'}</div>
+        )}
       </div>
-
-      {/* Text area — 45% */}
-      <div className="story-text-area">
-        <div className="page-num-kalam">&middot; {pgNum} &middot;</div>
-        <div className="story-text-main">{pg.text}</div>
-        {refrain && pgNum % 2 === 0 && <div className="story-refrain-cg">&ldquo;{refrain}&rdquo;</div>}
-        <div className="page-nav-corners">
-          <div className="page-nav-corner"><span className="page-nav-corner-arr">&lsaquo;</span> prev</div>
-          <div className="page-nav-corner">next <span className="page-nav-corner-arr">&rsaquo;</span></div>
-        </div>
-      </div>
-
-      {/* Controls are in the toolbar below the book */}
+      <div className="ss-tap ss-tap-l" onTouchEnd={e=>{e.stopPropagation();goPage(-1);}} />
+      <div className="ss-tap ss-tap-r" onTouchEnd={e=>{e.stopPropagation();if(onChoicePg&&!chosenPath)return;goPage(1);}} />
     </div>
   );
 
-  /* ── Page switch ── */
-  const renderPage = () => {
-    if(!book) return null;
-
-    if(pageIdx===0) return (
-      <div className="bpage cover-bg book-cover-full">
-        {/* Full bleed illustration */}
-        <div style={{position:'absolute',inset:0}}>
-          {StoryScene && <StoryScene />}
-        </div>
-        {/* Top bar */}
-        <div style={{position:'absolute',top:0,left:0,right:0,height:46,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 14px',background:'linear-gradient(180deg,rgba(3,6,16,.7) 0%,transparent 100%)',zIndex:10}}>
-          <div style={{fontFamily:"'Fraunces',serif",fontSize:12,color:'rgba(245,232,200,.6)',fontWeight:700}}>SleepSeed</div>
-        </div>
-        <div className="book-cover-gradient" />
-        <div className="book-cover-text">
-          <div className="c-stars">&#10022; &middot; &#10022; &middot; &#10022;</div>
-          <div className="c-title" style={{fontSize:'clamp(18px,5vw,26px)',fontWeight:900}}>{book.title}</div>
-          <div className="c-for">A story for {book.heroName}</div>
-          <div className="c-brand">SleepSeed &middot; Made tonight</div>
-        </div>
+  /* ── Build all carousel pages ── */
+  const buildSSCoverPage = () => (
+    <div className="ss-page ss-cover" key="cover">
+      <div className="ss-cover-scene">{StoryScene && <StoryScene />}</div>
+      <div className="ss-cover-vig" />
+      <div className="ss-cover-grad" />
+      <div className="ss-cover-text">
+        <div className="ss-cover-stars">{'\u2726'} {'\u00B7'} {'\u2726'} {'\u00B7'} {'\u2726'}</div>
+        <div className="ss-cover-title">{book.title}</div>
+        <div className="ss-cover-for">A story for <b>{book.heroName}</b></div>
+        <div className="ss-cover-brand">SleepSeed {'\u00B7'} Made tonight</div>
       </div>
-    );
+    </div>
+  );
 
-    if(pageIdx===1) return (
-      <div className="bpage cast-bg">
-        <div className="pinset" />
-        <div className="cast-lay">
-          <div className="cast-title">Meet the Characters</div>
-          <div className="cast-sub">in tonight's story…</div>
-          <div className="cast-grid">
-            {(book.allChars||[]).map(c => (
-              <div className="cast-char" key={c.id}>
-                <div className="cast-av">
-                  {c.photo
-                    ? <img src={c.photo.preview} alt={c.name} />
-                    : <span>{CHAR_ICONS[c.type]||"⭐"}</span>
-                  }
-                </div>
-                <div className="cast-name">{c.name||capitalize(c.type)}</div>
-                <div className="cast-role">{c.classify||c.type}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{fontFamily:"'Kalam',cursive",fontSize:10,color:"var(--ink3)",textAlign:"right",marginTop:"auto"}}>✦</div>
-        </div>
-      </div>
-    );
-
-    if(isAdv && pageIdx>=2 && pageIdx<2+setupLen) {
-      return renderStoryPage(book.setup_pages[pageIdx-2], pageIdx-1, book.refrain);
-    }
-
-    if(isAdv && onChoicePg) return (
-      <div className="bpage choice-bg">
-        <div className="pinset" style={{borderColor:"rgba(212,160,48,.15)"}} />
-        <div className="choice-lay">
-          <div className="choice-star">⭐</div>
-          <div className="choice-q">{book.choice?.question}</div>
-          {!chosenPath ? (
-            <div className="choice-opts">
-              <button className="choice-btn a" onClick={()=>handleChoice("a")}>
-                <span className="choice-tag">Option A</span>
-                {book.choice?.option_a_label}
-              </button>
-              <button className="choice-btn b" onClick={()=>handleChoice("b")}>
-                <span className="choice-tag">Option B</span>
-                {book.choice?.option_b_label}
-              </button>
+  const buildSSCastPage = () => (
+    <div className="ss-page ss-cast" key="cast">
+      <div className="ss-cast-eyebrow">Tonight's adventure</div>
+      <div className="ss-cast-h">Meet the characters in {book.heroName}'s story{'\u2026'}</div>
+      <div className="ss-cast-grid">
+        {(book.allChars||[]).map((c: any) => (
+          <div className="ss-cast-char" key={c.id}>
+            <div className={`ss-cast-av${c.type==='hero'?' hero':''}`}>
+              {c.photo ? <img src={c.photo.preview} alt={c.name} /> : <span>{CHAR_ICONS[c.type]||'\u2B50'}</span>}
             </div>
-          ) : (
-            <div style={{textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
-              <div style={{fontSize:14,fontFamily:"'Fraunces',serif",fontStyle:"italic",color:chosenPath==="a"?"#c0d4ff":"#e8c0f8",fontWeight:700}}>
-                {chosenPath==="a" ? book.choice?.option_a_label : book.choice?.option_b_label}
-              </div>
-              <button className="btn-ghost" style={{fontSize:12,padding:"7px 16px"}} onClick={()=>goPage(1)}>Continue →</button>
-            </div>
-          )}
-          {!chosenPath && <div className="choice-hint">Tap a path to continue</div>}
-        </div>
-      </div>
-    );
-
-    if(isAdv && pageIdx>choicePgIdx && chosenPath){
-      const ri = pageIdx-(choicePgIdx+1);
-      if(ri<resPages.length) return renderStoryPage(resPages[ri], setupLen+ri+1, book.refrain);
-    }
-
-    if(!isAdv && pageIdx>=2 && pageIdx<=1+(book.pages?.length||0)) {
-      const pg = book.pages?.[pageIdx-2];
-      if(pg) return renderStoryPage(pg, pageIdx-1, book.refrain);
-    }
-
-    // ── The End page ──
-    return (
-      <div className="bpage end-bg end-ceremony">
-        <div className="end-cover-ghost">{companionCreature?.creatureEmoji ?? '🌙'}</div>
-        <div className="end-moon-big">🌙</div>
-        <div className="end-the-end">The End.</div>
-        <div className="end-sweet-dreams">Sweet dreams, {book.heroName}.</div>
-        {book.refrain && <div className="end-refrain-quote">"{book.refrain}"</div>}
-
-        {book.nightCard ? (
-          <div style={{display:"flex",gap:8,width:"100%",maxWidth:280}}>
-            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"10px 14px"}} onClick={downloadStory}>📄 Download</button>
-            <button className="btn-ghost" style={{flex:1,fontSize:12,padding:"10px 14px"}}
-              onClick={()=>{window.speechSynthesis?.cancel();if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}autoReadRef.current=false;setIsReading(false);onHome?onHome():setStage("home");}}>
-              🏠 Home
-            </button>
+            <div className="ss-cast-name">{c.name||capitalize(c.type)}</div>
+            <div className="ss-cast-role">{c.classify||c.type}</div>
           </div>
-        ) : (
-          <>
-            <button className="end-nc-cta"
-              onClick={()=>{
-                setNcStep(0);setNcBondingA(ncBondingA||"");setNcGratitude("");setNcExtra("");
-                setNcPhoto(null);setNcCountdown(0);setNcGenerating(false);
-                setNcResult(null);setNcRevealed(false);setNcPhotoMode('idle');
-                window.speechSynthesis?.cancel();
-                if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}
-                autoReadRef.current=false;setIsReading(false);
-                setStage("nightcard");
-              }}>
-              ✦ Save tonight's Night Card
-            </button>
-            <div className="end-skip-lnk" onClick={()=>{onHome?onHome():setStage("home");}}>skip for now</div>
-          </>
+        ))}
+      </div>
+    </div>
+  );
+
+  const buildSSChoicePage = () => (
+    <div className="ss-page" key="choice" style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100dvh',background:'var(--night-mid)',padding:'40px 28px'}}>
+      <div style={{fontSize:36,marginBottom:16}}>{'\u2B50'}</div>
+      <div style={{fontFamily:'var(--serif)',fontSize:'clamp(18px,5vw,24px)',fontWeight:700,fontStyle:'italic',color:'var(--cream)',textAlign:'center',lineHeight:1.35,marginBottom:24}}>{book.choice?.question}</div>
+      {!chosenPath ? (
+        <div style={{display:'flex',flexDirection:'column',gap:12,width:'100%',maxWidth:320}}>
+          <button className="ss-amber-btn" onClick={()=>handleChoice("a")}>{book.choice?.option_a_label}</button>
+          <button className="ss-ghost-btn" onClick={()=>handleChoice("b")}>{book.choice?.option_b_label}</button>
+          <div style={{fontSize:11,color:'var(--cream-faint)',textAlign:'center',marginTop:4}}>Tap a path to continue</div>
+        </div>
+      ) : (
+        <div style={{textAlign:'center'}}>
+          <div style={{fontFamily:'var(--serif)',fontSize:14,fontStyle:'italic',color:'var(--amber)',fontWeight:700,marginBottom:12}}>
+            {chosenPath==='a' ? book.choice?.option_a_label : book.choice?.option_b_label}
+          </div>
+          <button className="ss-ghost-btn" style={{maxWidth:200}} onClick={()=>goPage(1)}>Continue {'\u2192'}</button>
+        </div>
+      )}
+    </div>
+  );
+
+  const buildSSEndPage = () => (
+    <div className="ss-page ss-end" key="end">
+      <div className="ss-end-moon">{'\uD83C\uDF19'}</div>
+      <div className="ss-end-title">The End</div>
+      {book.refrain && <div className="ss-end-refrain">{'\u201C'}{book.refrain}{'\u201D'}</div>}
+      <div className="ss-end-msg">Sweet dreams, {book.heroName}.<br/>Tomorrow night, another adventure awaits{'\u2026'}</div>
+      <div className="ss-end-btns">
+        {!book.nightCard && (
+          <button className="ss-amber-btn" onClick={()=>{
+            setNcStep(0);setNcBondingA(ncBondingA||"");setNcGratitude("");setNcExtra("");
+            setNcPhoto(null);setNcCountdown(0);setNcGenerating(false);
+            setNcResult(null);setNcRevealed(false);setNcPhotoMode('idle');
+            window.speechSynthesis?.cancel();
+            if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}
+            autoReadRef.current=false;setIsReading(false);
+            setStage("nightcard");
+          }}>{'\u2726'} Create tonight's Night Card</button>
         )}
-
-        {/* Keep existing feedback button below */}
-        <button className="btn-ghost" style={{width:"100%",maxWidth:280,marginTop:12,fontSize:12,padding:"10px 14px",
-            borderColor:"rgba(217,119,6,.3)",color:"rgba(217,119,6,.8)"}}
-            onClick={()=>setShowFeedback(true)}>
-            ⭐ How was this story?
+        <button className="ss-ghost-btn" onClick={shareStory}>{'\uD83D\uDCF1'} Share this story</button>
+        <button className="ss-ghost-btn" onClick={downloadStory}>{'\uD83D\uDCC4'} Save as PDF</button>
+        {book.nightCard && (
+          <button className="ss-ghost-btn" onClick={()=>{window.speechSynthesis?.cancel();if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}autoReadRef.current=false;setIsReading(false);onHome?onHome():setStage("home");}}>
+            {'\uD83C\uDFE0'} Home
           </button>
-
-          {/* Library submission — paid users only */}
-          {userId && !isGuest && libSubmitState === 'idle' && !sessionStorage.getItem(`lib_dismiss_${memories[0]?.id}`) && (
-            <div style={{width:"100%",marginTop:10,background:"rgba(6,10,28,.92)",border:"1px solid rgba(245,184,76,.2)",
-              borderRadius:20,padding:18}}>
-              <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:16,fontWeight:700,color:"#F5B84C",marginBottom:4}}>
-                That was a great story.
-              </div>
-              <div style={{fontSize:12,color:"rgba(245,232,200,.45)",lineHeight:1.65,marginBottom:10}}>
-                Want to share it with other SleepSeed families? Add it to the public library — other kids might love it too.
-              </div>
-              <div style={{fontSize:10,color:"rgba(245,184,76,.55)",fontFamily:"'DM Mono',monospace",marginBottom:12}}>
-                If it brings a new family to SleepSeed, you earn rewards
-              </div>
-              <div style={{display:"flex",gap:8}}>
-                <button className="btn" style={{flex:1,fontSize:13,padding:"12px 16px"}}
-                  onClick={()=>{
-                    setLibSubmitAge(ageGroup || '');
-                    setLibSubmitMood(storyMood || '');
-                    setLibSubmitState('confirming');
-                  }}>
-                  Share with families
-                </button>
-                <button className="btn-ghost" style={{fontSize:12,padding:"10px 14px"}}
-                  onClick={()=>{
-                    try { sessionStorage.setItem(`lib_dismiss_${memories[0]?.id}`, '1'); } catch {}
-                    setLibSubmitState('idle');
-                  }}>
-                  Keep it just for us
-                </button>
-              </div>
-            </div>
-          )}
-
-          {libSubmitState === 'confirming' && (
-            <div style={{width:"100%",marginTop:10,background:"rgba(6,10,28,.92)",border:"1px solid rgba(245,184,76,.2)",
-              borderRadius:20,padding:18}}>
-              <div style={{fontSize:11,color:"rgba(245,232,200,.4)",marginBottom:8}}>Confirm metadata before publishing:</div>
-              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
-                <div style={{fontSize:9,color:"rgba(245,232,200,.35)",fontFamily:"'DM Mono',monospace",width:"100%",marginBottom:2}}>Age group</div>
-                {['age3','age5','age7','age10'].map(a => (
-                  <button key={a} style={{
-                    padding:"5px 12px",borderRadius:50,fontSize:11,fontWeight:700,cursor:"pointer",
-                    border:`1.5px solid ${libSubmitAge===a?"rgba(245,184,76,.5)":"rgba(255,255,255,.08)"}`,
-                    background:libSubmitAge===a?"rgba(245,184,76,.1)":"transparent",
-                    color:libSubmitAge===a?"#F5B84C":"rgba(255,255,255,.35)",fontFamily:"'Nunito',sans-serif"
-                  }} onClick={()=>setLibSubmitAge(a)}>
-                    {a==='age3'?'3-5':a==='age5'?'5-7':a==='age7'?'7-9':'9-11'}
-                  </button>
-                ))}
-              </div>
-              <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
-                <div style={{fontSize:9,color:"rgba(245,232,200,.35)",fontFamily:"'DM Mono',monospace",width:"100%",marginBottom:2}}>Mood</div>
-                {['calm','funny','exciting','heartfelt','mysterious'].map(m => (
-                  <button key={m} style={{
-                    padding:"5px 12px",borderRadius:50,fontSize:11,fontWeight:700,cursor:"pointer",
-                    border:`1.5px solid ${libSubmitMood===m?"rgba(20,216,144,.5)":"rgba(255,255,255,.08)"}`,
-                    background:libSubmitMood===m?"rgba(20,216,144,.1)":"transparent",
-                    color:libSubmitMood===m?"#14d890":"rgba(255,255,255,.35)",fontFamily:"'Nunito',sans-serif"
-                  }} onClick={()=>setLibSubmitMood(m)}>
-                    {m.charAt(0).toUpperCase()+m.slice(1)}
-                  </button>
-                ))}
-              </div>
-              <button className="btn" style={{width:"100%",fontSize:13,padding:"12px"}}
-                onClick={async()=>{
-                  setLibSubmitState('submitting');
-                  try {
-                    const storyId = memories[0]?.id;
-                    if (!storyId || !userId) throw new Error('No story');
-                    const { slug } = await submitStoryToLibrary(storyId, userId, {
-                      ageGroup: libSubmitAge || ageGroup || undefined,
-                      vibe: storyMood || undefined,
-                      mood: libSubmitMood || storyMood || undefined,
-                      storyStyle: storyStyle || undefined,
-                      storyLength: storyLen || undefined,
-                      lessons: Array.isArray(lessons) && lessons.length > 0 ? lessons : undefined,
-                      theme: theme?.label || undefined,
-                    });
-                    const code = await ensureRefCode(userId);
-                    setLibSubmitSlug(`${BASE_URL}/stories/${slug}?ref=${code}`);
-                    setLibSubmitState('done');
-                  } catch(e) {
-                    console.error('Library submit error:', e);
-                    setLibSubmitState('idle');
-                  }
-                }}>
-                Publish to library →
-              </button>
-            </div>
-          )}
-
-          {libSubmitState === 'done' && (
-            <div style={{width:"100%",marginTop:10,background:"rgba(20,216,144,.05)",border:"1px solid rgba(20,216,144,.2)",
-              borderRadius:20,padding:18,textAlign:"center"}}>
-              <div style={{fontSize:16,marginBottom:6}}>It's live in the library!</div>
-              <div style={{fontSize:11,color:"rgba(245,232,200,.4)",marginBottom:10}}>Share your personal link to earn rewards:</div>
-              <div style={{fontSize:11,color:"#14d890",fontFamily:"'DM Mono',monospace",background:"rgba(0,0,0,.3)",
-                borderRadius:8,padding:"8px 12px",marginBottom:10,wordBreak:"break-all"}}>{libSubmitSlug}</div>
-              <button className="btn-ghost" style={{fontSize:12,padding:"8px 16px"}}
-                onClick={()=>{ try{navigator.clipboard.writeText(libSubmitSlug)}catch{} }}>
-                Copy link
-              </button>
-            </div>
-          )}
+        )}
+        {!book.nightCard && (
+          <div style={{fontSize:11,color:'var(--cream-faint)',textAlign:'center',cursor:'pointer'}} onClick={()=>{onHome?onHome():setStage("home");}}>skip for now</div>
+        )}
       </div>
-    );
+      <button className="ss-ghost-btn" style={{marginTop:12,maxWidth:290,borderColor:'rgba(217,119,6,.3)',color:'rgba(217,119,6,.8)'}} onClick={()=>setShowFeedback(true)}>
+        {'\u2B50'} How was this story?
+      </button>
+
+    </div>
+  );
+
+  // Build all pages for the carousel track
+  const buildAllPages = () => {
+    if (!book) return [];
+    const allPagesArr: React.ReactNode[] = [buildSSCoverPage(), buildSSCastPage()];
+    if (isAdv) {
+      (book.setup_pages||[]).forEach((p: any, i: number) => allPagesArr.push(renderSSStoryPage(p, i+1, book.refrain)));
+      allPagesArr.push(buildSSChoicePage());
+      if (chosenPath) {
+        resPages.forEach((p: any, i: number) => allPagesArr.push(renderSSStoryPage(p, setupLen+i+1, book.refrain)));
+      }
+    } else {
+      (book.pages||[]).forEach((p: any, i: number) => allPagesArr.push(renderSSStoryPage(p, i+1, book.refrain)));
+    }
+    allPagesArr.push(buildSSEndPage());
+    return allPagesArr;
   };
 
   /* ══ RENDER ══ */
@@ -3118,102 +3154,127 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
           </div>
         )}
 
-        {/* BOOK */}
+        {/* BOOK — new carousel reader */}
         {stage==="book" && book && (
-          <div className="book-shell">
-
-            <div className="book-3d" onClick={addSparkle}>
-              {/* Reading progress bar */}
-              <div style={{position:'absolute',top:0,left:0,right:0,height:3,zIndex:5,background:'rgba(255,255,255,.06)',borderRadius:'18px 18px 0 0',overflow:'hidden'}}>
-                <div style={{height:'100%',width:`${totalPages>1?((pageIdx/(totalPages-1))*100):0}%`,background:'linear-gradient(90deg,rgba(212,160,48,.4),rgba(212,160,48,.8))',borderRadius:3,transition:'width .4s ease'}} />
+          <div className="ss-reader" ref={ssReaderRef}>
+            <div className="ss-pbar" style={{width:`${totalPages>1?((pageIdx/(totalPages-1))*100):0}%`}} />
+            <div className="ss-top" style={{opacity:isStoryPage?(ssChromeVis?1:0.25):1}}>
+              <div className="ss-top-logo" onClick={()=>{onHome?onHome():setStage("home");}}>
+                <div className="ss-top-moon" /> SleepSeed
               </div>
-              {renderPage()}
-              {sparkles.map(sp => (
-                <div key={sp.id} className="spark-ring" style={{left:sp.x,top:sp.y}}>
-                  {Array.from({length:8},(_,i) => {
-                    const angle = (i/8)*Math.PI*2;
-                    const dist  = 30+Math.random()*25;
-                    return (
-                      <div key={i} className="spark" style={{
-                        background:SPARK_COLORS[i%SPARK_COLORS.length],
-                        "--sx":`${Math.cos(angle)*dist}px`,
-                        "--sy":`${Math.sin(angle)*dist}px`,
-                        animationDelay:`${i*30}ms`,
-                        left:0,top:0,
-                      }} />
-                    );
-                  })}
-                </div>
-              ))}
+              <button className="ss-top-btn" onClick={()=>setSsSheetOpen(true)}>{'\u22EF'}</button>
             </div>
-
-            <div className="book-nav" style={{marginTop:8}}>
-              <button className="nav-btn" disabled={pageIdx===0} onClick={()=>goPage(-1)}>← Back</button>
-              <div className="dots">
-                {Array.from({length:totalPages}).map((_,i) => (
-                  <div key={i} className={`dot${i===pageIdx?" on":""}`}
-                    onClick={()=>{ if(i<=pageIdx||(i===choicePgIdx+1&&chosenPath)) setPageIdx(i); }} />
+            <div className="ss-bot" style={{opacity:isStoryPage?(ssChromeVis?1:0.25):1}}>
+              <button className="ss-arrow" disabled={pageIdx===0} onClick={()=>goPage(-1)}>{'\u2039'}</button>
+              <div className="ss-dots-wrap">
+                {Array.from({length:totalPages}).map((_,i)=>(
+                  <div key={i} className={`ss-dot2${i===pageIdx?' active':''}`}
+                    onClick={()=>{if(i<=pageIdx||(isAdv&&i===choicePgIdx+1&&chosenPath))setPageIdx(i);}} />
                 ))}
               </div>
-              <button className="nav-btn" disabled={isLastPage||(onChoicePg&&!chosenPath)} onClick={()=>goPage(1)}>
-                {onChoicePg&&!chosenPath ? "Choose!" : "Next →"}
+              <button className="ss-arrow" disabled={isLastPage||(onChoicePg&&!chosenPath)} onClick={()=>goPage(1)}>
+                {'\u203A'}
               </button>
             </div>
-
-            {/* Story toolbar — below nav, not overlapping */}
-            <div className="rd-toolbar">
-              <button className={`rd-audio-btn${isReading?' active':''}`}
-                onClick={()=>{ const prog=totalPages>1?pageIdx/(totalPages-1):0.5; toggleRead(pageIdx===0?`${book.title}. A bedtime story for ${book.heroName}.`:getCurrentPageText(),prog); }}>
-                {isReading ? '⏸ Pause' : '🔊 Read Aloud'}
-              </button>
-              <button className={`rd-menu-btn${showToolbar?' open':''}`} onClick={()=>setShowToolbar(!showToolbar)}>
-                {showToolbar ? '✕ Close' : '☰ More'}
-              </button>
-              {showToolbar && (
-                <div className="rd-expanded" onClick={e=>e.stopPropagation()}>
-                  <button className="rd-exp-btn" onClick={()=>setWarmMode(w=>!w)} style={warmMode?{color:'#ffb868',background:'rgba(255,140,60,.1)'}:{}}>
-                    {warmMode ? '🌅 Warm Mode · On' : '🌅 Warm Mode'}
-                  </button>
-                  <button className="rd-exp-btn" onClick={()=>{setNoScreenMode(true);setShowToolbar(false);}} style={{color:'rgba(20,216,144,.85)'}}>
-                    🌙 No Screen Mode
-                  </button>
-                  <button className="rd-exp-btn" onClick={toggleAmbient} style={ambientOn?{color:'var(--gold2)',background:'rgba(212,160,48,.08)'}:{}}>
-                    {ambientOn ? '🌧 Cozy Night · On' : '🌧 Cozy Night'}
-                  </button>
-                  <button className="rd-exp-btn" onClick={()=>{setShowVoicePicker(true);setShowToolbar(false);}}>🎤 Choose Voice</button>
-                  <button className="rd-exp-btn" onClick={()=>{shareStory();setShowToolbar(false);}}>📤 Share</button>
-                  <button className="rd-exp-btn" onClick={()=>{downloadStory();setShowToolbar(false);}}>📄 Download PDF</button>
-                  <button className="rd-exp-btn" onClick={async()=>{
-                    try { const s = makeStorySeed(heroName,theme,extraChars,occasion,occasionCustom,Array.isArray(lessons)?lessons.join("|"):lessons,adventure,storyLen,heroGender,heroClassify,storyGuidance); await sDel(`book_${s}`); } catch(_) {}
-                    window.speechSynthesis?.cancel();
-                    if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
-                    autoReadRef.current = false;
-                    setStoryContext(""); setLessonContext(""); setTodayPrompt(""); setStoryBrief1(""); setStoryBrief2(""); setRealLifeChip(""); setRealLifeCtx(""); setBriefStep1Open(true); setBriefStep2Open(false);
-                    onHome ? onHome() : setStage("home"); setBook(null); setChosenPath(null); setIsReading(false);
-                  }}>🔄 New Story</button>
-                  <div style={{padding:'6px 14px',fontSize:10,color:'rgba(76,200,144,.6)'}}>✓ Auto-saved</div>
-                </div>
-              )}
+            <div style={{position:'absolute',inset:0,overflow:'hidden'}}>
+              <div className="ss-track" style={{transform:`translateX(${-pageIdx*100}%)`}}>
+                {buildAllPages()}
+              </div>
             </div>
 
-            {/* ── No Screen Bedtime Mode ── */}
+            {/* No Screen Mode */}
             {noScreenMode && (
-              <div className="no-screen-overlay" onClick={()=>setNoScreenMode(false)}>
-                <div className="no-screen-moon">🌙</div>
-                <div className="no-screen-title">
-                  Listening to<br/>
-                  <em style={{color:'rgba(245,184,76,.7)',fontStyle:'italic',fontFamily:"'Fraunces',serif",fontSize:17,fontWeight:700}}>
-                    {book.heroName}'s story
-                  </em>
-                </div>
-                <div className="no-screen-dots">
-                  <div className="no-screen-dot"/><div className="no-screen-dot"/><div className="no-screen-dot"/>
-                </div>
-                <div className="no-screen-tap">tap anywhere to return</div>
+              <div className="ss-noscreen" onClick={()=>setNoScreenMode(false)}>
+                <div className="ss-noscreen-moon">{'\uD83C\uDF19'}</div>
+                <div className="ss-noscreen-title">Listening to<br/><em>{book.heroName}'s story</em></div>
+                <div className="ss-noscreen-tap">tap anywhere to return</div>
               </div>
             )}
 
-            {/* ── Voice Picker Modal ── */}
+            {/* Controls sheet */}
+            {ssSheetOpen && (
+              <>
+                <div className="ss-sheet-bg" onClick={()=>setSsSheetOpen(false)} />
+                <div className="ss-sheet">
+                  <div className="ss-sheet-handle" />
+                  <div className="ss-sheet-scroll">
+                    <div className="ss-sheet-section">
+                      <div className="ss-sheet-row" onClick={()=>{const prog=totalPages>1?pageIdx/(totalPages-1):0.5;toggleRead(getCurrentPageText(),prog);}}>
+                        <div className="ss-sheet-ico" style={{background:'rgba(245,184,76,.12)'}}>{'\uD83D\uDD0A'}</div>
+                        <div className="ss-sheet-body">
+                          <div className="ss-sheet-label">Read Aloud</div>
+                          <div className="ss-sheet-sub">{PRESET_VOICES.find(v=>v.id===selectedVoiceId)?.name||'Hope'}</div>
+                        </div>
+                        <button className={`ss-sheet-toggle${isReading?' on':''}`} onClick={e=>{e.stopPropagation();const prog=totalPages>1?pageIdx/(totalPages-1):0.5;toggleRead(getCurrentPageText(),prog);}}>
+                          <div className="ss-sheet-knob" />
+                        </button>
+                      </div>
+                      <div className="ss-sheet-row" onClick={()=>{setSsSheetOpen(false);setShowVoicePicker(true);}}>
+                        <div className="ss-sheet-ico" style={{background:'rgba(148,130,255,.12)'}}>{'\uD83C\uDFA4\uFE0F'}</div>
+                        <div className="ss-sheet-body">
+                          <div className="ss-sheet-label">Choose Voice</div>
+                          <div className="ss-sheet-sub">6 narrators {'\u00B7'} or record your own</div>
+                        </div>
+                        <div className="ss-sheet-chevron">{'\u203A'}</div>
+                      </div>
+                    </div>
+                    <div className="ss-sheet-sep" />
+                    <div className="ss-sheet-section">
+                      <div className="ss-sheet-row" onClick={toggleAmbient}>
+                        <div className="ss-sheet-ico" style={{background:'rgba(20,216,144,.12)'}}>{'\uD83C\uDF27'}</div>
+                        <div className="ss-sheet-body">
+                          <div className="ss-sheet-label">Ambient Sounds</div>
+                          <div className="ss-sheet-sub">Gentle brown noise</div>
+                        </div>
+                        <button className={`ss-sheet-toggle${ambientOn?' on':''}`} onClick={e=>{e.stopPropagation();toggleAmbient();}}>
+                          <div className="ss-sheet-knob" />
+                        </button>
+                      </div>
+                      <div className="ss-sheet-row" onClick={()=>{setNoScreenMode(true);setSsSheetOpen(false);}}>
+                        <div className="ss-sheet-ico" style={{background:'rgba(148,130,255,.12)'}}>{'\uD83C\uDF19'}</div>
+                        <div className="ss-sheet-body">
+                          <div className="ss-sheet-label">Listen-Only Mode</div>
+                          <div className="ss-sheet-sub">Screen dims {'\u00B7'} narration continues</div>
+                        </div>
+                        <div className="ss-sheet-chevron">{'\u203A'}</div>
+                      </div>
+                      <div className="ss-sheet-row" onClick={()=>setWarmMode(w=>!w)}>
+                        <div className="ss-sheet-ico" style={{background:'rgba(245,184,76,.12)'}}>{'\uD83C\uDF05'}</div>
+                        <div className="ss-sheet-body">
+                          <div className="ss-sheet-label">Warm Mode</div>
+                          <div className="ss-sheet-sub">Soft sepia filter</div>
+                        </div>
+                        <button className={`ss-sheet-toggle${warmMode?' on':''}`} onClick={e=>{e.stopPropagation();setWarmMode(w=>!w);}}>
+                          <div className="ss-sheet-knob" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="ss-sheet-sep" />
+                    <div className="ss-sheet-section">
+                      <div className="ss-sheet-row" onClick={()=>{setSsSheetOpen(false);shareStory();}}>
+                        <div className="ss-sheet-ico" style={{background:'rgba(244,239,232,.06)'}}>{'\uD83D\uDCE4'}</div>
+                        <div className="ss-sheet-body"><div className="ss-sheet-label">Share Story</div></div>
+                      </div>
+                      <div className="ss-sheet-row" onClick={()=>{setSsSheetOpen(false);downloadStory();}}>
+                        <div className="ss-sheet-ico" style={{background:'rgba(244,239,232,.06)'}}>{'\uD83D\uDCC4'}</div>
+                        <div className="ss-sheet-body"><div className="ss-sheet-label">Download PDF</div></div>
+                      </div>
+                      <div className="ss-sheet-row" onClick={()=>{
+                        window.speechSynthesis?.cancel();
+                        if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}
+                        autoReadRef.current=false;setIsReading(false);setSsSheetOpen(false);
+                        onHome?onHome():setStage("home");setBook(null);setChosenPath(null);
+                      }}>
+                        <div className="ss-sheet-ico" style={{background:'rgba(244,239,232,.06)'}}>{'\uD83D\uDD04'}</div>
+                        <div className="ss-sheet-body"><div className="ss-sheet-label">New Story</div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Voice Picker Modal — keep existing */}
             {showVoicePicker && (
               <div className="vc-modal" onClick={e=>{ if(e.target===e.currentTarget) setShowVoicePicker(false); }}>
                 <div className="vc-card" style={{maxHeight:"80vh",overflowY:"auto"}}>
@@ -3367,155 +3428,125 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
           </div>
         )}
 
-        {/* NIGHT CARD FLOW */}
+        {/* NIGHT CARD FLOW — full-screen overlay */}
         {stage==="nightcard" && book && (
-          <div className="screen" style={{maxWidth:480}}>
+          <div className="ss-nc">
+            {/* Starfield */}
+            {STARS_DATA.slice(0,70).map(s=>(
+              <div key={`nc-s-${s.id}`} className="ss-nc-star" style={{top:`${s.top}%`,left:`${s.left}%`,width:s.size,height:s.size,'--d':s.d,'--dl':s.dl,'--lo':s.lo,'--hi':s.hi} as any} />
+            ))}
+            {/* Progress dots */}
+            <div className="ss-nc-dots">
+              {[0,1,2,3].map(i=>(
+                <div key={i} className={`ss-nc-dot${(ncStep<4?ncStep:3)>i?' done':''} ${(ncStep<4?ncStep:3)===i?' cur':''}`} />
+              ))}
+            </div>
 
-            {/* SINGLE INPUT PAGE — replaces steps 0–3 */}
-            {!ncGenerating && !ncResult && (
-              <div className="nc-single-page">
-                <div className="nc-creature-corner">{companionCreature?.creatureEmoji ?? '🌙'}</div>
-                <div className="nc-single-label">✦ Tonight's Night Card</div>
-                <div className="nc-single-q">"{ncBondingQ || 'What made you smile today?'}"</div>
-                <div className="nc-single-who">{companionCreature?.name ?? 'Your creature'} wants to know what {book.heroName} said</div>
-                <textarea className="nc-single-input" placeholder={`${book.heroName} said…`}
-                  value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)} rows={2} />
+            {/* Step 1 — Bonding Question */}
+            {ncStep===0 && !ncGenerating && !ncResult && (
+              <div className="ss-nc-step" key="nc0">
+                <div className="ss-nc-eyebrow">{'\u2726'} Night Card {'\u00B7'} 1 of 4</div>
+                <div className="ss-nc-q">{ncBondingQ || 'What made you smile today?'}</div>
+                <textarea className="ss-nc-ta" placeholder={`${book.heroName} said\u2026`}
+                  value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)} rows={3} />
+                <button className="ss-nc-cta" onClick={()=>setNcStep(1)}>Continue {'\u2192'}</button>
+                <button className="ss-nc-skip" onClick={()=>setNcStep(1)}>Skip for now</button>
+              </div>
+            )}
 
-                <div className="nc-photo-choices">
-                  <div className="nc-photo-choice" onClick={()=>setNcPhotoMode('camera')}>
-                    <div className="nc-photo-choice-ico">📸</div>
-                    <div className="nc-photo-choice-lbl">Take photo</div>
-                  </div>
-                  <div className="nc-photo-choice" onClick={()=>{
+            {/* Step 2 — Gratitude */}
+            {ncStep===1 && !ncGenerating && !ncResult && (
+              <div className="ss-nc-step" key="nc1">
+                <div className="ss-nc-eyebrow">{'\u2726'} Night Card {'\u00B7'} 2 of 4</div>
+                <div className="ss-nc-q">What made {book.heroName} smile today?</div>
+                <textarea className="ss-nc-ta" placeholder="The best moment was\u2026"
+                  value={ncGratitude} onChange={e=>setNcGratitude(e.target.value)} rows={3} />
+                <button className="ss-nc-cta" onClick={()=>setNcStep(2)}>Continue {'\u2192'}</button>
+                <button className="ss-nc-skip" onClick={()=>setNcStep(2)}>Skip for now</button>
+              </div>
+            )}
+
+            {/* Step 3 — Tonight's Memory */}
+            {ncStep===2 && !ncGenerating && !ncResult && (
+              <div className="ss-nc-step" key="nc2">
+                <div className="ss-nc-eyebrow">{'\u2726'} Night Card {'\u00B7'} 3 of 4</div>
+                <div className="ss-nc-q">Anything to remember about tonight?</div>
+                <textarea className="ss-nc-ta" placeholder="A note for future you\u2026"
+                  value={ncExtra} onChange={e=>setNcExtra(e.target.value)} rows={3} />
+                <button className="ss-nc-cta" onClick={()=>setNcStep(3)}>Continue {'\u2192'}</button>
+                <button className="ss-nc-skip" onClick={()=>setNcStep(3)}>Skip for now</button>
+              </div>
+            )}
+
+            {/* Step 4 — Photo */}
+            {ncStep===3 && !ncGenerating && !ncResult && (
+              <div className="ss-nc-step" key="nc3">
+                <div className="ss-nc-eyebrow">{'\u2726'} Night Card {'\u00B7'} 4 of 4</div>
+                <div className="ss-nc-q">Add a photo to tonight's card</div>
+                {!ncPhoto ? (
+                  <div className="ss-nc-photo-zone" onClick={()=>{
                     const input=document.createElement('input');
                     input.type='file';input.accept='image/*';
                     input.onchange=(e:any)=>{const file=e.target.files?.[0];if(!file)return;
                       const reader=new FileReader();reader.onload=(ev)=>setNcPhoto(ev.target?.result as string);reader.readAsDataURL(file);};
                     input.click();
                   }}>
-                    <div className="nc-photo-choice-ico">🖼️</div>
-                    <div className="nc-photo-choice-lbl">Upload photo</div>
+                    <span style={{fontSize:34}}>{'\uD83D\uDCF7'}</span>
+                    <span style={{fontSize:12,color:'var(--cream-faint)'}}>Tap to add a photo</span>
                   </div>
-                </div>
-
-                {ncPhoto && (
-                  <div style={{marginBottom:12,borderRadius:12,overflow:'hidden',position:'relative'}}>
-                    <img src={ncPhoto} alt="Tonight" style={{width:'100%',height:100,objectFit:'cover',display:'block'}} />
-                    <button onClick={()=>setNcPhoto(null)}
-                      style={{position:'absolute',top:6,right:6,width:22,height:22,borderRadius:'50%',
-                        background:'rgba(0,0,0,.6)',border:'none',color:'#fff',fontSize:10,cursor:'pointer'}}>✕</button>
+                ) : (
+                  <div style={{width:150,height:150,borderRadius:22,overflow:'hidden',margin:'0 auto 20px',position:'relative'}}>
+                    <img src={ncPhoto} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                    <button onClick={()=>setNcPhoto(null)} style={{position:'absolute',top:6,right:6,width:24,height:24,borderRadius:'50%',background:'rgba(0,0,0,.6)',border:'none',color:'#fff',fontSize:11,cursor:'pointer'}}>{'\u2715'}</button>
                   </div>
                 )}
-
-                {ncPhotoMode==='camera'&&!ncPhoto&&(
-                  <div style={{marginBottom:12}}>
-                    <video ref={ncVideoRef} autoPlay playsInline muted
-                      style={{width:'100%',borderRadius:12,display:'block',maxHeight:160,objectFit:'cover'}} />
-                    <div style={{display:'flex',gap:8,marginTop:8}}>
-                      <button className="btn-ghost" style={{flex:1,fontSize:12}}
-                        onClick={()=>{ncStreamRef.current?.getTracks().forEach(t=>t.stop());setNcPhotoMode('idle');}}>Cancel</button>
-                      <button className="btn" style={{flex:2,fontSize:13}} onClick={()=>{
-                        const video=ncVideoRef.current;if(!video?.videoWidth)return;
-                        const canvas=document.createElement('canvas');
-                        const scale=Math.min(480/video.videoWidth,480/video.videoHeight,1);
-                        canvas.width=Math.round(video.videoWidth*scale);canvas.height=Math.round(video.videoHeight*scale);
-                        const ctx=canvas.getContext('2d')!;ctx.translate(canvas.width,0);ctx.scale(-1,1);
-                        ctx.drawImage(video,0,0,canvas.width,canvas.height);
-                        setNcPhoto(canvas.toDataURL('image/jpeg',.82));
-                        ncStreamRef.current?.getTracks().forEach(t=>t.stop());setNcPhotoMode('idle');
-                      }}>📸 Capture</button>
-                    </div>
-                  </div>
-                )}
-
-                <button className="nc-single-btn" onClick={()=>setNcStep(4)}>✦ Make our Night Card</button>
-                <div className="nc-single-skip" onClick={()=>{ncStreamRef.current?.getTracks().forEach(t=>t.stop());onHome?onHome():setStage('home');}}>skip night card</div>
+                <button className="ss-nc-cta" onClick={()=>setNcStep(4)}>Create Night Card {'\u2726'}</button>
+                <button className="ss-nc-skip" onClick={()=>setNcStep(4)}>Skip photo</button>
               </div>
             )}
 
-            {/* GENERATING */}
-            {ncGenerating && !ncResult && (
-              <div style={{textAlign:'center',padding:'32px 20px'}}>
-                <div style={{fontSize:72,lineHeight:1,marginBottom:16,animation:'mfloat 4s ease-in-out infinite,gAGen 4s ease-in-out infinite',display:'inline-block'}}>
-                  {companionCreature?.creatureEmoji ?? '🌙'}
+            {/* Step 5 — Generating */}
+            {ncStep===4 && ncGenerating && !ncResult && (
+              <div className="ss-nc-step" key="nc-gen">
+                <div className="ss-nc-orb">{'\u2728'}</div>
+                <div style={{fontFamily:'var(--serif)',fontSize:16,fontStyle:'italic',color:'var(--cream)',marginBottom:6}}>
+                  Weaving tonight's memory{'\u2026'}
                 </div>
-                <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontStyle:'italic',color:'var(--cream)',marginBottom:6}}>
-                  {companionCreature?.name ?? 'Your creature'} is making your Night Card…
+                <div className="ss-nc-bounce-dots">
+                  <div className="ss-nc-bounce-dot"/><div className="ss-nc-bounce-dot"/><div className="ss-nc-bounce-dot"/>
                 </div>
-                <div style={{fontSize:12,color:'var(--dimmer)'}}>This only takes a moment ✦</div>
               </div>
             )}
 
-            {/* REVEAL */}
+            {/* Step 6 — Reveal */}
             {ncResult && (
-              <div style={{padding:'16px 16px 20px'}}>
-                <div className="nc-reveal-card">
-                  <div className="nc-reveal-shimmer" />
-                  <div className="nc-reveal-photo">
-                    {ncPhoto ? (
-                      <img src={ncPhoto} alt="Tonight" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} />
-                    ) : (
-                      <div style={{fontSize:72,lineHeight:1,animation:'mfloat 5s ease-in-out infinite',opacity:.85}}>
-                        {ncResult.emoji ?? '👨‍👧'}
-                      </div>
-                    )}
-                    <div className="nc-reveal-photo-overlay" />
-                    <div className="nc-reveal-photo-date">Tonight</div>
-                  </div>
-                  <div className="nc-reveal-body">
-                    <div className="nc-reveal-eyebrow">✦ Night Card</div>
-                    <div className="nc-reveal-headline">{ncResult.headline}</div>
-                    <div className="nc-reveal-rule" />
-                    <div className="nc-reveal-quote">"{ncResult.quote}"</div>
-                    {ncResult.memory_line && <div className="nc-reveal-memory">{ncResult.memory_line}</div>}
-                    {ncResult.reflection && (
-                      <div className="nc-reveal-reflect">
-                        <div className="nc-reveal-reflect-lbl">Tonight's whisper</div>
-                        <div className="nc-reveal-reflect-q">{ncResult.reflection}</div>
-                      </div>
-                    )}
-                    <div className="nc-reveal-footer">
-                      <div className="nc-reveal-brand">SleepSeed</div>
-                    </div>
-                  </div>
+              <div className="ss-nc-step" key="nc-reveal" style={{justifyContent:'flex-start',paddingTop:'max(80px,env(safe-area-inset-top))'}}>
+                <div className="ss-nc-reveal" style={{width:'100%',maxWidth:320}}>
+                  <NightCardComponent card={{
+                    id:'preview',userId:'',heroName:book.heroName,storyTitle:book.title,
+                    characterIds:[],headline:ncResult.headline,quote:ncResult.quote,
+                    memory_line:ncResult.memory_line,photo:ncPhoto||undefined,
+                    emoji:ncResult.emoji,date:new Date().toISOString(),
+                    creatureEmoji:companionCreature?.creatureEmoji,
+                  }} size="full" />
                 </div>
-
-                <div className="nc-action-row">
-                  <button className="nc-action-btn nc-btn-share" onClick={shareNightCard}>
-                    <span style={{fontSize:16}}>🌟</span><span>Share</span>
-                  </button>
-                  <button className="nc-action-btn nc-btn-done" onClick={async()=>{
+                <div className="ss-end-btns" style={{marginTop:0}}>
+                  <button className="ss-amber-btn" onClick={async()=>{
                     const ncData={heroName:book.heroName,storyTitle:book.title,refrain:book.refrain||"",
                       bondingQ:ncBondingQ,bondingA:ncBondingA,gratitude:ncGratitude,extra:ncExtra,photo:ncPhoto,...ncResult};
-                    try{await saveNightCard(ncData);console.log('[NC] Night card saved successfully');}catch(err){console.error('[NC] saveNightCard failed:',err);}
+                    try{await saveNightCard(ncData);}catch(err){console.error('[NC] saveNightCard failed:',err);}
                     const updatedBook={...book,nightCard:ncData};setBook(updatedBook);
                     const updatedMemories=memories.map(m=>m.bookData?.title===book.title&&m.heroName===book.heroName?{...m,bookData:updatedBook}:m);
-                    setMemories(updatedMemories);try{await sSet("memories",{items:updatedMemories});console.log('[NC] Memories updated');}catch(err){console.error('[NC] sSet memories failed:',err);}
+                    setMemories(updatedMemories);try{await sSet("memories",{items:updatedMemories});}catch(err){console.error('[NC] sSet failed:',err);}
                     onHome?onHome():setStage("home");
-                  }}>
-                    <span style={{fontSize:16}}>✓</span><span>Save & Done</span>
-                  </button>
-                </div>
-
-                <div className="nc-rating-strip">
-                  <div className="nc-rating-lbl">Tonight's story</div>
-                  <div className="nc-stars-row">
-                    {[1,2,3,4,5].map(n=>(
-                      <button key={n} className={`nc-star-btn${storyRating&&n<=storyRating?' lit':''}`}
-                        onClick={()=>{setStoryRating(n);if(n<=3)setShowFeedback(true);}}>★</button>
-                    ))}
+                  }}>Save to memories {'\u2726'}</button>
+                  <div className="ss-nc-row">
+                    <button className="ss-ghost-btn" onClick={shareNightCard}>{'\uD83D\uDD17'} Share</button>
+                    <button className="ss-ghost-btn" onClick={async()=>{/* download handled by NightCard component */}}>{'\uD83D\uDCE5'} Download</button>
                   </div>
-                </div>
-
-                <div className="nc-library-row">
-                  <div className="nc-library-txt">Share this story with other<br/>SleepSeed families?</div>
-                  <button className={`nc-toggle${shareToLibrary?' on':''}`} onClick={()=>setShareToLibrary(l=>!l)}>
-                    <div className="nc-toggle-thumb" />
-                  </button>
                 </div>
               </div>
             )}
-
           </div>
         )}
 
