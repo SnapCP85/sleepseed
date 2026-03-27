@@ -4,7 +4,6 @@ import { signUp, signIn, signInAsGuest, resetPassword } from '../lib/storage';
 import type { User } from '../lib/types';
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--night:#0D1018;--night2:#131828;--amber:#E8972A;--amber2:#F5B84C;--ink:#1A1420;--serif:'Playfair Display',Georgia,serif;--sans:'Plus Jakarta Sans',system-ui,sans-serif;--mono:'DM Mono',monospace;}
 .auth-page{min-height:100vh;background:var(--night);font-family:var(--sans);display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}

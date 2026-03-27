@@ -173,7 +173,6 @@ export default function SleepSeedLibrary() {
       overflow: "hidden",
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         .library-root { font-family: 'DM Sans', sans-serif; }
         .display-font { font-family: 'Lora', Georgia, serif; }

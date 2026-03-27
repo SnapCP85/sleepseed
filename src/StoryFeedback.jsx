@@ -262,7 +262,6 @@ export function selectAdaptiveQuestion(genre, styleDna) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
 
 .sf-overlay {
   position: fixed; inset: 0; z-index: 1000;
@@ -729,7 +728,6 @@ export default function StoryFeedbackDemo() {
     }}>
       <style>{CSS}</style>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
         ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0C0B0A}::-webkit-scrollbar-thumb{background:#1C1917;border-radius:2px}
       `}</style>

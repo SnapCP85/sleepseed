@@ -6,7 +6,6 @@ import { CREATURES, getCreature } from '../lib/creatures';
 import type { CreatureDef } from '../lib/creatures';
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 @keyframes nsTwk{0%,100%{opacity:.1}50%{opacity:.8}}
 @keyframes nsTwk2{0%,100%{opacity:.3}60%{opacity:.08}}

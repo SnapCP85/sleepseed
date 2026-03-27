@@ -3,7 +3,6 @@ import type { SavedNightCard, CardVariant } from '../../lib/types';
 import { getCardVariant, CARD_VARIANT_STYLES } from '../../lib/types';
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=Nunito:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@400;700&display=swap');
 @keyframes ncFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-6px) rotate(-3deg)}}
 @keyframes ncTwinkle{0%,100%{opacity:.5}50%{opacity:1}}
 @keyframes ncFoil{from{transform:translateX(-10%) translateY(-5%)}to{transform:translateX(10%) translateY(5%)}}

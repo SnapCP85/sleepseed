@@ -20,7 +20,6 @@ const SECRET_EXAMPLES = [
 ];
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Nunito:wght@300;400;500;600;700&family=DM+Mono:wght@300;400&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{

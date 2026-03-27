@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&family=Patrick+Hand&family=Kalam:wght@400;700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--night:#0D1018;--night2:#131828;--amber:#E8972A;--amber2:#F5B84C;--cream:#fdf5e0;--parch:#f5e8c0;--ink:#261600;--ink2:#5a380a;--serif2:'Playfair Display',Georgia,serif;--sans2:'Plus Jakarta Sans',system-ui,sans-serif;--mono2:'DM Mono',monospace;}
 .sv-wrap{min-height:100vh;background:var(--night);font-family:var(--sans2);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;padding:0 0 60px}

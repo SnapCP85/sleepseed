@@ -162,7 +162,6 @@ function settingsSummary(style: string, length: string, vibe: string, level: str
    ══════════════════════════════════════════════════════════════════════ */
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,700&family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#040a16;--amber:#F5B84C;--amber-dk:#a06010;--teal:#14d890;--teal-dk:#0a7a50;

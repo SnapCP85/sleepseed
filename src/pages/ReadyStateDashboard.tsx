@@ -5,7 +5,6 @@
 import { useState, useEffect } from 'react';
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,600;1,9..144,700&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Baloo+2:wght@700;800&family=DM+Mono:wght@400&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --night:#080C18;--amber:#E8972A;--amber2:#F5B84C;

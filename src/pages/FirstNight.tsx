@@ -2,7 +2,6 @@ import { useState } from 'react';
 import type { HatchedCreature, Character } from '../lib/types';
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,400;1,9..144,600;1,9..144,700&family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800&family=DM+Mono:wght@400&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 @keyframes fnFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 @keyframes fnPulse{0%,100%{filter:drop-shadow(0 0 16px var(--cg,rgba(245,184,76,.3)))}50%{filter:drop-shadow(0 0 36px var(--cg,rgba(245,184,76,.6)))}}

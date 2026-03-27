@@ -8,7 +8,7 @@ import { BASE_URL } from "./lib/config";
 import { getSceneByVibe } from "./lib/storyScenes";
 import type { HatchedCreature } from "./lib/types";
 
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Cormorant+Garamond:ital,wght@1,600&family=Patrick+Hand&family=Nunito:wght@400;600;700;800&family=Kalam:wght@300;400;700&family=Baloo+2:wght@600;700;800&family=DM+Mono:wght@400&display=swap');`;
+const FONTS = ``; // fonts loaded via index.html <link>
 
 const CSS = `
 ${FONTS}
@@ -1648,10 +1648,31 @@ export default function SleepSeed({
     }
   }, [ritualMood]);
 
+  // ── Warn before leaving during generation ────────────────────────────────────
+  useEffect(() => {
+    if (stage !== 'generating') return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; return ''; };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [stage]);
+
+  useEffect(() => {
+    if (stage !== 'generating') return;
+    window.history.pushState(null, '', window.location.href);
+    const handler = () => {
+      if (!window.confirm('Your story is still being created. Leave anyway?')) {
+        window.history.pushState(null, '', window.location.href);
+      }
+    };
+    window.addEventListener('popstate', handler);
+    return () => window.removeEventListener('popstate', handler);
+  }, [stage]);
+
   // ── Auto-generate from StoryBuilderPage choices ──────────────────────────────
   // Fires once heroName is populated (from preloadedCharacter effect) AND
   // builderChoices are present — then calls generate() with all mapped overrides.
   const hasAutoGenRef = useRef(false);
+  const generatingRef = useRef(false);
 
   useEffect(() => {
     if (!builderChoices || hasAutoGenRef.current) return;
@@ -1702,7 +1723,7 @@ export default function SleepSeed({
       storyGuidance:  '',
       realLifeCtx:    '',
       lessonContext:  '',
-      storyMood:      feel,
+      storyMood:      bc.vibe || '',
       storyPace:      bc.pace  || 'normal',
       storyStyle:     bc.style || 'standard',
       adventure:      isAdventure,
@@ -2502,6 +2523,8 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
 
   /* ══ GENERATE ══ */
   const generate = async (overrides:any={}) => {
+    if (generatingRef.current) return;
+    generatingRef.current = true;
     const resolvedTheme   = overrides.theme         ?? theme;
     const resolvedChars   = overrides.extraChars    ?? extraChars;
     const resolvedOcc     = overrides.occasion      ?? occasion;
@@ -2665,12 +2688,18 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
       const totalN = lenCfg.target;
 
       // ── Map SleepSeed fields to StoryBrief for sleepseed-prompts ────────
-      const genreFromMood = resolvedMood === "silly" ? "comedy"
-        : resolvedMood === "exciting" || resolvedAdv ? "adventure"
-        : resolvedMood === "heartfelt" ? "therapeutic"
-        : resolvedMood === "calm" ? "cosy"
-        : resolvedStyle === "mystery" ? "adventure"
-        : "cosy";
+      // resolvedMood can be a vibe key (warm-funny, calm-cosy, etc.) or a short keyword (calm, silly, etc.)
+      const moodGenreMap: Record<string, string> = {
+        'silly': 'comedy', 'warm-funny': 'comedy',
+        'exciting': 'adventure',
+        'heartfelt': 'therapeutic',
+        'calm': 'cosy', 'calm-cosy': 'cosy',
+        'mysterious': 'wonder',
+      };
+      const genreFromMood = moodGenreMap[resolvedMood]
+        || (resolvedAdv ? "adventure" : null)
+        || (resolvedStyle === "mystery" ? "mystery" : null)
+        || "cosy";
 
       const situationParts = [
         brief1Safe ? `${name} is ${brief1Safe}` : "",
@@ -2739,9 +2768,24 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
       const story = extractJSON(raw);
 
-      if(!story.title) throw new Error("Response missing title");
-      if(!resolvedAdv && (!Array.isArray(story.pages)||story.pages.length===0)) throw new Error("Response missing pages array");
-      if(resolvedAdv && (!Array.isArray(story.setup_pages)||!Array.isArray(story.path_a)||!Array.isArray(story.path_b))) throw new Error("Response missing adventure paths");
+      // ── Validate response structure before rendering ──
+      const validPages = (arr: any) => Array.isArray(arr) && arr.length > 0 &&
+        arr.every((p: any) => p && typeof (typeof p === 'string' ? p : p.text) === 'string' && (typeof p === 'string' ? p : p.text).trim().length > 0);
+      const normPages = (arr: any[]) => arr.map((p: any) => typeof p === 'string' ? { text: p } : p);
+
+      if (!story || typeof story !== 'object') throw new Error("Response was not a valid story object");
+      if (!story.title || typeof story.title !== 'string') throw new Error("Response missing title");
+      if (resolvedAdv) {
+        if (!validPages(story.setup_pages)) throw new Error("Response missing adventure setup pages");
+        if (!validPages(story.path_a)) throw new Error("Response missing adventure path A");
+        if (!validPages(story.path_b)) throw new Error("Response missing adventure path B");
+        story.setup_pages = normPages(story.setup_pages);
+        story.path_a = normPages(story.path_a);
+        story.path_b = normPages(story.path_b);
+      } else {
+        if (!validPages(story.pages)) throw new Error("Response missing pages — the story was incomplete");
+        story.pages = normPages(story.pages);
+      }
 
       setGen(g => ({...g,stepIdx:2,progress:80,label:"Your book is ready!"}));
 
@@ -2794,6 +2838,8 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
       setError(userMsg);
       setLastErrStage(stage==="builder" ? "builder" : "quick");
       setStage("error");
+    } finally {
+      generatingRef.current = false;
     }
   };
 
