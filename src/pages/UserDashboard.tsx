@@ -122,10 +122,10 @@ const CSS=`
 .dash-skel::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%);animation:skelMove 1.6s ease-in-out infinite}
 
 /* ── Top Nav ── */
-.dash-nav{display:flex;align-items:center;justify-content:space-between;padding:0 5%;height:56px;border-bottom:1px solid rgba(245,184,76,.07);background:rgba(8,12,24,.97);position:sticky;top:0;z-index:20;backdrop-filter:blur(20px)}
-.dash-logo{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:7px;flex-shrink:0}
-.dash-logo-moon{width:15px;height:15px;border-radius:50%;background:#F5B84C;position:relative;overflow:hidden;flex-shrink:0}
-.dash-logo-moon-sh{position:absolute;width:14px;height:14px;border-radius:50%;background:#050916;top:-3px;left:-6px}
+.dash-nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px;padding-top:env(safe-area-inset-top,0px);height:56px;border-bottom:1px solid rgba(245,184,76,.07);background:rgba(8,12,24,.97);position:sticky;top:0;z-index:20;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.dash-logo{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--cream);display:flex;align-items:center;gap:8px;flex-shrink:0;letter-spacing:.3px}
+.dash-logo-moon{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#F5B84C,#E8972A);position:relative;flex-shrink:0;box-shadow:0 0 12px rgba(245,184,76,.4)}
+.dash-logo-moon-sh{position:absolute;width:18px;height:18px;border-radius:50%;background:var(--night);top:4px;left:8px}
 .dash-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(145deg,#1a0e32,#2e1858);border:1.5px solid rgba(160,96,240,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .22s;flex-shrink:0;position:relative}
 .dash-avatar:hover{border-color:rgba(160,96,240,.62);background:linear-gradient(145deg,#2e1858,#4818a0)}
 .dash-avatar-pip{position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:#14d890;border:1.5px solid var(--night)}
@@ -619,37 +619,29 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
       {/* ── TOP NAV ── */}
       <nav className="dash-nav" style={{background:tonightDone?'rgba(3,8,18,.92)':'rgba(4,8,22,.9)',borderBottom:tonightDone?'1px solid rgba(20,216,144,.07)':'1px solid rgba(245,184,76,.07)'}}>
         <div className="dash-logo"><div className="dash-logo-moon"><div className="dash-logo-moon-sh"/></div>SleepSeed</div>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          {primary&&<div style={{display:'flex',alignItems:'center',gap:5,background:'rgba(255,255,255,.07)',border:'1px solid rgba(255,255,255,.1)',borderRadius:20,padding:'4px 10px 4px 7px',cursor:'pointer'}} onClick={handleProfile}>
-            <span style={{fontSize:14}}>{primary.emoji||'\uD83E\uDDD2'}</span>
-            <span style={{fontFamily:'var(--cta)',fontSize:11,fontWeight:800,color:'rgba(255,255,255,.6)'}}>{primary.name}</span>
-          </div>}
-          <div className="dash-avatar" onClick={handleProfile} title="Profile & settings"><NavIconProfile/><div className="dash-avatar-pip"/></div>
-        </div>
+        {primary&&(
+          <div style={{display:'flex',alignItems:'center',gap:8,background:`rgba(${hexToRgba(creatureColor,.12).slice(5,-1)})`,border:`1px solid ${hexToRgba(creatureColor,.25)}`,borderRadius:20,padding:'6px 12px 6px 6px',cursor:'pointer',transition:'background .2s'}}
+            onClick={()=>{
+              if(familyChars.length>1){
+                const idx=familyChars.findIndex(c=>c.id===primary.id);
+                const next=familyChars[(idx+1)%familyChars.length];
+                setSelectedCharacters([next]);setWeekViewId(next.id);
+              } else { handleProfile(); }
+            }}
+            onMouseEnter={e=>(e.currentTarget.style.background=hexToRgba(creatureColor,.2))}
+            onMouseLeave={e=>(e.currentTarget.style.background=hexToRgba(creatureColor,.12))}>
+            <div style={{width:26,height:26,borderRadius:'50%',background:`linear-gradient(135deg,${hexToRgba(creatureColor,.4)},${hexToRgba(creatureColor,.2)})`,display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',flexShrink:0}}>
+              {primary.photo
+                ? <img src={primary.photo} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}}/>
+                : <span style={{fontSize:14}}>{hatchedCreature?.creatureEmoji||primary.emoji||'\uD83E\uDDD2'}</span>}
+            </div>
+            <span style={{fontFamily:"'Nunito',sans-serif",fontSize:13,fontWeight:600,color:'#F4EFE8'}}>{primary.name}</span>
+            <span style={{fontSize:10,color:'rgba(244,239,232,.4)',marginLeft:2}}>{'\u25BE'}</span>
+          </div>
+        )}
       </nav>
 
-      {/* ── Multi-child picker ── */}
-      {familyChars.length>1&&(
-        <div style={{padding:'10px 16px 0',position:'relative',zIndex:5,overflowX:'auto',WebkitOverflowScrolling:'touch',scrollbarWidth:'none'}}>
-          <div style={{display:'flex',gap:14,alignItems:'center'}}>
-            {familyChars.map(c=>{const isOn=primary?.id===c.id;return(
-              <div key={c.id} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4,cursor:'pointer',flexShrink:0}} onClick={()=>{setSelectedCharacters([c]);setWeekViewId(c.id);}}>
-                <div style={{width:48,height:48,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:c.photo?0:c.emoji?22:18,overflow:'hidden',
-                  border:isOn?'2px solid #F5B84C':'1.5px solid rgba(255,255,255,.12)',
-                  boxShadow:isOn?'0 0 0 3px rgba(245,184,76,.18)':'none',
-                  background:c.photo?'none':c.color||'rgba(255,255,255,.06)',transition:'all .2s'}}>
-                  {c.photo?<img src={c.photo} alt={c.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
-                   :c.emoji?c.emoji
-                   :<span style={{fontFamily:'var(--serif)',fontWeight:700,color:'rgba(255,255,255,.5)'}}>{c.name?.charAt(0)||'?'}</span>}
-                </div>
-                <div style={{fontFamily:'var(--sans)',fontSize:11,fontWeight:700,color:isOn?'#F5B84C':'rgba(255,255,255,.4)',transition:'color .2s',textAlign:'center',maxWidth:56,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.name}</div>
-              </div>
-            );})}
-            <div style={{width:48,height:48,borderRadius:'50%',border:'1.5px dashed rgba(255,255,255,.18)',background:'rgba(255,255,255,.04)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,color:'rgba(255,255,255,.25)',cursor:'pointer',flexShrink:0}}
-              onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>+</div>
-          </div>
-        </div>
-      )}
+      {/* Child switching is handled via the nav child pod — no separate row */}
 
       <div className="dash-inner">
         {/* ── GUEST STATE ── */}
