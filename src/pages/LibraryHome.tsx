@@ -238,6 +238,10 @@ export default function LibraryHome() {
   const openStory = (story: LibraryStory) => {
     setLibraryStorySlug(story.librarySlug);
     setView('library-story');
+    // Persist in URL so refresh works
+    const url = new URL(window.location.href);
+    url.searchParams.set('library', story.librarySlug);
+    window.history.pushState({}, '', url.toString());
   };
 
   const guestLimit = 5;

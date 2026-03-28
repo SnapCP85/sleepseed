@@ -224,7 +224,16 @@ function AppInner() {
   );
 
   const goAuth        = () => setView('auth');
-  const goDashboard   = () => { setNightCardFilter(undefined); setPreloadedBook(null); setDashKey(k => k + 1); setView('dashboard'); };
+  // Clean library URL params when leaving library views
+  const clearLibraryUrl = () => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('library') || url.searchParams.get('view') === 'library') {
+      url.searchParams.delete('library');
+      url.searchParams.delete('view');
+      window.history.replaceState({}, '', url.pathname + (url.search || ''));
+    }
+  };
+  const goDashboard   = () => { clearLibraryUrl(); setNightCardFilter(undefined); setPreloadedBook(null); setDashKey(k => k + 1); setView('dashboard'); };
   const goStoryBuilder= (char?: Character) => {
     if (char) setSelectedCharacter(char);
     setPreloadedBook(null);
@@ -237,8 +246,15 @@ function AppInner() {
   const goStoryLibrary  = () => setView('story-library');
   const goCharacterDetail = (c: Character) => { setViewingCharacter(c); setView('character-detail' as any); };
   const handleNav = (v: string) => {
+    clearLibraryUrl();
     if (v === 'nightcard-library') goNightCards();
     else if (v === 'story-wizard') goStoryBuilder();
+    else if (v === 'library') {
+      const url = new URL(window.location.href);
+      url.search = '?view=library';
+      window.history.pushState({}, '', url.pathname + url.search);
+      setView('library');
+    }
     else setView(v as any);
   };
 
@@ -415,13 +431,13 @@ function AppInner() {
   if (view === 'library') return (
     <div style={{paddingBottom: user && !user.isGuest ? 74 : 0}}>
       <LibraryHome />
-      {user && !user.isGuest && <BottomNav current="library" onNav={v => setView(v as any)} />}
+      {user && !user.isGuest && <BottomNav current="library" onNav={v => { clearLibraryUrl(); setView(v as any); }} />}
     </div>
   );
   if (view === 'library-story') return (
     <div style={{paddingBottom: user && !user.isGuest ? 74 : 0}}>
       <Suspense fallback={<div style={{minHeight:'100vh',background:'#060912',display:'flex',alignItems:'center',justifyContent:'center',color:'rgba(244,239,232,.3)',fontFamily:'system-ui',fontSize:14}}>Loading story&hellip;</div>}><LibraryStoryReader slug={libraryStorySlug ?? ''} /></Suspense>
-      {user && !user.isGuest && <BottomNav current="library" onNav={v => setView(v as any)} />}
+      {user && !user.isGuest && <BottomNav current="library" onNav={v => { clearLibraryUrl(); setView(v as any); }} />}
     </div>
   );
 
