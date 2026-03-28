@@ -200,6 +200,10 @@ export const saveStory = async (s: SavedStory): Promise<void> => {
     if (s.storyStyle !== undefined) row.story_style = s.storyStyle;
     if (s.storyLength !== undefined) row.story_length = s.storyLength;
     if (s.lessons !== undefined) row.lessons = s.lessons;
+    if (s.coverUrl !== undefined) row.cover_url = s.coverUrl;
+    if (s.isPublic !== undefined) row.is_public = s.isPublic;
+    if (s.librarySlug !== undefined) row.library_slug = s.librarySlug;
+    if (s.isStaffPick !== undefined) row.is_staff_pick = s.isStaffPick;
     await supabase.from('stories').upsert(row);
   } catch(e) { console.error('[storage] saveStory Supabase error:', e); }
 };
@@ -322,6 +326,7 @@ const dbToLibraryStory = (row: any): LibraryStory => ({
   storyStyle: row.story_style ?? undefined,
   storyLength: row.story_length ?? undefined,
   lessons: row.lessons ?? undefined,
+  coverUrl: row.cover_url ?? undefined,
   submittedAt: row.submitted_at ?? undefined,
   thumbsUp: row.thumbs_up ?? 0,
   thumbsDown: row.thumbs_down ?? 0,
@@ -334,7 +339,7 @@ const dbToLibraryStory = (row: any): LibraryStory => ({
   submitterRefCode: row.profiles?.ref_code ?? undefined,
 });
 
-const LIBRARY_LIST_COLS = 'id,user_id,title,hero_name,character_ids,refrain,date,occasion,is_public,library_slug,age_group,vibe,theme,mood,story_style,story_length,lessons,submitted_at,thumbs_up,thumbs_down,read_count,conversion_count,is_staff_pick,is_book_of_day,book_of_day_date';
+const LIBRARY_LIST_COLS = 'id,user_id,title,hero_name,character_ids,refrain,date,occasion,is_public,library_slug,age_group,vibe,theme,mood,story_style,story_length,lessons,cover_url,submitted_at,thumbs_up,thumbs_down,read_count,conversion_count,is_staff_pick,is_book_of_day,book_of_day_date';
 const LIBRARY_FULL_COLS = LIBRARY_LIST_COLS + ',book_data';
 
 // ── Library: queries ─────────────────────────────────────────────────────

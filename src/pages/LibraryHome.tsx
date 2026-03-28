@@ -334,7 +334,9 @@ export default function LibraryHome() {
                 return (
                   <div key={s.id} className="lh-card" style={{ animationDelay: `${i * 0.04}s` }} onClick={() => openStory(s)}>
                     <div className="lh-card-scene">
-                      <Scene />
+                      {(s as any).coverUrl
+                        ? <img src={(s as any).coverUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <Scene />}
                       <div className="lh-card-scene-overlay" />
                     </div>
                     <div className="lh-card-info">

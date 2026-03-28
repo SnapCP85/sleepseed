@@ -1,0 +1,76 @@
+════════════════════════════════════════════════════════════════
+Session 12 — Performance: Load Flicker Fix + Skeleton Polish
+File: 2026-03-25-20-37-41 (continued in same session)
+Production URL: https://sleepseed.vercel.app
+════════════════════════════════════════════════════════════════
+
+PROBLEM
+The app was loading slowly with up to 10 re-renders in the
+first 2 seconds. User saw: bouncing moon emoji → skeleton →
+creature card popping in → shard track appearing 300ms later →
+text shifting as fonts downloaded mid-render.
+
+ROOT CAUSES FOUND
+1. No auth loading gate — guest/unauth state flashed before
+   logged-in state resolved
+2. Two separate useEffect hooks firing sequentially — waterfall
+   data loading (characters → night cards → stories → creatures
+   each triggering a re-render)
+3. Fonts not preloaded — Fraunces, Baloo 2, Nunito, DM Mono
+   all downloaded mid-render causing text layout shifts
+4. Skeleton dimensions did not match real content — vertical
+   jump when skeleton swapped to loaded content
+5. Bottom nav absent during skeleton — popped in after content
+
+FIXES DEPLOYED
+
+Fix 1 — Font preconnect + preload (index.html)
+  Browser starts font DNS+TLS handshake during HTML parsing.
+  font-display:swap ensures text visible immediately with
+  fallback fonts, swaps cleanly. No more invisible text or
+  late font shifts.
+
+Fix 2 — Branded auth loading screen (App.tsx)
+  if (authLoading) return <LoadingScreen />
+  Shows SleepSeed moon crescent + wordmark on #080C18 background
+  with subtle fade-in. Calm, on-brand. No bouncing emoji.
+  Dark background set in index.html inline styles — no white flash.
+
+Fix 3 — Consolidated data fetching (UserDashboard.tsx)
+  Characters, night cards, stories, hatched creatures, and active
+  egg now fetched in a single Promise.all() instead of two separate
+  effects. Eliminates waterfall. Everything arrives in one render.
+
+Fix 4 — Egg fetch guard (UserDashboard.tsx)
+  useEffect([user, primary?.id]) now checks:
+  if (activeEgg?.characterId === primary.id) return
+  Prevents redundant refetch on initial load. Still fires
+  correctly when user switches children.
+
+Fix 5 — Skeleton rebuilt to match final layout exactly
+  Every skeleton block matches the real content height:
+  - Greeting: matches real text + padding height
+  - Creature card: 223px shimmer, 24px radius — exact match
+  - CTA button: 58px shimmer, 20px radius — exact match
+  - Week bar: header shimmer + 7 individual 36px bar placeholders
+  - Bottom nav: visible and static during skeleton (not hidden)
+  Shimmer uses skelMove keyframe (translateX sweep) not opacity pulse.
+  Zero vertical jump when content replaces skeleton.
+
+LOAD SEQUENCE NOW
+  #080C18 dark screen (instant)
+  → SleepSeed logo fade-in (auth resolving, ~200-500ms)
+  → Skeleton with static bottom nav (data loading)
+  → Complete dashboard (one render, zero jump)
+
+FILES CHANGED
+  index.html — font preconnect, preload tags, body bg colour
+  src/App.tsx — auth loading gate, LoadingScreen component
+  src/pages/UserDashboard.tsx — consolidated Promise.all(),
+    egg fetch guard, rebuilt skeleton JSX and CSS
+
+FUTURE WORK NOTED (not yet built)
+  Service worker caching for returning users — cache characters
+  and creature data with short TTL, load from cache while network
+  request runs in background. Near-instant dashboard for returning
+  families. Separate task.

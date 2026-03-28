@@ -467,14 +467,20 @@ export default function LibraryStoryReader({ slug }: Props) {
   // ── Build pages array for carousel ──
   const renderCoverPage = () => (
     <div className="lr-page lr-cover" key="cover">
-      <div className="lr-cover-scene"><Scene /></div>
+      {story.coverUrl ? (
+        <div className="lr-cover-scene" style={{ background: '#000' }}>
+          <img src={story.coverUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} />
+        </div>
+      ) : (
+        <div className="lr-cover-scene"><Scene /></div>
+      )}
       <div className="lr-cover-vig" />
       <div className="lr-cover-grad" />
       <div className="lr-cover-text">
         <div className="lr-cover-stars">{'\u2726'} {'\u00B7'} {'\u2726'} {'\u00B7'} {'\u2726'}</div>
         <div className="lr-cover-title">{displayTitle}</div>
         <div className="lr-cover-for">A story for <b>{displayHero}</b></div>
-        <div className="lr-cover-brand">SleepSeed {'\u00B7'} Made tonight</div>
+        <div className="lr-cover-brand">SleepSeed {story.coverUrl ? '\u00B7 Curated' : '\u00B7 Made tonight'}</div>
       </div>
     </div>
   );

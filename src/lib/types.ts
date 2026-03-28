@@ -60,6 +60,7 @@ export interface SavedStory {
   lessons?: string[];
   isPublic?: boolean;
   librarySlug?: string;
+  coverUrl?: string;            // cover image URL from library-covers bucket
   thumbsUp?: number;
   thumbsDown?: number;
   readCount?: number;
@@ -86,6 +87,7 @@ export interface LibraryStory {
   storyStyle?: string;
   storyLength?: string;
   lessons?: string[];
+  coverUrl?: string;     // cover image URL for uploaded books
   submittedAt?: string;
   thumbsUp: number;
   thumbsDown: number;

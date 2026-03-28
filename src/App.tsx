@@ -22,6 +22,7 @@ import CharacterDetail from './features/characters/CharacterDetail';
 import Hatchery from './pages/Hatchery';
 import FirstNight from './pages/FirstNight';
 import DevStoryTest from './pages/DevStoryTest';
+import AdminUploadBook from './pages/AdminUploadBook';
 
 // Lazy-loaded heavy components — not needed on initial render
 const SleepSeedCore = lazy(() => import('./SleepSeedCore'));
@@ -188,6 +189,7 @@ function AppInner() {
 
   if (isSharedStory) return <SharedStoryViewer />;
   if (view === 'dev-story') return <DevStoryTest />;
+  if (new URLSearchParams(window.location.search).get('view') === 'admin-upload') return <AdminUploadBook />;
 
   // Test mode pages — render before auth so shareable links work without login
   if (testMode === 'onboarding') {
