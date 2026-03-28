@@ -448,10 +448,19 @@ export default function LibraryStoryReader({ slug }: Props) {
         }
         const pdfjsLib = (window as any).pdfjsLib;
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        const pdf = await pdfjsLib.getDocument(story.bookData.pdfUrl).promise;
+        const pdf = await pdfjsLib.getDocument({
+          url: story.bookData.pdfUrl,
+          disableAutoFetch: false,
+          disableStream: false,
+        }).promise;
         setPdfDoc(pdf);
         setPdfPageCount(pdf.numPages);
-      } catch (e) { console.error('[reader] Failed to load PDF:', e); }
+        console.log('[reader] PDF loaded:', pdf.numPages, 'pages');
+      } catch (e) {
+        console.error('[reader] Failed to load PDF:', e);
+        setError(`Failed to load picture book: ${(e as any)?.message || 'Unknown error'}`);
+        setLoading(false);
+      }
     };
     loadPdf();
   }, [isPdfBook, story.bookData?.pdfUrl]);
@@ -504,6 +513,19 @@ export default function LibraryStoryReader({ slug }: Props) {
   const isNotLoggedIn = !user || user.isGuest;
   const isFreeUser = user && !user.isGuest && !isSubscribed;
   const chromeOpacity = isStoryPage ? (chromeVisible ? 1 : 0.25) : 1;
+
+  // ── PDF loading gate ──
+  if (isPdfBook && !pdfDoc) {
+    return (
+      <div className="lr-load">
+        <style>{CSS}</style>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>📖</div>
+          Loading picture book&hellip;
+        </div>
+      </div>
+    );
+  }
 
   // ── Personalisation gate ──
   if (showGate) {
