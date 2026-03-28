@@ -79,7 +79,7 @@ export default function AdminUploadBook() {
           <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
           <div className="au-h">Admin Access Required</div>
           <div className="au-sub">This page is restricted to administrators.</div>
-          <button className="au-btn au-btn-ghost" onClick={() => setView('dashboard')}>Go home</button>
+          <button className="au-btn au-btn-ghost" onClick={() => { window.location.href = window.location.pathname; }}>Go home</button>
         </div>
       </div>
     );
@@ -325,7 +325,7 @@ export default function AdminUploadBook() {
     <div className="au">
       <style>{CSS}</style>
       <nav className="au-nav">
-        <button className="au-back" onClick={() => setView('dashboard')}>&larr; Home</button>
+        <button className="au-back" onClick={() => { window.location.href = window.location.pathname; }}>&larr; Home</button>
         <div className="au-nav-title">Upload <span>Book</span></div>
         <div style={{ width: 60 }} />
       </nav>
@@ -578,7 +578,7 @@ export default function AdminUploadBook() {
                 Upload another
               </button>
               <button className="au-btn au-btn-amber" style={{ width: 'auto', padding: '12px 24px' }}
-                onClick={() => setView('library')}>
+                onClick={() => { window.location.href = window.location.pathname + '?view=library'; }}>
                 View Library
               </button>
             </div>
