@@ -75,7 +75,7 @@ const CSS = `
 
 /* ── Page carousel ── */
 .lr-track{display:flex;height:100%;transition:transform 0.42s cubic-bezier(0.4,0,0.2,1);will-change:transform}
-.lr-page{width:100%;height:100dvh;flex-shrink:0;overflow:hidden;position:relative}
+.lr-page{width:100vw;height:100dvh;flex-shrink:0;overflow:hidden;position:relative}
 
 /* ── Tap zones ── */
 .lr-tap{position:absolute;z-index:5;top:70px;bottom:80px}
@@ -706,7 +706,7 @@ export default function LibraryStoryReader({ slug }: Props) {
 
         {/* Page carousel */}
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-          <div className="lr-track" style={{ transform: `translateX(${-pageIdx * 100}%)` }}>
+          <div className="lr-track" style={{ transform: `translateX(${-pageIdx * 100}vw)` }}>
             {isPdfBook ? (
               /* PDF picture book — render each page as a canvas */
               Array.from({ length: pdfPageCount }).map((_, i) => (
