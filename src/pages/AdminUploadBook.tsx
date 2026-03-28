@@ -86,6 +86,7 @@ export default function AdminUploadBook() {
   }
 
   // State
+  const [mode, setMode] = useState<'text' | 'picture'>('text');
   const [step, setStep] = useState<'upload' | 'metadata' | 'success'>('upload');
   const [converting, setConverting] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -97,7 +98,10 @@ export default function AdminUploadBook() {
   const [heroName, setHeroName] = useState('');
   const [pdfText, setPdfText] = useState('');
   const [fileName, setFileName] = useState('');
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfPageCount, setPdfPageCount] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
+  const pictureFileRef = useRef<HTMLInputElement>(null);
 
   // Step 2 fields
   const [author, setAuthor] = useState('');
@@ -160,6 +164,66 @@ export default function AdminUploadBook() {
     } catch (err: any) {
       setError(`Failed to read PDF: ${err.message}`);
     }
+  };
+
+  // Picture book file handler — just store file + count pages
+  const handlePictureFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFileName(file.name);
+    setPdfFile(file);
+    setError('');
+
+    try {
+      if (!(window as any).pdfjsLib) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Failed to load PDF.js'));
+          document.head.appendChild(script);
+        });
+      }
+      const pdfjsLib = (window as any).pdfjsLib;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      setPdfPageCount(pdf.numPages);
+
+      if (!title) {
+        const guess = file.name.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
+        setTitle(guess);
+        setSlug(slugify(guess));
+      }
+    } catch (err: any) {
+      setError(`Failed to read PDF: ${err.message}`);
+    }
+  };
+
+  // Picture book — skip conversion, upload PDF and go to metadata
+  const handlePictureUpload = async () => {
+    if (!pdfFile || !title) { setError('Please select a PDF and enter a title.'); return; }
+    setConverting(true);
+    setError('');
+
+    try {
+      const path = `${slugify(title)}/book.pdf`;
+      const { error: uploadErr } = await supabase.storage
+        .from('library-covers')
+        .upload(path, pdfFile, { contentType: 'application/pdf', upsert: true });
+
+      if (uploadErr) throw new Error(`Upload failed: ${uploadErr.message}`);
+
+      const { data: urlData } = supabase.storage.from('library-covers').getPublicUrl(path);
+      const pdfUrl = urlData.publicUrl;
+
+      setBookData({ title, heroName, pdfUrl, pageCount: pdfPageCount });
+      setSlug(slugify(title));
+      setStep('metadata');
+    } catch (err: any) {
+      setError(`Upload failed: ${err.message}`);
+    }
+    setConverting(false);
   };
 
   // Convert via API
@@ -274,46 +338,112 @@ export default function AdminUploadBook() {
         {step === 'upload' && (
           <>
             <div className="au-h">Upload a children's book</div>
-            <div className="au-sub">Upload a PDF and we'll convert it into SleepSeed story format.</div>
+            <div className="au-sub">Choose how you want to add this book to the library.</div>
+
+            {/* Mode tabs */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+              <button onClick={() => setMode('text')} style={{
+                flex: 1, padding: '12px 16px', borderRadius: 12, fontSize: 13, fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s',
+                background: mode === 'text' ? 'rgba(245,184,76,.1)' : 'rgba(255,255,255,.03)',
+                border: `1.5px solid ${mode === 'text' ? 'rgba(245,184,76,.3)' : 'rgba(255,255,255,.08)'}`,
+                color: mode === 'text' ? '#F5B84C' : 'rgba(244,239,232,.4)',
+              }}>📖 Text Story<br /><span style={{ fontSize: 10, fontWeight: 400 }}>Extract text, AI formats pages</span></button>
+              <button onClick={() => setMode('picture')} style={{
+                flex: 1, padding: '12px 16px', borderRadius: 12, fontSize: 13, fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s',
+                background: mode === 'picture' ? 'rgba(245,184,76,.1)' : 'rgba(255,255,255,.03)',
+                border: `1.5px solid ${mode === 'picture' ? 'rgba(245,184,76,.3)' : 'rgba(255,255,255,.08)'}`,
+                color: mode === 'picture' ? '#F5B84C' : 'rgba(244,239,232,.4)',
+              }}>🖼️ Picture Book<br /><span style={{ fontSize: 10, fontWeight: 400 }}>Upload PDF as-is with illustrations</span></button>
+            </div>
 
             {error && <div className="au-error">{error}</div>}
 
-            <div className="au-card">
-              <input type="file" ref={fileRef} accept=".pdf" style={{ display: 'none' }} onChange={handleFileSelect} />
-              <div className="au-file-zone" onClick={() => fileRef.current?.click()}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>📄</div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#F4EFE8', marginBottom: 4 }}>
-                  {fileName || 'Select a PDF file'}
+            {/* ── TEXT MODE ── */}
+            {mode === 'text' && (
+              <>
+                <div className="au-card">
+                  <input type="file" ref={fileRef} accept=".pdf" style={{ display: 'none' }} onChange={handleFileSelect} />
+                  <div className="au-file-zone" onClick={() => fileRef.current?.click()}>
+                    <div style={{ fontSize: 32, marginBottom: 8 }}>📄</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: '#F4EFE8', marginBottom: 4 }}>
+                      {fileName || 'Select a PDF file'}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'rgba(244,239,232,.3)' }}>
+                      {pdfText ? `${pdfText.length.toLocaleString()} characters extracted` : 'Click to browse'}
+                    </div>
+                  </div>
+
+                  <label className="au-label">Title</label>
+                  <input className="au-input" placeholder="The Very Hungry Caterpillar" value={title}
+                    onChange={e => { setTitle(e.target.value); setSlug(slugify(e.target.value)); }} />
+
+                  <label className="au-label">Main character name</label>
+                  <input className="au-input" placeholder="e.g. Caterpillar, Max, Elmer" value={heroName}
+                    onChange={e => setHeroName(e.target.value)} />
                 </div>
-                <div style={{ fontSize: 11, color: 'rgba(244,239,232,.3)' }}>
-                  {pdfText ? `${pdfText.length.toLocaleString()} characters extracted` : 'Click to browse'}
-                </div>
-              </div>
 
-              <label className="au-label">Title</label>
-              <input className="au-input" placeholder="The Very Hungry Caterpillar" value={title}
-                onChange={e => { setTitle(e.target.value); setSlug(slugify(e.target.value)); }} />
+                {pdfText && (
+                  <div style={{ fontSize: 11, color: 'rgba(20,216,144,.6)', marginBottom: 10, fontFamily: "'DM Mono',monospace" }}>
+                    ✓ {pdfText.length.toLocaleString()} characters extracted from {fileName}
+                  </div>
+                )}
 
-              <label className="au-label">Main character name</label>
-              <input className="au-input" placeholder="e.g. Caterpillar, Max, Elmer" value={heroName}
-                onChange={e => setHeroName(e.target.value)} />
-            </div>
-
-            {pdfText && (
-              <div style={{ fontSize: 11, color: 'rgba(20,216,144,.6)', marginBottom: 10, fontFamily: "'DM Mono',monospace" }}>
-                ✓ {pdfText.length.toLocaleString()} characters extracted from {fileName}
-              </div>
+                {converting ? (
+                  <div className="au-loading">
+                    <div style={{ fontSize: 28, marginBottom: 8 }}>✨</div>
+                    Converting your book — this may take 30–60 seconds...
+                  </div>
+                ) : (
+                  <button className="au-btn au-btn-amber" disabled={!pdfText || !title} onClick={handleConvert}>
+                    Convert Book &rarr;
+                  </button>
+                )}
+              </>
             )}
 
-            {converting ? (
-              <div className="au-loading">
-                <div style={{ fontSize: 28, marginBottom: 8 }}>✨</div>
-                Converting your book — this may take 30–60 seconds...
-              </div>
-            ) : (
-              <button className="au-btn au-btn-amber" disabled={!pdfText || !title} onClick={handleConvert}>
-                Convert Book &rarr;
-              </button>
+            {/* ── PICTURE BOOK MODE ── */}
+            {mode === 'picture' && (
+              <>
+                <div className="au-card">
+                  <input type="file" ref={pictureFileRef} accept=".pdf" style={{ display: 'none' }} onChange={handlePictureFileSelect} />
+                  <div className="au-file-zone" onClick={() => pictureFileRef.current?.click()}>
+                    <div style={{ fontSize: 32, marginBottom: 8 }}>🖼️</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: '#F4EFE8', marginBottom: 4 }}>
+                      {fileName || 'Select a picture book PDF'}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'rgba(244,239,232,.3)' }}>
+                      {pdfPageCount > 0 ? `${pdfPageCount} pages detected` : 'The PDF will be displayed as-is with all illustrations'}
+                    </div>
+                  </div>
+
+                  <label className="au-label">Title</label>
+                  <input className="au-input" placeholder="Goodnight Moon" value={title}
+                    onChange={e => { setTitle(e.target.value); setSlug(slugify(e.target.value)); }} />
+
+                  <label className="au-label">Main character name (optional)</label>
+                  <input className="au-input" placeholder="e.g. Bunny, Max" value={heroName}
+                    onChange={e => setHeroName(e.target.value)} />
+                </div>
+
+                {pdfPageCount > 0 && (
+                  <div style={{ fontSize: 11, color: 'rgba(20,216,144,.6)', marginBottom: 10, fontFamily: "'DM Mono',monospace" }}>
+                    ✓ {pdfPageCount} pages in {fileName} — will be uploaded as-is
+                  </div>
+                )}
+
+                {converting ? (
+                  <div className="au-loading">
+                    <div style={{ fontSize: 28, marginBottom: 8 }}>📤</div>
+                    Uploading picture book...
+                  </div>
+                ) : (
+                  <button className="au-btn au-btn-amber" disabled={!pdfFile || !title} onClick={handlePictureUpload}>
+                    Upload Picture Book &rarr;
+                  </button>
+                )}
+              </>
             )}
           </>
         )}
@@ -324,11 +454,16 @@ export default function AdminUploadBook() {
         {step === 'metadata' && bookData && (
           <>
             <div className="au-h">Review &amp; Publish</div>
-            <div className="au-sub">{bookData.pages?.length || 0} pages converted. Review and add metadata.</div>
+            <div className="au-sub">
+              {bookData.pdfUrl
+                ? `Picture book — ${bookData.pageCount || '?'} pages. Add metadata and publish.`
+                : `${bookData.pages?.length || 0} pages converted. Review and add metadata.`}
+            </div>
 
             {error && <div className="au-error">{error}</div>}
 
-            {/* Page preview */}
+            {/* Page preview — text stories only */}
+            {bookData.pages && !bookData.pdfUrl && (
             <div className="au-card">
               <label className="au-label">Preview ({bookData.pages?.length} pages)</label>
               <div className="au-preview">
@@ -343,6 +478,23 @@ export default function AdminUploadBook() {
                 &larr; Re-convert
               </button>
             </div>
+            )}
+
+            {/* Picture book confirmation */}
+            {bookData.pdfUrl && (
+              <div className="au-card" style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 48, marginBottom: 8 }}>🖼️</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#F4EFE8', marginBottom: 4 }}>
+                  {bookData.pageCount} page picture book ready
+                </div>
+                <div style={{ fontSize: 11, color: 'rgba(244,239,232,.3)', marginBottom: 12 }}>
+                  PDF uploaded — will display original illustrations in the reader
+                </div>
+                <button className="au-btn au-btn-ghost" style={{ maxWidth: 200 }} onClick={() => setStep('upload')}>
+                  &larr; Choose different file
+                </button>
+              </div>
+            )}
 
             {/* Metadata form */}
             <div className="au-card">

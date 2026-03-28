@@ -426,11 +426,77 @@ export default function LibraryStoryReader({ slug }: Props) {
     </div>
   );
 
+  // ── PDF picture book state ──
+  const isPdfBook = !!story.bookData?.pdfUrl;
+  const [pdfDoc, setPdfDoc] = useState<any>(null);
+  const [pdfPageCount, setPdfPageCount] = useState(0);
+  const pdfCanvasRefs = useRef<Map<number, HTMLCanvasElement>>(new Map());
+
+  // Load PDF document when it's a picture book
+  useEffect(() => {
+    if (!isPdfBook) return;
+    const loadPdf = async () => {
+      try {
+        if (!(window as any).pdfjsLib) {
+          await new Promise<void>((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load PDF.js'));
+            document.head.appendChild(script);
+          });
+        }
+        const pdfjsLib = (window as any).pdfjsLib;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const pdf = await pdfjsLib.getDocument(story.bookData.pdfUrl).promise;
+        setPdfDoc(pdf);
+        setPdfPageCount(pdf.numPages);
+      } catch (e) { console.error('[reader] Failed to load PDF:', e); }
+    };
+    loadPdf();
+  }, [isPdfBook, story.bookData?.pdfUrl]);
+
+  // Render a PDF page to canvas when it becomes visible
+  useEffect(() => {
+    if (!pdfDoc || !isPdfBook) return;
+    const pdfPageIdx = pageIdx; // 0-indexed, maps directly to PDF pages for picture books
+    if (pdfPageIdx < 0 || pdfPageIdx >= pdfPageCount) return;
+
+    const renderPage = async () => {
+      const canvas = pdfCanvasRefs.current.get(pdfPageIdx);
+      if (!canvas) return;
+      // Skip if already rendered
+      if (canvas.dataset.rendered === String(pdfPageIdx)) return;
+      try {
+        const page = await pdfDoc.getPage(pdfPageIdx + 1); // pdf.js is 1-indexed
+        const viewport = page.getViewport({ scale: 2 }); // 2x for crisp rendering
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: canvas.getContext('2d')!, viewport }).promise;
+        canvas.dataset.rendered = String(pdfPageIdx);
+      } catch (e) { console.error(`[reader] Failed to render PDF page ${pdfPageIdx}:`, e); }
+    };
+    renderPage();
+    // Also pre-render adjacent pages
+    [pdfPageIdx - 1, pdfPageIdx + 1].forEach(async (idx) => {
+      if (idx < 0 || idx >= pdfPageCount) return;
+      const c = pdfCanvasRefs.current.get(idx);
+      if (!c || c.dataset.rendered === String(idx)) return;
+      try {
+        const pg = await pdfDoc.getPage(idx + 1);
+        const vp = pg.getViewport({ scale: 2 });
+        c.width = vp.width; c.height = vp.height;
+        await pg.render({ canvasContext: c.getContext('2d')!, viewport: vp }).promise;
+        c.dataset.rendered = String(idx);
+      } catch {}
+    });
+  }, [pdfDoc, pageIdx, pdfPageCount, isPdfBook]);
+
   // ── Derived state ──
-  const pages = story.bookData?.pages || story.bookData?.setup_pages || [];
-  const totalPages = 2 + pages.length;
+  const pages = isPdfBook ? [] : (story.bookData?.pages || story.bookData?.setup_pages || []);
+  const totalPages = isPdfBook ? pdfPageCount : (2 + pages.length);
   const isLast = pageIdx === totalPages - 1;
-  const isStoryPage = pageIdx >= 1 && !isLast;
+  const isStoryPage = isPdfBook ? (pageIdx >= 0 && pageIdx < pdfPageCount) : (pageIdx >= 1 && !isLast);
   const seed = parseInt(strHash(story.title + (story.heroName || '')), 36) || 0;
   const Scene = getSceneByVibe(seed, story.vibe);
   const displayTitle = personalise(story.title);
@@ -650,9 +716,26 @@ export default function LibraryStoryReader({ slug }: Props) {
         {/* Page carousel */}
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
           <div className="lr-track" style={{ transform: `translateX(${-pageIdx * 100}%)` }}>
-            {renderCoverPage()}
-            {pages.map((_: any, i: number) => renderStoryPage(i))}
-            {renderEndPage()}
+            {isPdfBook ? (
+              /* PDF picture book — render each page as a canvas */
+              Array.from({ length: pdfPageCount }).map((_, i) => (
+                <div key={`pdf-${i}`} className="lr-page" style={{ background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <canvas
+                    ref={el => { if (el) pdfCanvasRefs.current.set(i, el); }}
+                    style={{ maxWidth: '100%', maxHeight: '100dvh', objectFit: 'contain' }}
+                  />
+                  {/* Tap zones */}
+                  <div className="lr-tap lr-tap-l" onClick={() => goPage(-1)} />
+                  <div className="lr-tap lr-tap-r" onClick={() => goPage(1)} />
+                </div>
+              ))
+            ) : (
+              <>
+                {renderCoverPage()}
+                {pages.map((_: any, i: number) => renderStoryPage(i))}
+                {renderEndPage()}
+              </>
+            )}
           </div>
         </div>
       </div>
