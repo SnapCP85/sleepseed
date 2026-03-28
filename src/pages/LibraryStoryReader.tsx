@@ -191,6 +191,11 @@ export default function LibraryStoryReader({ slug }: Props) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
+  // PDF picture book state (must be declared before any early returns)
+  const [pdfDoc, setPdfDoc] = useState<any>(null);
+  const [pdfPageCount, setPdfPageCount] = useState(0);
+  const pdfCanvasRefs = useRef<Map<number, HTMLCanvasElement>>(new Map());
+
   // Reading state
   const [pageIdx, setPageIdx] = useState(0);
   const [showGate, setShowGate] = useState(false);
@@ -414,27 +419,12 @@ export default function LibraryStoryReader({ slug }: Props) {
     };
   }, [goPage, resetChromeFade]);
 
-  // ── Loading / Error states ──
-  if (loading) return <div className="lr-load"><style>{CSS}</style>Loading story\u2026</div>;
-  if (error || !story) return (
-    <div className="lr-err">
-      <style>{CSS}</style>
-      <div style={{ fontSize: 42, marginBottom: 16 }}>{'\uD83C\uDF19'}</div>
-      <h2>Story not found</h2>
-      <p>{error || 'This story may have been removed.'}</p>
-      <button className="lr-ghost-btn" onClick={() => setView('library')}>{'\u2190'} Back to library</button>
-    </div>
-  );
+  // ── PDF hooks (must be before early returns — Rules of Hooks) ──
+  const isPdfBook = !!story?.bookData?.pdfUrl;
+  const pdfUrl = story?.bookData?.pdfUrl;
 
-  // ── PDF picture book state ──
-  const isPdfBook = !!story.bookData?.pdfUrl;
-  const [pdfDoc, setPdfDoc] = useState<any>(null);
-  const [pdfPageCount, setPdfPageCount] = useState(0);
-  const pdfCanvasRefs = useRef<Map<number, HTMLCanvasElement>>(new Map());
-
-  // Load PDF document when it's a picture book
   useEffect(() => {
-    if (!isPdfBook) return;
+    if (!isPdfBook || !pdfUrl) return;
     const loadPdf = async () => {
       try {
         if (!(window as any).pdfjsLib) {
@@ -448,58 +438,50 @@ export default function LibraryStoryReader({ slug }: Props) {
         }
         const pdfjsLib = (window as any).pdfjsLib;
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        const pdf = await pdfjsLib.getDocument({
-          url: story.bookData.pdfUrl,
-          disableAutoFetch: false,
-          disableStream: false,
-        }).promise;
+        const pdf = await pdfjsLib.getDocument({ url: pdfUrl }).promise;
         setPdfDoc(pdf);
         setPdfPageCount(pdf.numPages);
         console.log('[reader] PDF loaded:', pdf.numPages, 'pages');
       } catch (e) {
         console.error('[reader] Failed to load PDF:', e);
         setError(`Failed to load picture book: ${(e as any)?.message || 'Unknown error'}`);
-        setLoading(false);
       }
     };
     loadPdf();
-  }, [isPdfBook, story.bookData?.pdfUrl]);
+  }, [isPdfBook, pdfUrl]);
 
-  // Render a PDF page to canvas when it becomes visible
   useEffect(() => {
     if (!pdfDoc || !isPdfBook) return;
-    const pdfPageIdx = pageIdx; // 0-indexed, maps directly to PDF pages for picture books
-    if (pdfPageIdx < 0 || pdfPageIdx >= pdfPageCount) return;
-
-    const renderPage = async () => {
-      const canvas = pdfCanvasRefs.current.get(pdfPageIdx);
-      if (!canvas) return;
-      // Skip if already rendered
-      if (canvas.dataset.rendered === String(pdfPageIdx)) return;
+    const idx = pageIdx;
+    if (idx < 0 || idx >= pdfPageCount) return;
+    const renderPdfPage = async (pgIdx: number) => {
+      const canvas = pdfCanvasRefs.current.get(pgIdx);
+      if (!canvas || canvas.dataset.rendered === String(pgIdx)) return;
       try {
-        const page = await pdfDoc.getPage(pdfPageIdx + 1); // pdf.js is 1-indexed
-        const viewport = page.getViewport({ scale: 2 }); // 2x for crisp rendering
+        const page = await pdfDoc.getPage(pgIdx + 1);
+        const viewport = page.getViewport({ scale: 2 });
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         await page.render({ canvasContext: canvas.getContext('2d')!, viewport }).promise;
-        canvas.dataset.rendered = String(pdfPageIdx);
-      } catch (e) { console.error(`[reader] Failed to render PDF page ${pdfPageIdx}:`, e); }
+        canvas.dataset.rendered = String(pgIdx);
+      } catch (e) { console.error(`[reader] PDF page ${pgIdx} render failed:`, e); }
     };
-    renderPage();
-    // Also pre-render adjacent pages
-    [pdfPageIdx - 1, pdfPageIdx + 1].forEach(async (idx) => {
-      if (idx < 0 || idx >= pdfPageCount) return;
-      const c = pdfCanvasRefs.current.get(idx);
-      if (!c || c.dataset.rendered === String(idx)) return;
-      try {
-        const pg = await pdfDoc.getPage(idx + 1);
-        const vp = pg.getViewport({ scale: 2 });
-        c.width = vp.width; c.height = vp.height;
-        await pg.render({ canvasContext: c.getContext('2d')!, viewport: vp }).promise;
-        c.dataset.rendered = String(idx);
-      } catch {}
-    });
+    renderPdfPage(idx);
+    [idx - 1, idx + 1].forEach(i => { if (i >= 0 && i < pdfPageCount) renderPdfPage(i); });
   }, [pdfDoc, pageIdx, pdfPageCount, isPdfBook]);
+
+  // ── Loading / Error states ──
+  if (loading) return <div className="lr-load"><style>{CSS}</style>Loading story&hellip;</div>;
+  if (isPdfBook && !pdfDoc && !error) return <div className="lr-load"><style>{CSS}</style><div style={{textAlign:'center'}}><div style={{fontSize:32,marginBottom:12}}>📖</div>Loading picture book&hellip;</div></div>;
+  if (error || !story) return (
+    <div className="lr-err">
+      <style>{CSS}</style>
+      <div style={{ fontSize: 42, marginBottom: 16 }}>{'\uD83C\uDF19'}</div>
+      <h2>Story not found</h2>
+      <p>{error || 'This story may have been removed.'}</p>
+      <button className="lr-ghost-btn" onClick={() => setView('library')}>{'\u2190'} Back to library</button>
+    </div>
+  );
 
   // ── Derived state ──
   const pages = isPdfBook ? [] : (story.bookData?.pages || story.bookData?.setup_pages || []);
@@ -513,19 +495,6 @@ export default function LibraryStoryReader({ slug }: Props) {
   const isNotLoggedIn = !user || user.isGuest;
   const isFreeUser = user && !user.isGuest && !isSubscribed;
   const chromeOpacity = isStoryPage ? (chromeVisible ? 1 : 0.25) : 1;
-
-  // ── PDF loading gate ──
-  if (isPdfBook && !pdfDoc) {
-    return (
-      <div className="lr-load">
-        <style>{CSS}</style>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>📖</div>
-          Loading picture book&hellip;
-        </div>
-      </div>
-    );
-  }
 
   // ── Personalisation gate ──
   if (showGate) {
