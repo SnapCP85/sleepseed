@@ -1495,6 +1495,7 @@ export default function SleepSeed({
   const [quickChars,     setQuickChars]     = useState<string[]>([]);
   const [error,          setError]          = useState("");
   const [book,           setBook]           = useState(null);
+  const lastSavedStoryIdRef = useRef<string>('');
   const [pageIdx,        setPageIdx]        = useState(0);
   const [chosenPath,     setChosenPath]     = useState(null);
   const [fromCache,      setFromCache]      = useState(false);
@@ -2389,6 +2390,7 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
   const saveMemory = useCallback(async (bookData) => {
     const occ = occasionCustom || occasion;
     const storyId = uid();
+    lastSavedStoryIdRef.current = storyId;
     const entry = {id:storyId,title:bookData.title,heroName:bookData.heroName,
       date:new Date().toISOString(),occasion:occ,bookData,
       characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
@@ -2491,12 +2493,14 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
       try {
         await dbSaveNightCard({
           id: entry.id, userId,
+          storyId: lastSavedStoryIdRef.current || undefined,
           heroName: entry.heroName || cardData.heroName || "",
           storyTitle: entry.storyTitle || "",
           characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
           headline: entry.headline || "",
           quote: entry.quote || entry.bondingA || "",
           memory_line: entry.memory_line || undefined,
+          whisper: entry.whisper || undefined,
           bondingQuestion: entry.bondingQ || undefined,
           bondingAnswer: entry.bondingA || undefined,
           gratitude: entry.gratitude || undefined,

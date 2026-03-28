@@ -284,7 +284,7 @@ function AppInner() {
         memory_line: nc?.memory_line || fs?.memoryLine || `${result.character.name} said it so quietly \u2014 like they already knew.`,
         whisper: nc?.whisper,
         emoji: nc?.emoji || result.creature.creatureEmoji,
-        date: new Date().toISOString(),
+        date: new Date().toISOString().split('T')[0],
         isOrigin: true,
         photo: nc?.photo || result.photoDataUrl,
         nightNumber: 1,
