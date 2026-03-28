@@ -689,7 +689,7 @@ export default function LibraryStoryReader({ slug }: Props) {
           <div className="lr-top-logo" onClick={() => setView('library')}>
             <div className="lr-top-moon" /> SleepSeed
           </div>
-          <button className="lr-top-btn" onClick={() => setSheetOpen(true)}>{'\u22EF'}</button>
+          {!isPdfBook && <button className="lr-top-btn" onClick={() => setSheetOpen(true)}>{'\u22EF'}</button>}
         </div>
 
         {/* Bottom chrome */}
