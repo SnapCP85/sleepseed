@@ -102,6 +102,7 @@ function AppInner() {
   } = useApp();
 
   const [preloadedBook,      setPreloadedBook]      = useState<any>(null);
+  const [dashKey,            setDashKey]            = useState(0);
   const [wizardChoices,      setWizardChoices]      = useState<import('./lib/types').BuilderChoices|null>(null);
   const [lastOnboardingResult, setLastOnboardingResult] = useState<OnboardingResult|null>(null);
   const [parentSetupData,   setParentSetupData]   = useState<ParentSetupResult|null>(() => {
@@ -221,7 +222,7 @@ function AppInner() {
   );
 
   const goAuth        = () => setView('auth');
-  const goDashboard   = () => { setNightCardFilter(undefined); setPreloadedBook(null); setView('dashboard'); };
+  const goDashboard   = () => { setNightCardFilter(undefined); setPreloadedBook(null); setDashKey(k => k + 1); setView('dashboard'); };
   const goStoryBuilder= (char?: Character) => {
     if (char) setSelectedCharacter(char);
     setPreloadedBook(null);
@@ -497,7 +498,7 @@ function AppInner() {
           </div>
         )}
 
-        <UserDashboard onSignUp={goAuth} onReadStory={openSavedStory} />
+        <UserDashboard key={dashKey} onSignUp={goAuth} onReadStory={openSavedStory} />
         <BottomNav current="dashboard" onNav={v => setView(v as any)} />
       </div>
     );
@@ -516,6 +517,7 @@ function AppInner() {
         setView('ritual-starter');
       }}
       onSleep={() => {
+        setDashKey(k => k + 1);
         setView('dashboard');
       }}
     />

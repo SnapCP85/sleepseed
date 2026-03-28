@@ -1524,6 +1524,10 @@ export default function SleepSeed({
   const [ncExtra,        setNcExtra]        = useState("");         // optional extra note
   const [ncPhoto,        setNcPhoto]        = useState<string|null>(null); // base64 data URL
   const [ncCountdown,    setNcCountdown]    = useState(0);          // 3-2-1 countdown
+  const [ncCameraOpen,   setNcCameraOpen]   = useState(false);       // live camera view
+  const [ncFacing,       setNcFacing]       = useState<'user'|'environment'>('user');
+  const ncCamVideoRef  = useRef<HTMLVideoElement>(null);
+  const ncCamStreamRef = useRef<MediaStream|null>(null);
   const [ncGenerating,   setNcGenerating]   = useState(false);      // Claude generating
   const [ncResult,       setNcResult]       = useState<any>(null);  // final Night Card
   const [ncRevealed,     setNcRevealed]     = useState(false);      // polaroid reveal done
@@ -1711,7 +1715,7 @@ export default function SleepSeed({
     const action = vibeToAction[bc.vibe]  || 'going on an adventure';
 
     const isRitual   = bc.path === 'ritual';
-    const storyCtx   = isRitual ? (ritualSeed || '') : '';
+    const storyCtx   = isRitual ? (bc.brief.trim() || ritualSeed || '') : '';
     const brief1     = isRitual ? '' : (bc.brief.trim() || action);
     const isAdventure = bc.style === 'adventure';
 
@@ -2518,6 +2522,43 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     }
     return entry;
   },[nightCards,userId,preloadedCharacter,companionCreature,occasion,occasionCustom]);
+
+  // ── Night card camera helpers ──
+  const ncOpenCamera = async (mode?: 'user' | 'environment') => {
+    const facing = mode || ncFacing;
+    if (ncCamStreamRef.current) ncCamStreamRef.current.getTracks().forEach(t => t.stop());
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing } });
+      ncCamStreamRef.current = stream;
+      setNcFacing(facing);
+      setNcCameraOpen(true);
+      setTimeout(() => { if (ncCamVideoRef.current) { ncCamVideoRef.current.srcObject = stream; ncCamVideoRef.current.play(); } }, 50);
+    } catch {
+      // Camera unavailable — fall back to file picker
+      const input = document.createElement('input');
+      input.type = 'file'; input.accept = 'image/*';
+      input.onchange = (e: any) => { const file = e.target.files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => setNcPhoto(ev.target?.result as string); reader.readAsDataURL(file); };
+      input.click();
+    }
+  };
+  const ncCapturePhoto = () => {
+    if (!ncCamVideoRef.current) return;
+    const video = ncCamVideoRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.getContext('2d')!.drawImage(video, 0, 0);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    if (ncCamStreamRef.current) { ncCamStreamRef.current.getTracks().forEach(t => t.stop()); ncCamStreamRef.current = null; }
+    setNcCameraOpen(false);
+    setNcPhoto(dataUrl);
+  };
+  const ncCloseCamera = () => {
+    if (ncCamStreamRef.current) { ncCamStreamRef.current.getTracks().forEach(t => t.stop()); ncCamStreamRef.current = null; }
+    setNcCameraOpen(false);
+  };
+  const ncFlipCamera = () => ncOpenCamera(ncFacing === 'user' ? 'environment' : 'user');
+  // Clean up camera on unmount
+  useEffect(() => () => { if (ncCamStreamRef.current) ncCamStreamRef.current.getTracks().forEach(t => t.stop()); }, []);
 
   const deleteNightCard = useCallback(async (id) => {
     const next = nightCards.filter(c => c.id!==id);
@@ -3533,21 +3574,46 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
               <div className="ss-nc-step" key="nc3">
                 <div className="ss-nc-eyebrow">{'\u2726'} Night Card {'\u00B7'} 4 of 4</div>
                 <div className="ss-nc-q">Add a photo to tonight's card</div>
-                {!ncPhoto ? (
-                  <div className="ss-nc-photo-zone" onClick={()=>{
-                    const input=document.createElement('input');
-                    input.type='file';input.accept='image/*';
-                    input.onchange=(e:any)=>{const file=e.target.files?.[0];if(!file)return;
-                      const reader=new FileReader();reader.onload=(ev)=>setNcPhoto(ev.target?.result as string);reader.readAsDataURL(file);};
-                    input.click();
-                  }}>
-                    <span style={{fontSize:34}}>{'\uD83D\uDCF7'}</span>
-                    <span style={{fontSize:12,color:'var(--cream-faint)'}}>Tap to add a photo</span>
+                {/* Live camera view */}
+                {ncCameraOpen && (
+                  <div style={{position:'relative',width:'100%',maxWidth:320,aspectRatio:'4/3',borderRadius:16,overflow:'hidden',margin:'0 auto 12px',background:'#000'}}>
+                    <video ref={ncCamVideoRef} playsInline muted style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                    <button onClick={ncFlipCamera} aria-label="Flip camera" style={{position:'absolute',top:10,right:10,width:36,height:36,borderRadius:'50%',background:'rgba(0,0,0,.5)',border:'none',color:'#fff',fontSize:16,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(4px)'}}>🔄</button>
+                    <div style={{position:'absolute',bottom:12,left:0,right:0,display:'flex',justifyContent:'center',gap:12}}>
+                      <button onClick={ncCloseCamera} style={{padding:'10px 20px',borderRadius:50,border:'1px solid rgba(255,255,255,.3)',background:'rgba(0,0,0,.5)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--sans)',backdropFilter:'blur(4px)'}}>Cancel</button>
+                      <button onClick={ncCapturePhoto} style={{padding:'10px 24px',borderRadius:50,border:'none',background:'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)',color:'#080200',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'var(--sans)'}}>Take a Photo</button>
+                    </div>
                   </div>
-                ) : (
-                  <div style={{width:150,height:150,borderRadius:22,overflow:'hidden',margin:'0 auto 20px',position:'relative'}}>
-                    <img src={ncPhoto} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} />
-                    <button onClick={()=>setNcPhoto(null)} style={{position:'absolute',top:6,right:6,width:24,height:24,borderRadius:'50%',background:'rgba(0,0,0,.6)',border:'none',color:'#fff',fontSize:11,cursor:'pointer'}}>{'\u2715'}</button>
+                )}
+                {/* Photo preview with retake */}
+                {ncPhoto && !ncCameraOpen && (
+                  <div style={{textAlign:'center',margin:'0 auto 16px'}}>
+                    <div style={{width:150,height:150,borderRadius:22,overflow:'hidden',margin:'0 auto 8px',position:'relative'}}>
+                      <img src={ncPhoto} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                    </div>
+                    <div style={{display:'flex',gap:10,justifyContent:'center'}}>
+                      <button onClick={()=>{setNcPhoto(null);ncOpenCamera();}} style={{background:'none',border:'none',color:'var(--cream-faint)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>Retake</button>
+                      <button onClick={()=>setNcPhoto(null)} style={{background:'none',border:'none',color:'var(--cream-faint)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>Remove</button>
+                    </div>
+                  </div>
+                )}
+                {/* Photo option buttons — only when no photo and camera not open */}
+                {!ncPhoto && !ncCameraOpen && (
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,margin:'0 auto 16px',maxWidth:320}}>
+                    <div onClick={()=>ncOpenCamera()} role="button" tabIndex={0} aria-label="Take a photo"
+                      style={{padding:'22px 12px',borderRadius:16,border:'1.5px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)',cursor:'pointer',textAlign:'center',transition:'all .2s'}}>
+                      <div style={{fontSize:28,marginBottom:6}}>📸</div>
+                      <div style={{fontSize:12,fontWeight:500,color:'var(--cream-dim)'}}>Take a Photo</div>
+                    </div>
+                    <div onClick={()=>{
+                      const input=document.createElement('input');input.type='file';input.accept='image/*';
+                      input.onchange=(e:any)=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=(ev)=>setNcPhoto(ev.target?.result as string);reader.readAsDataURL(file);};
+                      input.click();
+                    }} role="button" tabIndex={0} aria-label="Upload a photo"
+                      style={{padding:'22px 12px',borderRadius:16,border:'1.5px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)',cursor:'pointer',textAlign:'center',transition:'all .2s'}}>
+                      <div style={{fontSize:28,marginBottom:6}}>🖼️</div>
+                      <div style={{fontSize:12,fontWeight:500,color:'var(--cream-dim)'}}>Upload from today</div>
+                    </div>
                   </div>
                 )}
                 <button className="ss-nc-cta" onClick={()=>setNcStep(4)}>Create Night Card {'\u2726'}</button>
