@@ -111,7 +111,7 @@ export default function AdminUploadBook() {
   const [coverPreview, setCoverPreview] = useState('');
   const [publishedSlug, setPublishedSlug] = useState('');
 
-  // PDF file handler — extract text client-side with pdf.js
+  // PDF file handler — extract text client-side with pdf.js loaded via script tag
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -119,9 +119,20 @@ export default function AdminUploadBook() {
     setError('');
 
     try {
-      // Dynamic import pdf.js from CDN
-      const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs' as any);
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+      // Load pdf.js if not already loaded
+      if (!(window as any).pdfjsLib) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Failed to load PDF.js'));
+          document.head.appendChild(script);
+        });
+      }
+
+      const pdfjsLib = (window as any).pdfjsLib;
+      if (!pdfjsLib) throw new Error('PDF.js not available');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -134,9 +145,14 @@ export default function AdminUploadBook() {
         fullText += pageText + '\n\n';
       }
 
-      setPdfText(fullText.trim());
+      const extracted = fullText.trim();
+      if (!extracted) {
+        setError('No text could be extracted from this PDF. It may be image-only or scanned.');
+        return;
+      }
+
+      setPdfText(extracted);
       if (!title) {
-        // Try to guess title from filename
         const guess = file.name.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
         setTitle(guess);
         setSlug(slugify(guess));
@@ -148,7 +164,8 @@ export default function AdminUploadBook() {
 
   // Convert via API
   const handleConvert = async () => {
-    if (!pdfText || !title) return;
+    if (!pdfText) { setError('No PDF text extracted yet. Please select a PDF file first.'); return; }
+    if (!title) { setError('Please enter a title.'); return; }
     setConverting(true);
     setError('');
 
@@ -282,10 +299,16 @@ export default function AdminUploadBook() {
                 onChange={e => setHeroName(e.target.value)} />
             </div>
 
+            {pdfText && (
+              <div style={{ fontSize: 11, color: 'rgba(20,216,144,.6)', marginBottom: 10, fontFamily: "'DM Mono',monospace" }}>
+                ✓ {pdfText.length.toLocaleString()} characters extracted from {fileName}
+              </div>
+            )}
+
             {converting ? (
               <div className="au-loading">
-                <div style={{ fontSize: 28, marginBottom: 8, animation: 'float 3s ease-in-out infinite' }}>✨</div>
-                Converting your book...
+                <div style={{ fontSize: 28, marginBottom: 8 }}>✨</div>
+                Converting your book — this may take 30–60 seconds...
               </div>
             ) : (
               <button className="au-btn au-btn-amber" disabled={!pdfText || !title} onClick={handleConvert}>
