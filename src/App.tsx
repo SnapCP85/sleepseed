@@ -431,13 +431,13 @@ function AppInner() {
   if (view === 'library') return (
     <div style={{paddingBottom: user && !user.isGuest ? 74 : 0}}>
       <LibraryHome />
-      {user && !user.isGuest && <BottomNav current="library" onNav={v => { clearLibraryUrl(); setView(v as any); }} />}
+      {user && !user.isGuest && <BottomNav current="library" onNav={handleNav} />}
     </div>
   );
   if (view === 'library-story') return (
     <div style={{paddingBottom: user && !user.isGuest ? 74 : 0}}>
       <Suspense fallback={<div style={{minHeight:'100vh',background:'#060912',display:'flex',alignItems:'center',justifyContent:'center',color:'rgba(244,239,232,.3)',fontFamily:'system-ui',fontSize:14}}>Loading story&hellip;</div>}><LibraryStoryReader slug={libraryStorySlug ?? ''} /></Suspense>
-      {user && !user.isGuest && <BottomNav current="library" onNav={v => { clearLibraryUrl(); setView(v as any); }} />}
+      {user && !user.isGuest && <BottomNav current="library" onNav={handleNav} />}
     </div>
   );
 
@@ -517,7 +517,7 @@ function AppInner() {
         )}
 
         <UserDashboard key={dashKey} onSignUp={goAuth} onReadStory={openSavedStory} />
-        <BottomNav current="dashboard" onNav={v => setView(v as any)} />
+        <BottomNav current="dashboard" onNav={handleNav} />
       </div>
     );
   }
@@ -545,7 +545,7 @@ function AppInner() {
   if (view === 'hatchery') return (
     <div style={{paddingBottom:74}}>
       <Hatchery user={user!} onBack={goDashboard} />
-      <BottomNav current="" onNav={v=>setView(v as any)} />
+      <BottomNav current="" onNav={handleNav} />
     </div>
   );
   if (view === 'ritual-starter') return (

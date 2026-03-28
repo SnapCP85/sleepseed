@@ -361,7 +361,7 @@ export default function LibraryStoryReader({ slug }: Props) {
     setPageIdx(p => {
       if (!story) return p;
       const isPdf = !!story.bookData?.pdfUrl;
-      const total = isPdf ? pdfPageCount : (2 + (story.bookData?.pages || story.bookData?.setup_pages || []).length);
+      const total = isPdf ? (pdfPageCount + 1) : (2 + (story.bookData?.pages || story.bookData?.setup_pages || []).length);
       return Math.max(0, Math.min(total - 1, p + dir));
     });
   }, [story, pdfPageCount]);
@@ -485,7 +485,7 @@ export default function LibraryStoryReader({ slug }: Props) {
 
   // ── Derived state ──
   const pages = isPdfBook ? [] : (story.bookData?.pages || story.bookData?.setup_pages || []);
-  const totalPages = isPdfBook ? pdfPageCount : (2 + pages.length);
+  const totalPages = isPdfBook ? (pdfPageCount + 1) : (2 + pages.length); // +1 for end page on PDF books
   const isLast = pageIdx === totalPages - 1;
   const isStoryPage = isPdfBook ? (pageIdx >= 0 && pageIdx < pdfPageCount) : (pageIdx >= 1 && !isLast);
   const seed = parseInt(strHash(story.title + (story.heroName || '')), 36) || 0;
@@ -579,6 +579,7 @@ export default function LibraryStoryReader({ slug }: Props) {
                 text={translatedPage.sentences.map(s => s.foreign).join(' ')}
                 theme="dark"
                 className="lr-sp-text-inner"
+                hideControls
                 autoPlay={readAloudActive}
                 onFinish={() => setReadAloudActive(false)}
                 voiceId={selectedVoiceId}
@@ -588,6 +589,7 @@ export default function LibraryStoryReader({ slug }: Props) {
                 text={pageText}
                 theme="dark"
                 className="lr-sp-text-inner"
+                hideControls
                 autoPlay={readAloudActive}
                 onFinish={() => setReadAloudActive(false)}
                 voiceId={selectedVoiceId}
@@ -708,18 +710,21 @@ export default function LibraryStoryReader({ slug }: Props) {
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
           <div className="lr-track" style={{ transform: `translateX(${-pageIdx * 100}vw)` }}>
             {isPdfBook ? (
-              /* PDF picture book — render each page as a canvas */
-              Array.from({ length: pdfPageCount }).map((_, i) => (
-                <div key={`pdf-${i}`} className="lr-page" style={{ background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <canvas
-                    ref={el => { if (el) pdfCanvasRefs.current.set(i, el); }}
-                    style={{ maxWidth: '100%', maxHeight: '100dvh', objectFit: 'contain' }}
-                  />
-                  {/* Tap zones */}
-                  <div className="lr-tap lr-tap-l" onClick={() => goPage(-1)} />
-                  <div className="lr-tap lr-tap-r" onClick={() => goPage(1)} />
-                </div>
-              ))
+              /* PDF picture book — render each page as a canvas + end page */
+              <>
+                {Array.from({ length: pdfPageCount }).map((_, i) => (
+                  <div key={`pdf-${i}`} className="lr-page" style={{ background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <canvas
+                      ref={el => { if (el) pdfCanvasRefs.current.set(i, el); }}
+                      style={{ maxWidth: '100%', maxHeight: '100dvh', objectFit: 'contain' }}
+                    />
+                    {/* Tap zones */}
+                    <div className="lr-tap lr-tap-l" onClick={() => goPage(-1)} />
+                    <div className="lr-tap lr-tap-r" onClick={() => goPage(1)} />
+                  </div>
+                ))}
+                {renderEndPage()}
+              </>
             ) : (
               <>
                 {renderCoverPage()}
