@@ -360,11 +360,11 @@ export default function LibraryStoryReader({ slug }: Props) {
     setReadAloudActive(false);
     setPageIdx(p => {
       if (!story) return p;
-      const pgs = story.bookData?.pages || story.bookData?.setup_pages || [];
-      const total = 2 + pgs.length;
+      const isPdf = !!story.bookData?.pdfUrl;
+      const total = isPdf ? pdfPageCount : (2 + (story.bookData?.pages || story.bookData?.setup_pages || []).length);
       return Math.max(0, Math.min(total - 1, p + dir));
     });
-  }, [story]);
+  }, [story, pdfPageCount]);
 
   // ── Sparkle on page turn ──
   const emitSparkles = useCallback(() => {
