@@ -73,7 +73,7 @@ const PIXEL_FONT: Record<string, number[][]> = (() => {
   return result;
 })();
 
-function getNameStars(name: string): { x: number; y: number; viewWidth: number }[] {
+function getNameStars(name: string): { x: number; y: number; viewWidth: number; starR: number }[] {
   const chars = name.toUpperCase().replace(/[^A-Z]/g, '').split('');
   if (!chars.length) return [];
   const raw: { x: number; y: number }[] = [];
@@ -85,18 +85,23 @@ function getNameStars(name: string): { x: number; y: number; viewWidth: number }
   });
   const rawMaxX = Math.max(...raw.map(s => s.x), 1);
   const rawMaxY = Math.max(...raw.map(s => s.y), 1);
-  // Scale viewBox width so stars are never crammed — min 3px radius readable
-  // Short names (2-4 chars): use width 100. Long names scale proportionally.
+  // Each letter gets a fixed cell width so spacing is always readable
+  // Short names get generous spacing, long names stay legible
   const charCount = chars.length;
-  const viewWidth = Math.max(100, charCount * 14);
+  const cellW = charCount <= 5 ? 22 : charCount <= 8 ? 18 : charCount <= 11 ? 15 : 12;
+  const viewWidth = charCount * cellW + 16; // 8px pad each side
+  const viewHeight = 60;
   const padX = 8;
-  const padY = 15;
+  const padY = 12;
   const usableW = viewWidth - padX * 2;
-  const usableH = 50 - padY; // viewBox height is always 50
+  const usableH = viewHeight - padY * 2;
+  // Star radius scales with cell size — always visible
+  const starR = charCount <= 5 ? 2.2 : charCount <= 8 ? 1.8 : charCount <= 11 ? 1.5 : 1.3;
   return raw.map(s => ({
     x: padX + (s.x / rawMaxX) * usableW,
     y: padY + (s.y / rawMaxY) * usableH,
     viewWidth,
+    starR,
   }));
 }
 
@@ -842,14 +847,23 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
             {/* Star constellation of name */}
             {(welcomePhase === 'stars' || welcomePhase === 'egg' || welcomePhase === 'text') && (() => {
               const vw = nameStars[0]?.viewWidth || 100;
-              const svgWidth = Math.min(340, Math.max(200, vw * 2.4));
+              const sr = nameStars[0]?.starR || 1.8;
+              const svgWidth = Math.min(340, Math.max(220, vw * 2.8));
+              const vh = 60;
               return (
-                <svg viewBox={`0 0 ${vw} 50`} style={{ width: svgWidth, height: svgWidth * (50 / vw), margin: '0 auto 20px' }}>
+                <svg viewBox={`0 0 ${vw} ${vh}`} style={{ width: svgWidth, height: svgWidth * (vh / vw), margin: '0 auto 20px' }}>
                   {nameStars.map((s, i) => (
-                    <circle key={i} cx={s.x} cy={s.y} r="1.5" fill="var(--amber)">
-                      <animate attributeName="opacity" from="0" to="1" begin={`${0.3 + i * stepDelay}s`} dur="0.3s" fill="freeze" />
-                      <animate attributeName="r" from="0" to="1.5" begin={`${0.3 + i * stepDelay}s`} dur="0.3s" fill="freeze" />
-                    </circle>
+                    <g key={i}>
+                      {/* Glow */}
+                      <circle cx={s.x} cy={s.y} r={sr * 3} fill="rgba(245,184,76,.08)" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" begin={`${0.3 + i * stepDelay}s`} dur="0.4s" fill="freeze" />
+                      </circle>
+                      {/* Star */}
+                      <circle cx={s.x} cy={s.y} r={sr} fill="var(--amber)" opacity="0">
+                        <animate attributeName="opacity" from="0" to="1" begin={`${0.3 + i * stepDelay}s`} dur="0.3s" fill="freeze" />
+                        <animate attributeName="r" from="0" to={sr} begin={`${0.3 + i * stepDelay}s`} dur="0.3s" fill="freeze" />
+                      </circle>
+                    </g>
                   ))}
                 </svg>
               );

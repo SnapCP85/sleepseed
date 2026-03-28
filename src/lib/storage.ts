@@ -172,7 +172,7 @@ const dbToStory = (row: any): SavedStory => ({
 export const getStories = async (userId: string): Promise<SavedStory[]> => {
   const local = lsGet<SavedStory>(LS_STORIES(userId));
   try {
-    const { data, error } = await supabase.from('stories').select('*').eq('user_id', userId).order('date', { ascending: false });
+    const { data, error } = await supabase.from('stories').select('*').eq('user_id', userId).order('date', { ascending: false }).limit(30);
     if (!error && data?.length) {
       const db = data.map(dbToStory);
       const ids = new Set(local.map(s => s.id));
@@ -248,7 +248,7 @@ const dbToCard = (row: any): SavedNightCard => {
 export const getNightCards = async (userId: string): Promise<SavedNightCard[]> => {
   const local = lsGet<SavedNightCard>(LS_CARDS(userId));
   try {
-    const { data, error } = await supabase.from('night_cards').select('*').eq('user_id', userId).order('date', { ascending: false });
+    const { data, error } = await supabase.from('night_cards').select('*').eq('user_id', userId).order('date', { ascending: false }).limit(30);
     if (!error && data?.length) {
       const db = data.map(dbToCard);
       const ids = new Set(local.map(c => c.id));

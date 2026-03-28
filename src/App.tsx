@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { AppProvider, useApp } from './AppContext';
 import PublicHomepage from './pages/PublicHomepage';
 import Auth from './pages/Auth';
@@ -14,16 +14,18 @@ import CharacterBuilder from './features/characters/CharacterBuilder';
 import CharacterLibrary from './features/characters/CharacterLibrary';
 import StoryLibrary from './features/stories/StoryLibrary';
 import NightCardLibrary from './features/nightcards/NightCardLibrary';
-import SleepSeedCore from './SleepSeedCore';
 import SharedStoryViewer from './pages/SharedStoryViewer';
 import SharedNightCard from './pages/SharedNightCard';
 import PrintNightCard from './pages/PrintNightCard';
 import LibraryHome from './pages/LibraryHome';
-import LibraryStoryReader from './pages/LibraryStoryReader';
 import CharacterDetail from './features/characters/CharacterDetail';
 import Hatchery from './pages/Hatchery';
 import FirstNight from './pages/FirstNight';
 import DevStoryTest from './pages/DevStoryTest';
+
+// Lazy-loaded heavy components — not needed on initial render
+const SleepSeedCore = lazy(() => import('./SleepSeedCore'));
+const LibraryStoryReader = lazy(() => import('./pages/LibraryStoryReader'));
 import { saveCharacter, saveNightCard, saveStory, addFriendByCode } from './lib/storage';
 import { saveHatchedCreature, createEgg, getAllHatchedCreatures } from './lib/hatchery';
 import type { Character, HatchedCreature, SavedNightCard } from './lib/types';
@@ -240,7 +242,14 @@ function AppInner() {
   // Handle onboarding completion — save character, creature, egg, night card, story
   // Tracks completed steps so partial failures can be diagnosed
   const handleOnboardingComplete = async (result: OnboardingResult) => {
-    if (!user) return;
+    console.log('[onboarding] handleOnboardingComplete called, user:', user?.id || 'NO USER');
+    if (!user) {
+      console.error('[onboarding] ABORTED — no user session. Night card and story will NOT be saved.');
+      // Still navigate so user isn't stuck — data is in the OnboardingResult for retry
+      setLastOnboardingResult(result);
+      setView('first-night');
+      return;
+    }
 
     const storyId = crypto.randomUUID?.() || `story_${Date.now()}`;
     const errors: string[] = [];
@@ -283,7 +292,9 @@ function AppInner() {
         creatureEmoji: result.creature.creatureEmoji,
         creatureColor: result.creature.color,
       };
+      console.log('[onboarding] Saving night card:', nightCard.id, nightCard.headline);
       await saveNightCard(nightCard);
+      console.log('[onboarding] Night card saved successfully');
     } catch (e) { console.error('[onboarding] saveNightCard failed:', e); errors.push('nightCard'); }
 
     // Step 5: Story
@@ -308,6 +319,8 @@ function AppInner() {
 
     if (errors.length > 0) {
       console.error(`[onboarding] Completed with ${errors.length} failed steps:`, errors);
+    } else {
+      console.log('[onboarding] All 5 saves completed successfully');
     }
 
     // Always finish — even with partial failures, let the user proceed
@@ -320,6 +333,11 @@ function AppInner() {
 
   // Read a saved story directly — sets preloadedBook then routes to story-builder
   const openSavedStory = (bookData: any) => {
+    console.log('[stories] Opening saved story:', bookData?.title, 'pages:', bookData?.pages?.length);
+    if (!bookData) {
+      console.error('[stories] bookData is null/undefined — cannot open story');
+      return;
+    }
     setPreloadedBook(bookData);
     setView('story-builder');
   };
@@ -399,7 +417,7 @@ function AppInner() {
   );
   if (view === 'library-story') return (
     <div style={{paddingBottom: user && !user.isGuest ? 74 : 0}}>
-      <LibraryStoryReader slug={libraryStorySlug ?? ''} />
+      <Suspense fallback={<div style={{minHeight:'100vh',background:'#060912',display:'flex',alignItems:'center',justifyContent:'center',color:'rgba(244,239,232,.3)',fontFamily:'system-ui',fontSize:14}}>Loading story&hellip;</div>}><LibraryStoryReader slug={libraryStorySlug ?? ''} /></Suspense>
       {user && !user.isGuest && <BottomNav current="library" onNav={v => setView(v as any)} />}
     </div>
   );
@@ -631,20 +649,22 @@ function AppInner() {
             </div>
           )}
         </div>
-        <SleepSeedCore
-          userId={user?.id}
-          isGuest={user?.isGuest}
-          preloadedCharacter={selectedCharacters.length > 0 ? selectedCharacters[0] : selectedCharacter}
-          preloadedBook={preloadedBook}
-          ritualSeed={ritualSeed}
-          ritualMood={ritualMood}
-          builderChoices={wizardChoices}
-          companionCreature={companionCreature}
-          onCharacterSavePrompt={() => {}}
-          onStoryReady={() => {}}
-          onGenerateError={() => setView('story-wizard')}
-          onHome={() => setView('dashboard')}
-        />
+        <Suspense fallback={<div style={{minHeight:'100vh',background:'#060912',display:'flex',alignItems:'center',justifyContent:'center',color:'rgba(244,239,232,.3)',fontFamily:'system-ui',fontSize:14}}>Loading&hellip;</div>}>
+          <SleepSeedCore
+            userId={user?.id}
+            isGuest={user?.isGuest}
+            preloadedCharacter={selectedCharacters.length > 0 ? selectedCharacters[0] : selectedCharacter}
+            preloadedBook={preloadedBook}
+            ritualSeed={ritualSeed}
+            ritualMood={ritualMood}
+            builderChoices={wizardChoices}
+            companionCreature={companionCreature}
+            onCharacterSavePrompt={() => {}}
+            onStoryReady={() => {}}
+            onGenerateError={() => setView('story-wizard')}
+            onHome={() => setView('dashboard')}
+          />
+        </Suspense>
       </div>
     );
   }
