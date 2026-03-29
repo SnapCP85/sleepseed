@@ -285,7 +285,7 @@ export default function SharedStoryViewer() {
           <div className="sv-mkt-moon" />
           <div className="sv-mkt-h">Make a story like this<br />for your child.</div>
           <div className="sv-mkt-sub">Personalised bedtime stories starring your child — written in 60 seconds. Every night, a new one. Then a Night Card to keep forever.</div>
-          <button className="sv-mkt-btn" onClick={() => window.open('https://sleepseed-vercel.vercel.app', '_blank')}>
+          <button className="sv-mkt-btn" onClick={() => window.open('https://sleepseed.vercel.app', '_blank')}>
             Start free tonight ✨
           </button>
           <div className="sv-mkt-trust">

@@ -82,8 +82,8 @@ export default function MemoryReel() {
         <button onClick={async () => {
           const title = summary?.summary_title as string || 'Our Book';
           const arc = summary?.emotional_arc as string || '';
-          const text = `"${title}" — a 7-night bedtime book we made together.\n${arc ? arc.split('.')[0] + '.' : ''}\n\nsleepseed-vercel.vercel.app`;
-          try { await navigator.share?.({title, text, url: 'https://sleepseed-vercel.vercel.app'}); }
+          const text = `"${title}" — a 7-night bedtime book we made together.\n${arc ? arc.split('.')[0] + '.' : ''}\n\nsleepseed.vercel.app`;
+          try { await navigator.share?.({title, text, url: 'https://sleepseed.vercel.app'}); }
           catch(_) { navigator.clipboard?.writeText(text); }
         }} style={{ padding: '14px 20px', background: 'rgba(245,184,76,.15)', border: '1px solid rgba(245,184,76,.3)', color: '#F5B84C', borderRadius: 12, fontSize: 15, cursor: 'pointer', fontWeight: 600, width: '100%', marginBottom: 12 }}>
           Share our book ✨

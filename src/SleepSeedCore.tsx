@@ -2081,14 +2081,14 @@ export default function SleepSeed({
       ctx.fillStyle = "rgba(212,160,48,.35)";
       ctx.font = "500 22px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(`A story for ${book.heroName}  ·  sleepseed-vercel.vercel.app`, SIZE/2, SIZE-52);
+      ctx.fillText(`A story for ${book.heroName}  ·  sleepseed.vercel.app`, SIZE/2, SIZE-52);
 
       // Export
       canvas.toBlob(async (blob) => {
         if(!blob) return;
         const file = new File([blob], `${book.title.replace(/[^a-z0-9]/gi,"_")}_card.png`, {type:"image/png"});
         if(navigator.canShare?.({files:[file]})) {
-          await navigator.share({files:[file], title:book.title, text:`A bedtime story for ${book.heroName} — made with SleepSeed\n\nsleepseed-vercel.vercel.app`, url:'https://sleepseed-vercel.vercel.app'});
+          await navigator.share({files:[file], title:book.title, text:`A bedtime story for ${book.heroName} — made with SleepSeed\n\nsleepseed.vercel.app`, url:'https://sleepseed.vercel.app'});
         } else {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a"); a.href=url; a.download=file.name; a.click();
@@ -2160,7 +2160,7 @@ export default function SleepSeed({
       doc.setFontSize(6.5);
       doc.setTextColor(255, 255, 255, 0.18 as any);
       doc.setTextColor(100, 100, 130);
-      doc.text("sleepseed-vercel.vercel.app", LP/2, H-12, { align:"center" });
+      doc.text("sleepseed.vercel.app", LP/2, H-12, { align:"center" });
 
       // Right title panel
       doc.setFillColor(...WHITE);
@@ -2191,7 +2191,7 @@ export default function SleepSeed({
       doc.setFontSize(7.5);
       doc.setTextColor(...FOR_LBL);
       doc.text("Written just for tonight", RX, 96 + titleLines.length*7 + 12);
-      doc.text("sleepseed-vercel.vercel.app", RX, 96 + titleLines.length*7 + 19);
+      doc.text("sleepseed.vercel.app", RX, 96 + titleLines.length*7 + 19);
 
       // ── STORY PAGES: 2 per sheet ──────────────────────────────────────
       const allPages = book.isAdventure
@@ -2256,7 +2256,7 @@ export default function SleepSeed({
         doc.setFont("helvetica", "normal");
         doc.setFontSize(6);
         doc.setTextColor(...URL_C);
-        doc.text("sleepseed-vercel.vercel.app", X0+PW-PAD_X, H - PAD_BOT + 7, { align:"right" });
+        doc.text("sleepseed.vercel.app", X0+PW-PAD_X, H - PAD_BOT + 7, { align:"right" });
       };
 
       // Pair pages onto sheets
@@ -2282,7 +2282,7 @@ export default function SleepSeed({
       doc.text("BEDTIME STORIES", LP/2, 93, { align:"center" });
       doc.setFontSize(6.5);
       doc.setTextColor(100, 100, 130);
-      doc.text("sleepseed-vercel.vercel.app", LP/2, H-12, { align:"center" });
+      doc.text("sleepseed.vercel.app", LP/2, H-12, { align:"center" });
 
       // Right: The End
       doc.setFillColor(...WHITE);
@@ -2958,8 +2958,8 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
   async function shareNightCard(includeStory = false) {
     if(!ncResult) return;
     const storyLine = includeStory && book?.title ? `\nFrom "${book.title}" — a story for ${book.heroName}` : '';
-    const shareText = `"${ncResult.headline}"\n${ncResult.quote}${storyLine}\n\nsleepseed-vercel.vercel.app`;
-    try { await navigator.share?.({title:`${book?.heroName}'s Night Card`,text:shareText,url:'https://sleepseed-vercel.vercel.app'}); }
+    const shareText = `"${ncResult.headline}"\n${ncResult.quote}${storyLine}\n\nsleepseed.vercel.app`;
+    try { await navigator.share?.({title:`${book?.heroName}'s Night Card`,text:shareText,url:'https://sleepseed.vercel.app'}); }
     catch(_) { navigator.clipboard?.writeText(shareText).then(()=>{}).catch(()=>{}); }
   }
   function saveAndExitNc() {
@@ -3089,8 +3089,8 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
         {book.nightCard && (
           <button className="ss-ghost-btn" onClick={()=>{
             const nc = book.nightCard;
-            const text = `"${nc.headline||book.title}"\n${nc.quote||book.refrain||''}\nFrom "${book.title}" — a story for ${book.heroName}\n\nsleepseed-vercel.vercel.app`;
-            navigator.share?.({title:`${book.heroName}'s Night Card`,text,url:'https://sleepseed-vercel.vercel.app'})
+            const text = `"${nc.headline||book.title}"\n${nc.quote||book.refrain||''}\nFrom "${book.title}" — a story for ${book.heroName}\n\nsleepseed.vercel.app`;
+            navigator.share?.({title:`${book.heroName}'s Night Card`,text,url:'https://sleepseed.vercel.app'})
               .catch(()=>navigator.clipboard?.writeText(text));
           }}>{'\uD83C\uDF19'} Share with Night Card</button>
         )}
