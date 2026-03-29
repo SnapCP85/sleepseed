@@ -776,13 +776,6 @@ body{background:var(--night);font-family:var(--sans);color:var(--cream);min-heig
 .ss-noscreen-title{font-family:var(--sans);font-size:14px;color:var(--cream-dim);text-align:center;line-height:1.6}
 .ss-noscreen-title em{font-family:var(--serif);font-size:17px;font-weight:700;color:rgba(245,184,76,.7);font-style:italic;display:block;margin-top:4px}
 .ss-noscreen-tap{font-size:11px;color:var(--cream-faint);margin-top:20px}
-@keyframes nc-fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes nc-fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes nc-shimmer{0%{transform:translateX(-130%)}100%{transform:translateX(230%)}}
-@keyframes nc-floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-@keyframes nc-writingDot{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
-@keyframes nc-cardReveal{from{transform:translateY(40px) scale(.94);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
-@keyframes nc-polaroid{0%{filter:brightness(2.5) saturate(0) contrast(.6);opacity:.3}30%{filter:brightness(1.6) saturate(.3) contrast(.8);opacity:.7}70%{filter:brightness(1.1) saturate(.8) contrast(.95);opacity:.95}100%{filter:brightness(1) saturate(1) contrast(1);opacity:1}}
 `;
 
 
@@ -1524,9 +1517,7 @@ export default function SleepSeed({
   const [lastErrStage,   setLastErrStage]   = useState<string|null>(null);
   const [nightCards,     setNightCards]     = useState([]);
   const [memoriesTab,    setMemoriesTab]    = useState<"stories"|"nightcards">("stories");
-  const [ncStep,         setNcStep]         = useState(0);          // 0=bonding, 1=gratitude, 2=whisper, 3=generating, 4=reveal
-  const [ncGenTextIdx,   setNcGenTextIdx]   = useState(0);
-  const [ncGenPct,       setNcGenPct]       = useState(0);
+  const [ncStep,         setNcStep]         = useState(0);          // 0-4 for 5 Night Card steps
   const [ncBondingQ,     setNcBondingQ]     = useState("");         // bonding question from generation
   const [ncBondingA,     setNcBondingA]     = useState("");         // child's answer
   const [ncGratitude,    setNcGratitude]    = useState("");         // "best three seconds"
@@ -2358,25 +2349,13 @@ export default function SleepSeed({
     return () => { cancelled = true; ncStreamRef.current?.getTracks().forEach(t=>t.stop()); ncStreamRef.current=null; };
   },[stage,ncStep,ncPhoto]);
 
-  // ── Night Card generation animation effect ──
-  useEffect(() => {
-    if (stage === 'nightcard' && ncStep === 3) {
-      setNcGenTextIdx(0);
-      setNcGenPct(0);
-      const iv = setInterval(() => {
-        setNcGenTextIdx(i => Math.min(i + 1, 3));
-        setNcGenPct(p => Math.min(p + 18 + Math.random() * 8, 97));
-      }, 700);
-      return () => clearInterval(iv);
-    }
-  }, [stage, ncStep]);
-
   // ── Night Card generation effect ──
   useEffect(() => {
-    if(stage!=="nightcard" || ncStep!==3 || ncGenerating || ncResult) return;
+    if(stage!=="nightcard" || ncStep!==4 || ncGenerating || ncResult) return;
     setNcGenerating(true);
     const name = book?.heroName||"";
-    const bondingParts: string[] = [];
+    // Build bonding context — only include fields that have content
+    const bondingParts = [];
     if(ncBondingQ && ncBondingA.trim()) bondingParts.push(`Asked "${ncBondingQ}" — ${name} said: "${ncBondingA.trim()}"`);
     if(ncGratitude.trim()) bondingParts.push(`Best moment: "${ncGratitude.trim()}"`);
     if(ncExtra.trim()) bondingParts.push(`Note: "${ncExtra.trim()}"`);
@@ -2392,15 +2371,8 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
     };
     callClaude([{role:"user",content:ncPrompt}],
       "Write Night Card keepsakes. Weave real bonding moments — the child's actual words — into warm, specific mementos. Be concise. Return only JSON.", 300
-    ).then(raw => {
-      try { setNcResult(extractJSON(raw)); } catch(_) { setNcResult(fallback); }
-      setNcGenPct(100);
-      setTimeout(() => setNcStep(4), 400);
-    }).catch(() => {
-      setNcResult(fallback);
-      setNcGenPct(100);
-      setTimeout(() => setNcStep(4), 400);
-    });
+    ).then(raw => { try { setNcResult(extractJSON(raw)); } catch(_) { setNcResult(fallback); } })
+     .catch(() => setNcResult(fallback));
   },[stage,ncStep,ncGenerating,ncResult]);
 
   const newChar = () => ({id:uid(),type:"friend",name:"",photo:null,classify:"",gender:"",note:""});
@@ -3095,66 +3067,47 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
     </div>
   );
 
-  const enterNightCardFlow = () => {
-    setNcStep(0);setNcBondingA(ncBondingA||"");setNcGratitude("");setNcExtra("");
-    setNcPhoto(null);setNcCountdown(0);setNcGenerating(false);
-    setNcResult(null);setNcRevealed(false);setNcPhotoMode('idle');
-    setNcGenTextIdx(0);setNcGenPct(0);
-    window.speechSynthesis?.cancel();
-    if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}
-    autoReadRef.current=false;setIsReading(false);
-    setStage("nightcard");
-  };
-
-  const exitToHome = () => { onHome?onHome():setStage("home"); };
-
   const buildSSEndPage = () => (
-    <div className="ss-page" key="end" style={{position:'relative',minHeight:'100%',background:'#060912',display:'flex',flexDirection:'column',overflow:'hidden'}}>
-      {/* Atmosphere */}
-      <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 30%,rgba(60,30,120,.4),transparent 65%),radial-gradient(ellipse at 30% 80%,rgba(20,30,100,.25),transparent 50%)'}}/>
-      <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 28px 20px',textAlign:'center'}}>
-        {/* Ornament */}
-        <div style={{marginBottom:24,animation:'nc-fadeIn 1s ease both'}}>
-          <svg viewBox="0 0 80 24" width="80" height="24" fill="none">
-            <line x1="0" y1="12" x2="28" y2="12" stroke="rgba(245,184,76,.3)" strokeWidth=".8"/>
-            <circle cx="40" cy="12" r="4" fill="rgba(245,184,76,.5)"/>
-            <circle cx="40" cy="12" r="2" fill="#F5B84C"/>
-            <line x1="52" y1="12" x2="80" y2="12" stroke="rgba(245,184,76,.3)" strokeWidth=".8"/>
-            <circle cx="31" cy="12" r="1.5" fill="rgba(245,184,76,.35)"/>
-            <circle cx="49" cy="12" r="1.5" fill="rgba(245,184,76,.35)"/>
-          </svg>
-        </div>
-        <div style={{fontSize:13,color:'rgba(234,242,255,.38)',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:10,animation:'nc-fadeUp .6s .1s ease both',opacity:0}}>THE END</div>
-        <div style={{fontSize:32,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.1,letterSpacing:'-.6px',marginBottom:6,animation:'nc-fadeUp .6s .2s ease both',opacity:0}}>{book?.title??'Tonight\'s Story'}</div>
-        <div style={{fontSize:13,color:'rgba(234,242,255,.35)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',marginBottom:28,animation:'nc-fadeUp .6s .3s ease both',opacity:0}}>A story for {book?.heroName??heroName}</div>
-        {book?.refrain && (
-          <div style={{padding:'14px 18px',background:'rgba(245,184,76,.07)',border:'1px solid rgba(245,184,76,.2)',borderRadius:16,marginBottom:28,animation:'nc-fadeUp .6s .4s ease both',opacity:0}}>
-            <div style={{fontSize:11,color:'rgba(245,184,76,.5)',fontFamily:"'DM Mono',monospace",letterSpacing:'.6px',marginBottom:5}}>TONIGHT'S REFRAIN</div>
-            <div style={{fontSize:13,color:'rgba(244,239,232,.6)',fontFamily:"'Lora',serif",fontStyle:'italic',lineHeight:1.6}}>"{book.refrain}"</div>
-          </div>
+    <div className="ss-page ss-end" key="end">
+      <div className="ss-end-moon">{'\uD83C\uDF19'}</div>
+      <div className="ss-end-title">The End</div>
+      {book.refrain && <div className="ss-end-refrain">{'\u201C'}{book.refrain}{'\u201D'}</div>}
+      <div className="ss-end-msg">Sweet dreams, {book.heroName}.<br/>Tomorrow night, another adventure awaits{'\u2026'}</div>
+      <div className="ss-end-btns">
+        {!book.nightCard && (
+          <button className="ss-amber-btn" onClick={()=>{
+            setNcStep(0);setNcBondingA(ncBondingA||"");setNcGratitude("");setNcExtra("");
+            setNcPhoto(null);setNcCountdown(0);setNcGenerating(false);
+            setNcResult(null);setNcRevealed(false);setNcPhotoMode('idle');
+            window.speechSynthesis?.cancel();
+            if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}
+            autoReadRef.current=false;setIsReading(false);
+            setStage("nightcard");
+          }}>{'\u2726'} Create tonight's Night Card</button>
         )}
-        <div style={{marginBottom:24,animation:'nc-fadeUp .6s .5s ease both, nc-floatY 5s ease-in-out infinite',opacity:0}}>
-          <div style={{fontSize:64,lineHeight:1}}>{companionCreature?.creatureEmoji??'🐰'}</div>
-        </div>
-        <div style={{fontSize:13,color:'rgba(234,242,255,.45)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.65,marginBottom:32,animation:'nc-fadeUp .6s .6s ease both',opacity:0}}>
-          {companionCreature?.name??'Your companion'} wants to save<br/>a memory from tonight.
-        </div>
-        <div style={{width:'100%',animation:'nc-fadeUp .6s .7s ease both',opacity:0,display:'flex',flexDirection:'column',gap:10}}>
-          {!book?.nightCard && (
-            <>
-              <button onClick={enterNightCardFlow} style={{position:'relative',width:'100%',padding:'17px 20px',borderRadius:18,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)'}}>
-                <div style={{position:'absolute',inset:0,background:'linear-gradient(108deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%)',animation:'nc-shimmer 5.5s infinite',pointerEvents:'none'}}/>
-                <span style={{position:'relative',zIndex:1}}>Save tonight's memory →</span>
-              </button>
-              <button onClick={exitToHome} style={{background:'none',border:'none',color:'rgba(234,242,255,.25)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.3px',padding:'4px 0'}}>skip for now</button>
-            </>
-          )}
-          {book?.nightCard && (
-            <button onClick={exitToHome} style={{position:'relative',width:'100%',padding:'17px 20px',borderRadius:18,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)'}}>Home</button>
-          )}
-          <button onClick={shareStory} style={{width:'100%',padding:'15px 20px',borderRadius:18,border:'1px solid rgba(244,239,232,.16)',background:'rgba(244,239,232,.06)',color:'rgba(234,242,255,.68)',fontSize:14,fontWeight:600,fontFamily:"'Fraunces',serif",cursor:'pointer'}}>Share this story</button>
-        </div>
+        <button className="ss-ghost-btn" onClick={shareStory}>{'\uD83D\uDCF1'} Share this story</button>
+        {book.nightCard && (
+          <button className="ss-ghost-btn" onClick={()=>{
+            const nc = book.nightCard;
+            const text = `"${nc.headline||book.title}"\n${nc.quote||book.refrain||''}\nFrom "${book.title}" — a story for ${book.heroName}\n\nsleepseed.vercel.app`;
+            navigator.share?.({title:`${book.heroName}'s Night Card`,text,url:'https://sleepseed.vercel.app'})
+              .catch(()=>navigator.clipboard?.writeText(text));
+          }}>{'\uD83C\uDF19'} Share with Night Card</button>
+        )}
+        <button className="ss-ghost-btn" onClick={downloadStory}>{'\uD83D\uDCC4'} Save as PDF</button>
+        {book.nightCard && (
+          <button className="ss-ghost-btn" onClick={()=>{window.speechSynthesis?.cancel();if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}autoReadRef.current=false;setIsReading(false);onHome?onHome():setStage("home");}}>
+            {'\uD83C\uDFE0'} Home
+          </button>
+        )}
+        {!book.nightCard && (
+          <div style={{fontSize:11,color:'var(--cream-faint)',textAlign:'center',cursor:'pointer'}} onClick={()=>{onHome?onHome():setStage("home");}}>skip for now</div>
+        )}
       </div>
+      <button className="ss-ghost-btn" style={{marginTop:12,maxWidth:290,borderColor:'rgba(217,119,6,.3)',color:'rgba(217,119,6,.8)'}} onClick={()=>setShowFeedback(true)}>
+        {'\u2B50'} How was this story?
+      </button>
+
     </div>
   );
 
@@ -3582,171 +3535,151 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
           </div>
         )}
 
-        {/* ═══ NIGHT CARD FLOW — redesigned 5-screen ritual ═══ */}
+        {/* NIGHT CARD FLOW — full-screen overlay */}
         {stage==="nightcard" && book && (
-          <>
-            {/* Screen 1 — Bonding Question */}
-            {ncStep===0 && (
-              <div style={{minHeight:'100dvh',background:'#060912',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'}}>
-                <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 20%,rgba(154,127,212,.18),transparent 60%)'}}/>
-                <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',padding:'60px 24px 24px'}}>
-                  {/* Progress pills */}
-                  <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:8}}>
-                    {[0,1,2].map(i=><div key={i} style={{height:8,borderRadius:4,transition:'all .3s cubic-bezier(.2,.8,.3,1)',background:i<0?'rgba(245,184,76,.7)':i===0?'#F5B84C':'rgba(234,242,255,.15)',width:i===0?24:8}}/>)}
-                  </div>
-                  {/* Creature + speech bubble */}
-                  <div style={{display:'flex',alignItems:'flex-end',gap:12,marginBottom:24,animation:'nc-fadeUp .35s ease both'}}>
-                    <div style={{flexShrink:0,animation:'nc-floatY 4.5s ease-in-out infinite'}}>
-                      <div style={{fontSize:48,lineHeight:1}}>{companionCreature?.creatureEmoji??'🐰'}</div>
+          <div className="ss-nc">
+            {/* Starfield */}
+            {STARS_DATA.slice(0,70).map(s=>(
+              <div key={`nc-s-${s.id}`} className="ss-nc-star" style={{top:`${s.top}%`,left:`${s.left}%`,width:s.size,height:s.size,'--d':s.d,'--dl':s.dl,'--lo':s.lo,'--hi':s.hi} as any} />
+            ))}
+            {/* Progress dots */}
+            <div className="ss-nc-dots">
+              {[0,1,2,3].map(i=>(
+                <div key={i} className={`ss-nc-dot${(ncStep<4?ncStep:3)>i?' done':''} ${(ncStep<4?ncStep:3)===i?' cur':''}`} />
+              ))}
+            </div>
+
+            {/* Step 1 — Bonding Question */}
+            {ncStep===0 && !ncGenerating && !ncResult && (
+              <div className="ss-nc-step" key="nc0">
+                <div className="ss-nc-eyebrow">{'\u2726'} Night Card {'\u00B7'} 1 of 4</div>
+                <div className="ss-nc-q">{ncBondingQ || 'What made you smile today?'}</div>
+                <textarea className="ss-nc-ta" placeholder={`${book.heroName} said\u2026`}
+                  value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)} rows={3} />
+                <button className="ss-nc-cta" onClick={()=>setNcStep(1)}>Continue {'\u2192'}</button>
+                <button className="ss-nc-skip" onClick={()=>setNcStep(1)}>Skip for now</button>
+              </div>
+            )}
+
+            {/* Step 2 — Gratitude */}
+            {ncStep===1 && !ncGenerating && !ncResult && (
+              <div className="ss-nc-step" key="nc1">
+                <div className="ss-nc-eyebrow">{'\u2726'} Night Card {'\u00B7'} 2 of 4</div>
+                <div className="ss-nc-q">What made {book.heroName} smile today?</div>
+                <textarea className="ss-nc-ta" placeholder="The best moment was\u2026"
+                  value={ncGratitude} onChange={e=>setNcGratitude(e.target.value)} rows={3} />
+                <button className="ss-nc-cta" onClick={()=>setNcStep(2)}>Continue {'\u2192'}</button>
+                <button className="ss-nc-skip" onClick={()=>setNcStep(2)}>Skip for now</button>
+              </div>
+            )}
+
+            {/* Step 3 — Tonight's Memory */}
+            {ncStep===2 && !ncGenerating && !ncResult && (
+              <div className="ss-nc-step" key="nc2">
+                <div className="ss-nc-eyebrow">{'\u2726'} Night Card {'\u00B7'} 3 of 4</div>
+                <div className="ss-nc-q">Anything to remember about tonight?</div>
+                <textarea className="ss-nc-ta" placeholder="A note for future you\u2026"
+                  value={ncExtra} onChange={e=>setNcExtra(e.target.value)} rows={3} />
+                <button className="ss-nc-cta" onClick={()=>setNcStep(3)}>Continue {'\u2192'}</button>
+                <button className="ss-nc-skip" onClick={()=>setNcStep(3)}>Skip for now</button>
+              </div>
+            )}
+
+            {/* Step 4 — Photo */}
+            {ncStep===3 && !ncGenerating && !ncResult && (
+              <div className="ss-nc-step" key="nc3">
+                <div className="ss-nc-eyebrow">{'\u2726'} Night Card {'\u00B7'} 4 of 4</div>
+                <div className="ss-nc-q">Add a photo to tonight's card</div>
+                {/* Live camera view */}
+                {ncCameraOpen && (
+                  <div style={{position:'relative',width:'100%',maxWidth:320,aspectRatio:'4/3',borderRadius:16,overflow:'hidden',margin:'0 auto 12px',background:'#000'}}>
+                    <video ref={ncCamVideoRef} playsInline muted style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                    <button onClick={ncFlipCamera} aria-label="Flip camera" style={{position:'absolute',top:10,right:10,width:36,height:36,borderRadius:'50%',background:'rgba(0,0,0,.5)',border:'none',color:'#fff',fontSize:16,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(4px)'}}>🔄</button>
+                    <div style={{position:'absolute',bottom:12,left:0,right:0,display:'flex',justifyContent:'center',gap:12}}>
+                      <button onClick={ncCloseCamera} style={{padding:'10px 20px',borderRadius:50,border:'1px solid rgba(255,255,255,.3)',background:'rgba(0,0,0,.5)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--sans)',backdropFilter:'blur(4px)'}}>Cancel</button>
+                      <button onClick={ncCapturePhoto} style={{padding:'10px 24px',borderRadius:50,border:'none',background:'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)',color:'#080200',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'var(--sans)'}}>Take a Photo</button>
                     </div>
-                    <div style={{position:'relative',flex:1,background:'rgba(154,127,212,.12)',border:'1px solid rgba(154,127,212,.28)',borderRadius:'18px 18px 18px 4px',padding:'13px 15px'}}>
-                      <div style={{fontSize:9,color:'rgba(180,155,240,.65)',fontFamily:"'DM Mono',monospace",letterSpacing:'.6px',marginBottom:5,textTransform:'uppercase'}}>{companionCreature?.name??'Moon Bunny'} asks</div>
-                      <div style={{fontSize:14,fontWeight:700,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.4,letterSpacing:'-.1px'}}>{ncBondingQ||'What was the best part of today?'}</div>
+                  </div>
+                )}
+                {/* Photo preview with retake */}
+                {ncPhoto && !ncCameraOpen && (
+                  <div style={{textAlign:'center',margin:'0 auto 16px'}}>
+                    <div style={{width:150,height:150,borderRadius:22,overflow:'hidden',margin:'0 auto 8px',position:'relative'}}>
+                      <img src={ncPhoto} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                    </div>
+                    <div style={{display:'flex',gap:10,justifyContent:'center'}}>
+                      <button onClick={()=>{setNcPhoto(null);ncOpenCamera();}} style={{background:'none',border:'none',color:'var(--cream-faint)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>Retake</button>
+                      <button onClick={()=>setNcPhoto(null)} style={{background:'none',border:'none',color:'var(--cream-faint)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>Remove</button>
                     </div>
                   </div>
-                  <div style={{fontSize:20,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",letterSpacing:'-.4px',lineHeight:1.2,marginBottom:6,animation:'nc-fadeUp .35s .05s ease both',opacity:0}}>{book?.heroName??heroName}, what do<br/>you think?</div>
-                  <div style={{fontSize:12,color:'rgba(234,242,255,.36)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',marginBottom:22,animation:'nc-fadeUp .35s .1s ease both',opacity:0}}>Say it aloud or type it below</div>
-                  <div style={{marginBottom:14,animation:'nc-fadeUp .35s .15s ease both',opacity:0}}>
-                    <textarea value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)} placeholder="Type what they said…" style={{width:'100%',minHeight:80,padding:'14px 16px',borderRadius:16,border:'1px solid rgba(154,127,212,.28)',background:'rgba(154,127,212,.07)',color:'rgba(234,242,255,.82)',fontSize:14,fontFamily:"'Nunito',sans-serif",resize:'none',outline:'none',lineHeight:1.55}}/>
+                )}
+                {/* Photo option buttons — only when no photo and camera not open */}
+                {!ncPhoto && !ncCameraOpen && (
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,margin:'0 auto 16px',maxWidth:320}}>
+                    <div onClick={()=>ncOpenCamera()} role="button" tabIndex={0} aria-label="Take a photo"
+                      style={{padding:'22px 12px',borderRadius:16,border:'1.5px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)',cursor:'pointer',textAlign:'center',transition:'all .2s'}}>
+                      <div style={{fontSize:28,marginBottom:6}}>📸</div>
+                      <div style={{fontSize:12,fontWeight:500,color:'var(--cream-dim)'}}>Take a Photo</div>
+                    </div>
+                    <div onClick={()=>{
+                      const input=document.createElement('input');input.type='file';input.accept='image/*';
+                      input.onchange=(e:any)=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=(ev)=>setNcPhoto(ev.target?.result as string);reader.readAsDataURL(file);};
+                      input.click();
+                    }} role="button" tabIndex={0} aria-label="Upload a photo"
+                      style={{padding:'22px 12px',borderRadius:16,border:'1.5px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)',cursor:'pointer',textAlign:'center',transition:'all .2s'}}>
+                      <div style={{fontSize:28,marginBottom:6}}>🖼️</div>
+                      <div style={{fontSize:12,fontWeight:500,color:'var(--cream-dim)'}}>Upload from today</div>
+                    </div>
                   </div>
-                  <div style={{marginTop:'auto',display:'flex',flexDirection:'column',gap:9,animation:'nc-fadeUp .35s .25s ease both',opacity:0}}>
-                    <button onClick={()=>setNcStep(1)} style={{position:'relative',width:'100%',padding:'17px 20px',borderRadius:18,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)'}}>
-                      <div style={{position:'absolute',inset:0,background:'linear-gradient(108deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%)',animation:'nc-shimmer 5.5s infinite',pointerEvents:'none'}}/>
-                      <span style={{position:'relative',zIndex:1}}>Save this answer →</span>
-                    </button>
-                    <button onClick={()=>setNcStep(1)} style={{background:'none',border:'none',color:'rgba(234,242,255,.25)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.3px',padding:'4px 0'}}>skip this question</button>
-                  </div>
+                )}
+                <button className="ss-nc-cta" onClick={()=>setNcStep(4)}>Create Night Card {'\u2726'}</button>
+                <button className="ss-nc-skip" onClick={()=>setNcStep(4)}>Skip photo</button>
+              </div>
+            )}
+
+            {/* Step 5 — Generating */}
+            {ncStep===4 && ncGenerating && !ncResult && (
+              <div className="ss-nc-step" key="nc-gen">
+                <div className="ss-nc-orb">{'\u2728'}</div>
+                <div style={{fontFamily:'var(--serif)',fontSize:16,fontStyle:'italic',color:'var(--cream)',marginBottom:6}}>
+                  Weaving tonight's memory{'\u2026'}
+                </div>
+                <div className="ss-nc-bounce-dots">
+                  <div className="ss-nc-bounce-dot"/><div className="ss-nc-bounce-dot"/><div className="ss-nc-bounce-dot"/>
                 </div>
               </div>
             )}
 
-            {/* Screen 2 — Gratitude */}
-            {ncStep===1 && (
-              <div style={{minHeight:'100dvh',background:'#060912',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'}}>
-                <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 20%,rgba(20,216,144,.1),transparent 60%)'}}/>
-                <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',padding:'60px 24px 24px'}}>
-                  <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:8}}>
-                    {[0,1,2].map(i=><div key={i} style={{height:8,borderRadius:4,transition:'all .3s cubic-bezier(.2,.8,.3,1)',background:i<1?'rgba(245,184,76,.7)':i===1?'#F5B84C':'rgba(234,242,255,.15)',width:i===1?24:8}}/>)}
-                  </div>
-                  <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',marginBottom:20}}>
-                    <div style={{fontSize:11,color:'rgba(20,216,144,.6)',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:16,animation:'nc-fadeUp .35s ease both'}}>THE BEST MOMENT</div>
-                    <div style={{fontSize:26,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.2,letterSpacing:'-.5px',marginBottom:10,animation:'nc-fadeUp .35s .05s ease both',opacity:0}}>What were the best<br/>3 seconds of today?</div>
-                    <div style={{fontSize:13,color:'rgba(234,242,255,.38)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.6,marginBottom:28,animation:'nc-fadeUp .35s .1s ease both',opacity:0}}>One small moment. Anything counts.</div>
-                    <div style={{display:'flex',flexWrap:'wrap',gap:7,marginBottom:24,animation:'nc-fadeUp .35s .15s ease both',opacity:0}}>
-                      {['When we laughed','A hug','Something yummy','A surprise','Being silly','Feeling cozy'].map(chip=>(
-                        <div key={chip} onClick={()=>setNcGratitude(chip)} style={{padding:'7px 12px',borderRadius:20,border:'1px solid rgba(20,216,144,.18)',background:'rgba(20,216,144,.07)',fontSize:11,color:'rgba(20,216,144,.75)',fontFamily:"'Nunito',sans-serif",cursor:'pointer'}}>{chip}</div>
-                      ))}
-                    </div>
-                    <div style={{animation:'nc-fadeUp .35s .2s ease both',opacity:0}}>
-                      <textarea value={ncGratitude} onChange={e=>setNcGratitude(e.target.value)} placeholder="When we laughed at the dog…" style={{width:'100%',minHeight:80,padding:'14px 16px',borderRadius:16,border:'1px solid rgba(20,216,144,.22)',background:'rgba(20,216,144,.07)',color:'rgba(234,242,255,.82)',fontSize:14,fontFamily:"'Nunito',sans-serif",resize:'none',outline:'none',lineHeight:1.55}}/>
-                    </div>
-                  </div>
-                  <div style={{display:'flex',flexDirection:'column',gap:9,animation:'nc-fadeUp .35s .25s ease both',opacity:0}}>
-                    <button onClick={()=>setNcStep(2)} style={{position:'relative',width:'100%',padding:'17px 20px',borderRadius:18,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)'}}>
-                      <div style={{position:'absolute',inset:0,background:'linear-gradient(108deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%)',animation:'nc-shimmer 5.5s infinite',pointerEvents:'none'}}/>
-                      <span style={{position:'relative',zIndex:1}}>Save this moment →</span>
-                    </button>
-                    <button onClick={()=>setNcStep(2)} style={{background:'none',border:'none',color:'rgba(234,242,255,.25)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.3px',padding:'4px 0'}}>skip</button>
+            {/* Step 6 — Reveal */}
+            {ncResult && (
+              <div className="ss-nc-step" key="nc-reveal" style={{justifyContent:'flex-start',paddingTop:'max(80px,env(safe-area-inset-top))'}}>
+                <div className="ss-nc-reveal" style={{width:'100%',maxWidth:320}}>
+                  <NightCardComponent card={{
+                    id:'preview',userId:'',heroName:book.heroName,storyTitle:book.title,
+                    characterIds:[],headline:ncResult.headline,quote:ncResult.quote,
+                    memory_line:ncResult.memory_line,photo:ncPhoto||undefined,
+                    emoji:ncResult.emoji,date:new Date().toISOString(),
+                    creatureEmoji:companionCreature?.creatureEmoji,
+                  }} size="full" />
+                </div>
+                <div className="ss-end-btns" style={{marginTop:0}}>
+                  <button className="ss-amber-btn" onClick={async()=>{
+                    const ncData={heroName:book.heroName,storyTitle:book.title,refrain:book.refrain||"",
+                      bondingQ:ncBondingQ,bondingA:ncBondingA,gratitude:ncGratitude,extra:ncExtra,photo:ncPhoto,...ncResult};
+                    try{await saveNightCard(ncData);}catch(err){console.error('[NC] saveNightCard failed:',err);}
+                    const updatedBook={...book,nightCard:ncData};setBook(updatedBook);
+                    const updatedMemories=memories.map(m=>m.bookData?.title===book.title&&m.heroName===book.heroName?{...m,bookData:updatedBook}:m);
+                    setMemories(updatedMemories);try{await sSet("memories",{items:updatedMemories});}catch(err){console.error('[NC] sSet failed:',err);}
+                    onHome?onHome():setStage("home");
+                  }}>Save to memories {'\u2726'}</button>
+                  <div className="ss-nc-row">
+                    <button className="ss-ghost-btn" onClick={()=>shareNightCard(true)}>{'\uD83D\uDD17'} Share with story</button>
+                    <button className="ss-ghost-btn" onClick={()=>shareNightCard(false)}>{'\uD83C\uDF19'} Share card only</button>
                   </div>
                 </div>
               </div>
             )}
-
-            {/* Screen 3 — Parent Whisper */}
-            {ncStep===2 && (
-              <div style={{minHeight:'100dvh',background:'linear-gradient(170deg,#04080f,#080c1e)',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'}}>
-                <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 40%,rgba(90,60,160,.14),transparent 60%)'}}/>
-                <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',padding:'60px 24px 24px'}}>
-                  <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:8}}>
-                    {[0,1,2].map(i=><div key={i} style={{height:8,borderRadius:4,transition:'all .3s cubic-bezier(.2,.8,.3,1)',background:i<2?'rgba(245,184,76,.7)':i===2?'#F5B84C':'rgba(234,242,255,.15)',width:i===2?24:8}}/>)}
-                  </div>
-                  <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',marginBottom:20}}>
-                    <div style={{display:'inline-flex',alignItems:'center',gap:6,padding:'5px 12px',background:'rgba(154,127,212,.1)',border:'1px solid rgba(154,127,212,.22)',borderRadius:20,marginBottom:20,width:'fit-content',animation:'nc-fadeUp .35s ease both'}}>
-                      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="rgba(154,127,212,.7)" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                      <span style={{fontSize:9,color:'rgba(154,127,212,.7)',fontFamily:"'DM Mono',monospace",letterSpacing:'.5px'}}>JUST FOR YOU · PRIVATE</span>
-                    </div>
-                    <div style={{fontSize:24,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.2,letterSpacing:'-.4px',marginBottom:10,animation:'nc-fadeUp .35s .05s ease both',opacity:0}}>Anything only<br/>you would know?</div>
-                    <div style={{fontSize:13,color:'rgba(234,242,255,.36)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.65,marginBottom:28,animation:'nc-fadeUp .35s .1s ease both',opacity:0}}>A private note for this memory.<br/>{book?.heroName??heroName} won't see this part.</div>
-                    <div style={{padding:'14px 16px',background:'rgba(154,127,212,.07)',border:'1px solid rgba(154,127,212,.15)',borderRadius:14,marginBottom:20,animation:'nc-fadeUp .35s .15s ease both',opacity:0}}>
-                      <div style={{fontSize:9,color:'rgba(154,127,212,.5)',fontFamily:"'DM Mono',monospace",letterSpacing:'.5px',marginBottom:8}}>PARENT PROMPTS</div>
-                      {['How they seemed tonight','Something they said I want to remember','What I\'m feeling about them right now'].map((p,i)=>(
-                        <div key={p} onClick={()=>setNcExtra(p)} style={{fontSize:12,color:'rgba(234,242,255,.38)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',padding:'4px 0',borderBottom:i<2?'1px solid rgba(255,255,255,.05)':'none',cursor:'pointer'}}>{p}</div>
-                      ))}
-                    </div>
-                    <div style={{animation:'nc-fadeUp .35s .2s ease both',opacity:0}}>
-                      <textarea value={ncExtra} onChange={e=>setNcExtra(e.target.value)} placeholder="She was so peaceful tonight…" style={{width:'100%',minHeight:80,padding:'14px 16px',borderRadius:16,border:'1px solid rgba(154,127,212,.2)',background:'rgba(154,127,212,.06)',color:'rgba(234,242,255,.82)',fontSize:14,fontFamily:"'Nunito',sans-serif",resize:'none',outline:'none',lineHeight:1.55}}/>
-                    </div>
-                  </div>
-                  <div style={{display:'flex',flexDirection:'column',gap:9,animation:'nc-fadeUp .35s .25s ease both',opacity:0}}>
-                    <button onClick={()=>setNcStep(3)} style={{position:'relative',width:'100%',padding:'17px 20px',borderRadius:18,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)'}}>
-                      <div style={{position:'absolute',inset:0,background:'linear-gradient(108deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%)',animation:'nc-shimmer 5.5s infinite',pointerEvents:'none'}}/>
-                      <span style={{position:'relative',zIndex:1}}>Save memory →</span>
-                    </button>
-                    <button onClick={()=>{setNcExtra('');setNcStep(3);}} style={{background:'none',border:'none',color:'rgba(234,242,255,.25)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.3px',padding:'4px 0'}}>skip · save without whisper</button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Screen 4 — Generating Ceremony */}
-            {ncStep===3 && (
-              <div style={{minHeight:'100dvh',background:'#060912',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 28px',textAlign:'center',position:'relative'}}>
-                <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 40%,rgba(60,30,120,.35),transparent 65%),radial-gradient(ellipse at 20% 80%,rgba(20,100,80,.2),transparent 50%)'}}/>
-                <div style={{position:'relative',zIndex:1,display:'flex',flexDirection:'column',alignItems:'center'}}>
-                  <div style={{marginBottom:28,animation:'nc-floatY 3s ease-in-out infinite'}}>
-                    <div style={{fontSize:72,lineHeight:1}}>{companionCreature?.creatureEmoji??'🐰'}</div>
-                  </div>
-                  <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:20}}>
-                    {[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:'50%',background:'#F5B84C',opacity:.8,animation:`nc-writingDot 1.4s ${i*.2}s ease-in-out infinite`}}/>)}
-                  </div>
-                  <div style={{fontSize:22,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.2,letterSpacing:'-.4px',marginBottom:10}}>{companionCreature?.name??'Moon Bunny'} is<br/>preserving this night</div>
-                  <div style={{fontSize:13,color:'rgba(234,242,255,.4)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.7,maxWidth:260,minHeight:44}}>
-                    {['Weaving tonight\'s memories…',`Listening to ${book?.heroName??'their'} answer…`,'Finding the right words…','Sealing the memory…'][ncGenTextIdx]}
-                  </div>
-                  <div style={{width:200,height:3,background:'rgba(255,255,255,.08)',borderRadius:2,overflow:'hidden',marginTop:32}}>
-                    <div style={{height:'100%',width:`${ncGenPct}%`,background:'linear-gradient(90deg,rgba(245,184,76,.4),#F5B84C)',borderRadius:2,transition:'width .4s ease'}}/>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Screen 5 — Card Reveal */}
-            {ncStep===4 && ncResult && (
-              <div style={{minHeight:'100dvh',background:'#060912',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'}}>
-                <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 30%,rgba(20,100,60,.3),transparent 65%)'}}/>
-                <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',alignItems:'center',padding:'52px 20px 24px',overflowY:'auto'}}>
-                  <div style={{fontSize:8.5,color:'rgba(20,216,144,.6)',fontFamily:"'DM Mono',monospace",letterSpacing:'1.2px',marginBottom:14,animation:'nc-fadeUp .4s ease both'}}>NIGHT CARD · SAVED</div>
-                  <div style={{width:'100%',maxWidth:300,animation:'nc-cardReveal .6s .1s cubic-bezier(.2,.8,.3,1) both',boxShadow:'0 24px 60px rgba(0,0,0,.55),0 8px 20px rgba(0,0,0,.35)'}}>
-                    <NightCardComponent card={{
-                      id:'preview',userId:'',heroName:book.heroName,storyTitle:book.title,
-                      characterIds:[],headline:ncResult.headline,quote:ncResult.quote,
-                      memory_line:ncResult.memory_line,photo:ncPhoto||undefined,
-                      emoji:ncResult.emoji,date:new Date().toISOString(),
-                      creatureEmoji:companionCreature?.creatureEmoji,
-                    } as any} size="full" />
-                  </div>
-                  <div style={{width:'100%',maxWidth:300,display:'flex',flexDirection:'column',gap:9,marginTop:22,animation:'nc-fadeUp .4s .8s ease both',opacity:0}}>
-                    <button onClick={async()=>{
-                      const ncData={heroName:book.heroName,storyTitle:book.title,refrain:book.refrain||"",
-                        bondingQ:ncBondingQ,bondingA:ncBondingA,gratitude:ncGratitude,extra:ncExtra,photo:ncPhoto,...ncResult};
-                      try{await saveNightCard(ncData);}catch(err){console.error('[NC] saveNightCard failed:',err);}
-                      const updatedBook={...book,nightCard:ncData};setBook(updatedBook);
-                      const updatedMemories=memories.map(m=>m.bookData?.title===book.title&&m.heroName===book.heroName?{...m,bookData:updatedBook}:m);
-                      setMemories(updatedMemories);try{await sSet("memories",{items:updatedMemories});}catch(err){console.error('[NC] sSet failed:',err);}
-                      onHome?onHome():setStage("home");
-                    }} style={{position:'relative',width:'100%',padding:'17px 20px',borderRadius:18,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)'}}>
-                      <div style={{position:'absolute',inset:0,background:'linear-gradient(108deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%)',animation:'nc-shimmer 5.5s infinite',pointerEvents:'none'}}/>
-                      <span style={{position:'relative',zIndex:1}}>Done — back to home</span>
-                    </button>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-                      <button onClick={()=>shareNightCard(false)} style={{padding:'12px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.04)',color:'rgba(234,242,255,.55)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.2px'}}>Share card</button>
-                      <button onClick={()=>{onHome?onHome():setStage("home");}} style={{padding:'12px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.04)',color:'rgba(234,242,255,.55)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.2px'}}>View all cards</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
+          </div>
         )}
 
         {/* Old nightcard flow deleted — replaced by single-page above */}
