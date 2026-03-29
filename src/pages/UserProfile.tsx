@@ -12,76 +12,62 @@ import { getBedtimeSettings, saveBedtimeSettings, requestNotificationPermission 
 
 const CSS = `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--night:#060912;--night-mid:#0D1120;--night-card:#0f1525;--night-raised:#141a2e;--amber:#F5B84C;--amber-deep:#E8972A;--cream:#F4EFE8;--cream-dim:rgba(244,239,232,0.6);--cream-faint:rgba(244,239,232,0.28);--teal:#14d890;--purple:#9482ff;--serif:'Fraunces',Georgia,serif;--sans:'Nunito',system-ui,sans-serif;--mono:'DM Mono',monospace}
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+:root{--night:#060912;--night-mid:#0B1535;--night-card:#0C1840;--amber:#F5B84C;--teal:#14d890;--purple:#9A7FD4;--cream:#F4EFE8;--serif:'Fraunces',Georgia,serif;--sans:'Nunito',system-ui,sans-serif;--mono:'DM Mono',monospace}
+@keyframes pFadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
-.up{min-height:100vh;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;padding-bottom:80px}
+.pf{min-height:100vh;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;padding-bottom:20px}
+.pf-inner{max-width:500px;margin:0 auto;padding:0 20px;position:relative;z-index:5}
 
-/* Nav */
-.up-nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;border-bottom:1px solid rgba(245,184,76,.07);background:rgba(8,12,24,.92);position:sticky;top:0;z-index:20;backdrop-filter:blur(20px)}
-.up-nav-title{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--cream)}
-.up-nav-title span{color:var(--amber)}
-.up-nav-settings{width:34px;height:34px;border-radius:50%;background:rgba(244,239,232,.06);border:none;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--cream-faint);transition:all .18s}
-.up-nav-settings:hover{background:rgba(244,239,232,.1);color:var(--cream-dim)}
+/* Header */
+.pf-hdr{padding:20px 20px 0;max-width:500px;margin:0 auto}
+.pf-hdr h1{font-family:var(--serif);font-size:28px;font-weight:900;color:var(--cream);letter-spacing:-.5px;margin:0 0 4px}
 
-/* Inner */
-.up-inner{max-width:500px;margin:0 auto;padding:0 20px;position:relative;z-index:5}
+/* Child card */
+.pf-child{background:rgba(244,239,232,.05);border:1.5px solid rgba(245,184,76,.16);border-radius:22px;padding:17px;display:flex;align-items:center;gap:14px;margin-top:12px;animation:pFadeUp .5s ease both}
+.pf-child-av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;border:2px solid rgba(245,184,76,.3);background:rgba(245,184,76,.13);font-family:var(--serif);font-weight:900;color:var(--amber)}
+.pf-child-info{flex:1;min-width:0}
+.pf-child-name{font-family:var(--serif);font-size:20px;font-weight:900;color:var(--cream);letter-spacing:-.3px}
+.pf-child-meta{font-family:var(--mono);font-size:10px;color:rgba(234,242,255,.38);margin-top:3px}
 
-/* Profile Hero */
-.up-hero{text-align:center;padding:28px 0 8px;animation:fadeUp .6s ease}
-.up-avatar{width:72px;height:72px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:30px;border:2px solid rgba(245,184,76,.3);box-shadow:0 0 24px rgba(245,184,76,.15)}
-.up-hero-name{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--cream);margin-bottom:4px}
-.up-hero-since{font-family:var(--mono);font-size:10px;color:var(--cream-faint);letter-spacing:1.5px;text-transform:uppercase}
-
-/* Stats Row */
-.up-stats{display:flex;margin:20px 0 0;background:var(--night-card);border:1px solid rgba(244,239,232,.07);border-radius:18px;overflow:hidden;animation:fadeUp .6s .05s ease both}
-.up-stat{flex:1;padding:14px 10px;text-align:center}
-.up-stat:not(:last-child){border-right:1px solid rgba(244,239,232,.07)}
-.up-stat-num{font-family:var(--serif);font-size:22px;font-weight:600;color:var(--amber)}
-.up-stat-lbl{font-family:var(--sans);font-size:9px;font-weight:700;color:var(--cream-faint);text-transform:uppercase;margin-top:2px}
+/* Stats row */
+.pf-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;animation:pFadeUp .5s .05s ease both}
+.pf-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:13px 8px;text-align:center}
+.pf-stat-num{font-family:var(--serif);font-size:24px;font-weight:900;color:var(--cream);line-height:1}
+.pf-stat-lbl{font-family:var(--mono);font-size:7px;color:rgba(234,242,255,.28);text-transform:uppercase;letter-spacing:.7px;margin-top:2px}
 
 /* Section */
-.up-sec{margin-top:20px;animation:fadeUp .6s .1s ease both}
-.up-sec-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--cream-faint);margin-bottom:10px;padding:0 2px}
+.pf-sec{margin-top:20px;animation:pFadeUp .5s .1s ease both}
+.pf-sec-lbl{font-family:var(--mono);font-size:8.5px;letter-spacing:.9px;text-transform:uppercase;color:rgba(234,242,255,.24);margin-bottom:10px;padding:0 2px}
 
-/* Memory Grid */
-.up-mem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
-.up-mem-thumb{aspect-ratio:1;border-radius:10px;overflow:hidden;cursor:pointer;position:relative;transition:all .18s}
-.up-mem-thumb:hover{transform:scale(1.04)}
-.up-mem-thumb-bg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:22px;position:relative}
-.up-mem-thumb-bg::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(transparent,rgba(0,0,0,.5))}
-.up-mem-thumb-title{position:absolute;bottom:4px;left:6px;font-family:var(--sans);font-size:7px;color:rgba(255,255,255,.8);z-index:1}
-.up-mem-overflow{aspect-ratio:1;border-radius:10px;border:1.5px dashed rgba(244,239,232,.09);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s}
-.up-mem-overflow:hover{border-color:rgba(244,239,232,.2)}
-.up-mem-overflow-num{font-family:var(--serif);font-size:18px;font-weight:600;color:var(--amber-deep)}
-.up-see-all{width:100%;padding:10px;background:transparent;border:1.5px dashed rgba(244,239,232,.09);border-radius:12px;font-family:var(--sans);font-size:12px;color:var(--cream-faint);cursor:pointer;transition:all .18s;text-align:center}
-.up-see-all:hover{border-color:rgba(244,239,232,.18);color:var(--cream-dim)}
+/* Children list */
+.pf-kid{display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(244,239,232,.05);border:1.5px solid rgba(245,184,76,.18);border-radius:22px;cursor:pointer;transition:all .18s;margin-bottom:8px}
+.pf-kid:hover{border-color:rgba(245,184,76,.3)}
+.pf-kid-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:2px solid rgba(245,184,76,.3)}
+.pf-kid-info{flex:1;min-width:0}
+.pf-kid-name{font-family:var(--serif);font-size:14px;font-weight:900;color:var(--cream)}
+.pf-kid-meta{font-family:var(--mono);font-size:10px;color:rgba(234,242,255,.38);margin-top:2px}
+.pf-kid-streak{font-family:var(--mono);font-size:11px;color:var(--amber);flex-shrink:0}
+.pf-kid-add{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px dashed rgba(234,242,255,.1);border-radius:18px;cursor:pointer;transition:all .18s;margin-bottom:8px}
+.pf-kid-add:hover{border-color:rgba(234,242,255,.2);background:rgba(234,242,255,.02)}
 
-/* Children Cards */
-.up-child-card{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--night-card);border:1px solid rgba(244,239,232,.07);border-radius:16px;cursor:pointer;transition:all .18s;margin-bottom:8px}
-.up-child-card:hover{transform:translateX(2px);border-color:rgba(244,239,232,.14)}
-.up-child-av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.up-child-info{flex:1;min-width:0}
-.up-child-name{font-family:var(--serif);font-size:15px;font-weight:500;color:var(--cream)}
-.up-child-meta{font-family:var(--sans);font-size:11px;color:var(--cream-faint);margin-top:2px}
-.up-child-streak{font-family:var(--mono);font-size:11px;color:var(--amber);display:flex;align-items:center;gap:4px;flex-shrink:0}
-.up-child-add{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px dashed rgba(244,239,232,.09);border-radius:16px;cursor:pointer;transition:all .18s;margin-bottom:8px}
-.up-child-add:hover{border-color:rgba(244,239,232,.2);background:rgba(244,239,232,.02)}
-.up-child-add-av{width:46px;height:46px;border-radius:50%;border:1.5px dashed rgba(244,239,232,.15);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--cream-faint);flex-shrink:0}
-.up-child-add-lbl{font-family:var(--sans);font-size:13px;font-weight:500;color:var(--cream-faint)}
+/* Settings links */
+.pf-link{background:rgba(244,239,232,.04);border:1px solid rgba(244,239,232,.07);border-radius:18px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .15s;margin-bottom:6px}
+.pf-link:hover{background:rgba(244,239,232,.06)}
+.pf-link-ico{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.pf-link-lbl{font-family:var(--sans);font-size:13px;color:rgba(234,242,255,.6);flex:1}
+.pf-link-val{font-family:var(--mono);font-size:10px;color:rgba(234,242,255,.28)}
+.pf-link-chev{color:rgba(234,242,255,.24);font-size:14px;flex-shrink:0}
+.pf-link.danger .pf-link-lbl{color:rgba(255,90,90,.7)}
 
-/* Settings List */
-.up-settings{display:flex;flex-direction:column;gap:2px}
-.up-set-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;cursor:pointer;transition:background .15s}
-.up-set-row:hover{background:rgba(244,239,232,.04)}
-.up-set-ico{font-size:16px;width:20px;text-align:center;flex-shrink:0}
-.up-set-lbl{font-family:var(--sans);font-size:13px;font-weight:500;color:var(--cream-dim);flex:1}
-.up-set-val{font-family:var(--mono);font-size:10px;color:var(--cream-faint)}
-.up-set-divider{height:1px;background:rgba(244,239,232,.04);margin:4px 14px}
-.up-set-danger .up-set-lbl{color:rgba(255,90,90,.7)}
+/* Memory grid */
+.pf-mem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.pf-mem-overflow{aspect-ratio:1;border-radius:14px;border:1.5px dashed rgba(234,242,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s}
+.pf-mem-overflow:hover{border-color:rgba(234,242,255,.2)}
+.pf-see-all{width:100%;padding:10px;background:transparent;border:1.5px dashed rgba(234,242,255,.1);border-radius:14px;font-family:var(--sans);font-size:12px;color:rgba(234,242,255,.38);cursor:pointer;transition:all .18s;text-align:center}
+.pf-see-all:hover{border-color:rgba(234,242,255,.2);color:rgba(234,242,255,.6)}
 
 /* Dev section */
-.up-dev{border:2px solid rgba(255,60,60,.3);border-radius:14px;padding:14px;background:rgba(255,60,60,.03);margin-top:20px}
+.pf-dev{border:2px solid rgba(255,60,60,.3);border-radius:14px;padding:14px;background:rgba(255,60,60,.03);margin-top:20px}
 `;
 
 export default function UserProfile() {
@@ -119,7 +105,6 @@ export default function UserProfile() {
 
   const familyChars = useMemo(() => characters.filter(c => c.isFamily === true || (c.isFamily === undefined && c.type === 'human')), [characters]);
 
-  // Streak calculation
   const bestStreak = useMemo(() => {
     const dates = new Set(allNightCards.map(c => c.date.split('T')[0]));
     let best = 0, cur = 0;
@@ -138,7 +123,6 @@ export default function UserProfile() {
     try { return JSON.parse(localStorage.getItem(`ss_fav_stories_${user?.id}`) || '[]').length; } catch { return 0; }
   }, [user?.id]);
 
-  // Get creature for each family child
   const childCreatureMap = useMemo(() => {
     const map: Record<string, HatchedCreature | undefined> = {};
     familyChars.forEach(c => {
@@ -152,66 +136,76 @@ export default function UserProfile() {
   const memberSince = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
   const displayCards = allNightCards.slice(0, 5);
   const remainingCards = Math.max(0, allNightCards.length - 5);
+  const primaryChild = familyChars[0] ?? null;
+  const primaryCreature = primaryChild ? childCreatureMap[primaryChild.id] : undefined;
 
   return (
-    <div className="up">
+    <div className="pf">
       <style>{CSS}</style>
 
-      {/* Nav */}
-      <nav className="up-nav">
-        <div className="up-nav-title">My <span>Space</span></div>
-        <button className="up-nav-settings" onClick={() => {}} title="Settings">⚙️</button>
-      </nav>
+      {/* Header */}
+      <div className="pf-hdr">
+        <h1>Profile</h1>
+      </div>
 
-      <div className="up-inner">
+      <div className="pf-inner">
 
-        {/* Profile Hero */}
-        <div className="up-hero">
-          <div className="up-avatar" style={{ background: 'linear-gradient(145deg,#1a1408,#2a1a10)' }}>
-            {user.displayName?.charAt(0)?.toUpperCase() || '?'}
+        {/* Child card */}
+        {primaryChild && (
+          <div className="pf-child" onClick={() => setView('characters')}>
+            <div className="pf-child-av" style={{ background: primaryChild.color ? `linear-gradient(145deg,${primaryChild.color}30,rgba(12,24,64,.6))` : undefined }}>
+              {primaryChild.photo
+                ? <img src={primaryChild.photo} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                : (primaryChild.emoji || primaryChild.name?.charAt(0))}
+            </div>
+            <div className="pf-child-info">
+              <div className="pf-child-name">{primaryChild.name}</div>
+              <div className="pf-child-meta">
+                {primaryChild.ageDescription ? `Age ${primaryChild.ageDescription}` : ''}
+                {primaryCreature ? ` · ${primaryCreature.name}` : ''}
+              </div>
+            </div>
           </div>
-          <div className="up-hero-name">{user.displayName}</div>
-          {memberSince && <div className="up-hero-since">Member since {memberSince}</div>}
+        )}
+
+        {/* Stats row */}
+        <div className="pf-stats">
+          <div className="pf-stat">
+            <div className="pf-stat-num">{allNightCards.length}</div>
+            <div className="pf-stat-lbl">Nights</div>
+          </div>
+          <div className="pf-stat">
+            <div className="pf-stat-num">{allStories.length}</div>
+            <div className="pf-stat-lbl">Books</div>
+          </div>
+          <div className="pf-stat">
+            <div className="pf-stat-num">{creatures.length}</div>
+            <div className="pf-stat-lbl">Creatures</div>
+          </div>
         </div>
 
-        {/* Stats Row */}
-        <div className="up-stats">
-          <div className="up-stat">
-            <div className="up-stat-num">{allStories.length}</div>
-            <div className="up-stat-lbl">Stories</div>
-          </div>
-          <div className="up-stat">
-            <div className="up-stat-num">{bestStreak}</div>
-            <div className="up-stat-lbl">Best Streak</div>
-          </div>
-          <div className="up-stat">
-            <div className="up-stat-num">{allNightCards.length}</div>
-            <div className="up-stat-lbl">Memories</div>
-          </div>
-        </div>
-
-        {/* Night Cards — FIRST section */}
-        <div className="up-sec">
-          <div className="up-sec-lbl">Our Night Cards</div>
+        {/* Night Cards */}
+        <div className="pf-sec">
+          <div className="pf-sec-lbl">Night Cards</div>
           {allNightCards.length === 0 ? (
-            <div style={{ fontSize: 12, color: 'var(--cream-faint)', fontStyle: 'italic', padding: '4px 0' }}>
+            <div style={{ fontSize: 12, color: 'rgba(234,242,255,.38)', fontStyle: 'italic', padding: '4px 0' }}>
               Night Cards are saved at the end of each story — your child's words, captured forever.
             </div>
           ) : (
             <>
-              <div className="up-mem-grid">
+              <div className="pf-mem-grid">
                 {displayCards.map(nc => (
-                  <div key={nc.id} style={{ aspectRatio: '1', borderRadius: 10, overflow: 'hidden' }}>
+                  <div key={nc.id} style={{ aspectRatio: '1', borderRadius: 14, overflow: 'hidden' }}>
                     <NightCard card={nc} size="mini" onTap={() => setView('nightcard-library')} />
                   </div>
                 ))}
                 {remainingCards > 0 && (
-                  <div className="up-mem-overflow" onClick={() => setView('nightcard-library')}>
-                    <div className="up-mem-overflow-num">+{remainingCards}</div>
+                  <div className="pf-mem-overflow" onClick={() => setView('nightcard-library')}>
+                    <div style={{ fontFamily: 'var(--serif)', fontSize: 18, fontWeight: 900, color: '#F5B84C' }}>+{remainingCards}</div>
                   </div>
                 )}
               </div>
-              <button className="up-see-all" onClick={() => setView('nightcard-library')}>
+              <button className="pf-see-all" onClick={() => setView('nightcard-library')}>
                 See all {allNightCards.length} memories →
               </button>
             </>
@@ -219,17 +213,16 @@ export default function UserProfile() {
         </div>
 
         {/* Children */}
-        <div className="up-sec" style={{ animationDelay: '.15s' }}>
-          <div className="up-sec-lbl">Our Children</div>
+        <div className="pf-sec">
+          <div className="pf-sec-lbl">Our Children</div>
           {familyChars.length === 0 ? (
-            <div style={{ fontSize: 12, color: 'var(--cream-faint)', fontStyle: 'italic', padding: '4px 0 8px' }}>
+            <div style={{ fontSize: 12, color: 'rgba(234,242,255,.38)', fontStyle: 'italic', padding: '4px 0 8px' }}>
               Save your child's details once — used in every story automatically.
             </div>
           ) : (
             familyChars.map(c => {
               const cr = childCreatureMap[c.id];
               const crDef = cr ? getCreature(cr.creatureType) : null;
-              // Simple streak for this child
               const childCards = allNightCards.filter(nc => nc.characterIds?.includes(c.id));
               let streak = 0;
               const d = new Date(); d.setHours(0, 0, 0, 0);
@@ -240,70 +233,83 @@ export default function UserProfile() {
                 else break;
               }
               return (
-                <div key={c.id} className="up-child-card" onClick={() => { setView('characters'); }}>
-                  <div className="up-child-av" style={{ background: c.color || 'rgba(255,255,255,.06)', border: `2px solid ${c.color ? c.color + '40' : 'rgba(244,239,232,.1)'}` }}>
+                <div key={c.id} className="pf-kid" onClick={() => setView('characters')}>
+                  <div className="pf-kid-av" style={{ background: c.color ? `linear-gradient(145deg,${c.color}30,rgba(12,24,64,.6))` : 'rgba(255,255,255,.06)', borderColor: c.color ? c.color + '50' : 'rgba(245,184,76,.3)' }}>
                     {c.photo ? <img src={c.photo} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (c.emoji || c.name?.charAt(0))}
                   </div>
-                  <div className="up-child-info">
-                    <div className="up-child-name">{c.name}</div>
-                    <div className="up-child-meta">
+                  <div className="pf-kid-info">
+                    <div className="pf-kid-name">{c.name}</div>
+                    <div className="pf-kid-meta">
                       {c.ageDescription ? `Age ${c.ageDescription}` : ''}
-                      {cr ? ` · DreamKeeper: ${cr.name}` : ''}
+                      {cr ? ` · ${cr.name}` : ''}
                       {crDef ? ` · Night ${Math.min(childCards.length, 7)}/7` : ''}
                     </div>
                   </div>
-                  {streak > 0 && (
-                    <div className="up-child-streak">🔥 {streak}</div>
-                  )}
+                  {streak > 0 && <div className="pf-kid-streak">{streak} nights</div>}
                 </div>
               );
             })
           )}
-          <div className="up-child-add" onClick={() => { setEditingCharacter(null); setView('onboarding'); }}>
-            <div className="up-child-add-av">+</div>
-            <div className="up-child-add-lbl">+ Add another child</div>
+          <div className="pf-kid-add" onClick={() => { setEditingCharacter(null); setView('onboarding'); }}>
+            <div style={{ width: 44, height: 44, borderRadius: '50%', border: '1.5px dashed rgba(234,242,255,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: 'rgba(234,242,255,.28)', flexShrink: 0 }}>+</div>
+            <div style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'rgba(234,242,255,.38)' }}>Add another child</div>
           </div>
         </div>
 
         {/* Settings */}
-        <div className="up-sec" style={{ animationDelay: '.2s' }}>
-          <div className="up-sec-lbl">Account</div>
-          <div className="up-settings">
-            <div className="up-set-row" onClick={() => {
-              if (inviteLink) { navigator.clipboard.writeText(inviteLink).catch(() => {}); setCopied(true); setTimeout(() => setCopied(false), 2000); }
-            }}>
-              <div className="up-set-ico">🔗</div>
-              <div className="up-set-lbl">{copied ? 'Link copied!' : 'Invite a friend'}</div>
-              {copied && <div className="up-set-val" style={{ color: '#14d890' }}>✓</div>}
+        <div className="pf-sec">
+          <div className="pf-sec-lbl">Account</div>
+
+          <div className="pf-link" onClick={() => {
+            if (inviteLink) { navigator.clipboard.writeText(inviteLink).catch(() => {}); setCopied(true); setTimeout(() => setCopied(false), 2000); }
+          }}>
+            <div className="pf-link-ico">🔗</div>
+            <div className="pf-link-lbl">{copied ? 'Link copied!' : 'Invite a friend'}</div>
+            {copied && <div className="pf-link-val" style={{ color: '#14d890' }}>✓</div>}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(234,242,255,.24)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+
+          <div className="pf-link" onClick={() => setBedtimeOpen(true)}>
+            <div className="pf-link-ico">🔔</div>
+            <div className="pf-link-lbl">Bedtime reminder</div>
+            <div className="pf-link-val" style={{ color: bedtime.enabled ? '#14d890' : undefined }}>
+              {bedtime.enabled ? bedtime.time.replace(/^0/, '') : 'OFF'}
             </div>
-            <div className="up-set-divider" />
-            <div className="up-set-row" onClick={() => setBedtimeOpen(true)} style={{ cursor: 'pointer' }}>
-              <div className="up-set-ico">🔔</div>
-              <div className="up-set-lbl">Bedtime reminder</div>
-              <div className="up-set-val" style={{ color: bedtime.enabled ? '#14d890' : 'var(--cream-faint)' }}>
-                {bedtime.enabled ? bedtime.time.replace(/^0/, '') : 'OFF'}
-              </div>
-            </div>
-            <div className="up-set-row">
-              <div className="up-set-ico">🌐</div>
-              <div className="up-set-lbl">Language</div>
-              <div className="up-set-val">EN</div>
-            </div>
-            <div className="up-set-divider" />
-            <div className="up-set-row">
-              <div className="up-set-ico">💳</div>
-              <div className="up-set-lbl">Subscription</div>
-              <div className="up-set-val" style={{ color: isSubscribed ? '#14d890' : 'var(--cream-faint)' }}>{isSubscribed ? 'Active' : 'Free'}</div>
-            </div>
-            <div className="up-set-row up-set-danger" onClick={logout}>
-              <div className="up-set-ico">🚪</div>
-              <div className="up-set-lbl">Sign out</div>
-            </div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(234,242,255,.24)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+
+          <div className="pf-link">
+            <div className="pf-link-ico">🌐</div>
+            <div className="pf-link-lbl">Language</div>
+            <div className="pf-link-val">EN</div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(234,242,255,.24)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+
+          <div className="pf-link">
+            <div className="pf-link-ico">💳</div>
+            <div className="pf-link-lbl">Subscription</div>
+            <div className="pf-link-val" style={{ color: isSubscribed ? '#14d890' : undefined }}>{isSubscribed ? 'Active' : 'Free'}</div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(234,242,255,.24)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+
+          <div className="pf-link danger" onClick={logout}>
+            <div className="pf-link-ico">🚪</div>
+            <div className="pf-link-lbl">Sign out</div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(234,242,255,.24)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
           </div>
         </div>
 
+        {/* Profile info */}
+        {memberSince && (
+          <div style={{ textAlign: 'center', padding: '20px 0 8px' }}>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'rgba(234,242,255,.2)', letterSpacing: '.8px', textTransform: 'uppercase' }}>
+              {user.displayName} · Member since {memberSince}
+            </div>
+          </div>
+        )}
+
         {/* Dev subscription toggle */}
-        <div className="up-dev">
+        <div className="pf-dev">
           <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(255,60,60,.6)', marginBottom: 8, fontFamily: 'var(--mono)' }}>
             DEV ONLY
           </div>
@@ -327,19 +333,18 @@ export default function UserProfile() {
 
       {/* Bedtime reminder modal */}
       {bedtimeOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, backdropFilter: 'blur(6px)' }}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, backdropFilter: 'blur(8px)' }}
           onClick={() => setBedtimeOpen(false)}>
-          <div style={{ background: 'rgba(13,16,24,.98)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 18, padding: '28px 24px', maxWidth: 340, width: '100%', textAlign: 'center', boxShadow: '0 24px 80px rgba(0,0,0,.7)' }}
+          <div style={{ background: '#0C1840', border: '1px solid rgba(255,255,255,.09)', borderRadius: 22, padding: '28px 24px', maxWidth: 340, width: '100%', textAlign: 'center', boxShadow: '0 24px 80px rgba(0,0,0,.7)' }}
             onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: 36, marginBottom: 8 }}>🔔</div>
-            <div style={{ fontFamily: 'var(--serif)', fontSize: 18, fontWeight: 700, color: 'var(--cream)', marginBottom: 6 }}>Bedtime Reminder</div>
-            <div style={{ fontSize: 12, color: 'var(--cream-faint)', lineHeight: 1.6, marginBottom: 20 }}>
+            <div style={{ fontFamily: 'var(--serif)', fontSize: 18, fontWeight: 900, color: '#F4EFE8', marginBottom: 6 }}>Bedtime Reminder</div>
+            <div style={{ fontSize: 12, color: 'rgba(234,242,255,.38)', lineHeight: 1.6, marginBottom: 20 }}>
               Get a notification when it's story time. Works while the app is open.
             </div>
 
-            {/* Toggle */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <span style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--cream-dim)' }}>Enable reminder</span>
+              <span style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'rgba(234,242,255,.6)' }}>Enable reminder</span>
               <button onClick={async () => {
                 const next = !bedtime.enabled;
                 if (next) await requestNotificationPermission();
@@ -359,21 +364,19 @@ export default function UserProfile() {
               </button>
             </div>
 
-            {/* Time picker */}
             {bedtime.enabled && (
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--cream-faint)', marginBottom: 8 }}>Remind me at</div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(234,242,255,.28)', marginBottom: 8 }}>Remind me at</div>
                 <input type="time" value={bedtimeTime} onChange={e => setBedtimeTime(e.target.value)}
                   style={{
-                    width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid rgba(245,184,76,.25)',
-                    background: 'rgba(245,184,76,.06)', color: 'var(--amber)', fontFamily: 'var(--mono)',
+                    width: '100%', padding: '12px 16px', borderRadius: 14, border: '1px solid rgba(245,184,76,.25)',
+                    background: 'rgba(245,184,76,.06)', color: '#F5B84C', fontFamily: 'var(--mono)',
                     fontSize: 20, fontWeight: 600, textAlign: 'center', outline: 'none',
                     WebkitAppearance: 'none',
                   }} />
               </div>
             )}
 
-            {/* Notification permission status */}
             {'Notification' in window && Notification.permission === 'denied' && bedtime.enabled && (
               <div style={{ fontSize: 11, color: 'rgba(255,140,130,.7)', marginBottom: 12, lineHeight: 1.5 }}>
                 Notifications are blocked. Open your browser settings and allow notifications for this site.
@@ -387,14 +390,14 @@ export default function UserProfile() {
                 if (user) saveBedtimeSettings(user.id, updated);
                 setBedtimeOpen(false);
               }} style={{
-                flex: 1, padding: 12, borderRadius: 12, background: '#E8972A', color: '#120800',
-                fontSize: 13, fontWeight: 700, cursor: 'pointer', border: 'none', fontFamily: 'var(--sans)',
+                flex: 1, padding: 12, borderRadius: 18, background: '#F5B84C', color: '#172200',
+                fontSize: 13, fontWeight: 700, cursor: 'pointer', border: 'none', fontFamily: 'var(--serif)',
               }}>
                 Save
               </button>
               <button onClick={() => setBedtimeOpen(false)} style={{
-                padding: '12px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,.1)',
-                background: 'transparent', color: 'rgba(244,239,232,.5)', fontSize: 13,
+                padding: '12px 16px', borderRadius: 18, border: '1px solid rgba(244,239,232,.16)',
+                background: 'rgba(244,239,232,.06)', color: 'rgba(234,242,255,.6)', fontSize: 13,
                 cursor: 'pointer', fontFamily: 'var(--sans)',
               }}>
                 Cancel

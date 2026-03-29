@@ -86,161 +86,33 @@ function constellationName(weekNum: number): string {
 const CSS=`
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --night:#060912;--night-mid:#0D1120;--night-card:#0f1525;--night-raised:#141a2e;
-  --amber:#F5B84C;--amber-deep:#E8972A;
-  --cream:#F4EFE8;--cream-dim:rgba(244,239,232,0.6);--cream-faint:rgba(244,239,232,0.28);
-  --teal:#14d890;--purple:#9482ff;
+  --night:#060912;--night-mid:#0B1535;--night-card:#0C1840;
+  --amber:#F5B84C;--teal:#14d890;--purple:#9A7FD4;--cream:#F4EFE8;
+  --r-sm:14px;--r-md:18px;--r-lg:22px;
   --serif:'Fraunces',Georgia,serif;
   --sans:'Nunito',system-ui,sans-serif;
-  --cta:'Baloo 2',system-ui,sans-serif;
   --mono:'DM Mono',monospace;
 }
+
 .dash{min-height:100vh;min-height:100dvh;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;padding-bottom:100px}
+.dash-inner{max-width:480px;margin:0 auto;padding:0 20px 110px;position:relative;z-index:5}
 
 /* ── Animations ── */
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-@keyframes shimmer{0%{transform:translateX(-100%)}60%,100%{transform:translateX(200%)}}
-@keyframes pulse-ring{0%,100%{box-shadow:0 0 0 0 rgba(245,184,76,0.4)}50%{box-shadow:0 0 0 6px rgba(245,184,76,0)}}
-@keyframes pulse-ring-teal{0%,100%{box-shadow:0 0 0 0 rgba(20,216,144,0.4)}50%{box-shadow:0 0 0 6px rgba(20,216,144,0)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes twk{0%,100%{opacity:.15}50%{opacity:.85}}
-@keyframes twk2{0%,100%{opacity:.35}60%{opacity:.1}}
+@keyframes shimmer{0%{transform:translateX(-100%)}60%,100%{transform:translateX(200%)}}
+@keyframes dotPulse{0%{box-shadow:0 0 0 0 rgba(245,184,76,.5)}100%{box-shadow:0 0 0 10px rgba(245,184,76,0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
 @keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes hatchBurst{0%{transform:scale(1)}30%{transform:scale(1.15) rotate(3deg)}60%{transform:scale(1.08) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}
-@keyframes zzz{0%{opacity:0;transform:translate(0,0) scale(.45)}35%{opacity:.78}100%{opacity:0;transform:translate(12px,-20px) scale(1.25)}}
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-@keyframes cBreathe{0%,100%{box-shadow:0 0 0 1.5px rgba(255,218,80,.3),0 6px 22px rgba(160,95,0,.65),0 0 32px rgba(245,184,76,.15),inset 0 1px 0 rgba(255,245,160,.25)}50%{box-shadow:0 0 0 1.5px rgba(255,218,80,.48),0 10px 30px rgba(160,95,0,.85),0 0 50px rgba(245,184,76,.28),inset 0 1px 0 rgba(255,245,160,.3)}}
 @keyframes skelMove{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
-
-/* ── Stars ── */
-.dash-stars{position:fixed;inset:0;pointer-events:none;z-index:0}
-.dash-star{position:absolute;border-radius:50%;background:rgba(244,239,232,.65);animation:twk var(--d,3s) var(--dl,0s) ease-in-out infinite}
-.dash-star2{position:absolute;border-radius:50%;background:rgba(244,239,232,.4);animation:twk2 var(--d,4.5s) var(--dl,0s) ease-in-out infinite}
-.dash-star3{position:absolute;border-radius:50%;background:rgba(244,239,232,.55);animation:twk var(--d,2.5s) var(--dl,0s) ease-in-out infinite}
-.dash-sky{position:fixed;top:0;left:0;right:0;height:300px;background:linear-gradient(180deg,#040710 0%,#060912 100%);z-index:0;pointer-events:none}
 
 /* ── Skeleton ── */
 .dash-skel{background:rgba(255,255,255,.05);border-radius:8px;overflow:hidden;position:relative}
 .dash-skel::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%);animation:skelMove 1.6s ease-in-out infinite}
 
-/* ── Top Nav ── */
-.dash-nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px;padding-top:env(safe-area-inset-top,0px);height:56px;border-bottom:1px solid rgba(245,184,76,.07);background:rgba(8,12,24,.97);position:sticky;top:0;z-index:20;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-.dash-logo{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--cream);display:flex;align-items:center;gap:8px;flex-shrink:0;letter-spacing:.3px}
-.dash-logo-moon{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#F5B84C,#E8972A);position:relative;flex-shrink:0;box-shadow:0 0 12px rgba(245,184,76,.4)}
-.dash-logo-moon-sh{position:absolute;width:18px;height:18px;border-radius:50%;background:var(--night);top:4px;left:8px}
-.dash-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(145deg,#1a0e32,#2e1858);border:1.5px solid rgba(160,96,240,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .22s;flex-shrink:0;position:relative}
-.dash-avatar:hover{border-color:rgba(160,96,240,.62);background:linear-gradient(145deg,#2e1858,#4818a0)}
-.dash-avatar-pip{position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:#14d890;border:1.5px solid var(--night)}
-
-/* ── Inner ── */
-.dash-inner{max-width:480px;margin:0 auto;padding:0 20px 110px;position:relative;z-index:5}
-
-/* ══════════════════════════════════════════════════════════════════════════════
-   ZONE 1 — Greeting
-   ══════════════════════════════════════════════════════════════════════════════ */
-.z1-greeting{padding-top:24px;margin-bottom:20px;animation:fadeUp .5s ease-out both}
-.z1-time{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--amber);opacity:.75;margin-bottom:6px}
-.z1-heading{font-family:var(--serif);font-size:26px;font-weight:400;color:var(--cream);line-height:1.2;letter-spacing:-.02em;margin-bottom:6px}
-.z1-heading em{font-style:italic;color:var(--amber)}
-.z1-heading em.done{color:var(--teal)}
-.z1-date{font-size:12px;color:var(--cream-faint);font-family:var(--mono);letter-spacing:.04em}
-
-/* ══════════════════════════════════════════════════════════════════════════════
-   ZONE 2 — Creature Portal
-   ══════════════════════════════════════════════════════════════════════════════ */
-.z2-portal{border-radius:28px;overflow:hidden;position:relative;padding:32px 24px 28px;margin-bottom:16px;animation:fadeUp .55s ease-out both;animation-delay:.05s}
-.z2-portal.amber-mode{background:linear-gradient(168deg,rgba(15,21,37,.95),rgba(10,14,28,.98));border:1px solid rgba(245,184,76,.14)}
-.z2-portal.teal-mode{background:linear-gradient(168deg,rgba(4,14,12,.95),rgba(6,16,14,.98));border:1px solid rgba(20,216,144,.18)}
-
-.z2-stage-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.z2-stage-badge{font-family:var(--mono);font-size:10px;letter-spacing:.06em;padding:3px 10px;border-radius:20px;font-weight:500}
-.z2-stage-badge.amber{background:rgba(245,184,76,.1);border:1px solid rgba(245,184,76,.22);color:rgba(245,184,76,.72)}
-.z2-stage-badge.teal{background:rgba(20,216,144,.1);border:1px solid rgba(20,216,144,.22);color:rgba(20,216,144,.72)}
-.z2-nights-left{font-family:var(--serif);font-size:12px;font-style:italic;color:var(--cream-faint)}
-
-.z2-creature-row{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:24px}
-.z2-emoji{font-size:68px;line-height:1;display:inline-block;animation:float 5s ease-in-out infinite;margin-bottom:8px}
-.z2-emoji.amber{filter:drop-shadow(0 0 24px rgba(245,184,76,.5))}
-.z2-emoji.teal{filter:drop-shadow(0 0 24px rgba(20,216,144,.5))}
-.z2-type-label{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:4px}
-.z2-type-label.amber{color:rgba(245,184,76,.4)}
-.z2-type-label.teal{color:rgba(20,216,144,.4)}
-.z2-creature-name{font-family:var(--serif);font-size:22px;font-weight:700;color:var(--cream);margin-bottom:8px}
-.z2-wisdom{font-family:var(--serif);font-size:13px;font-style:italic;color:rgba(255,255,255,.52);line-height:1.6;max-width:320px;margin:0 auto;padding-left:12px;position:relative}
-.z2-wisdom::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:2px;border-radius:1px}
-.z2-wisdom.amber::before{background:rgba(245,184,76,.28)}
-.z2-wisdom.teal::before{background:rgba(20,216,144,.28)}
-
-/* Progress dots */
-.z2-dots{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:24px}
-.z2-dot{width:8px;height:8px;border-radius:50%;transition:all .3s}
-.z2-dot.done-amber{background:var(--amber);box-shadow:0 0 8px rgba(245,184,76,.45)}
-.z2-dot.done-teal{background:var(--teal);box-shadow:0 0 8px rgba(20,216,144,.45)}
-.z2-dot.tonight{background:rgba(245,184,76,.2);border:1.5px solid rgba(245,184,76,.5);animation:pulse-ring 2.5s ease-in-out infinite}
-.z2-dot.tonight-done{background:rgba(20,216,144,.35);border:1.5px solid rgba(20,216,144,.6);animation:pulse-ring-teal 2.5s ease-in-out infinite}
-.z2-dot.future{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1)}
-.z2-dot.tappable{cursor:pointer;transition:transform .15s}
-.z2-dot.tappable:hover{transform:scale(1.3)}
-
-/* CTA button */
-.z2-cta{width:100%;padding:18px 24px;border:none;border-radius:18px;background:linear-gradient(135deg,#7a4808,#c4851c,#F5B84C);color:#1a0800;font-family:var(--serif);font-size:17px;font-weight:600;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(245,184,76,.25);transition:transform .18s,filter .18s}
-.z2-cta::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.18),transparent);animation:shimmer 3.5s ease-in-out infinite}
-.z2-cta:hover{transform:scale(1.02) translateY(-1px);filter:brightness(1.08)}
-.z2-cta:active{transform:scale(.97)}
-.z2-cta-sub{display:block;font-size:10px;font-weight:600;opacity:.5;margin-top:3px;font-family:var(--sans)}
-
-/* ══════════════════════════════════════════════════════════════════════════════
-   ZONE 3 — Journey Bar (streak + week)
-   ══════════════════════════════════════════════════════════════════════════════ */
-.z3-journey{display:flex;align-items:center;gap:14px;margin-bottom:16px;animation:fadeUp .6s ease-out both;animation-delay:.1s;background:rgba(13,17,32,.8);border:1px solid rgba(244,239,232,.06);border-radius:20px;padding:16px 18px}
-.z3-streak{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;flex-shrink:0}
-.z3-streak.amber{background:rgba(245,184,76,.08);border:1px solid rgba(245,184,76,.18)}
-.z3-streak.teal{background:rgba(20,216,144,.08);border:1px solid rgba(20,216,144,.18)}
-.z3-streak-num{font-family:var(--mono);font-size:13px;font-weight:700}
-.z3-streak-num.amber{color:var(--amber)}
-.z3-streak-num.teal{color:var(--teal)}
-.z3-streak-lbl{font-family:var(--sans);font-size:10px;color:var(--cream-dim);font-weight:600}
-.z3-week{display:flex;align-items:center;gap:4px;flex:1;justify-content:flex-end}
-.z3-week-lbl{font-family:var(--mono);font-size:7px;color:rgba(255,255,255,.2);text-align:center;width:10px;margin-bottom:2px;letter-spacing:0}
-.z3-week-col{display:flex;flex-direction:column;align-items:center;gap:2px}
-.z3-wdot{width:10px;height:10px;border-radius:50%}
-.z3-wdot.done{background:var(--amber);box-shadow:0 0 6px rgba(245,184,76,.3)}
-.z3-wdot.done-teal{background:var(--teal);box-shadow:0 0 6px rgba(20,216,144,.3)}
-.z3-wdot.tonight{background:rgba(245,184,76,.15);border:1.5px solid rgba(245,184,76,.4);animation:pulse-ring 2.5s ease-in-out infinite}
-.z3-wdot.tonight-done{background:rgba(20,216,144,.25);border:1.5px solid rgba(20,216,144,.5)}
-.z3-wdot.missed{background:rgba(255,60,60,.15);border:1px solid rgba(255,60,60,.25)}
-.z3-wdot.future{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
-
-/* ══════════════════════════════════════════════════════════════════════════════
-   ZONE 4 — Memory Peek
-   ══════════════════════════════════════════════════════════════════════════════ */
-.z4-memory{margin-bottom:16px;animation:fadeUp .65s ease-out both;animation-delay:.15s}
-.z4-label{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:8px}
-.z4-cards{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px}
-.z4-cards::-webkit-scrollbar{display:none}
-.z4-card{flex:0 0 auto;width:200px;background:linear-gradient(148deg,rgba(8,12,32,.96),rgba(14,18,46,.96));border:1px solid rgba(160,96,240,.18);border-radius:14px;padding:12px;cursor:pointer;transition:border-color .2s,transform .2s}
-.z4-card:hover{border-color:rgba(160,96,240,.35);transform:translateY(-2px)}
-.z4-card-title{font-family:var(--serif);font-size:12px;font-weight:700;color:var(--cream);line-height:1.3;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.z4-card-quote{font-family:var(--serif);font-size:11px;font-style:italic;color:rgba(255,255,255,.45);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px}
-.z4-card-date{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.2)}
-.z4-more{background:none;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 16px;font-family:var(--serif);font-size:12px;font-style:italic;color:var(--cream-dim);cursor:pointer;transition:all .18s;margin-top:8px}
-.z4-more:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.18)}
-
-/* ══════════════════════════════════════════════════════════════════════════════
-   Done state — creature sleeping
-   ══════════════════════════════════════════════════════════════════════════════ */
-.done-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(20,216,144,.07);border:1px solid rgba(20,216,144,.24);border-radius:20px;padding:4px 14px;margin-bottom:8px}
-.done-badge-dot{width:5px;height:5px;border-radius:50%;background:#14d890;animation:twk 2.2s ease-in-out infinite}
-.done-badge-txt{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(20,216,144,.7)}
-.done-zzz{position:absolute;font-family:var(--serif);font-style:italic;pointer-events:none}
-.done-zzz.z1{font-size:14px;top:6px;right:2px;color:rgba(20,216,144,.52);animation:zzz 3.2s 0s ease-out infinite}
-.done-zzz.z2{font-size:10px;top:18px;right:14px;color:rgba(20,216,144,.38);animation:zzz 3.2s 1s ease-out infinite}
-.done-zzz.z3{font-size:8px;top:24px;right:4px;color:rgba(20,216,144,.26);animation:zzz 3.2s 2s ease-out infinite}
-
-/* ══════════════════════════════════════════════════════════════════════════════
-   Guest state
-   ══════════════════════════════════════════════════════════════════════════════ */
-.dash-u-btn{width:100%;padding:18px 20px;border:none;border-radius:17px;cursor:pointer;position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;transition:transform .18s,filter .2s;box-shadow:0 1px 0 rgba(255,255,255,.18) inset}
+/* ── Guest buttons ── */
+.dash-u-btn{width:100%;padding:18px 20px;border:none;border-radius:var(--r-md);cursor:pointer;position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;transition:transform .18s,filter .2s;box-shadow:0 1px 0 rgba(255,255,255,.18) inset}
 .dash-u-btn:hover{transform:scale(1.02) translateY(-1px);filter:brightness(1.1)}
 .dash-u-btn:active{transform:scale(.97)}
 .dash-u-btn::after{content:'';position:absolute;top:0;left:-120%;width:55%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.16),transparent);animation:shimmer 3.8s ease-in-out infinite}
@@ -250,128 +122,24 @@ const CSS=`
 .dash-u-btn-sub{font-size:10px;font-weight:700;display:block;opacity:.5}
 .dash-u-btn-arr{font-size:24px;flex-shrink:0;position:relative;z-index:1;opacity:.38}
 
-/* ══════════════════════════════════════════════════════════════════════════════
-   Modals — Night Card, Hatch, Shard Sheet
-   ══════════════════════════════════════════════════════════════════════════════ */
-.dash-nc-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px);animation:fadein .18s ease}
-.dash-nc-modal{background:#0F1328;border:1px solid rgba(255,255,255,.07);border-radius:18px;max-width:380px;width:100%;overflow:hidden;animation:fadein .18s ease}
-.dash-nc-modal-top{background:linear-gradient(135deg,#C49018,#A87010);padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
-.dash-nc-modal-lbl{font-size:8.5px;font-weight:600;color:#0A0600;letter-spacing:.07em;text-transform:uppercase}
-.dash-nc-modal-date{font-size:8.5px;color:rgba(10,6,0,.5);font-family:var(--mono)}
-.dash-nc-modal-close{background:none;border:none;font-size:20px;color:rgba(10,6,0,.4);cursor:pointer;line-height:1;padding:0 2px}
-.dash-nc-modal-body{padding:15px 17px}
-.dash-nc-modal-fl{font-size:8px;color:rgba(58,66,112,1);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;font-weight:500}
-.dash-nc-modal-fv{font-size:13px;color:rgba(200,191,176,1);line-height:1.65;font-style:italic;margin-bottom:12px}
-.dash-nc-modal-q{font-size:13px;color:var(--amber);font-family:var(--serif);font-style:italic;margin-bottom:4px}
-.dash-nc-modal-a{font-size:13px;color:var(--cream);line-height:1.6}
-
-/* Hatch modal */
+/* ── Hatch modal ── */
 .dash-hatch-modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.88);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;animation:fadein .3s ease}
 .dash-hatch-inner{text-align:center;animation:fadein .4s ease-out;max-width:340px;padding:24px}
 .dash-hatch-creature{font-size:96px;animation:hatchBurst .6s ease-out;display:inline-block;margin-bottom:18px;filter:drop-shadow(0 0 32px rgba(20,216,144,.6))}
 .dash-hatch-title{font-family:var(--serif);font-size:24px;color:var(--cream);margin-bottom:8px;line-height:1.3;font-style:italic}
 .dash-hatch-title em{color:#14d890}
 .dash-hatch-sub{font-size:13px;color:rgba(244,239,232,.4);line-height:1.65;margin-bottom:20px}
-.dash-hatch-btn{padding:16px 32px;border:none;border-radius:18px;font-size:17px;font-weight:800;cursor:pointer;font-family:var(--cta);background:linear-gradient(135deg,#0a7a50,#14d890 50%,#0a7a50);color:#041a0c;box-shadow:0 8px 28px rgba(20,200,130,.35);transition:transform .18s,filter .18s}
+.dash-hatch-btn{padding:16px 32px;border:none;border-radius:var(--r-md);font-size:17px;font-weight:800;cursor:pointer;font-family:var(--serif);background:linear-gradient(135deg,#0a7a50,#14d890 50%,#0a7a50);color:#041a0c;box-shadow:0 8px 28px rgba(20,200,130,.35);transition:transform .18s,filter .18s}
 .dash-hatch-btn:hover{transform:scale(1.03) translateY(-1px);filter:brightness(1.08)}
 
-/* Shard bottom sheet */
-.dash-sheet-bd{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:60;animation:fadein .22s ease}
-.dash-sheet{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(168deg,#080c24,#060a1c);border-radius:22px 22px 0 0;border:1px solid rgba(160,96,240,.22);z-index:61;max-height:78vh;overflow-y:auto;scrollbar-width:none;animation:sheetUp .28s ease-out;padding-bottom:env(safe-area-inset-bottom,0px)}
-.dash-sheet::-webkit-scrollbar{display:none}
-@media(min-width:600px){.dash-sheet{left:50%;right:auto;bottom:50%;transform:translateX(-50%) translateY(50%);width:100%;max-width:480px;border-radius:22px;max-height:80vh;animation:none;box-shadow:0 24px 80px rgba(0,0,0,.85),0 0 0 1px rgba(160,96,240,.25)}}
-.dash-sheet-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);margin:12px auto 8px}
-@media(min-width:600px){.dash-sheet-handle{display:none}}
-.dash-sh-hd{padding:0 16px 12px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:flex-start;justify-content:space-between}
-.dash-sh-night{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(20,216,144,.65);display:block;margin-bottom:3px}
-.dash-sh-memory{font-family:var(--serif);font-size:11px;font-style:italic;color:rgba(255,255,255,.35)}
-.dash-sh-memory em{color:rgba(245,184,76,.7);font-style:normal;font-weight:700}
-.dash-sh-close{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.07);border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .18s}
-.dash-sh-close:hover{background:rgba(255,255,255,.13)}
-.dash-sh-wisdom{padding:12px 16px;display:flex;align-items:flex-start;gap:10px;background:rgba(20,216,144,.04);border-bottom:1px solid rgba(255,255,255,.05)}
-.dash-sh-wis-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(20,216,144,.45);margin-bottom:4px}
-.dash-sh-wis-txt{font-family:var(--serif);font-size:13px;font-style:italic;color:rgba(255,255,255,.72);line-height:1.6}
-.dash-sh-photo{margin:12px 16px 0;border-radius:14px;overflow:hidden;position:relative}
-.dash-sh-photo-add{margin:12px 16px 0;background:rgba(255,255,255,.02);border:1.5px dashed rgba(245,184,76,.2);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
-.dash-sh-photo-add:hover{background:rgba(245,184,76,.04);border-color:rgba(245,184,76,.35)}
-.dash-sh-pa-ico{width:44px;height:44px;border-radius:13px;background:rgba(245,184,76,.08);border:1px solid rgba(245,184,76,.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.dash-sh-pa-title{font-family:var(--cta);font-size:13px;font-weight:800;color:rgba(255,255,255,.52);margin-bottom:3px}
-.dash-sh-pa-sub{font-family:var(--sans);font-size:10.5px;color:rgba(255,255,255,.26);line-height:1.45}
-.dash-sh-story{padding:12px 16px}
-.dash-sh-sec-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:7px}
-.dash-sh-story-card{background:rgba(255,255,255,.03);border:1px solid rgba(160,96,240,.18);border-radius:13px;padding:12px}
-.dash-sh-story-title{font-family:var(--serif);font-size:13px;font-weight:700;color:var(--cream);line-height:1.3;margin-bottom:7px}
-.dash-sh-refrain{font-family:var(--serif);font-size:12px;font-style:italic;color:rgba(255,255,255,.58);line-height:1.65;border-left:2px solid rgba(160,96,240,.38);padding-left:9px;margin-bottom:10px}
-.dash-sh-read-btn{width:100%;padding:11px;border:none;border-radius:12px;background:rgba(160,96,240,.12);border:1px solid rgba(160,96,240,.32);color:#c090ff;font-family:var(--cta);font-size:12.5px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;position:relative;overflow:hidden}
-.dash-sh-read-btn::after{content:'';position:absolute;top:0;left:-130%;width:55%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.1),transparent);animation:shimmer 3s ease-in-out infinite}
-.dash-sh-read-btn:hover{background:rgba(160,96,240,.22);border-color:rgba(160,96,240,.5);transform:translateY(-1px)}
-.dash-sh-no-story{font-family:var(--serif);font-size:11px;font-style:italic;color:rgba(255,255,255,.28);text-align:center;padding:6px 0}
-.dash-sh-bond{padding:0 16px 16px}
-.dash-sh-bond-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:11px 13px}
-.dash-sh-bq{font-family:var(--serif);font-size:11px;font-style:italic;color:rgba(255,255,255,.38);margin-bottom:6px;line-height:1.5}
-.dash-sh-ba{font-family:var(--sans);font-size:13px;font-weight:700;color:rgba(255,255,255,.75);line-height:1.5}
-
-/* ══════════════════════════════════════════════════════════════════════════════
-   Bottom Navbar
-   ══════════════════════════════════════════════════════════════════════════════ */
-@keyframes pillIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
-.dash-navbar{position:fixed;bottom:0;left:0;right:0;height:74px;background:linear-gradient(180deg,rgba(4,6,18,.94) 0%,rgba(6,9,22,.98) 100%);border-top:1px solid rgba(245,184,76,.14);display:flex;align-items:center;justify-content:space-around;padding:0 8px;z-index:30;padding-bottom:max(0px,env(safe-area-inset-bottom))}
-.dash-nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:8px 4px 10px;position:relative;border-radius:14px;-webkit-tap-highlight-color:transparent;transition:opacity .15s}
-.dash-nav-tab:active{opacity:.65}
-.dash-nav-tab svg{opacity:.58;transition:opacity .2s,transform .2s}
-.dash-nav-tab-lbl{font-family:var(--serif);font-style:italic;font-size:10px;color:rgba(255,255,255,.48);transition:color .2s;white-space:nowrap;line-height:1}
-.dash-nav-tab.on::before{content:'';position:absolute;inset:3px 0px;border-radius:12px;animation:pillIn .2s ease-out}
-.dash-nav-tab.on-amber::before{background:rgba(245,184,76,.15);border:1px solid rgba(245,184,76,.22);box-shadow:0 0 12px rgba(245,184,76,.08)}
-.dash-nav-tab.on-amber svg{opacity:1;transform:scale(1.08)}
-.dash-nav-tab.on-amber .dash-nav-tab-lbl{color:rgba(245,184,76,.95)}
-.dash-nav-create{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:-16px;padding-bottom:2px}
-.dash-nav-create-btn{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,242,150,.4) 0%,transparent 48%),linear-gradient(148deg,#c08020 0%,#F5B84C 35%,#F0A030 60%,#a06010 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform .18s,filter .18s;animation:cBreathe 4s ease-in-out infinite}
-.dash-nav-create-btn::before{content:'';position:absolute;top:0;left:0;right:0;height:55%;background:linear-gradient(180deg,rgba(255,250,180,.22) 0%,transparent 100%);border-radius:50% 50% 0 0;pointer-events:none}
-.dash-nav-create-btn::after{content:'';position:absolute;top:-20%;left:-65%;width:38%;height:140%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.16),transparent);transform:skewX(-15deg);animation:shimmer 3.4s ease-in-out infinite}
-.dash-nav-create-btn:active{transform:scale(.9);filter:brightness(.88)}
-.dash-nav-create-lbl{font-family:var(--serif);font-style:italic;font-size:10px;color:rgba(245,184,76,.65);white-space:nowrap;line-height:1}
-
-/* ── Re-read link ── */
-.dash-reread{background:rgba(10,12,24,.97);border:.5px solid rgba(255,255,255,.05);border-left:2.5px solid var(--amber);border-radius:0 10px 10px 0;padding:8px 13px;display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer;transition:background .18s}
-.dash-reread:hover{background:rgba(14,16,30,.97)}
+/* ── Night Card Drawer ── */
+.nc-drawer-bd{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;transition:opacity .22s;animation:fadein .18s ease}
+.nc-drawer{position:fixed;bottom:76px;left:0;right:0;background:#0C1840;border-top:1px solid rgba(255,255,255,.09);border-radius:22px 22px 0 0;z-index:201;max-height:78vh;overflow-y:auto;scrollbar-width:none;animation:sheetUp .28s ease-out;padding-bottom:env(safe-area-inset-bottom,0px)}
+.nc-drawer::-webkit-scrollbar{display:none}
+@media(min-width:600px){.nc-drawer{left:50%;right:auto;bottom:50%;transform:translateX(-50%) translateY(50%);width:100%;max-width:480px;border-radius:var(--r-lg);max-height:80vh;animation:none;box-shadow:0 24px 80px rgba(0,0,0,.85)}}
+.nc-drawer-pill{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.14);margin:12px auto 8px}
+@media(min-width:600px){.nc-drawer-pill{display:none}}
 `;
-
-// ── stars ─────────────────────────────────────────────────────────────────────
-
-const STARS=Array.from({length:45},(_,i)=>({
-  id:i,x:Math.random()*100,y:Math.random()*50,
-  size:Math.random()<.2?4:Math.random()<.5?3:2,
-  d:(2+Math.random()*3).toFixed(1)+'s',
-  dl:(Math.random()*4).toFixed(1)+'s',
-  t:Math.random()<.4?1:Math.random()<.75?2:3,
-}));
-
-// ── Nav SVG icons ─────────────────────────────────────────────────────────────
-
-const NavIconDiscover = ({color='rgba(255,255,255,.9)'}:{color?:string}) => (
-  <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke={color} strokeWidth="1.4"/><path d="M11 3.5v1M11 17.5v1M3.5 11h1M17.5 11h1" stroke={color} strokeWidth="1.4" strokeLinecap="round"/><circle cx="11" cy="11" r="2.5" stroke={color} strokeWidth="1.3"/><path d="M13.5 8.5l-1.2 3.7-3.7 1.2 1.2-3.7z" fill={color}/></svg>
-);
-const NavIconHome = ({color='rgba(255,255,255,.9)'}:{color?:string}) => (
-  <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><path d="M4 10.5L11 4l7 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" stroke={color} strokeWidth="1.4" strokeLinejoin="round"/><rect x="8.5" y="14" width="5" height="6" rx="1" stroke={color} strokeWidth="1.3"/><circle cx="14.5" cy="8.5" r="1.8" fill={`${color}30`} stroke={color} strokeWidth=".9"/></svg>
-);
-const NavIconCreate = () => (
-  <svg width="26" height="26" viewBox="0 0 30 30" fill="none" style={{position:'relative',zIndex:2}}><path d="M15 4l2.7 8.2H26l-6.9 5 2.6 8.2L15 20.4l-6.7 5 2.6-8.2L4 12.2h8.3z" fill="rgba(8,4,0,.85)"/></svg>
-);
-const NavIconMyStuff = ({color='rgba(255,255,255,.9)'}:{color?:string}) => (
-  <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><rect x="3" y="10" width="16" height="10" rx="2" stroke={color} strokeWidth="1.4"/><path d="M3 11a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4" stroke={color} strokeWidth="1.4"/><rect x="9.5" y="14" width="3" height="2.5" rx="1" stroke={color} strokeWidth="1.3"/><path d="M3 11h16" stroke={color} strokeWidth="1.4"/></svg>
-);
-const NavIconProfile = () => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="#c090ff" strokeWidth="1.2"/><path d="M2 12c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="#c090ff" strokeWidth="1.2" strokeLinecap="round"/></svg>
-);
-const NavIconBooks = () => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="4" y="3" width="14" height="16" rx="1.5" stroke="#F5B84C" strokeWidth="1.2"/><path d="M7 8h8M7 11h8M7 14h5" stroke="#F5B84C" strokeWidth="1.1" strokeLinecap="round"/><path d="M4 3h1.5" stroke="#F5B84C" strokeWidth="1.4" strokeLinecap="round"/></svg>
-);
-const NavIconNightCards = () => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="5" width="16" height="12" rx="2" stroke="#c090ff" strokeWidth="1.2"/><path d="M3 9h16" stroke="#c090ff" strokeWidth="1.1"/><circle cx="7" cy="7" r="1.2" fill="#c090ff" opacity=".6"/><path d="M12 12a2.5 2.5 0 1 1 2.5-2.5 1.8 1.8 0 0 0-2.5 2.5z" fill="rgba(160,96,240,.5)" stroke="#c090ff" strokeWidth=".8"/></svg>
-);
-const NavIconHatchery = () => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3C7.5 3 5 6.5 5 10.5 5 15 7.5 19 11 19c3.5 0 6-4 6-8.5C17 6.5 14.5 3 11 3z" stroke="#14d890" strokeWidth="1.2"/><path d="M9 13l2-2.5 2 1.5" stroke="#14d890" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/><circle cx="11" cy="10" r="1.5" fill="rgba(20,216,144,.5)"/></svg>
-);
 
 // ── component ─────────────────────────────────────────────────────────────────
 
@@ -525,7 +293,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
     const interval = setInterval(() => {
       const fired = checkBedtimeReminder(userId, childName);
       if (fired) { setBedtimeToast(true); setTimeout(() => setBedtimeToast(false), 8000); }
-    }, 30000); // check every 30s
+    }, 30000);
     return () => clearInterval(interval);
   }, [userId, childName]);
 
@@ -598,86 +366,262 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
     });
   },[allCards,primary]);
 
+  // ── Derive journey state ─────────────────────────────────────────────────
+  const hasActiveJourney = !journeyLoading && activeJourney && (activeJourney.chapters.length > 0 || activeJourney.readNumber >= 1);
+  const readNumber = activeJourney?.readNumber ?? 0;
+
   // ── LOADING ────────────────────────────────────────────────────────────────
   if(!user) return null;
   if(loading) return(
     <div className="dash">
       <style>{CSS}</style>
-      <div className="dash-sky"/>
-      <div className="dash-stars">{STARS.slice(0,12).map(s=><div key={s.id} className={s.t===1?'dash-star':s.t===2?'dash-star2':'dash-star3'} style={{left:`${s.x}%`,top:`${s.y}%`,width:s.size,height:s.size,'--d':s.d,'--dl':s.dl} as any}/>)}</div>
-      <nav className="dash-nav" style={{background:'rgba(4,8,22,.9)',borderBottom:'1px solid rgba(245,184,76,.07)'}}>
-        <div className="dash-logo"><div className="dash-logo-moon"><div className="dash-logo-moon-sh"/></div>SleepSeed</div>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <div className="dash-skel" style={{width:70,height:24,borderRadius:20}}/>
-          <div className="dash-skel" style={{width:60,height:10,borderRadius:4}}/>
+      <div className="dash-inner" style={{paddingTop:24}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:24}}>
+          <div>
+            <div className="dash-skel" style={{height:12,width:100,borderRadius:4,marginBottom:8}}/>
+            <div className="dash-skel" style={{height:30,width:180,borderRadius:8}}/>
+          </div>
+          <div className="dash-skel" style={{width:90,height:50,borderRadius:18}}/>
         </div>
-      </nav>
-      <div className="dash-inner">
-        <div style={{paddingTop:24,marginBottom:20}}>
-          <div className="dash-skel" style={{height:12,width:'55%',marginBottom:8,borderRadius:4}}/>
-          <div className="dash-skel" style={{height:26,width:'75%',borderRadius:8,marginBottom:6}}/>
-          <div className="dash-skel" style={{height:10,width:'35%',borderRadius:4}}/>
+        <div className="dash-skel" style={{height:200,borderRadius:22,marginBottom:16}}/>
+        <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:16}}>
+          {[0,1,2,3,4,5,6].map(i=>(
+            <div key={i} className="dash-skel" style={{width:28,height:28,borderRadius:'50%'}}/>
+          ))}
         </div>
-        <div className="dash-skel" style={{height:280,borderRadius:20,marginBottom:16}}/>
-        <div className="dash-skel" style={{height:36,borderRadius:20,marginBottom:16}}/>
-        <div style={{display:'flex',gap:8}}>
-          <div className="dash-skel" style={{height:100,flex:1,borderRadius:14}}/>
-          <div className="dash-skel" style={{height:100,width:80,borderRadius:14}}/>
-        </div>
+        <div className="dash-skel" style={{height:56,borderRadius:18,marginBottom:12}}/>
+        <div className="dash-skel" style={{height:52,borderRadius:18}}/>
       </div>
     </div>
+  );
+
+  // ── Component helpers ──────────────────────────────────────────────────────
+
+  const CometSvg = () => (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{flexShrink:0}}>
+      <circle cx="3" cy="3" r="1" fill="rgba(245,184,76,.15)"/>
+      <circle cx="5.5" cy="5.5" r="1.5" fill="rgba(245,184,76,.22)"/>
+      <circle cx="8.5" cy="8.5" r="2.2" fill="rgba(245,184,76,.3)"/>
+      <circle cx="12" cy="12" r="3.5" fill="rgba(245,184,76,.4)"/>
+      <circle cx="14" cy="14" r="6.5" fill="var(--amber)" fillOpacity=".0"/>
+      <circle cx="13.5" cy="13.5" r="3" fill="var(--amber)"/>
+      <circle cx="12.5" cy="12.5" r="1" fill="rgba(255,255,255,.6)"/>
+    </svg>
+  );
+
+  const StreakBadge = ({celebration}:{celebration?:boolean}) => {
+    if (glow === 0) {
+      return (
+        <div style={{
+          display:'flex',alignItems:'center',gap:9,
+          padding:'10px 16px',
+          background:'transparent',
+          border:'1.5px solid rgba(234,242,255,.09)',
+          borderRadius:18,flexShrink:0,
+        }}>
+          <CometSvg/>
+          <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end'}}>
+            <span style={{fontFamily:'var(--serif)',fontSize:13,fontWeight:700,color:'rgba(234,242,255,.3)',lineHeight:1.2}}>Start a streak</span>
+            <span style={{fontFamily:'var(--mono)',fontSize:7.5,color:'rgba(234,242,255,.15)',letterSpacing:'.9px',lineHeight:1}}>read every night</span>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div style={{
+        display:'flex',alignItems:'center',gap:9,
+        padding:'10px 16px',
+        background:'rgba(245,184,76,.09)',
+        border:'1.5px solid rgba(245,184,76,.26)',
+        borderRadius:18,
+        flexShrink:0,
+        ...(celebration ? {
+          boxShadow:'0 0 0 3px rgba(245,184,76,.16), 0 0 24px rgba(245,184,76,.12)'
+        } : {})
+      }}>
+        <CometSvg/>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end'}}>
+          <span style={{fontFamily:'var(--serif)',fontSize:30,fontWeight:900,color:'var(--amber)',lineHeight:1}}>{glow}</span>
+          <span style={{fontFamily:'var(--mono)',fontSize:7.5,color:'rgba(245,184,76,.5)',letterSpacing:'.9px',textTransform:'uppercase',lineHeight:1}}>NIGHT STREAK</span>
+        </div>
+      </div>
+    );
+  };
+
+  const GreetingRow = ({done}:{done?:boolean}) => (
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',paddingTop:24,marginBottom:20,animation:'fadeUp .5s ease-out both'}}>
+      <div>
+        {done ? (
+          <>
+            <div style={{fontFamily:'var(--sans)',fontSize:12,color:'rgba(20,216,144,.68)',marginBottom:6}}>
+              {readNumber > 0 ? `Read ${readNumber} complete \u2713` : 'Tonight complete \u2713'}
+            </div>
+            <div style={{fontFamily:'var(--serif)',fontSize:30,fontWeight:900,color:'var(--cream)',lineHeight:1.15}}>Well done, {childName}</div>
+          </>
+        ) : (
+          <>
+            <div style={{fontFamily:'var(--sans)',fontSize:12,fontStyle:'italic',color:'rgba(234,242,255,.4)',marginBottom:6}}>{greetWord},</div>
+            <div style={{fontFamily:'var(--serif)',fontSize:30,fontWeight:900,color:'var(--cream)',lineHeight:1.15}}>{childName}</div>
+          </>
+        )}
+      </div>
+      <StreakBadge celebration={done}/>
+    </div>
+  );
+
+  const BookHeroCard = ({done}:{done?:boolean}) => {
+    if(!activeJourney) return null;
+    const accentBg = done ? 'rgba(20,216,144,.1)' : 'rgba(245,184,76,.1)';
+    const accentBorder = done ? 'rgba(20,216,144,.28)' : 'rgba(245,184,76,.28)';
+    const accentColor = done ? 'var(--teal)' : 'var(--amber)';
+    const statusText = done
+      ? `READ ${readNumber} COMPLETE \u2713`
+      : `READ ${readNumber} OF 7`;
+    const creatureEmoji = hatchedCreature?.creatureEmoji || '\u{1F4D6}';
+    const creatureType = creatureDef?.name ?? 'Companion';
+    const lastChapter = activeJourney.chapters[activeJourney.chapters.length - 1];
+    const whisperText = lastChapter?.teaser || creatureSpeech || "Tonight's chapter awaits";
+
+    return (
+      <div style={{
+        background:'rgba(12,24,70,.92)',
+        border:'1px solid rgba(255,255,255,.07)',
+        borderRadius:22,padding:16,
+        marginBottom:16,
+        animation:'fadeUp .55s ease-out both',animationDelay:'.05s'
+      }}>
+        <div style={{fontFamily:'var(--mono)',fontSize:8.5,color:'rgba(234,242,255,.25)',letterSpacing:'1.1px',textTransform:'uppercase',marginBottom:12}}>
+          CURRENTLY READING
+        </div>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:10}}>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:'var(--serif)',fontSize:21,fontWeight:900,color:'var(--cream)',lineHeight:1.15,letterSpacing:'-.4px',marginBottom:8}}>
+              {activeJourney.workingTitle}
+            </div>
+            <div style={{display:'inline-flex',alignItems:'center',padding:'4px 10px',background:accentBg,borderRadius:20,border:`0.5px solid ${accentBorder}`}}>
+              <span style={{fontFamily:'var(--mono)',fontSize:8,fontWeight:600,color:accentColor}}>{statusText}</span>
+            </div>
+          </div>
+          <div style={{fontSize:62,lineHeight:1,flexShrink:0,marginLeft:8}}>{creatureEmoji}</div>
+        </div>
+        <div style={{height:0.5,background:'rgba(255,255,255,.05)',margin:'12px 0'}}/>
+        <div>
+          <div style={{fontFamily:'var(--mono)',fontSize:8,color:'rgba(234,242,255,.28)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:4}}>{creatureType}</div>
+          <div style={{fontFamily:'var(--sans)',fontSize:12,fontStyle:'italic',color:'rgba(234,242,255,.46)',lineHeight:1.5}}>"{whisperText}"</div>
+        </div>
+      </div>
+    );
+  };
+
+  const StoryProgressDots = ({done}:{done?:boolean}) => {
+    const rn = readNumber;
+    const nightsToGo = Math.max(0, 7 - rn);
+    return (
+      <div style={{marginBottom:20}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+          <span style={{fontFamily:'var(--mono)',fontSize:8.5,color:'rgba(234,242,255,.24)',letterSpacing:'.9px',textTransform:'uppercase'}}>BOOK PROGRESS</span>
+          <span style={{fontFamily:'var(--mono)',fontSize:8.5,color:'rgba(234,242,255,.24)'}}>{rn} of 7</span>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8}}>
+          {[0,1,2,3,4,5,6].map(i => {
+            const isDone = i < rn;
+            const isCurrent = !done && i === rn - 1;
+            const dotStyle: React.CSSProperties = {
+              width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',
+              cursor: isDone ? 'pointer' : 'default',
+            };
+            let innerStyle: React.CSSProperties;
+            if (isDone) {
+              innerStyle = {
+                width:14,height:14,borderRadius:'50%',
+                background:'var(--teal)',opacity:.75,
+                transition:'transform .12s',
+              };
+            } else if (isCurrent && !done) {
+              innerStyle = {
+                width:14,height:14,borderRadius:'50%',
+                background:'var(--amber)',
+                animation:'dotPulse 2s infinite',
+              };
+            } else {
+              innerStyle = {
+                width:14,height:14,borderRadius:'50%',
+                background:'rgba(234,242,255,.08)',
+                border:'0.5px solid rgba(234,242,255,.18)',
+              };
+            }
+            return (
+              <div key={i} style={dotStyle}
+                onClick={()=>{
+                  if(isDone && eggCards[i]) {
+                    handleShardTap(i, true);
+                  }
+                }}
+                onPointerDown={e=>{if(isDone)(e.currentTarget.firstChild as HTMLElement).style.transform='scale(.8)';}}
+                onPointerUp={e=>{if(isDone)(e.currentTarget.firstChild as HTMLElement).style.transform='';}}
+              >
+                <div style={innerStyle}/>
+              </div>
+            );
+          })}
+        </div>
+        {!done && rn > 0 && rn < 7 && (
+          <div style={{display:'flex',alignItems:'center',gap:6}}>
+            <div style={{width:5,height:5,borderRadius:'50%',background:'var(--amber)',flexShrink:0}}/>
+            <span style={{fontFamily:'var(--mono)',fontSize:9,color:'rgba(245,184,76,.65)'}}>Night {rn + 1} is next &middot; {nightsToGo} to go</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const PrimaryCta = ({label, onClick}:{label:string;onClick:()=>void}) => (
+    <button onClick={onClick} style={{
+      width:'100%',padding:16,border:'none',borderRadius:18,
+      background:'var(--amber)',color:'#172200',
+      fontFamily:'var(--serif)',fontSize:15,fontWeight:700,
+      cursor:'pointer',position:'relative',overflow:'hidden',
+      boxShadow:'0 8px 24px rgba(245,184,76,.26)',
+      transition:'transform .15s,filter .15s',
+      marginBottom:10,
+    }}
+      onPointerDown={e=>e.currentTarget.style.transform='scale(.97)'}
+      onPointerUp={e=>e.currentTarget.style.transform=''}
+    >
+      <span style={{position:'absolute',top:0,left:'-100%',width:'55%',height:'100%',
+        background:'linear-gradient(105deg,transparent,rgba(255,255,255,.22),transparent)',
+        animation:'shimmer 5.5s ease-in-out infinite'}}/>
+      <span style={{position:'relative',zIndex:1}}>{label}</span>
+    </button>
+  );
+
+  const SecondaryCta = ({label, onClick}:{label:string;onClick:()=>void}) => (
+    <button onClick={onClick} style={{
+      width:'100%',padding:15,border:'1px solid rgba(244,239,232,.16)',borderRadius:18,
+      background:'rgba(244,239,232,.06)',color:'rgba(234,242,255,.68)',
+      fontFamily:'var(--serif)',fontSize:14,fontWeight:600,
+      cursor:'pointer',transition:'all .15s',
+    }}
+      onPointerDown={e=>e.currentTarget.style.transform='scale(.97)'}
+      onPointerUp={e=>e.currentTarget.style.transform=''}
+    >
+      {label}
+    </button>
   );
 
   // ── FULL RENDER ────────────────────────────────────────────────────────────
   return(
     <div className="dash">
       <style>{CSS}</style>
-      <div className="dash-sky"/>
-      <div className="dash-stars">{STARS.slice(0,20).map(s=><div key={s.id} className={s.t===1?'dash-star':s.t===2?'dash-star2':'dash-star3'} style={{left:`${s.x}%`,top:`${s.y}%`,width:s.size,height:s.size,'--d':s.d,'--dl':s.dl} as any}/>)}</div>
-
-      {/* ── TOP NAV ── */}
-      <nav className="dash-nav" style={{background:tonightDone?'rgba(3,8,18,.92)':'rgba(4,8,22,.9)',borderBottom:tonightDone?'1px solid rgba(20,216,144,.07)':'1px solid rgba(245,184,76,.07)'}}>
-        <div className="dash-logo"><div className="dash-logo-moon"><div className="dash-logo-moon-sh"/></div>SleepSeed</div>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          {primary&&(
-            <div style={{display:'flex',alignItems:'center',gap:8,background:`rgba(${hexToRgba(creatureColor,.12).slice(5,-1)})`,border:`1px solid ${hexToRgba(creatureColor,.25)}`,borderRadius:20,padding:'6px 12px 6px 6px',cursor:'pointer',transition:'background .2s'}}
-              onClick={()=>{
-                if(familyChars.length>1){
-                  const idx=familyChars.findIndex(c=>c.id===primary.id);
-                  const next=familyChars[(idx+1)%familyChars.length];
-                  setSelectedCharacters([next]);setWeekViewId(next.id);
-                }
-              }}
-              onMouseEnter={e=>(e.currentTarget.style.background=hexToRgba(creatureColor,.2))}
-              onMouseLeave={e=>(e.currentTarget.style.background=hexToRgba(creatureColor,.12))}>
-              <div style={{width:26,height:26,borderRadius:'50%',background:`linear-gradient(135deg,${hexToRgba(creatureColor,.4)},${hexToRgba(creatureColor,.2)})`,display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',flexShrink:0}}>
-                {primary.photo
-                  ? <img src={primary.photo} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}}/>
-                  : <span style={{fontSize:14}}>{hatchedCreature?.creatureEmoji||primary.emoji||'\uD83E\uDDD2'}</span>}
-              </div>
-              <span style={{fontFamily:"'Nunito',sans-serif",fontSize:13,fontWeight:600,color:'#F4EFE8'}}>{primary.name}</span>
-              {familyChars.length>1&&<span style={{fontSize:10,color:'rgba(244,239,232,.4)',marginLeft:2}}>{'\u25BE'}</span>}
-            </div>
-          )}
-          <div style={{width:30,height:30,borderRadius:'50%',background:'rgba(244,239,232,.06)',border:'1px solid rgba(244,239,232,.08)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',transition:'all .2s',flexShrink:0}}
-            onClick={handleProfile}
-            onMouseEnter={e=>{e.currentTarget.style.background='rgba(244,239,232,.12)';e.currentTarget.style.borderColor='rgba(244,239,232,.18)';}}
-            onMouseLeave={e=>{e.currentTarget.style.background='rgba(244,239,232,.06)';e.currentTarget.style.borderColor='rgba(244,239,232,.08)';}}>
-            <NavIconProfile/>
-          </div>
-        </div>
-      </nav>
-
-      {/* Child switching is handled via the nav child pod — no separate row */}
 
       <div className="dash-inner">
         {/* ── GUEST STATE ── */}
         {isGuest&&(
-          <div style={{padding:'20px 0 0'}}>
-            <div style={{textAlign:'center',marginBottom:20}}>
-              <div style={{fontSize:48,marginBottom:12,animation:'float 3.5s ease-in-out infinite',filter:'drop-shadow(0 0 16px rgba(245,184,76,.3))'}}>🌙</div>
-              <div style={{fontFamily:'var(--serif)',fontSize:22,fontWeight:700,color:'var(--cream)',lineHeight:1.3,marginBottom:6}}>Tonight could be the night<br/><em style={{color:'var(--amber)'}}>bedtime changes forever.</em></div>
-              <div style={{fontSize:13,color:'rgba(244,239,232,.35)',lineHeight:1.65}}>A personalised bedtime story starring your child — written in 60 seconds.</div>
+          <div style={{padding:'24px 0 0'}}>
+            <div style={{textAlign:'center',marginBottom:24}}>
+              <div style={{fontSize:48,marginBottom:12}}>🌙</div>
+              <div style={{fontFamily:'var(--serif)',fontSize:22,fontWeight:900,color:'var(--cream)',lineHeight:1.3,marginBottom:8}}>Tonight could be the night<br/><em style={{color:'var(--amber)'}}>bedtime changes forever.</em></div>
+              <div style={{fontFamily:'var(--sans)',fontSize:13,color:'rgba(234,242,255,.36)',lineHeight:1.65}}>A personalised bedtime story starring your child — written in 60 seconds.</div>
             </div>
             <button className="dash-u-btn" style={{width:'100%',marginBottom:20,background:'linear-gradient(145deg,#a06010,#F5B84C 48%,#a06010)',boxShadow:'0 8px 30px rgba(200,130,20,.42)'}} onClick={()=>setView('story-wizard' as any)}>
               <span className="dash-u-btn-ico">✨</span>
@@ -685,338 +629,141 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
               <span className="dash-u-btn-arr" style={{color:'rgba(8,2,0,.38)'}}>→</span>
             </button>
             <div style={{marginBottom:20}}>
-              <div style={{fontSize:9,fontFamily:'var(--mono)',letterSpacing:'.1em',textTransform:'uppercase',color:'rgba(245,184,76,.4)',marginBottom:12,fontWeight:600}}>How it works</div>
+              <div style={{fontFamily:'var(--mono)',fontSize:9,letterSpacing:'.1em',textTransform:'uppercase',color:'rgba(245,184,76,.4)',marginBottom:12,fontWeight:600}}>How it works</div>
               {[{ico:'🌙',title:'You share a moment from today',sub:"What happened at school? What made them laugh?"},{ico:'✨',title:'We write their bedtime story',sub:'AI crafts a unique story starring your child.'},{ico:'🥚',title:'A DreamKeeper companion hatches',sub:'Do the ritual 7 nights and a mystery DreamKeeper arrives.'}].map((step,i)=>(
                 <div key={i} style={{display:'flex',gap:12,marginBottom:14,alignItems:'flex-start'}}>
                   <div style={{fontSize:24,lineHeight:1,flexShrink:0,marginTop:2}}>{step.ico}</div>
-                  <div><div style={{fontSize:13,fontWeight:700,color:'var(--cream)',marginBottom:2}}>{step.title}</div><div style={{fontSize:11,color:'rgba(244,239,232,.35)',lineHeight:1.6}}>{step.sub}</div></div>
+                  <div><div style={{fontFamily:'var(--sans)',fontSize:13,fontWeight:700,color:'var(--cream)',marginBottom:2}}>{step.title}</div><div style={{fontFamily:'var(--sans)',fontSize:11,color:'rgba(234,242,255,.35)',lineHeight:1.6}}>{step.sub}</div></div>
                 </div>
               ))}
             </div>
-            <div style={{background:'rgba(245,184,76,.04)',border:'1px solid rgba(245,184,76,.12)',borderRadius:16,padding:'14px 16px',marginBottom:20}}>
-              <div style={{fontFamily:'var(--serif)',fontSize:13,fontStyle:'italic',color:'rgba(244,239,232,.55)',lineHeight:1.65,marginBottom:8}}>"My daughter won't go to bed without checking on her egg first."</div>
-              <div style={{fontSize:10,color:'rgba(244,239,232,.25)',fontFamily:'var(--mono)'}}>Sarah M. · Mum of two</div>
+            <div style={{background:'rgba(245,184,76,.04)',border:'1px solid rgba(245,184,76,.12)',borderRadius:18,padding:'14px 16px',marginBottom:20}}>
+              <div style={{fontFamily:'var(--serif)',fontSize:13,fontStyle:'italic',color:'rgba(234,242,255,.55)',lineHeight:1.65,marginBottom:8}}>"My daughter won't go to bed without checking on her egg first."</div>
+              <div style={{fontFamily:'var(--mono)',fontSize:10,color:'rgba(234,242,255,.25)'}}>Sarah M. · Mum of two</div>
             </div>
-            <div style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:16,padding:'16px 18px',textAlign:'center',marginBottom:16}}>
-              <div style={{fontSize:13,fontWeight:700,color:'var(--cream)',marginBottom:4}}>Ready to keep your stories?</div>
-              <div style={{fontSize:11,color:'rgba(244,239,232,.3)',lineHeight:1.6,marginBottom:12}}>Create a free account to save stories and unlock Night Cards.</div>
+            <div style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:18,padding:'16px 18px',textAlign:'center',marginBottom:16}}>
+              <div style={{fontFamily:'var(--sans)',fontSize:13,fontWeight:700,color:'var(--cream)',marginBottom:4}}>Ready to keep your stories?</div>
+              <div style={{fontFamily:'var(--sans)',fontSize:11,color:'rgba(234,242,255,.3)',lineHeight:1.6,marginBottom:12}}>Create a free account to save stories and unlock Night Cards.</div>
               <button style={{background:'rgba(245,184,76,.1)',border:'1px solid rgba(245,184,76,.25)',borderRadius:50,padding:'10px 24px',fontSize:13,fontWeight:600,color:'var(--amber)',cursor:'pointer',fontFamily:'var(--sans)'}} onClick={onSignUp}>Create free account →</button>
             </div>
-            <div style={{textAlign:'center',marginBottom:8}}><button style={{background:'none',border:'none',color:'rgba(244,239,232,.25)',fontSize:12,cursor:'pointer',fontFamily:'var(--sans)'}} onClick={()=>setView('library')}>Or browse stories from other families →</button></div>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════════════════════════════
-            ZONE 1 — Greeting
-            ══════════════════════════════════════════════════════════════════════ */}
-        {!isGuest&&(
-          <div className="z1-greeting">
-            <div className="z1-time">{greetWord}, {greetFlavour} ✨</div>
-            <div className="z1-heading">
-              {tonightDone
-                ?<>Sweet dreams, <em className="done">{childName}.</em></>
-                :<>Ready for <em>{childName}'s</em> story tonight?</>
-              }
+            <div style={{textAlign:'center',marginBottom:8}}>
+              <button style={{background:'none',border:'none',color:'rgba(234,242,255,.25)',fontSize:12,cursor:'pointer',fontFamily:'var(--sans)'}} onClick={()=>setView('library')}>Or browse stories from other families →</button>
             </div>
-            <div className="z1-date">{greetDate}</div>
           </div>
         )}
 
         {/* ══════════════════════════════════════════════════════════════════════
-            UNIFIED RITUAL CARD — One card, three states
+            STATE A — Active Journey (not tonight done)
             ══════════════════════════════════════════════════════════════════════ */}
-        {!isGuest&&!tonightDone&&(
+        {!isGuest && !tonightDone && hasActiveJourney && (
           <>
-            {/* ── STATE 1: Active journey (Read 2-7) ── */}
-            {!journeyLoading&&activeJourney&&activeJourney.chapters.length>0&&(
-              <div className="z2-portal amber-mode" style={{borderColor:hexToRgba(creatureColor,.18),animation:'fadeUp .55s ease-out both',animationDelay:'.05s'}}>
-                <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,rgba(245,184,76,.3),transparent)'}}/>
-                {/* Badge + creature */}
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
-                  <div className="z2-stage-badge amber">Read {activeJourney.readNumber} of 7</div>
-                  <div style={{fontSize:28,filter:`drop-shadow(0 0 12px ${hexToRgba(creatureColor,.3)})`}}>{hatchedCreature?.creatureEmoji||'📖'}</div>
-                </div>
-                {/* Title */}
-                <h3 style={{fontFamily:'var(--serif)',color:'var(--cream)',margin:'0 0 8px',fontSize:20,fontWeight:700,lineHeight:1.25}}>{activeJourney.workingTitle}</h3>
-                {/* Progress dots */}
-                <div style={{display:'flex',gap:7,marginBottom:16}}>
-                  {[1,2,3,4,5,6,7].map(n=>(
-                    <div key={n} style={{width:10,height:10,borderRadius:'50%',transition:'all .3s',
-                      background:n<activeJourney.readNumber?'var(--teal)':n===activeJourney.readNumber?'var(--amber)':'rgba(244,239,232,.1)',
-                      boxShadow:n<activeJourney.readNumber?'0 0 6px rgba(20,216,144,.35)':n===activeJourney.readNumber?'0 0 8px rgba(245,184,76,.4)':'none',
-                      border:n===activeJourney.readNumber?'1.5px solid rgba(245,184,76,.5)':'1px solid rgba(244,239,232,.08)'}}/>
-                  ))}
-                </div>
-                {/* Creature + teaser */}
-                {hatchedCreature&&(
-                  <div style={{display:'flex',alignItems:'flex-start',gap:10,marginBottom:18}}>
-                    <div style={{fontSize:20,flexShrink:0,marginTop:1}}>{hatchedCreature.creatureEmoji}</div>
-                    <div>
-                      <div style={{fontFamily:'var(--sans)',fontSize:12,fontWeight:700,color:'var(--cream-dim)',marginBottom:3}}>{hatchedCreature.name} is waiting</div>
-                      <div style={{fontFamily:'var(--serif)',fontStyle:'italic',fontSize:13,color:'rgba(244,239,232,.4)',lineHeight:1.5}}>
-                        "{activeJourney.chapters[activeJourney.chapters.length-1]?.teaser||"Tonight's chapter awaits"}"
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {/* CTA */}
-                <button className="z2-cta" onClick={()=>{setActiveJourneyId(activeJourney.id);setView('nightly-checkin');}}>
-                  Continue tonight's chapter
-                  <span className="z2-cta-sub">~10 minutes</span>
-                </button>
-                {/* Ghost links */}
-                <div style={{display:'flex',justifyContent:'center',gap:16,marginTop:10}}>
-                  <button onClick={()=>{}} style={{background:'none',border:'none',color:'rgba(244,239,232,.25)',fontSize:11,cursor:'pointer',fontFamily:'var(--mono)'}}>Not tonight</button>
-                  <span style={{color:'rgba(244,239,232,.1)'}}>·</span>
-                  <button onClick={()=>setView('journey-library')} style={{background:'none',border:'none',color:'rgba(244,239,232,.25)',fontSize:11,cursor:'pointer',fontFamily:'var(--mono)'}}>View our book</button>
-                </div>
-              </div>
-            )}
-
-            {/* ── STATE 2: Journey just created, Read 1 pending ── */}
-            {!journeyLoading&&activeJourney&&activeJourney.chapters.length===0&&(
-              <div className="z2-portal amber-mode" style={{borderColor:hexToRgba(creatureColor,.18),animation:'fadeUp .55s ease-out both',animationDelay:'.05s'}}>
-                <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,rgba(245,184,76,.3),transparent)'}}/>
-                <div className="z2-stage-badge amber" style={{marginBottom:14}}>✨ Your book is ready</div>
-                <h3 style={{fontFamily:'var(--serif)',color:'var(--cream)',margin:'0 0 10px',fontSize:20,fontWeight:700,lineHeight:1.25}}>{activeJourney.workingTitle}</h3>
-                <div style={{display:'flex',gap:7,marginBottom:16}}>
-                  {[1,2,3,4,5,6,7].map(n=><div key={n} style={{width:8,height:8,borderRadius:'50%',border:'1px solid rgba(244,239,232,.15)',background:'rgba(244,239,232,.04)'}}/>)}
-                </div>
-                <p style={{fontFamily:'var(--serif)',fontStyle:'italic',color:'rgba(244,239,232,.4)',fontSize:13,margin:'0 0 18px'}}>Tonight: Read 1 of 7. Your adventure begins.</p>
-                <button className="z2-cta" onClick={()=>{setActiveJourneyId(activeJourney.id);setView('nightly-checkin');}}>
-                  Begin Read 1
-                  <span className="z2-cta-sub">{hatchedCreature?.name||'Your companion'} is waiting</span>
-                </button>
-              </div>
-            )}
-
-            {/* ── STATE 3: No active journey — existing ritual card ── */}
-            {!journeyLoading&&!activeJourney&&(
-              <>
-                {/* Creature Portal (existing ritual card) */}
-                {activeEgg&&hatchedCreature&&creatureDef&&(
-                  <div className="z2-portal amber-mode" style={{borderColor:hexToRgba(creatureColor,.18)}}>
-                    <div className="z2-stage-row">
-                      <div className="z2-stage-badge amber">Night {eggStage+1} of 7</div>
-                      <div className="z2-nights-left">{nightsLeftLabel}</div>
-                    </div>
-                    <div className="z2-creature-row">
-                      <div className="z2-emoji amber" style={{filter:`drop-shadow(0 0 18px ${hexToRgba(creatureColor,.4)})`}}>{hatchedCreature.creatureEmoji}</div>
-                      <div className="z2-type-label amber" style={{color:hexToRgba(creatureColor,.4)}}>DreamKeeper</div>
-                      <div className="z2-creature-name">{hatchedCreature.name}</div>
-                      <div className="z2-wisdom amber" style={{'--border-c':hexToRgba(creatureColor,.28)} as any}>
-                        <span style={{position:'absolute',left:0,top:2,bottom:2,width:2,borderRadius:1,background:hexToRgba(creatureColor,.28)}}/>
-                        "{creatureSpeech}"
-                      </div>
-                    </div>
-                    <div className="z2-dots">
-                      {Array.from({length:7},(_,i)=>{
-                        const isDone=i<eggStage;
-                        const isTonight=i===eggStage;
-                        let cls='future';
-                        if(isDone) cls='done-amber tappable';
-                        else if(isTonight) cls='tonight';
-                        return(<div key={i} className={`z2-dot ${cls}`} onClick={()=>isDone&&handleShardTap(i,true)}/>);
-                      })}
-                    </div>
-                    <button className="z2-cta" onClick={startRitual}>
-                      Begin tonight's story
-                      <span className="z2-cta-sub">{hatchedCreature.name} is waiting · ~10 minutes</span>
-                    </button>
-                  </div>
-                )}
-
-                {/* No creature yet but has characters */}
-                {!hatchedCreature&&familyChars.length>0&&(
-                  <div style={{marginBottom:16}}>
-                    <button className="z2-cta" onClick={startRitual}>
-                      ✦ Begin tonight's ritual
-                      <span className="z2-cta-sub">Your story is waiting · ~10 minutes</span>
-                    </button>
-                  </div>
-                )}
-
-                {/* No characters at all */}
-                {familyChars.length===0&&(
-                  <div style={{textAlign:'center',marginTop:20,marginBottom:16}}>
-                    <div style={{fontSize:72,animation:'float 3s ease-in-out infinite',filter:'drop-shadow(0 0 16px rgba(245,184,76,.3))',marginBottom:12}}>🥚</div>
-                    <div style={{fontFamily:'var(--serif)',fontSize:22,fontWeight:700,color:'var(--amber)',marginBottom:10}}>Your adventure begins tonight</div>
-                    <button className="z2-cta" onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
-                      ✨ Start your first adventure
-                      <span className="z2-cta-sub">Create a character and hatch your first DreamKeeper</span>
-                    </button>
-                  </div>
-                )}
-
-                {/* Secondary journey invitation */}
-                <div style={{display:'flex',justifyContent:'center',gap:16,marginTop:8,marginBottom:4}}>
-                  <button onClick={()=>setView('journey-setup')} style={{background:'none',border:'none',color:'rgba(244,239,232,.3)',fontSize:12,cursor:'pointer',fontFamily:'var(--sans)'}}>Begin a 7-night book →</button>
-                  <span style={{color:'rgba(244,239,232,.1)'}}>·</span>
-                  <button onClick={()=>setView('journey-library')} style={{background:'none',border:'none',color:'rgba(244,239,232,.25)',fontSize:11,cursor:'pointer',fontFamily:'var(--mono)'}}>view all books</button>
-                </div>
-              </>
-            )}
-
-            {/* ── ZONE 3 — Journey Bar ── */}
-            {(glow>0||weekDots.length>0)&&(
-              <div className="z3-journey">
-                <div className="z3-streak amber">
-                  <span style={{fontSize:14}}>🔥</span>
-                  <span className="z3-streak-num amber">{glow}</span>
-                  <span className="z3-streak-lbl">night{glow!==1?'s':''}</span>
-                </div>
-                <div className="z3-week">
-                  {weekDots.map((wd,i)=>{
-                    let cls='future';
-                    if(wd.isToday) cls=tonightDone?'tonight-done':'tonight';
-                    else if(wd.isPast&&wd.done) cls='done';
-                    else if(wd.isPast&&!wd.done) cls='missed';
-                    return(
-                      <div key={i} className="z3-week-col">
-                        <div className="z3-week-lbl">{wd.day}</div>
-                        <div className={`z3-wdot ${cls}`}/>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* ── Re-read last story ── */}
-            {lastStory&&lastStory.bookData&&onReadStory&&(
-              <div className="dash-reread" onClick={()=>onReadStory(lastStory.bookData)} style={{position:'relative',zIndex:5}}>
-                <span style={{fontSize:10,color:'var(--amber)',flexShrink:0,marginTop:1}}>📖</span>
-                <span style={{fontSize:10.5,color:'rgba(200,191,176,1)',lineHeight:1.6}}>Re-read last night: <em style={{color:'var(--amber)',fontStyle:'italic'}}>{lastStory.title}</em></span>
-              </div>
-            )}
-
-            {/* ── ZONE 4 — Memory Peek ── */}
-            {recentCards.length>0&&(
-              <div className="z4-memory">
-                <div className="z4-label">Recent memories</div>
-                <div className="z4-cards">
-                  {recentCards.map((card,i)=>(
-                    <div key={card.id} className="z4-card" onClick={()=>setModalCard(card)}>
-                      <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:6}}>
-                        <span style={{fontSize:16}}>{card.emoji??'📖'}</span>
-                      </div>
-                      <div className="z4-card-title">{card.storyTitle||'A night to remember'}</div>
-                      {card.quote&&<div className="z4-card-quote">"{card.quote}"</div>}
-                      <div className="z4-card-date">{new Date(card.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</div>
-                    </div>
-                  ))}
-                </div>
-                {totalMemories>3&&(
-                  <button className="z4-more" onClick={()=>setView('nightcard-library' as any)}>See all memories →</button>
-                )}
-              </div>
-            )}
+            <GreetingRow/>
+            <BookHeroCard/>
+            <StoryProgressDots/>
+            <PrimaryCta
+              label={readNumber === 7 ? 'Finish Your Book' : 'Continue Your Book'}
+              onClick={()=>{if(activeJourney){setActiveJourneyId(activeJourney.id);setView('nightly-checkin');}}}
+            />
+            <SecondaryCta label="One story tonight" onClick={()=>setView('story-wizard' as any)}/>
           </>
         )}
 
         {/* ══════════════════════════════════════════════════════════════════════
-            COMPLETED STATE (tonight done)
+            STATE B — Tonight Complete
             ══════════════════════════════════════════════════════════════════════ */}
-        {!isGuest&&tonightDone&&(
+        {!isGuest && tonightDone && (
           <>
-            {/* Done badge */}
-            <div style={{textAlign:'center',marginBottom:12}}>
-              <div className="done-badge">
-                <div className="done-badge-dot"/>
-                <span className="done-badge-txt">Night {eggStage} Complete ✦</span>
-              </div>
-            </div>
+            <GreetingRow done/>
 
-            {/* ── ZONE 2 — Creature Portal (teal/done mode) ── */}
-            {hatchedCreature&&(
-              <div className="z2-portal teal-mode">
-                {/* Stage row */}
-                <div className="z2-stage-row">
-                  <div className="z2-stage-badge teal">Night {eggStage} of 7</div>
-                  <div className="z2-nights-left">{nightsLeftLabel}</div>
-                </div>
+            {hasActiveJourney && (
+              <>
+                <BookHeroCard done/>
+                <StoryProgressDots done/>
+              </>
+            )}
 
-                {/* Sleeping creature */}
-                <div className="z2-creature-row">
-                  <div style={{position:'relative',display:'inline-block'}}>
-                    <div className="z2-emoji teal">{hatchedCreature.creatureEmoji}</div>
-                    <div className="done-zzz z1">z</div>
-                    <div className="done-zzz z2">z</div>
-                    <div className="done-zzz z3">z</div>
-                  </div>
-                  <div className="z2-type-label teal">DreamKeeper</div>
-                  <div className="z2-creature-name">{hatchedCreature.name}</div>
-                  <div className="z2-wisdom teal">
-                    "{creatureSpeech}"
-                  </div>
+            {/* Tonight's Night Card row */}
+            {tonightCard && (
+              <div
+                onClick={()=>setModalCard(tonightCard)}
+                style={{
+                  display:'flex',alignItems:'center',gap:12,
+                  padding:'12px 16px',
+                  background:'rgba(20,216,144,.06)',
+                  border:'1.5px solid rgba(20,216,144,.2)',
+                  borderRadius:18,
+                  cursor:'pointer',
+                  transition:'background .18s',
+                  marginBottom:16,
+                }}
+              >
+                <div style={{
+                  width:38,height:38,borderRadius:14,
+                  background:'rgba(20,216,144,.13)',
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  flexShrink:0,
+                }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14d890" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 </div>
-
-                {/* Progress dots (teal) */}
-                <div className="z2-dots">
-                  {Array.from({length:7},(_,i)=>{
-                    const isDone=i<eggStage;
-                    const isJustNow=i===eggStage-1;
-                    let cls='future';
-                    if(isDone) cls='done-teal tappable';
-                    if(isJustNow) cls='tonight-done tappable';
-                    return(
-                      <div key={i}
-                        className={`z2-dot ${cls}`}
-                        onClick={()=>isDone&&handleShardTap(i,true)}
-                      />
-                    );
-                  })}
+                <div style={{flex:1}}>
+                  <div style={{fontFamily:'var(--mono)',fontSize:8.5,color:'rgba(20,216,144,.62)',letterSpacing:'.6px',textTransform:'uppercase',marginBottom:3}}>TONIGHT'S NIGHT CARD</div>
+                  <div style={{fontFamily:'var(--sans)',fontSize:13,fontWeight:600,color:'rgba(234,242,255,.82)',lineHeight:1.3,marginTop:3}}>{tonightCard.storyTitle || 'A night to remember'}</div>
                 </div>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(234,242,255,.25)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
               </div>
             )}
 
-            {/* ── ZONE 3 — Journey Bar (teal) ── */}
-            <div className="z3-journey">
-              <div className="z3-streak teal">
-                <span style={{fontSize:14}}>🔥</span>
-                <span className="z3-streak-num teal">{glow}</span>
-                <span className="z3-streak-lbl">night{glow!==1?'s':''}</span>
+            {/* MORE TONIGHT? section */}
+            <div style={{borderTop:'0.5px solid rgba(234,242,255,.07)',paddingTop:16}}>
+              <div style={{fontFamily:'var(--mono)',fontSize:8.5,color:'rgba(234,242,255,.22)',letterSpacing:'.9px',textTransform:'uppercase',textAlign:'center',marginBottom:8}}>MORE TONIGHT?</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+                <button onClick={()=>setView('library')} style={{
+                  padding:'12px 8px',border:'1px solid rgba(234,242,255,.12)',borderRadius:14,
+                  background:'rgba(234,242,255,.04)',color:'rgba(234,242,255,.55)',
+                  fontFamily:'var(--mono)',fontSize:11,cursor:'pointer',transition:'all .15s',
+                }}>Discover</button>
+                <button onClick={()=>setView('story-wizard' as any)} style={{
+                  padding:'12px 8px',border:'1px solid rgba(234,242,255,.12)',borderRadius:14,
+                  background:'rgba(234,242,255,.04)',color:'rgba(234,242,255,.55)',
+                  fontFamily:'var(--mono)',fontSize:11,cursor:'pointer',transition:'all .15s',
+                }}>Create</button>
               </div>
-              <div className="z3-week">
-                {weekDots.map((wd,i)=>{
-                  let cls='future';
-                  if(wd.isToday) cls='tonight-done';
-                  else if(wd.isPast&&wd.done) cls='done-teal';
-                  else if(wd.isPast&&!wd.done) cls='missed';
-                  return(
-                    <div key={i} className="z3-week-col">
-                      <div className="z3-week-lbl">{wd.day}</div>
-                      <div className={`z3-wdot ${cls}`}/>
-                    </div>
-                  );
-                })}
+            </div>
+          </>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════════
+            STATE C — No Active Journey (and not tonight done)
+            Also shows while journey is loading so the screen isn't blank.
+            ══════════════════════════════════════════════════════════════════════ */}
+        {!isGuest && !tonightDone && !hasActiveJourney && (
+          <>
+            <GreetingRow/>
+
+            {/* Floating creature */}
+            <div style={{textAlign:'center',margin:'24px 0 20px'}}>
+              <div style={{
+                fontSize:72,lineHeight:1,display:'inline-block',
+                animation:'float 5s ease-in-out infinite',
+                filter:'drop-shadow(0 0 24px rgba(245,184,76,.3))',
+              }}>
+                {hatchedCreature?.creatureEmoji || '\u{1F319}'}
               </div>
             </div>
 
-            {/* Tonight's memory card */}
-            {tonightCard&&(
-              <div className="z4-memory" style={{position:'relative',zIndex:5}}>
-                <div className="z4-label">✦ Tonight's story</div>
-                <div className="z4-cards">
-                  <div className="z4-card" style={{width:'100%',flex:'1 1 auto'}} onClick={()=>setModalCard(tonightCard)}>
-                    <div style={{display:'flex',gap:8,marginBottom:8}}>
-                      <div style={{flex:1}}>
-                        <div className="z4-card-title" style={{whiteSpace:'normal',fontSize:13}}>{tonightCard.storyTitle}</div>
-                      </div>
-                      <div style={{fontSize:20,flexShrink:0}}>{tonightCard.emoji??'📖'}</div>
-                    </div>
-                    {tonightCard.quote&&<div className="z4-card-quote" style={{WebkitLineClamp:3}}>"{tonightCard.quote}"</div>}
-                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                      <div className="z4-card-date">{new Date(tonightCard.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} · Night {eggStage}</div>
-                      <div style={{fontSize:11,color:'rgba(20,216,144,.5)'}}>✦ saved</div>
-                    </div>
-                  </div>
-                </div>
+            <div style={{textAlign:'center',marginBottom:8}}>
+              <div style={{fontFamily:'var(--serif)',fontSize:31,fontWeight:900,color:'var(--cream)',lineHeight:1.2,marginBottom:8}}>
+                Your story is waiting
               </div>
-            )}
+              <div style={{fontFamily:'var(--sans)',fontSize:13,fontStyle:'italic',color:'rgba(234,242,255,.36)',lineHeight:1.6,maxWidth:320,margin:'0 auto',marginBottom:24}}>
+                7 nights &middot; 1 complete book &middot; one new creature companion
+              </div>
+            </div>
 
-            <div style={{textAlign:'center',padding:'6px 0 14px',position:'relative',zIndex:5}}>
-              <button style={{fontSize:9,color:'var(--teal)',cursor:'pointer',background:'none',border:'none',fontFamily:'var(--sans)',transition:'color .15s'}} onClick={()=>setView('hatchery')}>View hatchery →</button>
+            <PrimaryCta label="Begin our book" onClick={()=>setView('journey-setup')}/>
+            <SecondaryCta label="One story tonight" onClick={()=>setView('story-wizard' as any)}/>
+            <div style={{textAlign:'center',marginTop:8}}>
+              <span style={{fontFamily:'var(--mono)',fontSize:9,color:'rgba(234,242,255,.2)'}}>Takes about 5 minutes</span>
             </div>
           </>
         )}
@@ -1028,22 +775,39 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
 
       {/* Night Card modal */}
       {modalCard&&(
-        <div className="dash-nc-modal-bg" onClick={()=>setModalCard(null)}>
-          <div className="dash-nc-modal" onClick={e=>e.stopPropagation()}>
-            <div className="dash-nc-modal-top">
-              <div className="dash-nc-modal-lbl">Night Card</div>
-              <div className="dash-nc-modal-date">{modalCard.date?.split('T')[0]}</div>
-              <button className="dash-nc-modal-close" onClick={()=>setModalCard(null)}>x</button>
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.6)',zIndex:50,display:'flex',alignItems:'center',justifyContent:'center',padding:20,animation:'fadein .18s ease'}} onClick={()=>setModalCard(null)}>
+          <div style={{background:'var(--night-card)',border:'1px solid rgba(255,255,255,.09)',borderRadius:22,maxWidth:380,width:'100%',overflow:'hidden',animation:'fadein .18s ease'}} onClick={e=>e.stopPropagation()}>
+            <div style={{background:'linear-gradient(135deg,#C49018,#A87010)',padding:'10px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <span style={{fontFamily:'var(--mono)',fontSize:8.5,fontWeight:600,color:'#0A0600',letterSpacing:'.07em',textTransform:'uppercase'}}>Night Card</span>
+              <span style={{fontFamily:'var(--mono)',fontSize:8.5,color:'rgba(10,6,0,.5)'}}>{modalCard.date?.split('T')[0]}</span>
+              <button onClick={()=>setModalCard(null)} style={{background:'none',border:'none',fontSize:20,color:'rgba(10,6,0,.4)',cursor:'pointer',lineHeight:1,padding:'0 2px'}}>x</button>
             </div>
-            <div className="dash-nc-modal-body">
-              {modalCard.storyTitle&&<><div className="dash-nc-modal-fl">Story</div><div className="dash-nc-modal-fv">{modalCard.storyTitle}</div></>}
-              {modalCard.quote&&<><div className="dash-nc-modal-fl">What they said</div><div className="dash-nc-modal-fv">"{modalCard.quote}"</div></>}
-              {modalCard.bondingQuestion&&(<><div className="dash-nc-modal-q">"{modalCard.bondingQuestion}"</div>{modalCard.bondingAnswer&&<div className="dash-nc-modal-a">{modalCard.bondingAnswer}</div>}</>)}
-              {!modalCard.quote&&!modalCard.bondingQuestion&&<div className="dash-nc-modal-fv">{modalCard.memory_line||'A night to remember'}</div>}
+            <div style={{padding:'15px 17px'}}>
+              {modalCard.storyTitle&&(
+                <>
+                  <div style={{fontFamily:'var(--mono)',fontSize:8,color:'rgba(58,66,112,1)',letterSpacing:'.06em',textTransform:'uppercase',marginBottom:4,fontWeight:500}}>Story</div>
+                  <div style={{fontFamily:'var(--sans)',fontSize:13,color:'rgba(200,191,176,1)',lineHeight:1.65,fontStyle:'italic',marginBottom:12}}>{modalCard.storyTitle}</div>
+                </>
+              )}
+              {modalCard.quote&&(
+                <>
+                  <div style={{fontFamily:'var(--mono)',fontSize:8,color:'rgba(58,66,112,1)',letterSpacing:'.06em',textTransform:'uppercase',marginBottom:4,fontWeight:500}}>What they said</div>
+                  <div style={{fontFamily:'var(--sans)',fontSize:13,color:'rgba(200,191,176,1)',lineHeight:1.65,fontStyle:'italic',marginBottom:12}}>"{modalCard.quote}"</div>
+                </>
+              )}
+              {modalCard.bondingQuestion&&(
+                <>
+                  <div style={{fontFamily:'var(--serif)',fontSize:13,color:'var(--amber)',fontStyle:'italic',marginBottom:4}}>"{modalCard.bondingQuestion}"</div>
+                  {modalCard.bondingAnswer&&<div style={{fontFamily:'var(--sans)',fontSize:13,color:'var(--cream)',lineHeight:1.6}}>{modalCard.bondingAnswer}</div>}
+                </>
+              )}
+              {!modalCard.quote&&!modalCard.bondingQuestion&&(
+                <div style={{fontFamily:'var(--sans)',fontSize:13,color:'rgba(200,191,176,1)',lineHeight:1.65,fontStyle:'italic',marginBottom:12}}>{modalCard.memory_line||'A night to remember'}</div>
+              )}
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',paddingTop:10,marginTop:10,borderTop:'1px solid rgba(255,255,255,.06)'}}>
-                <div style={{fontFamily:'var(--serif)',fontSize:9,color:'rgba(255,255,255,.18)'}}>sleepseed.ai</div>
+                <div style={{fontFamily:'var(--mono)',fontSize:9,color:'rgba(255,255,255,.18)'}}>sleepseed.ai</div>
                 <div style={{fontFamily:'var(--serif)',fontSize:11,fontStyle:'italic',color:'rgba(255,255,255,.32)'}}>Memory <em style={{color:'rgba(245,184,76,.65)',fontStyle:'normal',fontWeight:700}}>{getMemoryNumber(modalCard)}</em> · {modalCard.heroName}'s journey</div>
-                <div style={{display:'flex',alignItems:'center',gap:4}}><span style={{fontSize:12}}>🔥</span><span style={{fontFamily:'var(--mono)',fontSize:8,color:'rgba(245,184,76,.35)',letterSpacing:'.05em'}}>{glow} streak</span></div>
+                <div style={{display:'flex',alignItems:'center',gap:4}}><span style={{fontSize:12}}>{'🔥'}</span><span style={{fontFamily:'var(--mono)',fontSize:8,color:'rgba(245,184,76,.35)',letterSpacing:'.05em'}}>{glow} streak</span></div>
               </div>
             </div>
           </div>
@@ -1062,52 +826,60 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
         </div>
       )}
 
-      {/* Shard bottom sheet */}
+      {/* Night Card Drawer (for tapping completed progress dots) */}
       {activeShardIdx!==null&&activeShardCard&&(
         <>
-          <div className="dash-sheet-bd" onClick={closeSheet}/>
-          <div className="dash-sheet">
-            <div className="dash-sheet-handle"/>
-            <div className="dash-sh-hd">
-              <div>
-                <span className="dash-sh-night">✦ Night {activeShardIdx+1} of 7 · {shardDateLabel(activeShardIdx)}</span>
-                <div className="dash-sh-memory">Memory <em>{getMemoryNumber(activeShardCard)}</em> · {activeShardCard.heroName}'s journey</div>
-              </div>
-              <button className="dash-sh-close" onClick={closeSheet}>✕</button>
-            </div>
-            {activeShardWisdom&&hatchedCreature&&(
-              <div className="dash-sh-wisdom">
-                <div style={{fontSize:27,lineHeight:1,flexShrink:0,marginTop:2}}>{hatchedCreature.creatureEmoji}</div>
-                <div><div className="dash-sh-wis-lbl">{hatchedCreature.name}'s wisdom that night</div><div className="dash-sh-wis-txt">"{activeShardWisdom}"</div></div>
-              </div>
-            )}
-            {activeShardCard.photo?(
-              <div className="dash-sh-photo"><img src={activeShardCard.photo} alt={`${activeShardCard.heroName} · Night ${activeShardIdx+1}`} style={{width:'100%',height:145,objectFit:'cover',display:'block',borderRadius:14}}/></div>
-            ):(
-              <div className="dash-sh-photo-add">
-                <div className="dash-sh-pa-ico">📷</div>
-                <div><div className="dash-sh-pa-title">Add a photo of {activeShardCard.heroName}</div><div className="dash-sh-pa-sub">Make this night a memory worth keeping forever</div></div>
-              </div>
-            )}
-            <div className="dash-sh-story">
-              <div className="dash-sh-sec-lbl">Tonight's story</div>
-              {activeShardCard.storyTitle?(
-                <div className="dash-sh-story-card">
-                  <div className="dash-sh-story-title">{activeShardCard.storyTitle}</div>
-                  {activeShardCard.quote&&<div className="dash-sh-refrain">"{activeShardCard.quote}"</div>}
-                  {activeShardStory&&onReadStory?(<button className="dash-sh-read-btn" onClick={()=>{closeSheet();onReadStory(activeShardStory.bookData);}}>📖 Read this story again →</button>):(<div className="dash-sh-no-story">Story not available to re-read</div>)}
+          <div className="nc-drawer-bd" onClick={closeSheet}/>
+          <div className="nc-drawer">
+            <div className="nc-drawer-pill"/>
+            {/* Card content */}
+            <div style={{padding:'12px 16px'}}>
+              {activeShardCard.storyTitle ? (
+                <div style={{marginBottom:12}}>
+                  <div style={{fontFamily:'var(--mono)',fontSize:8.5,color:'rgba(234,242,255,.25)',letterSpacing:'.8px',textTransform:'uppercase',marginBottom:6}}>Chapter {activeShardIdx+1}</div>
+                  <div style={{fontFamily:'var(--serif)',fontSize:14,fontWeight:700,color:'var(--cream)',lineHeight:1.3,marginBottom:8}}>{activeShardCard.storyTitle}</div>
+                  {activeShardCard.quote && (
+                    <div style={{fontFamily:'var(--serif)',fontSize:12,fontStyle:'italic',color:'rgba(255,255,255,.58)',lineHeight:1.65,borderLeft:'2px solid rgba(245,184,76,.3)',paddingLeft:9,marginBottom:10}}>
+                      "{activeShardCard.quote}"
+                    </div>
+                  )}
                 </div>
-              ):(<div className="dash-sh-no-story">No story recorded for this night</div>)}
+              ) : (
+                <div style={{fontFamily:'var(--serif)',fontSize:11,fontStyle:'italic',color:'rgba(255,255,255,.28)',textAlign:'center',padding:'6px 0'}}>No story recorded for this night</div>
+              )}
             </div>
+
+            {/* Bonding Q&A */}
             {(activeShardCard.bondingQuestion||activeShardCard.bondingAnswer)&&(
-              <div className="dash-sh-bond">
-                <div className="dash-sh-sec-lbl">What {activeShardCard.heroName} said</div>
-                <div className="dash-sh-bond-card">
-                  {activeShardCard.bondingQuestion&&<div className="dash-sh-bq">{activeShardCard.bondingQuestion}</div>}
-                  {activeShardCard.bondingAnswer&&<div className="dash-sh-ba">"{activeShardCard.bondingAnswer}"</div>}
+              <div style={{padding:'0 16px 16px'}}>
+                <div style={{fontFamily:'var(--mono)',fontSize:7.5,letterSpacing:'.1em',textTransform:'uppercase',color:'rgba(255,255,255,.22)',marginBottom:7}}>What {activeShardCard.heroName} said</div>
+                <div style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:14,padding:'11px 13px'}}>
+                  {activeShardCard.bondingQuestion&&<div style={{fontFamily:'var(--serif)',fontSize:11,fontStyle:'italic',color:'rgba(255,255,255,.38)',marginBottom:6,lineHeight:1.5}}>{activeShardCard.bondingQuestion}</div>}
+                  {activeShardCard.bondingAnswer&&<div style={{fontFamily:'var(--sans)',fontSize:13,fontWeight:700,color:'rgba(255,255,255,.75)',lineHeight:1.5}}>"{activeShardCard.bondingAnswer}"</div>}
                 </div>
               </div>
             )}
+
+            {/* Bottom actions */}
+            <div style={{padding:'0 16px 20px',display:'flex',gap:10}}>
+              {activeShardStory&&onReadStory ? (
+                <button onClick={()=>{closeSheet();onReadStory(activeShardStory.bookData);}} style={{
+                  flex:1,padding:13,border:'none',borderRadius:14,
+                  background:'rgba(245,184,76,.12)',
+                  color:'var(--amber)',fontFamily:'var(--serif)',fontSize:13,fontWeight:700,
+                  cursor:'pointer',transition:'all .15s',
+                }}>Read chapter →</button>
+              ) : (
+                <div style={{flex:1,padding:13,borderRadius:14,background:'rgba(255,255,255,.03)',
+                  fontFamily:'var(--serif)',fontSize:12,fontStyle:'italic',color:'rgba(255,255,255,.25)',textAlign:'center'
+                }}>Story not available</div>
+              )}
+              <button onClick={closeSheet} style={{
+                padding:'13px 18px',border:'1px solid rgba(244,239,232,.1)',borderRadius:14,
+                background:'transparent',color:'rgba(234,242,255,.4)',
+                fontFamily:'var(--serif)',fontSize:12,fontWeight:600,cursor:'pointer',
+              }}>Close</button>
+            </div>
           </div>
         </>
       )}
@@ -1115,16 +887,16 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
       {/* Bedtime toast */}
       {bedtimeToast && (
         <div style={{position:'fixed',top:70,left:'50%',transform:'translateX(-50%)',zIndex:200,
-          background:'linear-gradient(135deg,#1a1040,#0d1428)',border:'1px solid rgba(245,184,76,.3)',
-          borderRadius:16,padding:'14px 20px',boxShadow:'0 12px 40px rgba(0,0,0,.6)',
+          background:'var(--night-card)',border:'1px solid rgba(245,184,76,.3)',
+          borderRadius:18,padding:'14px 20px',boxShadow:'0 12px 40px rgba(0,0,0,.6)',
           display:'flex',alignItems:'center',gap:12,maxWidth:340,width:'90%',
-          animation:'slideup .3s ease-out'}}>
-          <span style={{fontSize:28}}>🌙</span>
+          animation:'fadein .3s ease-out'}}>
+          <span style={{fontSize:28}}>{'\u{1F319}'}</span>
           <div>
-            <div style={{fontFamily:"'Fraunces',serif",fontSize:14,fontWeight:600,color:'#F4EFE8',marginBottom:2}}>Bedtime!</div>
-            <div style={{fontFamily:"'Nunito',sans-serif",fontSize:12,color:'rgba(244,239,232,.6)'}}>It's story time with {childName}.</div>
+            <div style={{fontFamily:'var(--serif)',fontSize:14,fontWeight:600,color:'var(--cream)',marginBottom:2}}>Bedtime!</div>
+            <div style={{fontFamily:'var(--sans)',fontSize:12,color:'rgba(234,242,255,.6)'}}>It's story time with {childName}.</div>
           </div>
-          <button onClick={()=>setBedtimeToast(false)} style={{background:'none',border:'none',color:'rgba(244,239,232,.3)',fontSize:16,cursor:'pointer',marginLeft:'auto',padding:4}}>✕</button>
+          <button onClick={()=>setBedtimeToast(false)} style={{background:'none',border:'none',color:'rgba(234,242,255,.3)',fontSize:16,cursor:'pointer',marginLeft:'auto',padding:4}}>{'\u2715'}</button>
         </div>
       )}
     </div>
