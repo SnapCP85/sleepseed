@@ -8,6 +8,14 @@ import { getCharacters, getNightCards, getStories } from '../lib/storage';
 import { checkBedtimeReminder, getBedtimeSettings } from '../lib/bedtimeReminder';
 import { journeyService } from '../lib/journey-service';
 import type { StoryJourney } from '../lib/types';
+import StreakBadge from '../components/dashboard/StreakBadge';
+import BookHeroCardComponent from '../components/dashboard/BookHeroCard';
+import StoryProgressDotsComponent from '../components/dashboard/StoryProgressDots';
+import PrimaryCTA from '../components/dashboard/PrimaryCTA';
+import SecondaryCTA from '../components/dashboard/SecondaryCTA';
+import NightCardDrawer from '../components/dashboard/NightCardDrawer';
+import CometSVG from '../components/characters/CometSVG';
+import BunnyHoldingEggSVG from '../components/characters/BunnyHoldingEggSVG';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -395,218 +403,80 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
     </div>
   );
 
-  // ── Component helpers ──────────────────────────────────────────────────────
+  // ── Drawer state ────────────────────────────────────────────────────────────
+  const [nightCardDrawerOpen, setNightCardDrawerOpen] = useState(false);
+  const [activeDrawerChapter, setActiveDrawerChapter] = useState<number|null>(null);
+  const openNightCardDrawer = (i: number) => { setActiveDrawerChapter(i); setNightCardDrawerOpen(true); };
 
-  const CometSvg = () => (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{flexShrink:0}}>
-      <circle cx="3" cy="3" r="1" fill="rgba(245,184,76,.15)"/>
-      <circle cx="5.5" cy="5.5" r="1.5" fill="rgba(245,184,76,.22)"/>
-      <circle cx="8.5" cy="8.5" r="2.2" fill="rgba(245,184,76,.3)"/>
-      <circle cx="12" cy="12" r="3.5" fill="rgba(245,184,76,.4)"/>
-      <circle cx="14" cy="14" r="6.5" fill="var(--amber)" fillOpacity=".0"/>
-      <circle cx="13.5" cy="13.5" r="3" fill="var(--amber)"/>
-      <circle cx="12.5" cy="12.5" r="1" fill="rgba(255,255,255,.6)"/>
-    </svg>
-  );
+  // ── Derived values for shared components ───────────────────────────────────
+  const creatureEmoji = hatchedCreature?.creatureEmoji || '📖';
+  const creatureName = creatureDef?.name ?? 'Companion';
+  const lastChapter = activeJourney?.chapters[activeJourney.chapters.length - 1];
+  const whisperLine = lastChapter?.teaser || creatureSpeech || "Tonight's chapter awaits";
 
-  const StreakBadge = ({celebration}:{celebration?:boolean}) => {
-    if (glow === 0) {
-      return (
-        <div style={{
-          display:'flex',alignItems:'center',gap:9,
-          padding:'10px 16px',
-          background:'transparent',
-          border:'1.5px solid rgba(234,242,255,.09)',
-          borderRadius:18,flexShrink:0,
-        }}>
-          <CometSvg/>
-          <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end'}}>
-            <span style={{fontFamily:'var(--serif)',fontSize:13,fontWeight:700,color:'rgba(234,242,255,.3)',lineHeight:1.2}}>Start a streak</span>
-            <span style={{fontFamily:'var(--mono)',fontSize:7.5,color:'rgba(234,242,255,.15)',letterSpacing:'.9px',lineHeight:1}}>read every night</span>
-          </div>
-        </div>
-      );
-    }
-    return (
-      <div style={{
-        display:'flex',alignItems:'center',gap:9,
-        padding:'10px 16px',
-        background:'rgba(245,184,76,.09)',
-        border:'1.5px solid rgba(245,184,76,.26)',
-        borderRadius:18,
-        flexShrink:0,
-        ...(celebration ? {
-          boxShadow:'0 0 0 3px rgba(245,184,76,.16), 0 0 24px rgba(245,184,76,.12)'
-        } : {})
-      }}>
-        <CometSvg/>
-        <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end'}}>
-          <span style={{fontFamily:'var(--serif)',fontSize:30,fontWeight:900,color:'var(--amber)',lineHeight:1}}>{glow}</span>
-          <span style={{fontFamily:'var(--mono)',fontSize:7.5,color:'rgba(245,184,76,.5)',letterSpacing:'.9px',textTransform:'uppercase',lineHeight:1}}>NIGHT STREAK</span>
-        </div>
-      </div>
-    );
-  };
-
+  // ── Greeting row ──────────────────────────────────────────────────────────
   const GreetingRow = ({done}:{done?:boolean}) => (
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',paddingTop:24,marginBottom:20,animation:'fadeUp .5s ease-out both'}}>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',animation:'fadeUp .28s ease both'}}>
       <div>
         {done ? (
           <>
-            <div style={{fontFamily:'var(--sans)',fontSize:12,color:'rgba(20,216,144,.68)',marginBottom:6}}>
+            <div style={{fontFamily:"'Nunito',sans-serif",fontSize:12,fontStyle:'italic',color:'rgba(20,216,144,.68)',marginBottom:5}}>
               {readNumber > 0 ? `Read ${readNumber} complete \u2713` : 'Tonight complete \u2713'}
             </div>
-            <div style={{fontFamily:'var(--serif)',fontSize:30,fontWeight:900,color:'var(--cream)',lineHeight:1.15}}>Well done, {childName}</div>
+            <div style={{fontFamily:"'Fraunces',serif",fontSize:30,fontWeight:900,color:'#F4EFE8',lineHeight:1,letterSpacing:'-.6px'}}>Well done, {childName}</div>
           </>
         ) : (
           <>
-            <div style={{fontFamily:'var(--sans)',fontSize:12,fontStyle:'italic',color:'rgba(234,242,255,.4)',marginBottom:6}}>{greetWord},</div>
-            <div style={{fontFamily:'var(--serif)',fontSize:30,fontWeight:900,color:'var(--cream)',lineHeight:1.15}}>{childName}</div>
+            <div style={{fontFamily:"'Nunito',sans-serif",fontSize:12,fontStyle:'italic',color:'rgba(234,242,255,.4)',marginBottom:5}}>{greetWord},</div>
+            <div style={{fontFamily:"'Fraunces',serif",fontSize:30,fontWeight:900,color:'#F4EFE8',lineHeight:1,letterSpacing:'-.6px'}}>{childName}</div>
           </>
         )}
       </div>
-      <StreakBadge celebration={done}/>
+      {glow > 0 ? (
+        <StreakBadge count={glow} celebration={done} />
+      ) : (
+        <div style={{
+          display:'flex',alignItems:'center',gap:8,
+          padding:'10px 12px',
+          background:'rgba(234,242,255,.04)',
+          border:'1.5px solid rgba(234,242,255,.09)',
+          borderRadius:18,flexShrink:0,
+        }}>
+          <CometSVG size={20} style={{opacity:.28}} />
+          <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end'}}>
+            <span style={{fontFamily:"'DM Mono',monospace",fontSize:9.5,color:'rgba(234,242,255,.33)',lineHeight:1.2}}>Start a streak</span>
+            <span style={{fontFamily:"'DM Mono',monospace",fontSize:7.5,color:'rgba(234,242,255,.2)',letterSpacing:'.9px',lineHeight:1}}>read every night</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 
-  const BookHeroCard = ({done}:{done?:boolean}) => {
-    if(!activeJourney) return null;
-    const accentBg = done ? 'rgba(20,216,144,.1)' : 'rgba(245,184,76,.1)';
-    const accentBorder = done ? 'rgba(20,216,144,.28)' : 'rgba(245,184,76,.28)';
-    const accentColor = done ? 'var(--teal)' : 'var(--amber)';
-    const statusText = done
-      ? `READ ${readNumber} COMPLETE \u2713`
-      : `READ ${readNumber} OF 7`;
-    const creatureEmoji = hatchedCreature?.creatureEmoji || '\u{1F4D6}';
-    const creatureType = creatureDef?.name ?? 'Companion';
-    const lastChapter = activeJourney.chapters[activeJourney.chapters.length - 1];
-    const whisperText = lastChapter?.teaser || creatureSpeech || "Tonight's chapter awaits";
-
-    return (
-      <div style={{
-        background:'rgba(12,24,70,.92)',
-        border:'1px solid rgba(255,255,255,.07)',
-        borderRadius:22,padding:16,
-        marginBottom:16,
-        animation:'fadeUp .55s ease-out both',animationDelay:'.05s'
-      }}>
-        <div style={{fontFamily:'var(--mono)',fontSize:8.5,color:'rgba(234,242,255,.25)',letterSpacing:'1.1px',textTransform:'uppercase',marginBottom:12}}>
-          CURRENTLY READING
-        </div>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:10}}>
-          <div style={{flex:1}}>
-            <div style={{fontFamily:'var(--serif)',fontSize:21,fontWeight:900,color:'var(--cream)',lineHeight:1.15,letterSpacing:'-.4px',marginBottom:8}}>
-              {activeJourney.workingTitle}
-            </div>
-            <div style={{display:'inline-flex',alignItems:'center',padding:'4px 10px',background:accentBg,borderRadius:20,border:`0.5px solid ${accentBorder}`}}>
-              <span style={{fontFamily:'var(--mono)',fontSize:8,fontWeight:600,color:accentColor}}>{statusText}</span>
-            </div>
+  // ── LOADING ────────────────────────────────────────────────────────────────
+  if(!user) return null;
+  if(loading) return(
+    <div className="dash">
+      <style>{CSS}</style>
+      <div className="dash-inner" style={{paddingTop:24}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:24}}>
+          <div>
+            <div className="dash-skel" style={{height:12,width:100,borderRadius:4,marginBottom:8}}/>
+            <div className="dash-skel" style={{height:30,width:180,borderRadius:8}}/>
           </div>
-          <div style={{fontSize:62,lineHeight:1,flexShrink:0,marginLeft:8}}>{creatureEmoji}</div>
+          <div className="dash-skel" style={{width:90,height:50,borderRadius:18}}/>
         </div>
-        <div style={{height:0.5,background:'rgba(255,255,255,.05)',margin:'12px 0'}}/>
-        <div>
-          <div style={{fontFamily:'var(--mono)',fontSize:8,color:'rgba(234,242,255,.28)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:4}}>{creatureType}</div>
-          <div style={{fontFamily:'var(--sans)',fontSize:12,fontStyle:'italic',color:'rgba(234,242,255,.46)',lineHeight:1.5}}>"{whisperText}"</div>
+        <div className="dash-skel" style={{height:200,borderRadius:22,marginBottom:16}}/>
+        <div style={{display:'flex',alignItems:'center',gap:0,marginLeft:-6,marginBottom:16}}>
+          {[0,1,2,3,4,5,6].map(i=>(
+            <div key={i} style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <div className="dash-skel" style={{width:14,height:14,borderRadius:'50%'}}/>
+            </div>
+          ))}
         </div>
+        <div className="dash-skel" style={{height:56,borderRadius:18,marginBottom:12}}/>
+        <div className="dash-skel" style={{height:52,borderRadius:18}}/>
       </div>
-    );
-  };
-
-  const StoryProgressDots = ({done}:{done?:boolean}) => {
-    const rn = readNumber;
-    const nightsToGo = Math.max(0, 7 - rn);
-    return (
-      <div style={{marginBottom:20}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-          <span style={{fontFamily:'var(--mono)',fontSize:8.5,color:'rgba(234,242,255,.24)',letterSpacing:'.9px',textTransform:'uppercase'}}>BOOK PROGRESS</span>
-          <span style={{fontFamily:'var(--mono)',fontSize:8.5,color:'rgba(234,242,255,.24)'}}>{rn} of 7</span>
-        </div>
-        <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8}}>
-          {[0,1,2,3,4,5,6].map(i => {
-            const isDone = i < rn;
-            const isCurrent = !done && i === rn - 1;
-            const dotStyle: React.CSSProperties = {
-              width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center',
-              cursor: isDone ? 'pointer' : 'default',
-            };
-            let innerStyle: React.CSSProperties;
-            if (isDone) {
-              innerStyle = {
-                width:14,height:14,borderRadius:'50%',
-                background:'var(--teal)',opacity:.75,
-                transition:'transform .12s',
-              };
-            } else if (isCurrent && !done) {
-              innerStyle = {
-                width:14,height:14,borderRadius:'50%',
-                background:'var(--amber)',
-                animation:'dotPulse 2s infinite',
-              };
-            } else {
-              innerStyle = {
-                width:14,height:14,borderRadius:'50%',
-                background:'rgba(234,242,255,.08)',
-                border:'0.5px solid rgba(234,242,255,.18)',
-              };
-            }
-            return (
-              <div key={i} style={dotStyle}
-                onClick={()=>{
-                  if(isDone && eggCards[i]) {
-                    handleShardTap(i, true);
-                  }
-                }}
-                onPointerDown={e=>{if(isDone)(e.currentTarget.firstChild as HTMLElement).style.transform='scale(.8)';}}
-                onPointerUp={e=>{if(isDone)(e.currentTarget.firstChild as HTMLElement).style.transform='';}}
-              >
-                <div style={innerStyle}/>
-              </div>
-            );
-          })}
-        </div>
-        {!done && rn > 0 && rn < 7 && (
-          <div style={{display:'flex',alignItems:'center',gap:6}}>
-            <div style={{width:5,height:5,borderRadius:'50%',background:'var(--amber)',flexShrink:0}}/>
-            <span style={{fontFamily:'var(--mono)',fontSize:9,color:'rgba(245,184,76,.65)'}}>Night {rn + 1} is next &middot; {nightsToGo} to go</span>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const PrimaryCta = ({label, onClick}:{label:string;onClick:()=>void}) => (
-    <button onClick={onClick} style={{
-      width:'100%',padding:16,border:'none',borderRadius:18,
-      background:'var(--amber)',color:'#172200',
-      fontFamily:'var(--serif)',fontSize:15,fontWeight:700,
-      cursor:'pointer',position:'relative',overflow:'hidden',
-      boxShadow:'0 8px 24px rgba(245,184,76,.26)',
-      transition:'transform .15s,filter .15s',
-      marginBottom:10,
-    }}
-      onPointerDown={e=>e.currentTarget.style.transform='scale(.97)'}
-      onPointerUp={e=>e.currentTarget.style.transform=''}
-    >
-      <span style={{position:'absolute',top:0,left:'-100%',width:'55%',height:'100%',
-        background:'linear-gradient(105deg,transparent,rgba(255,255,255,.22),transparent)',
-        animation:'shimmer 5.5s ease-in-out infinite'}}/>
-      <span style={{position:'relative',zIndex:1}}>{label}</span>
-    </button>
-  );
-
-  const SecondaryCta = ({label, onClick}:{label:string;onClick:()=>void}) => (
-    <button onClick={onClick} style={{
-      width:'100%',padding:15,border:'1px solid rgba(244,239,232,.16)',borderRadius:18,
-      background:'rgba(244,239,232,.06)',color:'rgba(234,242,255,.68)',
-      fontFamily:'var(--serif)',fontSize:14,fontWeight:600,
-      cursor:'pointer',transition:'all .15s',
-    }}
-      onPointerDown={e=>e.currentTarget.style.transform='scale(.97)'}
-      onPointerUp={e=>e.currentTarget.style.transform=''}
-    >
-      {label}
-    </button>
+    </div>
   );
 
   // ── FULL RENDER ────────────────────────────────────────────────────────────
@@ -620,8 +490,8 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
           <div style={{padding:'24px 0 0'}}>
             <div style={{textAlign:'center',marginBottom:24}}>
               <div style={{fontSize:48,marginBottom:12}}>🌙</div>
-              <div style={{fontFamily:'var(--serif)',fontSize:22,fontWeight:900,color:'var(--cream)',lineHeight:1.3,marginBottom:8}}>Tonight could be the night<br/><em style={{color:'var(--amber)'}}>bedtime changes forever.</em></div>
-              <div style={{fontFamily:'var(--sans)',fontSize:13,color:'rgba(234,242,255,.36)',lineHeight:1.65}}>A personalised bedtime story starring your child — written in 60 seconds.</div>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:900,color:'#F4EFE8',lineHeight:1.3,marginBottom:8}}>Tonight could be the night<br/><em style={{color:'#F5B84C'}}>bedtime changes forever.</em></div>
+              <div style={{fontFamily:"'Nunito',sans-serif",fontSize:13,color:'rgba(234,242,255,.36)',lineHeight:1.65}}>A personalised bedtime story starring your child — written in 60 seconds.</div>
             </div>
             <button className="dash-u-btn" style={{width:'100%',marginBottom:20,background:'linear-gradient(145deg,#a06010,#F5B84C 48%,#a06010)',boxShadow:'0 8px 30px rgba(200,130,20,.42)'}} onClick={()=>setView('story-wizard' as any)}>
               <span className="dash-u-btn-ico">✨</span>
@@ -629,25 +499,25 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
               <span className="dash-u-btn-arr" style={{color:'rgba(8,2,0,.38)'}}>→</span>
             </button>
             <div style={{marginBottom:20}}>
-              <div style={{fontFamily:'var(--mono)',fontSize:9,letterSpacing:'.1em',textTransform:'uppercase',color:'rgba(245,184,76,.4)',marginBottom:12,fontWeight:600}}>How it works</div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:'.1em',textTransform:'uppercase',color:'rgba(245,184,76,.4)',marginBottom:12,fontWeight:600}}>How it works</div>
               {[{ico:'🌙',title:'You share a moment from today',sub:"What happened at school? What made them laugh?"},{ico:'✨',title:'We write their bedtime story',sub:'AI crafts a unique story starring your child.'},{ico:'🥚',title:'A DreamKeeper companion hatches',sub:'Do the ritual 7 nights and a mystery DreamKeeper arrives.'}].map((step,i)=>(
                 <div key={i} style={{display:'flex',gap:12,marginBottom:14,alignItems:'flex-start'}}>
                   <div style={{fontSize:24,lineHeight:1,flexShrink:0,marginTop:2}}>{step.ico}</div>
-                  <div><div style={{fontFamily:'var(--sans)',fontSize:13,fontWeight:700,color:'var(--cream)',marginBottom:2}}>{step.title}</div><div style={{fontFamily:'var(--sans)',fontSize:11,color:'rgba(234,242,255,.35)',lineHeight:1.6}}>{step.sub}</div></div>
+                  <div><div style={{fontFamily:"'Nunito',sans-serif",fontSize:13,fontWeight:700,color:'#F4EFE8',marginBottom:2}}>{step.title}</div><div style={{fontFamily:"'Nunito',sans-serif",fontSize:11,color:'rgba(234,242,255,.35)',lineHeight:1.6}}>{step.sub}</div></div>
                 </div>
               ))}
             </div>
             <div style={{background:'rgba(245,184,76,.04)',border:'1px solid rgba(245,184,76,.12)',borderRadius:18,padding:'14px 16px',marginBottom:20}}>
-              <div style={{fontFamily:'var(--serif)',fontSize:13,fontStyle:'italic',color:'rgba(234,242,255,.55)',lineHeight:1.65,marginBottom:8}}>"My daughter won't go to bed without checking on her egg first."</div>
-              <div style={{fontFamily:'var(--mono)',fontSize:10,color:'rgba(234,242,255,.25)'}}>Sarah M. · Mum of two</div>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:13,fontStyle:'italic',color:'rgba(234,242,255,.55)',lineHeight:1.65,marginBottom:8}}>"My daughter won't go to bed without checking on her egg first."</div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:'rgba(234,242,255,.25)'}}>Sarah M. · Mum of two</div>
             </div>
             <div style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:18,padding:'16px 18px',textAlign:'center',marginBottom:16}}>
-              <div style={{fontFamily:'var(--sans)',fontSize:13,fontWeight:700,color:'var(--cream)',marginBottom:4}}>Ready to keep your stories?</div>
-              <div style={{fontFamily:'var(--sans)',fontSize:11,color:'rgba(234,242,255,.3)',lineHeight:1.6,marginBottom:12}}>Create a free account to save stories and unlock Night Cards.</div>
-              <button style={{background:'rgba(245,184,76,.1)',border:'1px solid rgba(245,184,76,.25)',borderRadius:50,padding:'10px 24px',fontSize:13,fontWeight:600,color:'var(--amber)',cursor:'pointer',fontFamily:'var(--sans)'}} onClick={onSignUp}>Create free account →</button>
+              <div style={{fontFamily:"'Nunito',sans-serif",fontSize:13,fontWeight:700,color:'#F4EFE8',marginBottom:4}}>Ready to keep your stories?</div>
+              <div style={{fontFamily:"'Nunito',sans-serif",fontSize:11,color:'rgba(234,242,255,.3)',lineHeight:1.6,marginBottom:12}}>Create a free account to save stories and unlock Night Cards.</div>
+              <button style={{background:'rgba(245,184,76,.1)',border:'1px solid rgba(245,184,76,.25)',borderRadius:50,padding:'10px 24px',fontSize:13,fontWeight:600,color:'#F5B84C',cursor:'pointer',fontFamily:"'Nunito',sans-serif"}} onClick={onSignUp}>Create free account →</button>
             </div>
             <div style={{textAlign:'center',marginBottom:8}}>
-              <button style={{background:'none',border:'none',color:'rgba(234,242,255,.25)',fontSize:12,cursor:'pointer',fontFamily:'var(--sans)'}} onClick={()=>setView('library')}>Or browse stories from other families →</button>
+              <button style={{background:'none',border:'none',color:'rgba(234,242,255,.25)',fontSize:12,cursor:'pointer',fontFamily:"'Nunito',sans-serif"}} onClick={()=>setView('library')}>Or browse stories from other families →</button>
             </div>
           </div>
         )}
@@ -655,159 +525,155 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
         {/* ══════════════════════════════════════════════════════════════════════
             STATE A — Active Journey (not tonight done)
             ══════════════════════════════════════════════════════════════════════ */}
-        {!isGuest && !tonightDone && hasActiveJourney && (
-          <>
+        {!isGuest && !tonightDone && hasActiveJourney && activeJourney && (
+          <div style={{display:'flex',flexDirection:'column',gap:16,padding:'20px 0 24px'}}>
             <GreetingRow/>
-            <BookHeroCard/>
-            <StoryProgressDots/>
-            <PrimaryCta
-              label={readNumber === 7 ? 'Finish Your Book' : 'Continue Your Book'}
-              onClick={()=>{if(activeJourney){setActiveJourneyId(activeJourney.id);setView('nightly-checkin');}}}
+            <BookHeroCardComponent
+              title={activeJourney.workingTitle}
+              readNumber={readNumber}
+              isComplete={false}
+              creatureEmoji={creatureEmoji}
+              companionName={creatureName}
+              whisperLine={whisperLine}
             />
-            <SecondaryCta label="One story tonight" onClick={()=>setView('story-wizard' as any)}/>
-          </>
+            <StoryProgressDotsComponent
+              filled={readNumber - 1}
+              tonight={readNumber - 1}
+              isComplete={false}
+              onDotClick={(i) => openNightCardDrawer(i)}
+            />
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              <PrimaryCTA
+                label={readNumber === 7 ? 'Finish Your Book' : 'Continue Your Book'}
+                onClick={()=>{setActiveJourneyId(activeJourney.id);setView('nightly-checkin');}}
+              />
+              <SecondaryCTA label="One story tonight" onClick={()=>setView('story-wizard' as any)}/>
+            </div>
+          </div>
         )}
 
         {/* ══════════════════════════════════════════════════════════════════════
             STATE B — Tonight Complete
             ══════════════════════════════════════════════════════════════════════ */}
         {!isGuest && tonightDone && (
-          <>
+          <div style={{display:'flex',flexDirection:'column',gap:16,padding:'20px 0 24px'}}>
             <GreetingRow done/>
-
-            {hasActiveJourney && (
+            {hasActiveJourney && activeJourney && (
               <>
-                <BookHeroCard done/>
-                <StoryProgressDots done/>
+                <BookHeroCardComponent
+                  title={activeJourney.workingTitle}
+                  readNumber={readNumber}
+                  isComplete={true}
+                  creatureEmoji={creatureEmoji}
+                  companionName={creatureName}
+                  whisperLine={whisperLine}
+                />
+                <StoryProgressDotsComponent
+                  filled={readNumber}
+                  tonight={readNumber - 1}
+                  isComplete={true}
+                  onDotClick={(i) => openNightCardDrawer(i)}
+                />
               </>
             )}
 
             {/* Tonight's Night Card row */}
             {tonightCard && (
               <div
-                onClick={()=>setModalCard(tonightCard)}
+                onClick={()=>openNightCardDrawer(readNumber > 0 ? readNumber - 1 : 0)}
                 style={{
                   display:'flex',alignItems:'center',gap:12,
                   padding:'12px 16px',
                   background:'rgba(20,216,144,.06)',
                   border:'1.5px solid rgba(20,216,144,.2)',
-                  borderRadius:18,
-                  cursor:'pointer',
-                  transition:'background .18s',
-                  marginBottom:16,
+                  borderRadius:18,cursor:'pointer',
                 }}
               >
-                <div style={{
-                  width:38,height:38,borderRadius:14,
-                  background:'rgba(20,216,144,.13)',
-                  display:'flex',alignItems:'center',justifyContent:'center',
-                  flexShrink:0,
-                }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14d890" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <div style={{width:38,height:38,borderRadius:14,background:'rgba(20,216,144,.13)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14d890" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 </div>
                 <div style={{flex:1}}>
-                  <div style={{fontFamily:'var(--mono)',fontSize:8.5,color:'rgba(20,216,144,.62)',letterSpacing:'.6px',textTransform:'uppercase',marginBottom:3}}>TONIGHT'S NIGHT CARD</div>
-                  <div style={{fontFamily:'var(--sans)',fontSize:13,fontWeight:600,color:'rgba(234,242,255,.82)',lineHeight:1.3,marginTop:3}}>{tonightCard.storyTitle || 'A night to remember'}</div>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:8.5,color:'rgba(20,216,144,.62)',letterSpacing:'.6px',textTransform:'uppercase'}}>TONIGHT'S NIGHT CARD</div>
+                  <div style={{fontFamily:"'Nunito',sans-serif",fontSize:13,fontWeight:600,color:'rgba(234,242,255,.82)',marginTop:3}}>{tonightCard.storyTitle||'A night to remember'}</div>
                 </div>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(234,242,255,.25)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
               </div>
             )}
 
-            {/* MORE TONIGHT? section */}
-            <div style={{borderTop:'0.5px solid rgba(234,242,255,.07)',paddingTop:16}}>
-              <div style={{fontFamily:'var(--mono)',fontSize:8.5,color:'rgba(234,242,255,.22)',letterSpacing:'.9px',textTransform:'uppercase',textAlign:'center',marginBottom:8}}>MORE TONIGHT?</div>
+            {/* MORE TONIGHT? */}
+            <div style={{borderTop:'.5px solid rgba(234,242,255,.07)',paddingTop:16}}>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:8.5,color:'rgba(234,242,255,.22)',letterSpacing:'.9px',textTransform:'uppercase',textAlign:'center',marginBottom:8}}>MORE TONIGHT?</div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-                <button onClick={()=>setView('library')} style={{
-                  padding:'12px 8px',border:'1px solid rgba(234,242,255,.12)',borderRadius:14,
-                  background:'rgba(234,242,255,.04)',color:'rgba(234,242,255,.55)',
-                  fontFamily:'var(--mono)',fontSize:11,cursor:'pointer',transition:'all .15s',
-                }}>Discover</button>
-                <button onClick={()=>setView('story-wizard' as any)} style={{
-                  padding:'12px 8px',border:'1px solid rgba(234,242,255,.12)',borderRadius:14,
-                  background:'rgba(234,242,255,.04)',color:'rgba(234,242,255,.55)',
-                  fontFamily:'var(--mono)',fontSize:11,cursor:'pointer',transition:'all .15s',
-                }}>Create</button>
+                <button onClick={()=>setView('library')} style={{padding:'12px 8px',border:'1px solid rgba(234,242,255,.12)',borderRadius:14,background:'rgba(234,242,255,.04)',color:'rgba(234,242,255,.55)',fontFamily:"'DM Mono',monospace",fontSize:11,cursor:'pointer'}}>Discover</button>
+                <button onClick={()=>setView('story-wizard' as any)} style={{padding:'12px 8px',border:'1px solid rgba(234,242,255,.12)',borderRadius:14,background:'rgba(234,242,255,.04)',color:'rgba(234,242,255,.55)',fontFamily:"'DM Mono',monospace",fontSize:11,cursor:'pointer'}}>Create</button>
               </div>
             </div>
-          </>
+          </div>
         )}
 
         {/* ══════════════════════════════════════════════════════════════════════
-            STATE C — No Active Journey (and not tonight done)
-            Also shows while journey is loading so the screen isn't blank.
+            STATE C — No Active Journey
             ══════════════════════════════════════════════════════════════════════ */}
         {!isGuest && !tonightDone && !hasActiveJourney && (
-          <>
+          <div style={{display:'flex',flexDirection:'column',padding:'20px 0 24px',minHeight:'calc(100vh - 76px)'}}>
             <GreetingRow/>
 
-            {/* Floating creature */}
-            <div style={{textAlign:'center',margin:'24px 0 20px'}}>
-              <div style={{
-                fontSize:72,lineHeight:1,display:'inline-block',
-                animation:'float 5s ease-in-out infinite',
-                filter:'drop-shadow(0 0 24px rgba(245,184,76,.3))',
-              }}>
-                {hatchedCreature?.creatureEmoji || '\u{1F319}'}
-              </div>
+            <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center'}}>
+              <BunnyHoldingEggSVG size={108} style={{animation:'floatY 5s ease-in-out infinite',marginBottom:14}} />
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:31,fontWeight:900,color:'#F4EFE8',lineHeight:1.12,letterSpacing:'-.6px',whiteSpace:'pre-line'}}>{"Your story\nis waiting"}</div>
+              <div style={{fontFamily:"'Nunito',sans-serif",fontSize:13,fontStyle:'italic',color:'rgba(234,242,255,.36)',marginTop:12,lineHeight:1.62,whiteSpace:'pre-line'}}>{"7 nights \u00b7 1 complete book\none new creature companion"}</div>
             </div>
 
-            <div style={{textAlign:'center',marginBottom:8}}>
-              <div style={{fontFamily:'var(--serif)',fontSize:31,fontWeight:900,color:'var(--cream)',lineHeight:1.2,marginBottom:8}}>
-                Your story is waiting
-              </div>
-              <div style={{fontFamily:'var(--sans)',fontSize:13,fontStyle:'italic',color:'rgba(234,242,255,.36)',lineHeight:1.6,maxWidth:320,margin:'0 auto',marginBottom:24}}>
-                7 nights &middot; 1 complete book &middot; one new creature companion
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              <PrimaryCTA label="Begin our book" onClick={()=>setView('journey-setup')}/>
+              <SecondaryCTA label="One story tonight" onClick={()=>setView('story-wizard' as any)}/>
+              <div style={{textAlign:'center',paddingTop:2}}>
+                <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:'rgba(234,242,255,.2)',letterSpacing:'.4px'}}>Takes about 5 minutes</span>
               </div>
             </div>
-
-            <PrimaryCta label="Begin our book" onClick={()=>setView('journey-setup')}/>
-            <SecondaryCta label="One story tonight" onClick={()=>setView('story-wizard' as any)}/>
-            <div style={{textAlign:'center',marginTop:8}}>
-              <span style={{fontFamily:'var(--mono)',fontSize:9,color:'rgba(234,242,255,.2)'}}>Takes about 5 minutes</span>
-            </div>
-          </>
+          </div>
         )}
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          MODALS
+          MODALS (preserved exactly)
           ══════════════════════════════════════════════════════════════════════ */}
 
       {/* Night Card modal */}
       {modalCard&&(
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.6)',zIndex:50,display:'flex',alignItems:'center',justifyContent:'center',padding:20,animation:'fadein .18s ease'}} onClick={()=>setModalCard(null)}>
-          <div style={{background:'var(--night-card)',border:'1px solid rgba(255,255,255,.09)',borderRadius:22,maxWidth:380,width:'100%',overflow:'hidden',animation:'fadein .18s ease'}} onClick={e=>e.stopPropagation()}>
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.6)',zIndex:50,display:'flex',alignItems:'center',justifyContent:'center',padding:20,animation:'fadeUp .18s ease'}} onClick={()=>setModalCard(null)}>
+          <div style={{background:'#0C1840',border:'1px solid rgba(255,255,255,.09)',borderRadius:22,maxWidth:380,width:'100%',overflow:'hidden',animation:'fadeUp .18s ease'}} onClick={e=>e.stopPropagation()}>
             <div style={{background:'linear-gradient(135deg,#C49018,#A87010)',padding:'10px 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-              <span style={{fontFamily:'var(--mono)',fontSize:8.5,fontWeight:600,color:'#0A0600',letterSpacing:'.07em',textTransform:'uppercase'}}>Night Card</span>
-              <span style={{fontFamily:'var(--mono)',fontSize:8.5,color:'rgba(10,6,0,.5)'}}>{modalCard.date?.split('T')[0]}</span>
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:8.5,fontWeight:600,color:'#0A0600',letterSpacing:'.07em',textTransform:'uppercase'}}>Night Card</span>
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:8.5,color:'rgba(10,6,0,.5)'}}>{modalCard.date?.split('T')[0]}</span>
               <button onClick={()=>setModalCard(null)} style={{background:'none',border:'none',fontSize:20,color:'rgba(10,6,0,.4)',cursor:'pointer',lineHeight:1,padding:'0 2px'}}>x</button>
             </div>
             <div style={{padding:'15px 17px'}}>
               {modalCard.storyTitle&&(
                 <>
-                  <div style={{fontFamily:'var(--mono)',fontSize:8,color:'rgba(58,66,112,1)',letterSpacing:'.06em',textTransform:'uppercase',marginBottom:4,fontWeight:500}}>Story</div>
-                  <div style={{fontFamily:'var(--sans)',fontSize:13,color:'rgba(200,191,176,1)',lineHeight:1.65,fontStyle:'italic',marginBottom:12}}>{modalCard.storyTitle}</div>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:'rgba(58,66,112,1)',letterSpacing:'.06em',textTransform:'uppercase',marginBottom:4,fontWeight:500}}>Story</div>
+                  <div style={{fontFamily:"'Nunito',sans-serif",fontSize:13,color:'rgba(200,191,176,1)',lineHeight:1.65,fontStyle:'italic',marginBottom:12}}>{modalCard.storyTitle}</div>
                 </>
               )}
               {modalCard.quote&&(
                 <>
-                  <div style={{fontFamily:'var(--mono)',fontSize:8,color:'rgba(58,66,112,1)',letterSpacing:'.06em',textTransform:'uppercase',marginBottom:4,fontWeight:500}}>What they said</div>
-                  <div style={{fontFamily:'var(--sans)',fontSize:13,color:'rgba(200,191,176,1)',lineHeight:1.65,fontStyle:'italic',marginBottom:12}}>"{modalCard.quote}"</div>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:'rgba(58,66,112,1)',letterSpacing:'.06em',textTransform:'uppercase',marginBottom:4,fontWeight:500}}>What they said</div>
+                  <div style={{fontFamily:"'Nunito',sans-serif",fontSize:13,color:'rgba(200,191,176,1)',lineHeight:1.65,fontStyle:'italic',marginBottom:12}}>"{modalCard.quote}"</div>
                 </>
               )}
               {modalCard.bondingQuestion&&(
                 <>
-                  <div style={{fontFamily:'var(--serif)',fontSize:13,color:'var(--amber)',fontStyle:'italic',marginBottom:4}}>"{modalCard.bondingQuestion}"</div>
-                  {modalCard.bondingAnswer&&<div style={{fontFamily:'var(--sans)',fontSize:13,color:'var(--cream)',lineHeight:1.6}}>{modalCard.bondingAnswer}</div>}
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:13,color:'#F5B84C',fontStyle:'italic',marginBottom:4}}>"{modalCard.bondingQuestion}"</div>
+                  {modalCard.bondingAnswer&&<div style={{fontFamily:"'Nunito',sans-serif",fontSize:13,color:'#F4EFE8',lineHeight:1.6}}>{modalCard.bondingAnswer}</div>}
                 </>
               )}
               {!modalCard.quote&&!modalCard.bondingQuestion&&(
-                <div style={{fontFamily:'var(--sans)',fontSize:13,color:'rgba(200,191,176,1)',lineHeight:1.65,fontStyle:'italic',marginBottom:12}}>{modalCard.memory_line||'A night to remember'}</div>
+                <div style={{fontFamily:"'Nunito',sans-serif",fontSize:13,color:'rgba(200,191,176,1)',lineHeight:1.65,fontStyle:'italic',marginBottom:12}}>{modalCard.memory_line||'A night to remember'}</div>
               )}
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',paddingTop:10,marginTop:10,borderTop:'1px solid rgba(255,255,255,.06)'}}>
-                <div style={{fontFamily:'var(--mono)',fontSize:9,color:'rgba(255,255,255,.18)'}}>sleepseed.ai</div>
-                <div style={{fontFamily:'var(--serif)',fontSize:11,fontStyle:'italic',color:'rgba(255,255,255,.32)'}}>Memory <em style={{color:'rgba(245,184,76,.65)',fontStyle:'normal',fontWeight:700}}>{getMemoryNumber(modalCard)}</em> · {modalCard.heroName}'s journey</div>
-                <div style={{display:'flex',alignItems:'center',gap:4}}><span style={{fontSize:12}}>{'🔥'}</span><span style={{fontFamily:'var(--mono)',fontSize:8,color:'rgba(245,184,76,.35)',letterSpacing:'.05em'}}>{glow} streak</span></div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:'rgba(255,255,255,.18)'}}>sleepseed.ai</div>
+                <div style={{fontFamily:"'Fraunces',serif",fontSize:11,fontStyle:'italic',color:'rgba(255,255,255,.32)'}}>Memory <em style={{color:'rgba(245,184,76,.65)',fontStyle:'normal',fontWeight:700}}>{getMemoryNumber(modalCard)}</em> &middot; {modalCard.heroName}'s journey</div>
+                <div style={{display:'flex',alignItems:'center',gap:4}}><span style={{fontSize:12}}>🔥</span><span style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:'rgba(245,184,76,.35)',letterSpacing:'.05em'}}>{glow} streak</span></div>
               </div>
             </div>
           </div>
@@ -826,77 +692,35 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
         </div>
       )}
 
-      {/* Night Card Drawer (for tapping completed progress dots) */}
-      {activeShardIdx!==null&&activeShardCard&&(
-        <>
-          <div className="nc-drawer-bd" onClick={closeSheet}/>
-          <div className="nc-drawer">
-            <div className="nc-drawer-pill"/>
-            {/* Card content */}
-            <div style={{padding:'12px 16px'}}>
-              {activeShardCard.storyTitle ? (
-                <div style={{marginBottom:12}}>
-                  <div style={{fontFamily:'var(--mono)',fontSize:8.5,color:'rgba(234,242,255,.25)',letterSpacing:'.8px',textTransform:'uppercase',marginBottom:6}}>Chapter {activeShardIdx+1}</div>
-                  <div style={{fontFamily:'var(--serif)',fontSize:14,fontWeight:700,color:'var(--cream)',lineHeight:1.3,marginBottom:8}}>{activeShardCard.storyTitle}</div>
-                  {activeShardCard.quote && (
-                    <div style={{fontFamily:'var(--serif)',fontSize:12,fontStyle:'italic',color:'rgba(255,255,255,.58)',lineHeight:1.65,borderLeft:'2px solid rgba(245,184,76,.3)',paddingLeft:9,marginBottom:10}}>
-                      "{activeShardCard.quote}"
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div style={{fontFamily:'var(--serif)',fontSize:11,fontStyle:'italic',color:'rgba(255,255,255,.28)',textAlign:'center',padding:'6px 0'}}>No story recorded for this night</div>
-              )}
-            </div>
-
-            {/* Bonding Q&A */}
-            {(activeShardCard.bondingQuestion||activeShardCard.bondingAnswer)&&(
-              <div style={{padding:'0 16px 16px'}}>
-                <div style={{fontFamily:'var(--mono)',fontSize:7.5,letterSpacing:'.1em',textTransform:'uppercase',color:'rgba(255,255,255,.22)',marginBottom:7}}>What {activeShardCard.heroName} said</div>
-                <div style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:14,padding:'11px 13px'}}>
-                  {activeShardCard.bondingQuestion&&<div style={{fontFamily:'var(--serif)',fontSize:11,fontStyle:'italic',color:'rgba(255,255,255,.38)',marginBottom:6,lineHeight:1.5}}>{activeShardCard.bondingQuestion}</div>}
-                  {activeShardCard.bondingAnswer&&<div style={{fontFamily:'var(--sans)',fontSize:13,fontWeight:700,color:'rgba(255,255,255,.75)',lineHeight:1.5}}>"{activeShardCard.bondingAnswer}"</div>}
-                </div>
-              </div>
-            )}
-
-            {/* Bottom actions */}
-            <div style={{padding:'0 16px 20px',display:'flex',gap:10}}>
-              {activeShardStory&&onReadStory ? (
-                <button onClick={()=>{closeSheet();onReadStory(activeShardStory.bookData);}} style={{
-                  flex:1,padding:13,border:'none',borderRadius:14,
-                  background:'rgba(245,184,76,.12)',
-                  color:'var(--amber)',fontFamily:'var(--serif)',fontSize:13,fontWeight:700,
-                  cursor:'pointer',transition:'all .15s',
-                }}>Read chapter →</button>
-              ) : (
-                <div style={{flex:1,padding:13,borderRadius:14,background:'rgba(255,255,255,.03)',
-                  fontFamily:'var(--serif)',fontSize:12,fontStyle:'italic',color:'rgba(255,255,255,.25)',textAlign:'center'
-                }}>Story not available</div>
-              )}
-              <button onClick={closeSheet} style={{
-                padding:'13px 18px',border:'1px solid rgba(244,239,232,.1)',borderRadius:14,
-                background:'transparent',color:'rgba(234,242,255,.4)',
-                fontFamily:'var(--serif)',fontSize:12,fontWeight:600,cursor:'pointer',
-              }}>Close</button>
-            </div>
-          </div>
-        </>
-      )}
+      {/* Night Card Drawer — new shared component */}
+      <NightCardDrawer
+        isOpen={nightCardDrawerOpen}
+        onClose={()=>setNightCardDrawerOpen(false)}
+        chapterIndex={activeDrawerChapter}
+        nightCards={eggCards}
+        onReadChapter={(i)=>{
+          setNightCardDrawerOpen(false);
+          const card = eggCards[i];
+          if(card?.storyId){
+            const story = allStories.find(s=>s.id===card.storyId);
+            if(story&&onReadStory) onReadStory(story.bookData);
+          }
+        }}
+      />
 
       {/* Bedtime toast */}
       {bedtimeToast && (
-        <div style={{position:'fixed',top:70,left:'50%',transform:'translateX(-50%)',zIndex:200,
-          background:'var(--night-card)',border:'1px solid rgba(245,184,76,.3)',
+        <div style={{position:'fixed',top:70,left:'50%',transform:'translateX(-50%)',zIndex:300,
+          background:'#0C1840',border:'1px solid rgba(245,184,76,.3)',
           borderRadius:18,padding:'14px 20px',boxShadow:'0 12px 40px rgba(0,0,0,.6)',
           display:'flex',alignItems:'center',gap:12,maxWidth:340,width:'90%',
-          animation:'fadein .3s ease-out'}}>
-          <span style={{fontSize:28}}>{'\u{1F319}'}</span>
+          animation:'fadeUp .3s ease-out'}}>
+          <span style={{fontSize:28}}>🌙</span>
           <div>
-            <div style={{fontFamily:'var(--serif)',fontSize:14,fontWeight:600,color:'var(--cream)',marginBottom:2}}>Bedtime!</div>
-            <div style={{fontFamily:'var(--sans)',fontSize:12,color:'rgba(234,242,255,.6)'}}>It's story time with {childName}.</div>
+            <div style={{fontFamily:"'Fraunces',serif",fontSize:14,fontWeight:600,color:'#F4EFE8',marginBottom:2}}>Bedtime!</div>
+            <div style={{fontFamily:"'Nunito',sans-serif",fontSize:12,color:'rgba(234,242,255,.6)'}}>It's story time with {childName}.</div>
           </div>
-          <button onClick={()=>setBedtimeToast(false)} style={{background:'none',border:'none',color:'rgba(234,242,255,.3)',fontSize:16,cursor:'pointer',marginLeft:'auto',padding:4}}>{'\u2715'}</button>
+          <button onClick={()=>setBedtimeToast(false)} style={{background:'none',border:'none',color:'rgba(234,242,255,.3)',fontSize:16,cursor:'pointer',marginLeft:'auto',padding:4}}>✕</button>
         </div>
       )}
     </div>
