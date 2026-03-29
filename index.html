@@ -49,6 +49,14 @@
     <style>
       body{margin:0;background:#060912}
       #root{min-height:100vh}
+      @keyframes shimmer{0%{transform:translateX(-130%)}100%{transform:translateX(230%)}}
+      @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+      @keyframes fadeUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+      @keyframes dotPulse{0%{box-shadow:0 0 0 0 rgba(245,184,76,.5)}100%{box-shadow:0 0 0 10px rgba(245,184,76,0)}}
+      @keyframes cometPulse{0%,100%{opacity:.85;transform:scale(1)}50%{opacity:1;transform:scale(1.07)}}
+      @keyframes celebrationPop{0%,100%{transform:scale(1)}15%{transform:scale(1.13)}32%{transform:scale(.97)}48%{transform:scale(1.05)}64%{transform:scale(1)}}
+      @keyframes breathe{0%,100%{transform:scale(1);opacity:.82}50%{transform:scale(1.05);opacity:1}}
+      @keyframes polaroidDevelop{0%{filter:brightness(2.5) saturate(0) contrast(.6);opacity:.3}30%{filter:brightness(1.6) saturate(.3) contrast(.8);opacity:.7}70%{filter:brightness(1.1) saturate(.8) contrast(.95);opacity:.95}100%{filter:brightness(1) saturate(1) contrast(1);opacity:1}}
     </style>
   </head>
   <body>

@@ -74,6 +74,8 @@ const CSS = `
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 @keyframes slideup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes ncFloatSmall{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes ncl-fadeUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ncl-cardIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 
 .ncl{min-height:100vh;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;padding-bottom:96px}
 
@@ -578,257 +580,114 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
     );
   };
 
+  const NCL_VARIANT_RGB: Record<string,string> = {
+    standard:'154,127,212', origin:'245,184,76', journey:'20,216,144', occasion:'148,130,255', streak:'245,184,76',
+  };
+  const getV = (card: SavedNightCard): string => {
+    if (card.isOrigin) return 'origin';
+    if ((card.nightNumber??0)===7) return 'journey';
+    if (card.occasion) return 'occasion';
+    if ([7,14,30,100].includes(card.streakCount??0)) return 'streak';
+    return 'standard';
+  };
+
+  const displayCards = filterCharacterId
+    ? cards.filter(c => c.characterIds?.includes(filterCharacterId))
+    : displayed;
+
   return (
-    <div className="ncl">
+    <div style={{minHeight:'100dvh',background:'#060912',display:'flex',flexDirection:'column',paddingBottom:76}}>
       <style>{CSS}</style>
 
-      <nav className="ncl-nav">
-        <div className="ncl-nav-left">
-          <button className="ncl-back" onClick={onBack}>{'\u2190'}</button>
-          <div className="ncl-title">Night <span>Cards</span></div>
+      {/* ── HEADER ── */}
+      <div style={{padding:'20px 20px 0',display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+        <div>
+          <div style={{fontSize:9,color:'rgba(154,127,212,.6)',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:4}}>MEMORIES</div>
+          <div style={{fontSize:26,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",letterSpacing:'-.5px'}}>Night Cards</div>
         </div>
-        <div className="ncl-nav-right">
-          <button className="ncl-nav-btn" onClick={() => setShowSearch(!showSearch)}>{'\uD83D\uDD0D'}</button>
-        </div>
-      </nav>
+        <button onClick={onBack} style={{width:36,height:36,borderRadius:'50%',border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.04)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(234,242,255,.45)" strokeWidth="2" strokeLinecap="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+      </div>
 
-      <div className="ncl-inner">
-        {/* ── HERO SECTION ── */}
-        <div className="ncl-hero">
-          <div className="ncl-hero-glow" />
-          <div className="ncl-hero-inner">
-            {/* Count statement */}
-            <div className="ncl-count">
-              <div className="ncl-count-h">
-                <em>{cards.length}</em> memories made with {childName}
-              </div>
-              <div className="ncl-count-sub">Every story leaves a mark. These are yours.</div>
+      {/* ── STATS STRIP ── */}
+      <div style={{padding:'0 20px',marginBottom:20}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+          {[
+            [String(displayCards.length),'CARDS'],
+            [String(new Set(displayCards.map(c=>c.date?.slice(0,7))).size),'MONTHS'],
+            [String(displayCards.filter(c=>c.isOrigin).length),'ORIGIN'],
+          ].map(([val,label])=>(
+            <div key={label} style={{background:'rgba(154,127,212,.07)',border:'1px solid rgba(154,127,212,.15)',borderRadius:14,padding:'10px 8px',textAlign:'center'}}>
+              <div style={{fontSize:22,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1}}>{val}</div>
+              <div style={{fontSize:7,color:'rgba(154,127,212,.5)',fontFamily:"'DM Mono',monospace",letterSpacing:'.7px',marginTop:2}}>{label}</div>
             </div>
-
-            {/* Stats row */}
-            {cards.length > 0 && (
-              <div className="ncl-stats">
-                <div className="ncl-stat">
-                  <span className="ncl-stat-num">{stats.total}</span>
-                  <span className="ncl-stat-lbl">Cards</span>
-                </div>
-                <div className="ncl-stat">
-                  <span className="ncl-stat-num">{stats.streak}</span>
-                  <span className="ncl-stat-lbl">Streak</span>
-                </div>
-                <div className="ncl-stat">
-                  <span className="ncl-stat-num">{stats.rare}</span>
-                  <span className="ncl-stat-lbl">{'\u2726'} Rare</span>
-                </div>
-                <div className="ncl-stat">
-                  <span className="ncl-stat-num">{stats.journeyCount > 0 ? '\uD83C\uDF1F' : '0'}</span>
-                  <span className="ncl-stat-lbl">Journey</span>
-                </div>
-              </div>
-            )}
-
-            {/* Latest card strip */}
-            {latestCard ? (() => {
-              const lv = getCardVariant(latestCard);
-              const lvs = CARD_VARIANT_STYLES[lv];
-              const isNew = latestCard.date.split('T')[0] === todayStr;
-              return (
-                <div className="ncl-latest" onClick={() => openDetail(latestCard)}>
-                  <div className="ncl-latest-thumb">
-                    <div className="ncl-latest-thumb-sky" style={{ background: lvs.skyGradient }}>
-                      <span style={{ fontSize: 22, zIndex: 2 }}>{latestCard.creatureEmoji || latestCard.emoji || '\uD83C\uDF19'}</span>
-                    </div>
-                    <div className="ncl-latest-thumb-paper" style={{ background: lvs.paperColor }}>
-                      <div className="ncl-latest-thumb-hl" style={{ color: lvs.headlineColor }}>{latestCard.headline || latestCard.heroName}</div>
-                    </div>
-                  </div>
-                  <div className="ncl-latest-body">
-                    <div className="ncl-latest-kicker">
-                      <div className="ncl-latest-dot" />
-                      <div className="ncl-latest-kicker-text">Latest card {'\u00B7'} {isNew ? 'Tonight' : formatDate(latestCard.date)}</div>
-                    </div>
-                    <div className="ncl-latest-hl">{latestCard.headline || latestCard.heroName}</div>
-                    {latestCard.quote && <div className="ncl-latest-quote">{'\u201C'}{latestCard.quote}{'\u201D'}</div>}
-                  </div>
-                  <div className="ncl-latest-chevron">{'\u203A'}</div>
-                </div>
-              );
-            })() : cards.length === 0 ? null : null}
-          </div>
+          ))}
         </div>
+      </div>
 
-        {showSearch && (
-          <div style={{ padding: '0 20px', marginBottom: 4 }}>
-            <input className="ncl-search" placeholder="Search cards, quotes, moments..." value={search} onChange={e => setSearch(e.target.value)} autoFocus />
-          </div>
-        )}
-
-        {/* View Toggle */}
-        {cards.length > 0 && (
-          <div className="ncl-toggle">
-            <button className={`ncl-toggle-btn${viewMode === 'cork' ? ' on' : ''}`} onClick={() => setViewMode('cork')}>{'\uD83D\uDCCC'} Corkboard</button>
-            <button className={`ncl-toggle-btn${viewMode === 'timeline' ? ' on' : ''}`} onClick={() => setViewMode('timeline')}>{'\uD83D\uDCCB'} Timeline</button>
-            <button className={`ncl-toggle-btn${viewMode === 'scrapbook' ? ' on' : ''}`} onClick={() => setViewMode('scrapbook')}>{'\uD83D\uDCD6'} Scrapbook</button>
-          </div>
-        )}
-
-        {filterCharacterId && (
-          <div style={{ background: 'rgba(148,130,255,.06)', border: '.5px solid rgba(148,130,255,.18)', borderRadius: 10, padding: '8px 14px', marginBottom: 12, margin: '0 20px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ fontSize: 10, color: 'rgba(148,130,255,.75)', fontFamily: 'monospace', letterSpacing: '.04em' }}>
-              Showing cards for this character only
-            </div>
-            <button style={{ fontSize: 10, color: 'rgba(148,130,255,.5)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }} onClick={onBack}>{'\u2190'} all cards</button>
-          </div>
-        )}
-
-        {/* ── VIEWS ── */}
-        {displayed.length === 0 ? (
-          <div className="ncl-empty">
-            <div className="ncl-empty-moon" />
-            <div className="ncl-empty-h">{search ? 'No cards match your search.' : 'No Night Cards yet.'}</div>
-            {!search && (
-              <div className="ncl-empty-sub">
-                After each story, you'll capture the night — their words, the best moment of the day, a photo. They live here forever.
-              </div>
-            )}
+      {/* ── CARD GRID ── */}
+      <div style={{padding:'0 20px'}}>
+        {displayCards.length===0 ? (
+          <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'60px 20px',textAlign:'center',gap:16}}>
+            <div style={{fontSize:56}}>🌙</div>
+            <div style={{fontSize:22,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.2}}>No cards yet</div>
+            <div style={{fontSize:13,color:'rgba(234,242,255,.36)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.6}}>Finish a story tonight and your first<br/>Night Card will appear here.</div>
           </div>
         ) : (
-          monthGroups.map((group, gi) => (
-            <div key={group.label} className="ncl-month" style={gi === 0 ? { animationDelay: '.2s' } : undefined}>
-              {renderMonthHeader(group.label, group.cards.length)}
-              {viewMode === 'cork' && renderCorkboard(group.cards)}
-              {viewMode === 'timeline' && renderTimeline(group.cards)}
-              {viewMode === 'scrapbook' && renderScrapbook(group.cards)}
-            </div>
-          ))
+          <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:12}}>
+            {displayCards.map((card,idx)=>{
+              const variant=getV(card);
+              const rgb=NCL_VARIANT_RGB[variant]??'154,127,212';
+              return (
+                <div key={card.id} onClick={()=>setViewing(card)} style={{cursor:'pointer',animation:`ncl-fadeUp .3s ${idx*.04}s ease both`,opacity:0,transform:idx%2===0?'rotate(-.8deg)':'rotate(.8deg)',transition:'transform .2s ease'}}>
+                  <div style={{borderRadius:16,overflow:'hidden',boxShadow:'0 8px 24px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.3)'}}>
+                    {/* Sky zone */}
+                    <div style={{height:120,background:`linear-gradient(145deg,rgba(${rgb},.15),rgba(6,9,18,.95))`,position:'relative',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
+                      <svg style={{position:'absolute',inset:0}} viewBox="0 0 160 120" width="160" height="120">
+                        {[...Array(12)].map((_,i)=><circle key={i} cx={(i*37+14)%150} cy={(i*23+8)%100} r={i%3===0?1.2:.6} fill={`rgba(255,255,255,${.2+(i%4)*.1})`}/>)}
+                      </svg>
+                      <div style={{fontSize:36,position:'relative',zIndex:1}}>{card.creatureEmoji??'🌙'}</div>
+                      <div style={{position:'absolute',top:8,left:10,zIndex:2,padding:'3px 8px',background:`rgba(${rgb},.2)`,border:`1px solid rgba(${rgb},.4)`,borderRadius:20}}>
+                        <span style={{fontSize:8,fontWeight:600,color:`rgba(${rgb},.95)`,fontFamily:"'DM Mono',monospace",letterSpacing:'.5px'}}>NIGHT {card.nightNumber??idx+1}</span>
+                      </div>
+                      <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom,transparent 40%,rgba(248,244,238,.95) 100%)'}}/>
+                    </div>
+                    {/* Paper zone */}
+                    <div style={{background:'#f8f4ee',padding:'10px 12px 12px'}}>
+                      <div style={{fontSize:11,fontWeight:700,color:'#1a1a2e',fontFamily:"'Fraunces',serif",lineHeight:1.3,letterSpacing:'-.1px',marginBottom:6}}>{card.headline??card.storyTitle}</div>
+                      {card.quote&&<div style={{fontSize:9.5,color:'rgba(26,26,46,.55)',fontFamily:"'Lora',serif",fontStyle:'italic',lineHeight:1.5,marginBottom:8}}>"{card.quote.slice(0,55)}{card.quote.length>55?'…':''}"</div>}
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                        <div style={{fontSize:8,color:'rgba(26,26,46,.4)',fontFamily:"'DM Mono',monospace"}}>{new Date(card.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+                        <div style={{fontSize:8,color:`rgba(${rgb},.7)`,fontFamily:"'DM Mono',monospace",fontWeight:600}}>{card.heroName}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
 
-      {/* ── DETAIL MODAL ── */}
-      {viewing && !editing && (
-        <div className="ncl-modal-bg" onClick={() => { setViewing(null); setIsFlipped(false); }}>
-          <div onClick={e => e.stopPropagation()}>
-            <NightCard
-              card={viewing}
-              size="full"
-              flipped={isFlipped}
-              onFlip={() => setIsFlipped(!isFlipped)}
-            />
-          </div>
-          <div className="ncl-modal-actions" onClick={e => e.stopPropagation()}>
-            <button className="ncl-modal-action" onClick={() => openShareMenu(viewing)}>
-              {'\uD83D\uDCE4'} Share
-            </button>
-            <button className="ncl-modal-action" onClick={() => openPrintView(viewing)}>
-              {'\uD83D\uDDA8\uFE0F'} Print 5{'\u00D7'}7
-            </button>
-            <button className="ncl-modal-action" onClick={() => shareToGrandparent(viewing)}>
-              {'\uD83C\uDF81'} Send to Grandparent
-            </button>
-            <button className="ncl-modal-action" onClick={() => {
-              setEditing(true);
-              setEditFields({
-                headline: viewing.headline || '',
-                quote: viewing.quote || '',
-                memory_line: viewing.memory_line || '',
-                gratitude: viewing.gratitude || '',
-                extra: viewing.extra || '',
-              });
-            }}>
-              {'\u270F\uFE0F'} Edit
-            </button>
-            <button className="ncl-modal-action danger" onClick={() => setConfirmDelete(viewing)}>
-              {'\uD83D\uDDD1'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Edit modal */}
-      {editing && viewing && (
-        <div className="ncl-edit-bg" onClick={() => setEditing(false)}>
-          <div className="ncl-edit" onClick={e => e.stopPropagation()}>
-            {[{ k: 'headline', l: 'Headline' }, { k: 'quote', l: 'Quote' }, { k: 'memory_line', l: 'Memory line' }, { k: 'gratitude', l: 'Best three seconds' }, { k: 'extra', l: 'Extra note' }].map(f => (
-              <div key={f.k} style={{ marginBottom: 8 }}>
-                <div style={{ fontSize: 8, color: 'rgba(58,40,0,.4)', fontFamily: 'var(--mono)', marginBottom: 3, textTransform: 'uppercase' as const, letterSpacing: '.5px' }}>{f.l}</div>
-                <textarea value={editFields[f.k] || ''} onChange={e => setEditFields({ ...editFields, [f.k]: e.target.value })}
-                  style={{ width: '100%', background: 'rgba(58,40,0,.04)', border: '1px solid rgba(58,40,0,.12)', borderRadius: 6, padding: '8px 10px', fontSize: 12, color: '#3A2600', fontFamily: 'Georgia,serif', fontStyle: 'italic', resize: 'none', minHeight: 40, lineHeight: 1.5, outline: 'none' }} />
+      {/* ── SELECTED CARD MODAL ── */}
+      {viewing && (
+        <>
+          <div onClick={()=>setViewing(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',zIndex:200,animation:'ncl-fadeUp .2s ease both'}}/>
+          <div style={{position:'fixed',inset:0,zIndex:201,display:'flex',alignItems:'center',justifyContent:'center',padding:20,pointerEvents:'none'}}>
+            <div style={{pointerEvents:'all',width:'100%',maxWidth:300,animation:'ncl-cardIn .3s cubic-bezier(.2,.8,.3,1) both'}}>
+              <NightCard card={viewing} size="full" />
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginTop:16}}>
+                <button onClick={()=>setViewing(null)} style={{padding:'11px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.06)',color:'rgba(234,242,255,.6)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>Close</button>
+                <button onClick={()=>{if(viewing)openShareMenu(viewing);}} style={{padding:'11px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.06)',color:'rgba(234,242,255,.6)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>Share</button>
+                <button onClick={()=>{if(viewing)openPrintView(viewing);}} style={{padding:'11px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.06)',color:'rgba(234,242,255,.6)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>Print</button>
               </div>
-            ))}
-            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-              <button onClick={async () => {
-                const updated = { ...viewing, ...editFields };
-                await saveNightCard(updated);
-                const fetched = await getNightCards(userId);
-                setCards(fetched);
-                setViewing(updated);
-                setEditing(false);
-              }} style={{ flex: 1, padding: 10, borderRadius: 8, background: '#E8972A', color: '#120800', fontSize: 12, fontWeight: 700, cursor: 'pointer', border: 'none', fontFamily: 'inherit' }}>
-                Save changes
-              </button>
-              <button onClick={() => setEditing(false)}
-                style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(58,40,0,.12)', background: 'transparent', color: 'rgba(58,40,0,.5)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
-                Cancel
-              </button>
             </div>
           </div>
-        </div>
+        </>
       )}
 
-      {/* Share menu (desktop — mobile uses native share) */}
-      {shareMenuCard && shareLink && (
-        <div className="ncl-confirm-bg" onClick={() => { setShareMenuCard(null); setShareLink(''); }}>
-          <div className="ncl-confirm" onClick={e => e.stopPropagation()} style={{ maxWidth: 360 }}>
-            <h3>Share Night Card</h3>
-            <p style={{ marginBottom: 14 }}>Share {shareMenuCard.heroName}'s memory</p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
-              {/* WhatsApp */}
-              <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Look at this bedtime memory! ${shareLink}`)}`, '_blank')}
-                style={{ padding: '12px 10px', borderRadius: 12, border: '1px solid rgba(37,211,102,.25)', background: 'rgba(37,211,102,.08)', color: '#25D366', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                <span style={{ fontSize: 16 }}>{'\uD83D\uDCAC'}</span> WhatsApp
-              </button>
-              {/* Facebook */}
-              <button onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`, '_blank', 'width=600,height=400')}
-                style={{ padding: '12px 10px', borderRadius: 12, border: '1px solid rgba(66,103,178,.25)', background: 'rgba(66,103,178,.08)', color: '#4267B2', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                <span style={{ fontSize: 16 }}>f</span> Facebook
-              </button>
-              {/* X / Twitter */}
-              <button onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`A bedtime memory from ${shareMenuCard.heroName} \uD83C\uDF19`)}&url=${encodeURIComponent(shareLink)}`, '_blank', 'width=600,height=400')}
-                style={{ padding: '12px 10px', borderRadius: 12, border: '1px solid rgba(244,239,232,.15)', background: 'rgba(244,239,232,.05)', color: 'var(--cream-dim)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                <span style={{ fontSize: 14, fontWeight: 800 }}>X</span> Post
-              </button>
-              {/* Email */}
-              <button onClick={() => window.open(`mailto:?subject=${encodeURIComponent(`${shareMenuCard.heroName}'s Night Card`)}&body=${encodeURIComponent(`Look at this bedtime memory!\n\n${shareLink}`)}`)}
-                style={{ padding: '12px 10px', borderRadius: 12, border: '1px solid rgba(244,239,232,.15)', background: 'rgba(244,239,232,.05)', color: 'var(--cream-dim)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                <span style={{ fontSize: 16 }}>{'\u2709\uFE0F'}</span> Email
-              </button>
-            </div>
-
-            {/* Copy link */}
-            <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
-              <input readOnly value={shareLink} style={{ flex: 1, padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(244,239,232,.12)', background: 'rgba(244,239,232,.04)', color: 'var(--cream-dim)', fontSize: 11, fontFamily: 'var(--mono)', outline: 'none' }} onClick={e => (e.target as HTMLInputElement).select()} />
-              <button onClick={async () => { await navigator.clipboard.writeText(shareLink).catch(() => {}); setShareLinkCopied(true); setTimeout(() => setShareLinkCopied(false), 2000); }}
-                style={{ padding: '10px 14px', borderRadius: 10, border: 'none', background: shareLinkCopied ? '#14d890' : 'var(--amber)', color: '#120800', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)', whiteSpace: 'nowrap' }}>
-                {shareLinkCopied ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-
-            {/* Download image */}
-            <button onClick={() => downloadCardImage(shareMenuCard)}
-              style={{ width: '100%', padding: '11px', borderRadius: 10, border: '1px solid rgba(244,239,232,.1)', background: 'transparent', color: 'var(--cream-faint)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--sans)', marginBottom: 10 }}>
-              {'\uD83D\uDCBE'} Download as image
-            </button>
-
-            <button onClick={() => { setShareMenuCard(null); setShareLink(''); }}
-              style={{ width: '100%', padding: '11px', borderRadius: 10, border: '1px solid rgba(244,239,232,.08)', background: 'transparent', color: 'rgba(244,239,232,.4)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--sans)' }}>
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Delete confirmation */}
+      {/* Delete confirmation (kept from existing code) */}
       {confirmDelete && (
         <div className="ncl-confirm-bg" onClick={() => setConfirmDelete(null)}>
           <div className="ncl-confirm" onClick={e => e.stopPropagation()}>
@@ -837,6 +696,22 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
             <div className="ncl-confirm-btns">
               <button className="ncl-confirm-cancel" onClick={() => setConfirmDelete(null)}>Keep it</button>
               <button className="ncl-confirm-del" onClick={() => handleDelete(confirmDelete)}>Remove</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share menu (kept from existing code) */}
+      {shareMenuCard && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.6)',zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',padding:24}} onClick={()=>setShareMenuCard(null)}>
+          <div style={{background:'#0C1840',borderRadius:22,padding:24,maxWidth:340,width:'100%'}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:14,fontWeight:700,color:'#F4EFE8',fontFamily:"'Fraunces',serif",marginBottom:12}}>Share this Night Card</div>
+            {shareLink && (
+              <div style={{background:'rgba(255,255,255,.05)',borderRadius:12,padding:'10px 14px',fontSize:12,color:'rgba(234,242,255,.5)',wordBreak:'break-all',fontFamily:"'DM Mono',monospace",marginBottom:12}}>{shareLink}</div>
+            )}
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={()=>{navigator.clipboard.writeText(shareLink).catch(()=>{});setShareLinkCopied(true);setTimeout(()=>setShareLinkCopied(false),2000);}} style={{flex:1,padding:'11px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.06)',color:'rgba(234,242,255,.6)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>{shareLinkCopied?'Copied!':'Copy link'}</button>
+              <button onClick={()=>setShareMenuCard(null)} style={{padding:'11px 16px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'transparent',color:'rgba(234,242,255,.4)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>Done</button>
             </div>
           </div>
         </div>
