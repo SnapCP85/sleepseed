@@ -12,7 +12,13 @@
     "api/tts.js":     { "maxDuration": 30 },
     "api/clone.js":   { "maxDuration": 30 },
     "api/health.js":      { "maxDuration": 10 },
-    "api/book-of-day.js": { "maxDuration": 60 }
+    "api/book-of-day.js": { "maxDuration": 60 },
+    "api/story-journeys/start.js":          { "maxDuration": 60 },
+    "api/story-journeys/[id]/index.js":     { "maxDuration": 30 },
+    "api/story-journeys/[id]/read.js":      { "maxDuration": 120 },
+    "api/story-journeys/[id]/complete.js":  { "maxDuration": 120 },
+    "api/story-journeys/[id]/summary.js":   { "maxDuration": 30 },
+    "api/story-series/start-from-book.js":  { "maxDuration": 30 }
   },
   "crons": [{
     "path": "/api/book-of-day",

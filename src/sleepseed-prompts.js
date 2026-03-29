@@ -1022,6 +1022,773 @@ export async function generateStory(brief, anthropicClient, options = {}) {
 
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SLEEPSEED v3 — STORYJOURNEY SYSTEM
+// New exports below. Existing exports above are unchanged.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── LAYER A: Core Craft System ────────────────────────────────────────────────
+
+export const CRAFT_CORE = `
+══════════════════════════════════════════════════════════════════
+SLEEPSEED CRAFT CORE — LAYER A
+Applies to every story, every chapter, every mode.
+══════════════════════════════════════════════════════════════════
+
+THE SLEEPSEED VOICE — THE WARM WITNESS
+Three-word fingerprint: Specific. Warm. True.
+
+SleepSeed stories do not bring magic to a child's world.
+They find the magic that was already in it.
+
+The narrator was in the room today. They were paying attention.
+They noticed the specific thing this child did — the thing only someone
+who loves them would see. The story is what they made from what they noticed.
+
+SPECIFIC — Every detail belongs only to this child, this night, this story.
+If it could belong to any child in any other story: replace it.
+
+WARM — The narrator loves this child. Not children in general. This child.
+That love shows in what the narrator notices and chooses to say.
+
+TRUE — Honest emotional reality. Not saccharine. Not manufactured.
+A parent reading it thinks: "Yes. That's exactly right."
+
+When this story works:
+The parent thinks: "How did it know that about my child?"
+The child thinks: "That's me. That's really me."
+
+══════════════════════════════════════════════════════════════
+CORE CRAFT RULES — NON-NEGOTIABLE
+══════════════════════════════════════════════════════════════
+
+SPECIFICITY IS EVERYTHING.
+Replace every general noun with a specific one.
+Replace every vague adjective with a concrete detail.
+→ NOT "a favourite toy" → "a one-eyed rabbit called Dennis who smelled of biscuits"
+→ NOT "a messy room" → "socks on the lampshade. There were always socks on the lampshade."
+→ NOT "she was happy" → "she made the noise she made when she found a really good stick"
+→ NOT "he was nervous" → "he did the thing with his fingers. Left hand. Right hand. Left."
+If a detail could belong to any child in any story: replace it.
+
+READ EVERY SENTENCE ALOUD BEFORE KEEPING IT.
+Rhythm is structure. Short sentences land.
+Long sentences carry the reader forward like water.
+Alternate them. A long rolling sentence followed by a very short one. Like that.
+
+THE NARRATOR HAS A PERSONALITY.
+Warm, specific, quietly certain this particular child is worth paying
+close attention to. Has opinions. Notices what the characters miss.
+Occasionally steps sideways to address the reader directly.
+
+CHARACTERS ARE ALIVE WHEN THEY HAVE OPINIONS ABOUT THINGS THAT DON'T MATTER TO THE PLOT.
+Every character needs:
+→ One weird specific detail belonging ONLY to them
+→ A concrete want (not a feeling — a specific thing to get, do, or avoid)
+→ A flaw that is the flip side of a virtue
+→ A tiny change at the end — not a transformation, a small true shift
+
+DIALOGUE SOUNDS LIKE TALKING, NOT WRITING.
+Real children say "Actually, wait" and "No but listen."
+Real adults trail off. Get interrupted. Say the wrong thing first.
+If dialogue sounds written: rewrite it until it sounds spoken.
+
+THE FINAL LINE IS AN IMAGE, SENSATION, OR SMALL SPECIFIC MOMENT.
+Never a moral. Never a summary. Never a label for what happened.
+The child carries the final image into sleep.
+When in doubt: cut the last line you wrote.
+
+PLANTED DETAILS PAY OFF.
+Establish something small in the first quarter. Apparently unimportant.
+It solves everything later. Do not signal it. Just put it there.
+
+THE GAP IS THE STORY.
+Trust what you don't say. Do not fill that space with explanation.
+
+══════════════════════════════════════════════════════════════
+AGE-SPECIFIC LANGUAGE RULES
+══════════════════════════════════════════════════════════════
+
+AGE 3–5:
+Sentences: 5–10 words. Many under 7. Short is precise, not simple.
+Vocabulary: Everyday words. One interesting new word per page, shown in context.
+Concepts: Concrete, immediate, sensory. No abstractions.
+Repetition: Use freely — refrains, patterns of three, returning phrases.
+Emotion: Named simply and directly. "She felt left out. Just completely left out."
+Example register: "He found a sock behind the radiator. Not his sock. Nobody's sock. He named it Gerald."
+
+AGE 6–8:
+Sentences: 8–15 words average. Vary length for rhythm.
+Vocabulary: More adventurous. Unusual words earn their place through context.
+Concepts: Mild abstraction. Unanswered questions acceptable.
+Emotion: A character can hold two feelings at once.
+Example register: "The map said three days. Bramble thought the map was being optimistic."
+
+AGE 9–11:
+Sentences: Full range. Intentional variation.
+Vocabulary: Rich. Words reward discovery without being explained.
+Concepts: Real moral ambiguity. Unresolved situations.
+Emotion: Characters feel things the narrator doesn't name — silence is a choice.
+Example register: "She said she was fine. The narrator, who had been paying attention, noted that she was not fine. The narrator said nothing. Some things need a moment."
+
+══════════════════════════════════════════════════════════════
+CREATURE INTEGRATION — VIRTUE SHOWN, NEVER NAMED
+══════════════════════════════════════════════════════════════
+
+The creature acts. It never explains. Its virtue lives in behavior.
+
+Courage: Hesitates. Goes anyway. Still shaking. Never announces it.
+Kindness: Notices what nobody else noticed. Acts first. Takes no credit.
+Cleverness: Tries what nobody thought of. Doesn't explain why.
+Wisdom: Asks one question that changes the direction of everything.
+Resilience: Gets knocked down. Is bothered. Gets back up. Doesn't pretend.
+Loyalty: Is there when it matters. Makes no speech about it.
+Imagination: Sees something in the ordinary nobody else sees.
+Patience: Unhurried when everything else feels urgent. The still point.
+Gratitude: Stops when something is worth stopping for.
+Joy: Finds genuine delight regardless of difficulty.
+Independence: Does what it does regardless of approval. Certain.
+Friendship: Listens. Actually listens. Saves the protagonist something good.
+Honesty: Says the thing everyone was thinking. Awkwardly. Exactly correctly.
+Vulnerability: Shows its own difficulty. Makes the protagonist's easier to hold.
+Leadership: Goes first. No speech. Does the thing.
+Empathy: Feels what the protagonist feels without being told.
+Generosity: Gives without calculation. Doesn't keep score.
+Self-acceptance: Entirely, unapologetically themselves.
+Peace: The still point when chaos erupts.
+Curiosity: Cannot stop being fascinated. This turns out to be exactly useful.
+
+══════════════════════════════════════════════════════════════
+GENRE ARC RULES
+══════════════════════════════════════════════════════════════
+
+COMEDY: Narrator loud, opinionated, barely containing delight. Rule of Three.
+Arc: Normal (15%) → Rule introduced (15%) → Escalate ×3 (50%) → Twist reset (20%)
+Planted detail from first quarter is the thing that solves everything.
+Never: humor at child's expense, cruelty as comedy, adult solves it.
+
+ADVENTURE: Narrator close, conspiratorial, running alongside.
+Arc: Want (15%) → Obstacle (20%) → Clever try (25%) → Planted detail pays off (25%) → Cost + return (15%)
+The want is specific. The obstacle is real. The protagonist returns changed.
+Never: adult solves it, magical power from nowhere, cost-free triumph.
+
+WONDER: Narrator quietly baffled, reverent. Maximum restraint.
+Arc: Ordinary (20%) → First sign (15%) → Deepening (35%) → Revelation, not resolution (30%)
+Do not explain the wonder. Do not give it a lesson. Let it exist.
+The story ends in the presence of something larger than itself.
+
+COSY: Narrator warm, unhurried. Nothing urgent. Everything okay.
+Arc: The world (20%) → Gentle departure (25%) → Small discovery (30%) → Return (25%)
+Everything is the same. One small thing is different. The story ends at home.
+Never: high stakes, danger, a departure that doesn't come home.
+
+THERAPEUTIC: Narrator invisible. The story breathes on its own.
+Arc: Mirror (20%) → Validate (25%) → Move — embed one coping tool (35%) → Rest (20%)
+Coping tools shown through effect, never named:
+BELLY BREATHING: "She pressed her hand to her middle and felt it rise and fall."
+FEELINGS NAME GAME: Character tries words for the feeling until one fits.
+SAFE PLACE: Character finds/builds somewhere specific and sensory.
+WORRY BOX: Sets worry somewhere. Walks away. Still there — not carrying it.
+ANCHOR OBJECT: Holds something connecting to someone loved.
+BODY SCAN: Only in sleep landing. Warmth moving through slowly. Never instructed.
+Safety: Never diagnose. Never have adult absence be the solution. Story witnesses, doesn't cure.
+
+MYSTERY: Narrator conspiratorial. Investigating together.
+Arc: Puzzle + key clue planted (15%) → Obvious clue (15%) → Red herring (20%) → Reframe (20%) → Connection (15%) → Settling (15%)
+
+══════════════════════════════════════════════════════════════
+THE SLEEP LANDING — NON-NEGOTIABLE IN EVERY STORY
+══════════════════════════════════════════════════════════════
+
+Final 10–15% of every story. Do not rush it. Do not shorten it.
+Sentence length halves from the story's middle register.
+Paragraph breaks increase. White space is a breath.
+Sensory shift: visual fades, tactile and auditory rise.
+Long vowels: moon, alone, low, warm, slow, home.
+Soft consonants: l, m, n, w. These close the mouth gently.
+No hard consonants (k, t, p) in the landing — they create alertness.
+The world contracts to the size of a bed, a room, a feeling of being held.
+Whisper the last three sentences. If wrong whispered, they are wrong.
+
+READ-ALOUD PHONETICS:
+→ No consecutive stressed syllables — "big bright blue" is hard to say gently.
+→ No sibilant clusters in quiet passages.
+→ Hard consonants in action. Soft consonants in landing.
+
+══════════════════════════════════════════════════════════════
+BANNED PHRASES — IMMEDIATE FAILURE
+══════════════════════════════════════════════════════════════
+
+"with a heart full of hope" / "suddenly realised/understood/knew"
+"learned a very important lesson" / "learned that day"
+"with a big smile on her/his face" / "deep down, she/he knew"
+"it was the best day of her/his life" / "she/he felt a warm glow"
+"the most important thing" / "and so she/he learned"
+"as if by magic" (unless specific established magic)
+"more than anything in the world"
+"her/his heart soared" / "her/his heart sank"
+"they lived happily ever after" (unless ironic)
+"everything was going to be okay" as a closing beat
+"she/he couldn't help but smile" / "magical adventure"
+"she/he took a deep breath" (except as invisible belly-breathing in therapeutic)
+
+══════════════════════════════════════════════════════════════
+BANNED STRUCTURES
+══════════════════════════════════════════════════════════════
+
+1. AN ADULT ARRIVES AND SOLVES IT.
+2. THE LESSON IS NAMED AT THE END.
+3. THE WORLD HAS NO RULES.
+4. THE ENDING IS HAPPIER THAN THE STORY EARNED.
+5. SUPPORTING CHARACTERS EXIST ONLY TO BE KIND.
+6. THE PROTAGONIST IS PASSIVE.
+7. THE CREATURE EXPLAINS WHAT THE STORY MEANS.
+8. THE PROBLEM DISAPPEARS WITHOUT COST OR CHANGE.
+
+══════════════════════════════════════════════════════════════
+AUTHENTICITY PRINCIPLES
+══════════════════════════════════════════════════════════════
+
+CHILDREN'S STAKES ARE REAL STAKES.
+ADULTS ARE NOT ALWAYS RIGHT.
+NOT EVERYTHING RESOLVES.
+CHILDREN'S LOGIC IS INTERNALLY CONSISTENT.
+THE WORLD HAS TEXTURE.
+TIME FEELS DIFFERENT TO CHILDREN.
+THE STORY IS A COMPANION, NOT A CURE.
+EMOTIONAL HONESTY OVER EMOTIONAL PERFORMANCE.
+`;
+
+// ── LAYER B: StoryJourney Orchestrator ───────────────────────────────────────
+
+export const JOURNEY_ORCHESTRATOR = `
+══════════════════════════════════════════════════════════════════
+SLEEPSEED JOURNEY ORCHESTRATOR — LAYER B
+This is a chapter inside a 7-read serialized children's book.
+══════════════════════════════════════════════════════════════════
+
+SERIAL MODE — FOUR SIMULTANEOUS OBLIGATIONS
+1. Feel satisfying and emotionally complete tonight. No cliffhangers that break bedtime.
+2. Move the larger 7-read story forward. Plant, advance, or resolve something.
+3. Reflect tonight's real child input meaningfully. If removed, the chapter collapses.
+4. Preserve continuity. Callbacks feel like memory, not lore homework.
+
+READ-SPECIFIC RULES:
+READ 1: Introduce world with sensory texture (not exposition). Establish emotional direction.
+  Plant 2-3 key details. End with curiosity, not completion.
+READ 2: Deepen world familiarity. First meaningful step into problem. One clear callback to Read 1.
+READ 3: Expand emotional depth or scope. Make one planted detail more significant.
+READ 4: Introduce setback, uncertainty, or doubt. Strong validation chapter.
+  If tonight was genuinely hard: comfort and validation come before narrative advancement.
+READ 5: Reframe something. Change the meaning of events already seen.
+  Planted detail becomes more visible.
+READ 6: Threads begin to connect. Earlier details start to matter.
+  Creature virtue at fullest expression.
+READ 7: Every planted detail pays off. Strongest sleep landing of all 7 reads.
+  Final-book-worthy image. Something this child will carry for years.
+
+REQUIRED CHAPTER STRUCTURE — IN THIS ORDER:
+1. COVER PAGE: Book title + "Read X of 7". Calm, inviting.
+2. RECAP PAGE (Reads 2-7 only — omit on Read 1):
+   2-4 short lines. One key event, one emotional beat, one object/thread.
+   Feels like gentle remembering.
+3. CHAPTER OPENER PAGE: Chapter title + "Tonight with:" cast list
+   (3-6 word role lines, specific not generic) + one teaser sentence.
+4. STORY PAGES: The chapter. Full craft rules apply.
+5. METADATA: chapter_summary, memory_beats, unresolved_threads,
+   resolved_threads, characters_used, callbacks_used, new_planted_details.
+
+CONTINUITY RULES:
+→ At least one callback per chapter to a previous object, moment, or detail.
+→ At least one element that carries forward into the next chapter.
+→ Nothing contradicts established world rules or character behavior.
+→ Assume emotional familiarity, not factual recap.
+
+MEMORY INJECTION — per chapter, use at most:
+→ 3 callbacks from the memory bank
+→ 1 main unresolved thread
+→ 1-2 sensory echoes from prior chapters
+→ 1 relationship callback
+More creates lore homework. Less breaks continuity.
+`;
+
+// ── Helper: Emotional goal → genre mapping ───────────────────────────────────
+
+export function mapEmotionalGoalToGenre(goal, seed = '', occasionTag = '') {
+  const hasHardDay = occasionTag === 'hard_day' ||
+    /hard|sad|scared|miss|lost|upset|worried|cry|hurt/i.test(seed || '');
+  const hasMissingSomeone = occasionTag === 'missing_someone';
+
+  switch (goal) {
+    case 'calm':
+      return { primaryGenre: 'cosy', toneBlend: ['cosy', 'wonder'] };
+    case 'confidence':
+      return hasHardDay
+        ? { primaryGenre: 'therapeutic', toneBlend: ['therapeutic', 'cosy'] }
+        : { primaryGenre: 'adventure', toneBlend: ['adventure', 'wonder'] };
+    case 'comfort':
+      return { primaryGenre: 'therapeutic', toneBlend: ['therapeutic', 'cosy'] };
+    case 'courage':
+      return { primaryGenre: 'adventure', toneBlend: ['adventure', 'therapeutic'] };
+    case 'fun':
+      return { primaryGenre: 'comedy', toneBlend: ['comedy', 'adventure'] };
+    case 'connection':
+      return hasMissingSomeone
+        ? { primaryGenre: 'therapeutic', toneBlend: ['therapeutic', 'cosy'] }
+        : { primaryGenre: 'cosy', toneBlend: ['cosy', 'wonder'] };
+    case 'wonder':
+      return { primaryGenre: 'wonder', toneBlend: ['wonder', 'cosy'] };
+    default:
+      return { primaryGenre: 'cosy', toneBlend: ['cosy'] };
+  }
+}
+
+// ── Helper: Read rule by number ───────────────────────────────────────────────
+
+export function getReadRule(readNumber) {
+  const rules = {
+    1: 'Introduce world with sensory texture — not exposition, immersion. Establish emotional direction without announcing it. Plant 2-3 key details that appear unimportant. End with curiosity, not completion.',
+    2: 'Deepen world familiarity. Take the first meaningful step into the problem. Include one clear callback to Read 1 — an object, phrase, or place.',
+    3: 'Expand emotional depth or imaginative scope. Make one planted detail from Reads 1-2 more present — not explained, just more significant.',
+    4: 'Introduce a setback, uncertainty, or moment of genuine doubt. This is the most important validation chapter. If tonight was a hard day, comfort and validation come before narrative advancement.',
+    5: 'Reframe something. Change the meaning of events already seen. A new perspective, hidden connection, or relationship shift. The reader rethinks something from an earlier chapter.',
+    6: 'Threads begin to connect. Earlier planted details start to matter. The creature\'s virtue reaches its fullest expression here.',
+    7: 'Every planted detail pays off. Earned resolution. The strongest sleep landing of all 7 reads. End with a final-book-worthy image specific enough that this child will carry it for years.'
+  };
+  return rules[readNumber] || 'Write a coherent, emotionally complete bedtime chapter.';
+}
+
+// ── Helper: Genre arc injection ───────────────────────────────────────────────
+
+export function getGenreArcInjection(genre) {
+  const arcs = {
+    comedy: `TONIGHT'S GENRE: COMEDY
+Narrator: loud, opinionated, barely containing delight.
+Arc: Establish normal (15%) → Introduce the rule (15%) → Escalate ×3 (50%) → Twist reset (20%)
+Rule of Three always. Planted detail from first quarter is the thing that solves everything.
+Never: humor at the child's expense, cruelty as comedy, adult arrives to solve it.`,
+
+    adventure: `TONIGHT'S GENRE: ADVENTURE
+Narrator: close, conspiratorial, running alongside the protagonist.
+Arc: The want (15%) → Obstacle (20%) → Clever try (25%) → Planted detail pays off (25%) → Cost + return (15%)
+The want is specific. The obstacle is real. The protagonist returns changed.
+Never: adult solves it, magical power from nowhere, cost-free triumph.`,
+
+    wonder: `TONIGHT'S GENRE: WONDER
+Narrator: quietly baffled, reverent. Maximum restraint.
+Arc: Ordinary (20%) → First sign (15%) → Deepening (35%) → Revelation — NOT resolution (30%)
+Do not explain the wonder. Do not give it a lesson. Let it exist.
+The story ends in the presence of something larger than itself.`,
+
+    cosy: `TONIGHT'S GENRE: COSY
+Narrator: warm, unhurried. Nothing is urgent. Everything is okay.
+Arc: The world (20%) → Gentle departure (25%) → Small discovery (30%) → The return (25%)
+Everything is the same. One small thing is different. The story ends at home.
+Never: high stakes, danger, a departure that doesn't come home.`,
+
+    therapeutic: `TONIGHT'S GENRE: THERAPEUTIC
+Narrator: invisible. No editorializing. The story breathes on its own.
+Arc: Mirror (20%) → Validate (25%) → Move — embed one coping tool (35%) → Rest (20%)
+The coping tool is shown through effect, never named or instructed.
+The story witnesses and moves. It does not cure. The ending rests, not resolves.
+Never: diagnose, label, have adult absence be the solution, name the technique.`,
+
+    mystery: `TONIGHT'S GENRE: MYSTERY
+Narrator: conspiratorial. You and the reader are investigating together.
+Arc: Puzzle + key clue planted (15%) → Obvious clue (15%) → Red herring (20%) → Reframe (20%) → Connection (15%) → Settling (15%)
+Key clue planted in opening looks unimportant — it is the key to everything.
+The reframe changes how everything looks, not what is known.`
+  };
+  return arcs[genre] || arcs['cosy'];
+}
+
+// ── Helper: Temperature per genre/style ──────────────────────────────────────
+
+export function getTemperature(genre, style) {
+  if (style === 'rhyming') return 0.9;
+  if (genre === 'therapeutic') return 0.75;
+  if (genre === 'wonder') return 0.9;
+  return 0.85;
+}
+
+// ── Helper: Lesson beat by read number ───────────────────────────────────────
+
+export function getLessonBeat(creature, readNumber) {
+  if (!creature?.lessonBeats || !Array.isArray(creature.lessonBeats)) return '';
+  const beat = creature.lessonBeats[readNumber - 1];
+  if (!beat) return '';
+  return `Night ${beat.night}: ${beat.theme}`;
+}
+
+// ── Tonight's Secret rotating prompts ────────────────────────────────────────
+
+export const TONIGHTS_SECRET_PROMPTS = [
+  "What did {name} do today that only you would notice?",
+  "Finish this: {name} has a habit of...",
+  "What made {name} laugh today?",
+  "What's something only you know about {name} right now?",
+  "What did {name} say today that you want to remember?",
+  "What tiny thing does {name} always do before bed?",
+  "What is {name} currently obsessed with?",
+  "What was the most {name} thing {name} did today?",
+  "What did {name} notice today that nobody else noticed?",
+  "If you had to describe {name}'s mood today in one weird word, what would it be?",
+  "What did {name} get really serious about today?",
+  "What's something {name} said recently that made you think?",
+];
+
+export function getTonightsSecretPrompt(name, readNumber) {
+  const index = ((readNumber || 1) - 1) % TONIGHTS_SECRET_PROMPTS.length;
+  return TONIGHTS_SECRET_PROMPTS[index].replace(/{name}/g, name);
+}
+
+// ── StoryBible generation prompt ──────────────────────────────────────────────
+
+export function buildStoryBiblePrompt(input) {
+  const { child, creature, starter } = input;
+
+  const system = `You are designing the story architecture for a 7-read serialized children's bedtime book. This document governs every chapter across 7 nights. Its quality determines the quality of the entire book.
+
+WHAT MAKES A STRONG STORYBIBLE:
+
+CORE WORLD — specific enough to sustain 7 reads:
+NOT: "A magical forest"
+YES: "A forest where every tree has a door, but only some open — and nobody knows which ones, or why, or what decides"
+
+CORE PREMISE — protagonist + specific want + specific obstacle in one sentence:
+NOT: "Adina goes on an adventure with her creature"
+YES: "Adina must find the lost lantern path before winter closes the forest, but every time she gets close, the path moves"
+
+PLANTED DETAILS — minimum 3. Each must be:
+→ Specific enough to be memorable
+→ Ordinary enough not to seem significant
+→ Connected to the ending in a non-obvious way
+NOT: "a feather"
+YES: "a bent silver button that Moon Bunny carries in her ear fur and never mentions"
+
+RECURRING IMAGES — minimum 3:
+Sensory images that return across all 7 reads as emotional anchors.
+Not plot elements — feelings made visible.
+
+EMOTIONAL GOAL — a feeling or discovery, not a lesson:
+NOT: "She learns to be brave"
+YES: "She discovers that bravery was already something she was doing — she just called it something else"
+
+QUALITY CHECK before returning — if any answer is no, revise before returning:
+→ Is the world specific enough to sustain 7 reads?
+→ Does the premise have protagonist + specific want + specific obstacle?
+→ Are planted details ordinary-looking, not obviously significant?
+→ Are recurring images sensory (not conceptual or abstract)?
+→ Does the emotional goal describe a feeling, not a lesson?
+→ Is the ending_target an image, not a moral statement?
+→ Do all 7 night arcs vary meaningfully in tone and purpose?
+→ Does the do_not_do list name specific traps for this book, not generic advice?
+
+Return valid JSON only. No preamble. No markdown fences.`;
+
+  const revisionNote = starter.revisionNotes
+    ? `\n\nREVISION REQUIRED: ${starter.revisionNotes}`
+    : '';
+
+  const user = `CHILD
+Name: ${child.name}
+Age band: ${child.ageBand}
+Pronouns: ${child.pronouns}
+Personality: ${(child.traits || []).join(', ')}
+Parent's secret: ${child.weirdDetail || 'none'}
+Current situation: ${child.currentSituation || 'none'}
+
+CREATURE
+Name: ${creature.name}
+Virtue: ${creature.virtue}
+Story personality: ${creature.storyPersonality}
+Lesson beat for Read 1: ${creature.lessonBeat || ''}
+
+BOOK SETUP
+Emotional goal: ${starter.emotionalGoal}
+Primary genre: ${starter.primaryGenre}
+Tone blend: ${(starter.bookType || []).join(', ')}
+World: ${starter.world}
+Recent event from real life: ${starter.recentEvent || 'none'}
+Specific real detail: ${starter.specificDetail || 'none'}
+Something important this week: ${starter.importantThing || 'none'}
+Starting cast: ${(starter.cast || []).join(', ') || 'hero and creature only'}
+Series mode: ${starter.seriesMode || 'fresh'}${revisionNote}
+
+Return JSON with this exact shape:
+{
+  "working_title": "",
+  "core_world": "",
+  "core_premise": "",
+  "emotional_goal": "",
+  "weekly_problem": "",
+  "ending_target": "",
+  "primary_genre": "",
+  "tone_profile": [],
+  "main_characters": [],
+  "planted_details": [],
+  "recurring_images": [],
+  "allowed_characters": [],
+  "series_eligible": true,
+  "night_arc": [
+    {"read_number": 1, "purpose": "", "chapter_goal": ""},
+    {"read_number": 2, "purpose": "", "chapter_goal": ""},
+    {"read_number": 3, "purpose": "", "chapter_goal": ""},
+    {"read_number": 4, "purpose": "", "chapter_goal": ""},
+    {"read_number": 5, "purpose": "", "chapter_goal": ""},
+    {"read_number": 6, "purpose": "", "chapter_goal": ""},
+    {"read_number": 7, "purpose": "", "chapter_goal": ""}
+  ],
+  "do_not_do": []
+}`;
+
+  return { system, user };
+}
+
+// ── StoryBible quality check ──────────────────────────────────────────────────
+
+export function buildStoryBibleQualityCheck(bible) {
+  return {
+    system: `Evaluate a children's book StoryBible against 8 quality criteria. Return JSON only. No preamble.`,
+    user: `Evaluate this StoryBible:
+${JSON.stringify(bible, null, 2)}
+
+CRITERIA (score 1 point each):
+1. WORLD SPECIFICITY: Specific enough to sustain 7 reads? Fail if any generic fantasy setting.
+2. PREMISE ENGINE: Protagonist + specific want + specific obstacle? Fail if any absent or vague.
+3. PLANTED DETAILS: All specific, ordinary-looking, non-obviously connected to ending?
+4. RECURRING IMAGES: All sensory, not conceptual or abstract?
+5. EMOTIONAL GOAL: A feeling or discovery, not a lesson?
+6. ENDING TARGET: An image or specific moment, not a moral statement?
+7. NIGHT ARC VARIETY: All 7 arcs vary meaningfully in tone and purpose?
+8. DO_NOT_DO QUALITY: Items specific to this book, not generic writing advice?
+
+Return JSON:
+{
+  "score": 0,
+  "pass": false,
+  "failures": ["criterion name: specific reason"],
+  "revision_notes": ""
+}
+
+Pass threshold: score >= 7.`
+  };
+}
+
+// ── Journey chapter prompt (Layers A + B + C) ─────────────────────────────────
+
+export function buildJourneyChapterPrompt(input) {
+  const { child, creature, journey, tonight } = input;
+  const readRule = getReadRule(journey.readNumber);
+  const genreArc = getGenreArcInjection(tonight.primaryGenre);
+  const memoryBank = journey.memoryBank || {};
+
+  const chapterSummaries = Array.isArray(journey.chapters) && journey.chapters.length > 0
+    ? journey.chapters.map(c => `Read ${c.readNumber}: ${c.summary || '(no summary)'}`).join('\n')
+    : 'This is Read 1 — no prior chapters.';
+
+  const tonightChapterGoal = journey.storyBible?.nightArc?.[journey.readNumber - 1]?.chapterGoal
+    || journey.storyBible?.night_arc?.[journey.readNumber - 1]?.chapter_goal
+    || '';
+  const isRead1 = journey.readNumber === 1;
+
+  const system = `${CRAFT_CORE}
+
+${JOURNEY_ORCHESTRATOR}
+
+${genreArc}
+
+══════════════════════════════════════════════════════════════════
+READ ${journey.readNumber} SPECIFIC RULE
+══════════════════════════════════════════════════════════════════
+${readRule}
+
+══════════════════════════════════════════════════════════════════
+OUTPUT FORMAT — VALID JSON ONLY. NO PREAMBLE. NO MARKDOWN FENCES.
+══════════════════════════════════════════════════════════════════
+{
+  "book_title": "",
+  "chapter_title": "",
+  "read_number": ${journey.readNumber},
+  "total_reads": 7,
+  "cover_page": {
+    "text": "book title on one line + Read ${journey.readNumber} of 7 on next line",
+    "illustration_prompt": "15-20 words: calm chapter-specific wide bedtime scene"
+  },${isRead1 ? '' : `
+  "recap_page": {
+    "text": "2-4 short lines: one key event, one emotional beat, one object or thread",
+    "illustration_prompt": "15-20 words: gentle memory-toned scene from a prior chapter"
+  },`}
+  "chapter_opener_page": {
+    "title": "chapter title",
+    "cast": [{"name": "", "role_line": "3-6 words: specific and vivid, not generic"}],
+    "teaser": "one sentence: light, slightly mysterious, earns anticipation",
+    "illustration_prompt": "15-20 words: cast assembled, chapter mood"
+  },
+  "story_pages": [
+    {"text": "page text at age-appropriate length and register", "illustration_prompt": "15-20 words: this specific moment"}
+  ],
+  "refrain": "4-8 word phrase: specific, musical, memorable",
+  "metadata": {
+    "chapter_summary": "one sentence for the next read's context",
+    "memory_beats": ["2-4 specific memorable items"],
+    "unresolved_threads": ["1-3 things that carry forward"],
+    "resolved_threads": [],
+    "characters_used": [],
+    "callbacks_used": [],
+    "new_planted_details": []
+  }
+}`;
+
+  const user = `CHILD PROFILE
+Name: ${child.name}
+Age: ${child.ageBand}
+Pronouns: ${child.pronouns}
+Personality: ${(child.traits || []).join(', ')}
+Parent's secret tonight: ${child.weirdDetail || 'not provided tonight'}
+Current situation: ${child.currentSituation || 'none noted'}
+
+CREATURE
+Name: ${creature.name}
+Virtue: ${creature.virtue}
+Story personality: ${creature.storyPersonality}
+Tonight's lesson beat: ${creature.lessonBeat || ''}
+
+STORY JOURNEY
+Working title: ${journey.workingTitle}
+Read number: ${journey.readNumber} of 7
+Core world: ${journey.storyBible?.coreWorld || journey.storyBible?.core_world || ''}
+Core premise: ${journey.storyBible?.corePremise || journey.storyBible?.core_premise || ''}
+Emotional goal of this book: ${journey.storyBible?.emotionalGoal || journey.storyBible?.emotional_goal || ''}
+Weekly problem: ${journey.storyBible?.weeklyProblem || journey.storyBible?.weekly_problem || ''}
+Ending target: ${journey.storyBible?.endingTarget || journey.storyBible?.ending_target || ''}
+Tonight's chapter goal: ${tonightChapterGoal}
+Planted details to work with: ${(journey.storyBible?.plantedDetails || journey.storyBible?.planted_details || []).join(', ') || 'none yet'}
+Recurring images to use: ${(journey.storyBible?.recurringImages || journey.storyBible?.recurring_images || []).join(', ') || 'none yet'}
+Active unresolved threads: ${(journey.unresolvedThreads || journey.unresolved_threads || []).join(', ') || 'none yet'}
+
+PRIOR CHAPTERS
+${chapterSummaries}
+
+MEMORY BANK
+Favorite objects: ${(memoryBank.favoriteObjects || memoryBank.favorite_objects || []).join(', ') || 'none yet'}
+Recurring places: ${(memoryBank.recurringPlaces || memoryBank.recurring_places || []).join(', ') || 'none yet'}
+Recurring phrases: ${(memoryBank.recurringPhrases || memoryBank.recurring_phrases || []).join(', ') || 'none yet'}
+Emotional milestones: ${(memoryBank.emotionalMilestones || memoryBank.emotional_milestones || []).join(', ') || 'none yet'}
+Relationship moments: ${(memoryBank.relationshipMoments || memoryBank.relationship_moments || []).join(', ') || 'none yet'}
+Sensory images: ${(memoryBank.sensoryImages || memoryBank.sensory_images || []).join(', ') || 'none yet'}
+
+TONIGHT
+Emotional need: ${tonight.need}
+Primary genre: ${tonight.primaryGenre}
+What happened today: ${tonight.todayMemory || 'not shared tonight'}
+Specific detail to include: ${tonight.specificDetail || 'none'}
+Occasion tag: ${tonight.occasion || 'none'}
+Cast for tonight: ${(tonight.cast || []).join(', ') || 'default cast'}
+Length: ${tonight.length || 'standard'}
+
+Now write Read ${journey.readNumber} of 7.`;
+
+  return { system, user };
+}
+
+// ── Chapter quality check ─────────────────────────────────────────────────────
+
+export function buildJourneyChapterQualityCheck(chapter, readNumber) {
+  return {
+    system: `Evaluate a serialized children's bedtime chapter against quality criteria. Return JSON only. No preamble.`,
+    user: `Evaluate this chapter (Read ${readNumber} of 7):
+${JSON.stringify(chapter, null, 2)}
+
+STRUCTURAL AUTO-FAILS (any one = full_regenerate):
+1. Adult arrives and solves the protagonist's problem.
+2. Lesson named at end — by narrator, character, or implication.
+3. Ending is happier than the story earned.
+4. Protagonist is passive — things happen without their choices mattering.
+
+CRAFT CHECKS (1 point each, max 8):
+5. SPECIFICITY: No detail could belong to any child in any story. (1=yes, 0=no)
+6. VOICE: Narrator has warmth and personality. (1=yes, 0=no)
+7. DIALOGUE: Sounds spoken, not written. (1=yes, 0=no)
+8. SLEEP LANDING: Final 10-15% slows, softens, lands. (1=yes, 0=no)
+9. FINAL IMAGE: Last line is image/sensation/moment not summary. (1=yes, 0=no)
+10. PLANTED DETAIL: Something established for future payoff. (1=yes, 0=no)
+11. CREATURE ROLE: Creature acts rather than explains. (1=yes, 0=no)
+12. PERSONALIZATION: Chapter collapses without child-specific details. (1=yes, 0=no)
+
+STORYJOURNEY CONTINUITY (1 point each, max 3):
+13. CALLBACK: At least one callback to a prior chapter. (1=yes, 0=no, N/A for Read 1)
+14. FORWARD THREAD: At least one element carries forward. (1=yes, 0=no)
+15. READ RULE: Chapter fulfills its Read ${readNumber} specific purpose. (1=yes, 0=no)
+
+Return JSON:
+{
+  "structural_fail": false,
+  "structural_fail_reason": null,
+  "craft_score": 0,
+  "continuity_score": 0,
+  "total_score": 0,
+  "pass": false,
+  "weakest_criteria": [],
+  "revision_type": "none",
+  "revision_notes": ""
+}
+
+Pass: total_score >= 9 AND no structural fail.
+revision_type: "none" (pass) | "surgical" (7-8, no structural fail) | "full_regenerate" (structural fail OR <7)`
+  };
+}
+
+// ── Book stitch prompt ────────────────────────────────────────────────────────
+
+export function buildBookStitchPrompt(input) {
+  const { journey, chapters } = input;
+
+  const system = `You are turning seven serialized bedtime chapters into one complete children's book that can be kept, printed, and returned to for years.
+
+YOUR JOB IS NOT TO REWRITE. IT IS TO COMPLETE.
+→ Smooth transitions between chapters lightly where needed
+→ Strengthen callbacks — make planted details more visible in retrospect
+→ Deepen recurring images — they should feel inevitable by the final page
+→ Make the earned ending land with the full weight of all 7 chapters
+→ Find the final title — the one only this book could have
+
+PROTECT THE SLEEP LANDING OF CHAPTER 7.
+It is the book's final breath. Do not shorten it. Do not weaken it.
+
+Write the dedication line as something specific to this child — not generic but particular.
+Example: "For Adina, who noticed the door in the oak tree."
+
+Return valid JSON only. No preamble. No markdown fences.`;
+
+  const user = `WORKING TITLE: ${journey.workingTitle || journey.working_title || ''}
+CORE WORLD: ${journey.storyBible?.coreWorld || journey.storyBible?.core_world || ''}
+EMOTIONAL GOAL: ${journey.storyBible?.emotionalGoal || journey.storyBible?.emotional_goal || ''}
+ENDING TARGET: ${journey.storyBible?.endingTarget || journey.storyBible?.ending_target || ''}
+PLANTED DETAILS: ${(journey.storyBible?.plantedDetails || journey.storyBible?.planted_details || []).join(', ')}
+RECURRING IMAGES: ${(journey.storyBible?.recurringImages || journey.storyBible?.recurring_images || []).join(', ')}
+
+CHAPTERS:
+${JSON.stringify(chapters, null, 2)}
+
+Return JSON:
+{
+  "final_title": "",
+  "cover_prompt": "15-20 words: definitive book cover for this child's world",
+  "book_summary": "2-3 sentences: the emotional heart of this book",
+  "dedication_line": "specific to this child, not generic",
+  "full_book_pages": [
+    {"text": "", "illustration_prompt": ""}
+  ],
+  "final_refrain": "the phrase the whole book earned",
+  "series_hooks": ["1-3 threads that could grow into a series"],
+  "memory_highlights": ["5-7 moments worth featuring in the Memory Reel"]
+}`;
+
+  return { system, user };
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
 // EXAMPLE USAGE
 // ─────────────────────────────────────────────────────────────────────────────
 

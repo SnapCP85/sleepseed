@@ -23,6 +23,10 @@ import Hatchery from './pages/Hatchery';
 import FirstNight from './pages/FirstNight';
 import DevStoryTest from './pages/DevStoryTest';
 import AdminUploadBook from './pages/AdminUploadBook';
+import JourneyLibrary from './pages/JourneyLibrary';
+import CompletedBookReader from './pages/CompletedBookReader';
+import { JourneySetup, NightlyCheckIn, ChapterHandoff, BookComplete, MemoryReel, SeriesCreator } from './components/journey';
+import { chapterToBookData } from './components/journey/ChapterHandoff';
 
 // Lazy-loaded heavy components — not needed on initial render
 const SleepSeedCore = lazy(() => import('./SleepSeedCore'));
@@ -100,6 +104,8 @@ function AppInner() {
     editingCharacter, setEditingCharacter,
     companionCreature, setCompanionCreature,
     libraryStorySlug, setLibraryStorySlug,
+    activeChapterOutput, setActiveChapterOutput, activeJourneyId,
+    activeCompletedBookId, setActiveCompletedBookId,
   } = useApp();
 
   const [preloadedBook,      setPreloadedBook]      = useState<any>(null);
@@ -182,6 +188,7 @@ function AppInner() {
     if (view === 'story-wizard' || view === 'ritual-starter') {
       setPreloadedBook(null);
       setWizardChoices(null);
+      setActiveChapterOutput(null);
     }
   }, [view]);
 
@@ -358,6 +365,8 @@ function AppInner() {
       return;
     }
     setPreloadedBook(bookData);
+    setWizardChoices(null);           // prevent SleepSeedCore from generating
+    setActiveChapterOutput(null);     // prevent chapter conversion override
     setView('story-builder');
   };
 
@@ -548,6 +557,17 @@ function AppInner() {
       <BottomNav current="" onNav={handleNav} />
     </div>
   );
+
+  // ── StoryJourney v3 views ──────────────────────────────────────────────
+  if (view === 'journey-setup') return <JourneySetup />;
+  if (view === 'nightly-checkin') return <NightlyCheckIn />;
+  if (view === 'chapter-handoff') return <ChapterHandoff />;
+  if (view === 'book-complete') return <BookComplete />;
+  if (view === 'memory-reel') return <MemoryReel />;
+  if (view === 'series-creator') return <SeriesCreator />;
+  if (view === 'journey-library') return <JourneyLibrary onReadStory={openSavedStory} />;
+  if (view === 'completed-book-reader') return <CompletedBookReader />;
+
   if (view === 'ritual-starter') return (
     <StoryCreator
       entryMode="ritual"
@@ -633,6 +653,21 @@ function AppInner() {
   );
 
   if (view === 'story-builder') {
+    // Determine what to show in SleepSeedCore:
+    // 1. Completed book (already in preloadedBook format — pass directly)
+    // 2. Journey chapter (needs conversion via chapterToBookData)
+    // 3. Normal preloadedBook or fresh generation
+    const isCompletedBook = !!(activeChapterOutput as Record<string, unknown>)?._isCompletedBook;
+    const isChapterData = !isCompletedBook && activeChapterOutput && typeof activeChapterOutput === 'object' &&
+      ('cover_page' in activeChapterOutput || 'coverPage' in activeChapterOutput ||
+       'story_pages' in activeChapterOutput || 'storyPages' in activeChapterOutput);
+
+    const effectivePreloadedBook = (() => {
+      if (isCompletedBook && activeChapterOutput) return activeChapterOutput; // already correct format
+      if (isChapterData) return chapterToBookData(activeChapterOutput as Record<string, unknown>);
+      return preloadedBook;
+    })();
+
     return (
       <div style={{ position: 'relative' }}>
         <div style={{
@@ -674,15 +709,33 @@ function AppInner() {
             userId={user?.id}
             isGuest={user?.isGuest}
             preloadedCharacter={selectedCharacters.length > 0 ? selectedCharacters[0] : selectedCharacter}
-            preloadedBook={preloadedBook}
+            preloadedBook={effectivePreloadedBook}
             ritualSeed={ritualSeed}
             ritualMood={ritualMood}
-            builderChoices={wizardChoices}
+            builderChoices={activeChapterOutput ? null : wizardChoices}
             companionCreature={companionCreature}
             onCharacterSavePrompt={() => {}}
             onStoryReady={() => {}}
             onGenerateError={() => setView('story-wizard')}
-            onHome={() => setView('dashboard')}
+            onHome={() => {
+              const bookObj = effectivePreloadedBook as any;
+              // Completed book reader — go back to memory reel or dashboard
+              if (bookObj?._isCompletedBook) {
+                setActiveChapterOutput(null);
+                setActiveCompletedBookId(null);
+                setView('dashboard');
+                return;
+              }
+              // Journey chapter — check if book is complete
+              if (bookObj?._isJourneyChapter) {
+                setActiveChapterOutput(null);
+                if (bookObj._isBookComplete) {
+                  setView('book-complete');
+                  return;
+                }
+              }
+              setView('dashboard');
+            }}
           />
         </Suspense>
       </div>

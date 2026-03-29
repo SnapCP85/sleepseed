@@ -90,7 +90,7 @@ export default function SharedNightCard() {
       />
       <div className="snc-footer">
         <div className="snc-footer-txt">This memory was made with SleepSeed {'\uD83C\uDF19'}</div>
-        <a className="snc-cta" href="https://sleepseed.app">
+        <a className="snc-cta" href="https://sleepseed-vercel.vercel.app">
           Start your own bedtime ritual {'\u2192'}
         </a>
       </div>

@@ -275,7 +275,7 @@ export default function ProfileSettings({ user, onBack, onEditCharacter, onViewC
           </div>
         </div>
 
-        <div className="ps-meta">SleepSeed · sleepseed.app</div>
+        <div className="ps-meta">SleepSeed · sleepseed-vercel.vercel.app</div>
       </div>
     </div>
   );

@@ -31,6 +31,14 @@ interface AppCtx {
   setIsSubscribed: (v: boolean) => void;
   refCode: string | null;
   setRefCode: (v: string | null) => void;
+  activeJourneyId: string | null;
+  setActiveJourneyId: (id: string | null) => void;
+  activeChapterOutput: Record<string, unknown> | null;
+  setActiveChapterOutput: (c: Record<string, unknown> | null) => void;
+  activeCompletedBookId: string | null;
+  setActiveCompletedBookId: (id: string | null) => void;
+  activeSeriesId: string | null;
+  setActiveSeriesId: (id: string | null) => void;
 }
 
 const Ctx = createContext<AppCtx>({} as AppCtx);
@@ -63,6 +71,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [libraryStorySlug,    setLibraryStorySlug]    = useState<string | null>(null);
   const [isSubscribed,        setIsSubscribed]        = useState(false);
   const [refCode,             setRefCode]             = useState<string | null>(null);
+  const [activeJourneyId,     setActiveJourneyId]     = useState<string | null>(null);
+  const [activeChapterOutput, setActiveChapterOutput] = useState<Record<string, unknown> | null>(null);
+  const [activeCompletedBookId, setActiveCompletedBookId] = useState<string | null>(null);
+  const [activeSeriesId,     setActiveSeriesId]     = useState<string | null>(null);
 
   const profileLoadedRef = useRef<string | null>(null);
   const migrationDoneRef = useRef<string | null>(null);
@@ -173,6 +185,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       libraryStorySlug, setLibraryStorySlug,
       isSubscribed, setIsSubscribed,
       refCode, setRefCode,
+      activeJourneyId, setActiveJourneyId,
+      activeChapterOutput, setActiveChapterOutput,
+      activeCompletedBookId, setActiveCompletedBookId,
+      activeSeriesId, setActiveSeriesId,
     }}>
       {children}
     </Ctx.Provider>

@@ -6,6 +6,8 @@ import { getActiveEgg, createEgg, getAllHatchedCreatures } from '../lib/hatchery
 import { CREATURES, getCreature } from '../lib/creatures';
 import { getCharacters, getNightCards, getStories } from '../lib/storage';
 import { checkBedtimeReminder, getBedtimeSettings } from '../lib/bedtimeReminder';
+import { journeyService } from '../lib/journey-service';
+import type { StoryJourney } from '../lib/types';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -374,7 +376,7 @@ const NavIconHatchery = () => (
 // ── component ─────────────────────────────────────────────────────────────────
 
 export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;onReadStory?:(book:any)=>void}){
-  const{user,logout,setView,selectedCharacters,setSelectedCharacters,setRitualSeed,setRitualMood,setEditingCharacter}=useApp();
+  const{user,logout,setView,selectedCharacters,setSelectedCharacters,setRitualSeed,setRitualMood,setEditingCharacter,setActiveJourneyId}=useApp();
   const[characters,setCharacters]=useState<Character[]>([]);
   const[allCards,setAllCards]=useState<SavedNightCard[]>([]);
   const[loading,setLoading]=useState(true);
@@ -395,6 +397,8 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const[weekInfoOpen,setWeekInfoOpen]=useState(false);
   const[shardsFirstTime,setShardsFirstTime]=useState(false);
   const[myStuffOpen,setMyStuffOpen]=useState(false);
+  const[activeJourney,setActiveJourney]=useState<StoryJourney|null>(null);
+  const[journeyLoading,setJourneyLoading]=useState(true);
   const missTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
   const isGuest=!!user?.isGuest;
 
@@ -429,6 +433,15 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
       setLoading(false);
     });
   },[userId]); // eslint-disable-line
+
+  // ── Load active StoryJourney for selected character ──
+  const primaryForJourney=selectedCharacters[0]??null;
+  useEffect(()=>{
+    if(!userId||!primaryForJourney?.id){setJourneyLoading(false);return;}
+    journeyService.getActiveJourney(userId,primaryForJourney.id)
+      .then(j=>{setActiveJourney(j);setJourneyLoading(false);})
+      .catch(()=>setJourneyLoading(false));
+  },[userId,primaryForJourney?.id]);
 
   const familyChars=useMemo(()=>characters.filter(c=>c.isFamily===true||(c.isFamily===undefined&&c.type==='human')),[characters]);
   const primary=selectedCharacters[0]??null;
@@ -710,75 +723,138 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
         )}
 
         {/* ══════════════════════════════════════════════════════════════════════
-            ACTIVE STATE (tonight not yet done)
+            UNIFIED RITUAL CARD — One card, three states
             ══════════════════════════════════════════════════════════════════════ */}
         {!isGuest&&!tonightDone&&(
           <>
-            {/* ── ZONE 2 — Creature Portal ── */}
-            {activeEgg&&hatchedCreature&&creatureDef&&(
-              <div className="z2-portal amber-mode" style={{borderColor:hexToRgba(creatureColor,.18)}}>
-                {/* Stage row */}
-                <div className="z2-stage-row">
-                  <div className="z2-stage-badge amber">Night {eggStage+1} of 7</div>
-                  <div className="z2-nights-left">{nightsLeftLabel}</div>
+            {/* ── STATE 1: Active journey (Read 2-7) ── */}
+            {!journeyLoading&&activeJourney&&activeJourney.chapters.length>0&&(
+              <div className="z2-portal amber-mode" style={{borderColor:hexToRgba(creatureColor,.18),animation:'fadeUp .55s ease-out both',animationDelay:'.05s'}}>
+                <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,rgba(245,184,76,.3),transparent)'}}/>
+                {/* Badge + creature */}
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+                  <div className="z2-stage-badge amber">Read {activeJourney.readNumber} of 7</div>
+                  <div style={{fontSize:28,filter:`drop-shadow(0 0 12px ${hexToRgba(creatureColor,.3)})`}}>{hatchedCreature?.creatureEmoji||'📖'}</div>
                 </div>
-
-                {/* Creature display */}
-                <div className="z2-creature-row">
-                  <div className="z2-emoji amber" style={{filter:`drop-shadow(0 0 18px ${hexToRgba(creatureColor,.4)})`}}>{hatchedCreature.creatureEmoji}</div>
-                  <div className="z2-type-label amber" style={{color:hexToRgba(creatureColor,.4)}}>DreamKeeper</div>
-                  <div className="z2-creature-name">{hatchedCreature.name}</div>
-                  <div className="z2-wisdom amber" style={{'--border-c':hexToRgba(creatureColor,.28)} as any}>
-                    <span style={{position:'absolute',left:0,top:2,bottom:2,width:2,borderRadius:1,background:hexToRgba(creatureColor,.28)}}/>
-                    "{creatureSpeech}"
-                  </div>
-                </div>
-
+                {/* Title */}
+                <h3 style={{fontFamily:'var(--serif)',color:'var(--cream)',margin:'0 0 8px',fontSize:20,fontWeight:700,lineHeight:1.25}}>{activeJourney.workingTitle}</h3>
                 {/* Progress dots */}
-                <div className="z2-dots">
-                  {Array.from({length:7},(_,i)=>{
-                    const isDone=i<eggStage;
-                    const isTonight=i===eggStage;
-                    let cls='future';
-                    if(isDone) cls='done-amber tappable';
-                    else if(isTonight) cls='tonight';
-                    return(
-                      <div key={i}
-                        className={`z2-dot ${cls}`}
-                        onClick={()=>isDone&&handleShardTap(i,true)}
-                      />
-                    );
-                  })}
+                <div style={{display:'flex',gap:7,marginBottom:16}}>
+                  {[1,2,3,4,5,6,7].map(n=>(
+                    <div key={n} style={{width:10,height:10,borderRadius:'50%',transition:'all .3s',
+                      background:n<activeJourney.readNumber?'var(--teal)':n===activeJourney.readNumber?'var(--amber)':'rgba(244,239,232,.1)',
+                      boxShadow:n<activeJourney.readNumber?'0 0 6px rgba(20,216,144,.35)':n===activeJourney.readNumber?'0 0 8px rgba(245,184,76,.4)':'none',
+                      border:n===activeJourney.readNumber?'1.5px solid rgba(245,184,76,.5)':'1px solid rgba(244,239,232,.08)'}}/>
+                  ))}
                 </div>
+                {/* Creature + teaser */}
+                {hatchedCreature&&(
+                  <div style={{display:'flex',alignItems:'flex-start',gap:10,marginBottom:18}}>
+                    <div style={{fontSize:20,flexShrink:0,marginTop:1}}>{hatchedCreature.creatureEmoji}</div>
+                    <div>
+                      <div style={{fontFamily:'var(--sans)',fontSize:12,fontWeight:700,color:'var(--cream-dim)',marginBottom:3}}>{hatchedCreature.name} is waiting</div>
+                      <div style={{fontFamily:'var(--serif)',fontStyle:'italic',fontSize:13,color:'rgba(244,239,232,.4)',lineHeight:1.5}}>
+                        "{activeJourney.chapters[activeJourney.chapters.length-1]?.teaser||"Tonight's chapter awaits"}"
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {/* CTA */}
+                <button className="z2-cta" onClick={()=>{setActiveJourneyId(activeJourney.id);setView('nightly-checkin');}}>
+                  Continue tonight's chapter
+                  <span className="z2-cta-sub">~10 minutes</span>
+                </button>
+                {/* Ghost links */}
+                <div style={{display:'flex',justifyContent:'center',gap:16,marginTop:10}}>
+                  <button onClick={()=>{}} style={{background:'none',border:'none',color:'rgba(244,239,232,.25)',fontSize:11,cursor:'pointer',fontFamily:'var(--mono)'}}>Not tonight</button>
+                  <span style={{color:'rgba(244,239,232,.1)'}}>·</span>
+                  <button onClick={()=>setView('journey-library')} style={{background:'none',border:'none',color:'rgba(244,239,232,.25)',fontSize:11,cursor:'pointer',fontFamily:'var(--mono)'}}>View our book</button>
+                </div>
+              </div>
+            )}
 
-                {/* CTA button */}
-                <button className="z2-cta" onClick={startRitual}>
-                  Begin tonight's story
-                  <span className="z2-cta-sub">{hatchedCreature.name} is waiting · ~10 minutes</span>
+            {/* ── STATE 2: Journey just created, Read 1 pending ── */}
+            {!journeyLoading&&activeJourney&&activeJourney.chapters.length===0&&(
+              <div className="z2-portal amber-mode" style={{borderColor:hexToRgba(creatureColor,.18),animation:'fadeUp .55s ease-out both',animationDelay:'.05s'}}>
+                <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:'linear-gradient(90deg,transparent,rgba(245,184,76,.3),transparent)'}}/>
+                <div className="z2-stage-badge amber" style={{marginBottom:14}}>✨ Your book is ready</div>
+                <h3 style={{fontFamily:'var(--serif)',color:'var(--cream)',margin:'0 0 10px',fontSize:20,fontWeight:700,lineHeight:1.25}}>{activeJourney.workingTitle}</h3>
+                <div style={{display:'flex',gap:7,marginBottom:16}}>
+                  {[1,2,3,4,5,6,7].map(n=><div key={n} style={{width:8,height:8,borderRadius:'50%',border:'1px solid rgba(244,239,232,.15)',background:'rgba(244,239,232,.04)'}}/>)}
+                </div>
+                <p style={{fontFamily:'var(--serif)',fontStyle:'italic',color:'rgba(244,239,232,.4)',fontSize:13,margin:'0 0 18px'}}>Tonight: Read 1 of 7. Your adventure begins.</p>
+                <button className="z2-cta" onClick={()=>{setActiveJourneyId(activeJourney.id);setView('nightly-checkin');}}>
+                  Begin Read 1
+                  <span className="z2-cta-sub">{hatchedCreature?.name||'Your companion'} is waiting</span>
                 </button>
               </div>
             )}
 
-            {/* No creature yet but has characters */}
-            {!hatchedCreature&&familyChars.length>0&&(
-              <div style={{marginBottom:16}}>
-                <button className="z2-cta" onClick={startRitual}>
-                  ✦ Begin tonight's ritual
-                  <span className="z2-cta-sub">Your story is waiting · ~10 minutes</span>
-                </button>
-              </div>
-            )}
+            {/* ── STATE 3: No active journey — existing ritual card ── */}
+            {!journeyLoading&&!activeJourney&&(
+              <>
+                {/* Creature Portal (existing ritual card) */}
+                {activeEgg&&hatchedCreature&&creatureDef&&(
+                  <div className="z2-portal amber-mode" style={{borderColor:hexToRgba(creatureColor,.18)}}>
+                    <div className="z2-stage-row">
+                      <div className="z2-stage-badge amber">Night {eggStage+1} of 7</div>
+                      <div className="z2-nights-left">{nightsLeftLabel}</div>
+                    </div>
+                    <div className="z2-creature-row">
+                      <div className="z2-emoji amber" style={{filter:`drop-shadow(0 0 18px ${hexToRgba(creatureColor,.4)})`}}>{hatchedCreature.creatureEmoji}</div>
+                      <div className="z2-type-label amber" style={{color:hexToRgba(creatureColor,.4)}}>DreamKeeper</div>
+                      <div className="z2-creature-name">{hatchedCreature.name}</div>
+                      <div className="z2-wisdom amber" style={{'--border-c':hexToRgba(creatureColor,.28)} as any}>
+                        <span style={{position:'absolute',left:0,top:2,bottom:2,width:2,borderRadius:1,background:hexToRgba(creatureColor,.28)}}/>
+                        "{creatureSpeech}"
+                      </div>
+                    </div>
+                    <div className="z2-dots">
+                      {Array.from({length:7},(_,i)=>{
+                        const isDone=i<eggStage;
+                        const isTonight=i===eggStage;
+                        let cls='future';
+                        if(isDone) cls='done-amber tappable';
+                        else if(isTonight) cls='tonight';
+                        return(<div key={i} className={`z2-dot ${cls}`} onClick={()=>isDone&&handleShardTap(i,true)}/>);
+                      })}
+                    </div>
+                    <button className="z2-cta" onClick={startRitual}>
+                      Begin tonight's story
+                      <span className="z2-cta-sub">{hatchedCreature.name} is waiting · ~10 minutes</span>
+                    </button>
+                  </div>
+                )}
 
-            {/* No characters at all */}
-            {familyChars.length===0&&(
-              <div style={{textAlign:'center',marginTop:20,marginBottom:16}}>
-                <div style={{fontSize:72,animation:'float 3s ease-in-out infinite',filter:'drop-shadow(0 0 16px rgba(245,184,76,.3))',marginBottom:12}}>🥚</div>
-                <div style={{fontFamily:'var(--serif)',fontSize:22,fontWeight:700,color:'var(--amber)',marginBottom:10}}>Your adventure begins tonight</div>
-                <button className="z2-cta" onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
-                  ✨ Start your first adventure
-                  <span className="z2-cta-sub">Create a character and hatch your first DreamKeeper</span>
-                </button>
-              </div>
+                {/* No creature yet but has characters */}
+                {!hatchedCreature&&familyChars.length>0&&(
+                  <div style={{marginBottom:16}}>
+                    <button className="z2-cta" onClick={startRitual}>
+                      ✦ Begin tonight's ritual
+                      <span className="z2-cta-sub">Your story is waiting · ~10 minutes</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* No characters at all */}
+                {familyChars.length===0&&(
+                  <div style={{textAlign:'center',marginTop:20,marginBottom:16}}>
+                    <div style={{fontSize:72,animation:'float 3s ease-in-out infinite',filter:'drop-shadow(0 0 16px rgba(245,184,76,.3))',marginBottom:12}}>🥚</div>
+                    <div style={{fontFamily:'var(--serif)',fontSize:22,fontWeight:700,color:'var(--amber)',marginBottom:10}}>Your adventure begins tonight</div>
+                    <button className="z2-cta" onClick={()=>{setEditingCharacter(null);setView('onboarding');}}>
+                      ✨ Start your first adventure
+                      <span className="z2-cta-sub">Create a character and hatch your first DreamKeeper</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Secondary journey invitation */}
+                <div style={{display:'flex',justifyContent:'center',gap:16,marginTop:8,marginBottom:4}}>
+                  <button onClick={()=>setView('journey-setup')} style={{background:'none',border:'none',color:'rgba(244,239,232,.3)',fontSize:12,cursor:'pointer',fontFamily:'var(--sans)'}}>Begin a 7-night book →</button>
+                  <span style={{color:'rgba(244,239,232,.1)'}}>·</span>
+                  <button onClick={()=>setView('journey-library')} style={{background:'none',border:'none',color:'rgba(244,239,232,.25)',fontSize:11,cursor:'pointer',fontFamily:'var(--mono)'}}>view all books</button>
+                </div>
+              </>
             )}
 
             {/* ── ZONE 3 — Journey Bar ── */}

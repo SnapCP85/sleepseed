@@ -276,4 +276,209 @@ export type AppView =
   | 'hatchery'           // hatchery screen
   | 'library'            // public story library
   | 'library-story'      // single library story reader
-  | 'dev-story';         // DEV: story engine test bench
+  | 'dev-story'          // DEV: story engine test bench
+  | 'journey-setup'
+  | 'nightly-checkin'
+  | 'chapter-handoff'
+  | 'book-complete'
+  | 'memory-reel'
+  | 'series-creator'
+  | 'journey-library'
+  | 'series-library'
+  | 'book-library'
+  | 'completed-book-reader';
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SLEEPSEED v3 — STORYJOURNEY SYSTEM TYPES
+// ══════════════════════════════════════════════════════════════════════════════
+
+export type EmotionalGoal =
+  | 'calm'
+  | 'confidence'
+  | 'comfort'
+  | 'courage'
+  | 'fun'
+  | 'connection'
+  | 'wonder'
+
+export type StoryJourneyStatus = 'active' | 'completed' | 'archived'
+
+export interface NightArcEntry {
+  readNumber: 1 | 2 | 3 | 4 | 5 | 6 | 7
+  purpose: string
+  chapterGoal: string
+}
+
+export interface StoryBible {
+  coreWorld: string
+  corePremise: string
+  emotionalGoal: string
+  weeklyProblem: string
+  endingTarget: string
+  primaryGenre: string
+  toneProfile: string[]
+  genreBlend: string[]
+  plantedDetails: string[]
+  recurringImages: string[]
+  allowedCharacters: string[]
+  seriesEligible: boolean
+  nightArc: NightArcEntry[]
+  doNotDo: string[]
+}
+
+export interface JourneyMemoryBank {
+  favoriteObjects: string[]
+  recurringPlaces: string[]
+  recurringPhrases: string[]
+  emotionalMilestones: string[]
+  relationshipMoments: string[]
+  sensoryImages: string[]
+}
+
+export interface StoryJourneyChapter {
+  id?: string
+  readNumber: number
+  chapterTitle: string
+  recapText: string
+  teaser: string
+  summary: string
+  storyId?: string
+  moodInput?: string
+  todayInput?: string
+  specificDetailUsed?: string
+  charactersUsed: string[]
+  memoryCandidates: string[]
+  unresolvedThreadsAfter: string[]
+  resolvedThreadsInChapter: string[]
+  callbacksUsed: string[]
+  newPlantedDetails: string[]
+  fullChapterJson?: Record<string, unknown>
+  createdAt: string
+}
+
+export interface StoryJourney {
+  id: string
+  userId: string
+  characterId: string
+  creatureId: string
+  status: StoryJourneyStatus
+  readNumber: 1 | 2 | 3 | 4 | 5 | 6 | 7
+  totalReads: 7
+  workingTitle: string
+  finalTitle?: string
+  seriesId?: string | null
+  storyBible: StoryBible
+  chapters: StoryJourneyChapter[]
+  memoryBank: JourneyMemoryBank
+  unresolvedThreads: string[]
+  resolvedThreads: string[]
+  finalBookId?: string | null
+  spawnedEggId?: string | null
+  hatchedCreatureId?: string | null
+  startedFrom: 'ritual' | 'create' | 'series'
+  createdAt: string
+  updatedAt: string
+  completedAt?: string | null
+}
+
+export interface StorySeries {
+  id: string
+  userId: string
+  characterId: string
+  title: string
+  coreWorld: string
+  recurringCharacters: string[]
+  recurringObjects: string[]
+  recurringThemes: string[]
+  toneProfile: string[]
+  bookIds: string[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface JourneyHighlight {
+  readNumber: number
+  chapterTitle: string
+  highlight: string
+}
+
+export interface JourneySummary {
+  id: string
+  storyJourneyId: string
+  userId: string
+  characterId: string
+  summaryTitle: string
+  emotionalArc: string
+  highlights: JourneyHighlight[]
+  nightCardReel: string[]
+  unlockedCharacterId?: string
+  payload: Record<string, unknown>
+  createdAt: string
+}
+
+export interface NightlyCheckInInput {
+  need: EmotionalGoal
+  todayMemory?: string
+  specificDetail?: string
+  occasion?: string
+  cast?: string[]
+  feel?: string
+  length?: 'short' | 'standard' | 'long'
+}
+
+export interface StoryBibleInput {
+  emotionalGoal: EmotionalGoal
+  primaryGenre: string
+  bookType: string[]
+  world: string
+  recentEvent?: string
+  specificDetail?: string
+  importantThing?: string
+  cast?: string[]
+  seriesMode?: 'fresh' | 'continue_world' | 'continue_series'
+  seriesId?: string
+  revisionNotes?: string
+}
+
+export interface ChapterCoverPage {
+  text: string
+  illustrationPrompt: string
+}
+
+export interface ChapterOpenerCastMember {
+  name: string
+  roleLine: string
+}
+
+export interface ChapterOpenerPage {
+  title: string
+  cast: ChapterOpenerCastMember[]
+  teaser: string
+  illustrationPrompt: string
+}
+
+export interface ChapterStoryPage {
+  text: string
+  illustrationPrompt: string
+}
+
+export interface ChapterOutput {
+  bookTitle: string
+  chapterTitle: string
+  readNumber: number
+  totalReads: 7
+  coverPage: ChapterCoverPage
+  recapPage?: ChapterCoverPage
+  chapterOpenerPage: ChapterOpenerPage
+  storyPages: ChapterStoryPage[]
+  refrain: string
+  metadata: {
+    chapterSummary: string
+    memoryBeats: string[]
+    unresolvedThreads: string[]
+    resolvedThreads: string[]
+    charactersUsed: string[]
+    callbacksUsed: string[]
+    newPlantedDetails: string[]
+  }
+}
