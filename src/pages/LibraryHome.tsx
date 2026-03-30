@@ -207,9 +207,21 @@ export default function LibraryHome() {
     });
   }, [user]);
 
-  // Initial loads
+  // Initial loads — show cached data instantly, refresh in background
   useEffect(() => {
-    setLoading(true);
+    // Phase 1: instant from cache
+    try {
+      const cached = JSON.parse(localStorage.getItem('ss_library_cache') || 'null');
+      if (cached?.stories?.length) {
+        setStories(cached.stories);
+        if (cached.bookOfDay) setBookOfDay(cached.bookOfDay);
+        if (cached.staffPicks?.length) setStaffPicks(cached.staffPicks);
+        setHasMore(cached.stories.length >= 20);
+        setLoading(false);
+      }
+    } catch {}
+
+    // Phase 2: refresh from Supabase
     Promise.all([
       getBookOfDay(),
       getFeaturedLibraryStories(10),
@@ -220,6 +232,7 @@ export default function LibraryHome() {
       setStories(all);
       setHasMore(all.length >= 20);
       setLoading(false);
+      try { localStorage.setItem('ss_library_cache', JSON.stringify({ stories: all.slice(0, 20), bookOfDay: bod, staffPicks: picks.slice(0, 6) })); } catch {}
     });
   }, []);
 

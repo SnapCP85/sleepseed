@@ -143,14 +143,28 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    // Initial session check
+    // ── FAST PATH: Read cached session from localStorage instantly ──
+    // Supabase stores its session in localStorage. Reading it directly
+    // avoids the network round-trip of getSession() which can take 2-5s.
+    try {
+      const storageKey = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+      if (storageKey) {
+        const raw = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        // Supabase stores session at different paths depending on version
+        const cached = raw?.currentSession || raw;
+        if (cached?.user) {
+          handleSession(cached, true);
+        }
+      }
+    } catch {}
+
+    // ── FULL CHECK: Verify with Supabase (refreshes token if needed) ──
     supabase.auth.getSession().then(({ data: { session } }) => {
       handleSession(session, true);
     });
 
     // Listen for changes (sign in, sign out, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Skip INITIAL_SESSION — we already handled it above
       if (_event === 'INITIAL_SESSION') return;
       handleSession(session, false);
     });

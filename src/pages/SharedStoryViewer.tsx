@@ -67,6 +67,9 @@ const CSS = `
 .sv-error-h{font-family:var(--serif2);font-size:20px;font-weight:700;color:#F4EFE8;margin-bottom:8px}
 .sv-shimmer{position:absolute;inset:0;background:linear-gradient(110deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.03) 75%);background-size:200% 100%;animation:svShimmer 1.6s ease-in-out infinite}
 @keyframes svShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes v8r-moonPulse{0%,100%{box-shadow:0 0 4px rgba(245,184,76,.3)}50%{box-shadow:0 0 12px rgba(245,184,76,.7)}}
+@keyframes v8r-hintFade{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(8px)}}
+@keyframes v8r-nudgePulse{0%,100%{opacity:0}50%{opacity:1}}
 `;
 
 interface SharedStory {
@@ -203,20 +206,24 @@ export default function SharedStoryViewer() {
     // Story page
     const pg = story.p[pageIdx - 1];
     return (
-      <div className="sv-bpage sv-story-bg">
-        <div className="sv-story-illo">
+      <div className="sv-bpage sv-story-bg" style={{position:'relative'}}>
+        <div className="sv-story-illo" style={{height:'52%'}}>
           <div className="sv-shimmer" />
           <div className="sv-illo-placeholder">✨</div>
         </div>
-        <div className="sv-story-text-col">
-          <div className="sv-pgnum">Page {pageIdx}</div>
-          <div className="sv-text">{pg?.t}</div>
-          <div className="sv-orn">
-            <div className="sv-orn-dec">✦ ✦ ✦</div>
-            <div className="sv-orn-num">{pageIdx}</div>
+        <div className="sv-story-text-col" style={{position:'relative'}}>
+          {/* Moon dots */}
+          <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:7,padding:'9px 0 11px'}}>
+            {[...Array(Math.min(totalPages,7))].map((_,i) => <div key={i} style={{width:9,height:9,borderRadius:'50%',border:'1px solid rgba(245,184,76,.3)',background:i<pageIdx-1?'#F5B84C':i===pageIdx-1?'rgba(245,184,76,.32)':'transparent',transition:'all .5s',animation:i===pageIdx-1?'v8r-moonPulse 2.5s ease-in-out infinite':'none',boxShadow:i<pageIdx-1?'0 0 6px rgba(245,184,76,.4)':'none'}}/>)}
           </div>
+          <div style={{fontFamily:"'Nunito',sans-serif",fontWeight:800,fontSize:22,lineHeight:1.78,letterSpacing:'.012em',color:'rgba(244,239,232,.97)'}}>{pg?.t}</div>
           {story.r && <div className="sv-refrain">✦ {story.r} ✦</div>}
         </div>
+        {/* Edge arrows */}
+        {pageIdx>0&&<div style={{position:'absolute',top:0,bottom:0,left:0,width:44,zIndex:25,pointerEvents:'none',display:'flex',alignItems:'center',justifyContent:'center'}}><svg viewBox="0 0 20 36" width="10" height="18" fill="none" stroke="rgba(234,242,255,.3)" strokeWidth="2" strokeLinecap="round" style={{opacity:.28}}><path d="m14 4-8 14 8 14"/></svg></div>}
+        <div style={{position:'absolute',top:0,bottom:0,right:0,width:44,zIndex:25,pointerEvents:'none',display:'flex',alignItems:'center',justifyContent:'center'}}><svg viewBox="0 0 20 36" width="10" height="18" fill="none" stroke="rgba(234,242,255,.3)" strokeWidth="2" strokeLinecap="round" style={{opacity:.28}}><path d="m6 4 8 14-8 14"/></svg></div>
+        {/* First page hint */}
+        {pageIdx===1&&<div style={{position:'absolute',bottom:80,left:0,right:0,zIndex:35,pointerEvents:'none',display:'flex',justifyContent:'center',animation:'v8r-hintFade 1s 3.5s ease both'}}><div style={{display:'flex',gap:10}}>{['← prev','next →'].map(l=><div key={l} style={{padding:'6px 11px',background:'rgba(0,0,0,.55)',border:'1px solid rgba(255,255,255,.1)',borderRadius:18}}><span style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.5)',letterSpacing:'.3px'}}>{l}</span></div>)}</div></div>}
       </div>
     );
   };
@@ -229,7 +236,12 @@ export default function SharedStoryViewer() {
 
       <nav className="sv-nav">
         <div className="sv-logo"><div className="sv-moon" />SleepSeed</div>
-        <div className="sv-badge">Shared story</div>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div className="sv-badge">Shared story</div>
+          <button onClick={()=>navigator.share?.({url:window.location.href}).catch(()=>{})} style={{width:32,height:32,borderRadius:'50%',border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.04)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="rgba(234,242,255,.45)" strokeWidth="2" strokeLinecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          </button>
+        </div>
       </nav>
 
       <div className="sv-shell">

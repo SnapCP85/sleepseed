@@ -36,15 +36,15 @@ import { saveHatchedCreature, createEgg, getAllHatchedCreatures } from './lib/ha
 import type { Character, HatchedCreature, SavedNightCard } from './lib/types';
 
 const NAV_CSS = `
-.bn5{position:fixed;bottom:0;left:0;right:0;height:76px;background:rgba(7,12,36,.95);border-top:.5px solid rgba(255,255,255,.08);display:flex;align-items:flex-start;padding-top:10px;z-index:100;padding-bottom:max(0px,env(safe-area-inset-bottom));backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px)}
-.bn5-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding-top:3px;position:relative;-webkit-tap-highlight-color:transparent}
+.bn5{position:fixed;bottom:0;left:0;right:0;height:76px;background:rgba(7,12,36,.95);border-top:.5px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-around;z-index:100;padding-bottom:env(safe-area-inset-bottom,0px);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px)}
+.bn5-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent}
 .bn5-ico{width:46px;height:38px;border-radius:14px;display:flex;align-items:center;justify-content:center;transition:all .2s}
 .bn5-tab.on .bn5-ico{background:rgba(245,184,76,.13)}
 .bn5-ico:active{transform:scale(.84)}
 .bn5-tab svg{color:rgba(234,242,255,.28);transition:color .2s}
 .bn5-tab.on svg{color:#F5B84C}
 .bn5-tab.on .bn5-lbl{color:#F5B84C}
-.bn5-bar{position:absolute;top:0;left:50%;transform:translateX(-50%);width:24px;height:3px;border-radius:0 0 4px 4px;background:#F5B84C;opacity:0;transition:opacity .2s}
+.bn5-bar{position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:24px;height:3px;border-radius:0 0 4px 4px;background:#F5B84C;opacity:0;transition:opacity .2s}
 .bn5-tab.on .bn5-bar{opacity:1}
 .bn5-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1px;color:rgba(234,242,255,.28);transition:color .2s;white-space:nowrap;line-height:1}
 `;
@@ -520,7 +520,7 @@ function AppInner() {
           </div>
         )}
 
-        <UserDashboard key={dashKey} onSignUp={goAuth} onReadStory={openSavedStory} />
+        <UserDashboard onSignUp={goAuth} onReadStory={openSavedStory} />
         <BottomNav current="dashboard" onNav={handleNav} />
       </div>
     );
@@ -665,28 +665,10 @@ function AppInner() {
 
     return (
       <div style={{ position: 'relative' }}>
-        <div style={{
-          position: 'sticky', top: 0, zIndex: 40,
-          background: 'rgba(13,16,24,.97)', backdropFilter: 'blur(16px)',
-          borderBottom: '1px solid rgba(232,151,42,.1)',
-          display: 'flex', alignItems: 'center', gap: 14, padding: '0 6%', height: 64,
-        }}>
-          <button onClick={goDashboard} style={{
-            background: 'transparent', border: 'none', color: 'rgba(244,239,232,.4)',
-            fontSize: 13, cursor: 'pointer', fontFamily: "'Plus Jakarta Sans',system-ui,sans-serif",
-            display: 'flex', alignItems: 'center', gap: 6, transition: 'color .15s', padding: 0,
-          }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'rgba(244,239,232,.75)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(244,239,232,.4)')}>
-            ← Back
-          </button>
-          <div style={{
-            fontFamily: "'Playfair Display',Georgia,serif", fontSize: 16, fontWeight: 700,
-            color: '#F4EFE8', display: 'flex', alignItems: 'center', gap: 8,
-          }}>
-            <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'radial-gradient(circle at 38% 38%,#F5C060,#C87020)', flexShrink: 0 }} />
-            SleepSeed
-          </div>
+        {/* Top nav hidden — controls are now inside the story reader tray */}
+        <div style={{ display: 'none' }}>
+          <button onClick={goDashboard}>Back</button>
+          <div>SleepSeed</div>
           {user?.isGuest && (
             <div style={{
               marginLeft: 'auto', background: 'rgba(232,151,42,.08)',

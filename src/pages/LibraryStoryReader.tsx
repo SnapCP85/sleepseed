@@ -48,15 +48,29 @@ const CSS = `
 @keyframes lrFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-10px) rotate(5deg)}}
 @keyframes lrSparkle{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0)}}
 @keyframes lrDotPop{0%{transform:scale(0.7)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes v8r-moonPulse{0%,100%{box-shadow:0 0 4px rgba(245,184,76,.3)}50%{box-shadow:0 0 12px rgba(245,184,76,.7)}}
+@keyframes v8r-edgePulse{0%,100%{opacity:0}50%{opacity:1}}
+@keyframes v8r-hintFade{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(8px)}}
+@keyframes v8r-shareReveal{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
+@keyframes v8r-wordGlow{0%{background:rgba(245,184,76,.5);color:#F5B84C}100%{background:rgba(245,184,76,.11);color:rgba(245,184,76,.92)}}
+@keyframes v8r-textIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes v8r-cBounce{0%,100%{transform:translateY(0) rotate(-2deg)}30%{transform:translateY(-14px) rotate(4deg) scale(1.15)}65%{transform:translateY(-5px) rotate(-1deg)}}
+@keyframes v8r-cWiggle{0%,100%{transform:rotate(-2deg)}25%{transform:rotate(7deg) scale(1.08)}75%{transform:rotate(-7deg) scale(1.08)}}
+@keyframes v8r-seedAppear{0%{transform:scale(0) rotate(-15deg);opacity:0}60%{transform:scale(1.2) rotate(5deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes v8r-seedGlow{0%,100%{box-shadow:0 0 8px rgba(245,184,76,.25)}50%{box-shadow:0 0 28px rgba(245,184,76,.7)}}
+@keyframes v8r-soundPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+@keyframes v8r-nudgePulse{0%,100%{opacity:0}50%{opacity:1}}
+.v8r-mw{display:inline;cursor:pointer;color:rgba(245,184,76,.92);background:rgba(245,184,76,.11);border-radius:5px;padding:1px 4px;border-bottom:1.5px solid rgba(245,184,76,.38);transition:background .18s}
+.v8r-mw:active{background:rgba(245,184,76,.22)}
 
 /* ── Full-screen reader shell ── */
-.lr-reader{position:fixed;inset:0;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;overflow:hidden;z-index:50}
+.lr-reader{position:fixed;inset:0;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;overflow:hidden;z-index:150}
 
 /* ── Progress bar ── */
 .lr-pbar{position:absolute;top:0;left:0;height:3px;z-index:30;background:linear-gradient(90deg,#E8972A,#F5B84C);transition:width 0.5s cubic-bezier(0.4,0,0.2,1);border-radius:0 2px 2px 0}
 
 /* ── Top chrome ── */
-.lr-top{position:absolute;top:0;left:0;right:0;z-index:25;padding:max(14px,env(safe-area-inset-top)) 20px 14px;display:flex;align-items:center;justify-content:space-between;transition:opacity 0.4s ease;pointer-events:none}
+.lr-top{display:none}
 .lr-top>*{pointer-events:auto}
 .lr-top-logo{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:6px;cursor:pointer;opacity:.8}
 .lr-top-moon{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020)}
@@ -86,11 +100,11 @@ const CSS = `
 .lr-sparkle{position:fixed;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:40;animation:lrSparkle 0.7s ease-out forwards}
 
 /* ── Cover page ── */
-.lr-cover{display:flex;flex-direction:column;height:100dvh;overflow:hidden;background:var(--night)}
+.lr-cover{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;overflow:hidden;background:var(--night)}
 .lr-cover-scene{position:absolute;inset:0;z-index:0}
 .lr-cover-vig{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,transparent 30%,rgba(6,9,18,0.6));z-index:1}
-.lr-cover-grad{position:absolute;bottom:0;left:0;right:0;height:65%;background:linear-gradient(to top,#060912 35%,transparent);z-index:2}
-.lr-cover-text{position:absolute;bottom:0;left:0;right:0;z-index:3;padding:0 28px 108px;text-align:center}
+.lr-cover-grad{position:absolute;bottom:0;left:0;right:0;height:50%;background:linear-gradient(to top,#060912 20%,transparent);z-index:2}
+.lr-cover-text{position:absolute;bottom:0;left:0;right:0;z-index:3;padding:0 28px 60px;text-align:center}
 .lr-cover-stars{font-size:10px;color:var(--amber);letter-spacing:10px;margin-bottom:10px;opacity:.7}
 .lr-cover-title{font-family:var(--serif);font-weight:700;font-size:clamp(26px,7.5vw,38px);color:var(--cream);line-height:1.15;margin-bottom:10px}
 .lr-cover-for{font-family:var(--sans);font-size:14px;color:var(--cream-dim)}
@@ -99,7 +113,7 @@ const CSS = `
 
 /* ── Story page ── */
 .lr-sp{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
-.lr-sp-scene{height:46%;flex-shrink:0;position:relative;overflow:hidden}
+.lr-sp-scene{width:100%;aspect-ratio:400/190;max-height:42%;flex-shrink:0;position:relative;overflow:hidden}
 .lr-sp-fade{position:absolute;bottom:0;left:0;right:0;height:56px;background:linear-gradient(to top,var(--night),transparent);z-index:1}
 .lr-sp-body{flex:1;display:flex;flex-direction:column;padding:16px 28px 0;overflow:hidden}
 .lr-sp-pgnum{font-family:var(--kalam);font-weight:300;font-size:12px;color:rgba(245,184,76,.55);text-align:center;margin-bottom:12px;flex-shrink:0}
@@ -227,6 +241,17 @@ export default function LibraryStoryReader({ slug }: Props) {
   });
   const [previewingVoice, setPreviewingVoice] = useState<string | null>(null);
   const [chromeVisible, setChromeVisible] = useState(true);
+
+  // v8r: story reader upgrade state
+  const [v8rTrayOpen,      setV8rTrayOpen]      = useState(false);
+  const [v8rShareOpen,     setV8rShareOpen]     = useState(false);
+  const [v8rLinkCopied,    setV8rLinkCopied]    = useState(false);
+  const [v8rWordMagic,     setV8rWordMagic]     = useState(false);
+  const [v8rAmbientOn,     setV8rAmbientOn]     = useState(false);
+  const [v8rCreatureAnim,  setV8rCreatureAnim]  = useState<'idle'|'bounce'|'wiggle'|'sparkle'>('idle');
+  const [v8rIdleTimer,     setV8rIdleTimer]     = useState<ReturnType<typeof setTimeout>|null>(null);
+  const v8rAudioCtxRef     = useRef<AudioContext|null>(null);
+  const v8rAmbientNodesRef = useRef<{osc?:OscillatorNode;gain?:GainNode;intervals?:ReturnType<typeof setInterval>[]}>({});
 
   const sessionId = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('sleepseed_sid') : null;
   const refFromUrl = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('sleepseed_ref') : null;
@@ -470,6 +495,212 @@ export default function LibraryStoryReader({ slug }: Props) {
     [idx - 1, idx + 1].forEach(i => { if (i >= 0 && i < pdfPageCount) renderPdfPage(i); });
   }, [pdfDoc, pageIdx, pdfPageCount, isPdfBook]);
 
+  // ═══ v8r: story reader upgrade effects + helpers ═══
+
+  // v8r: idle nudge
+  useEffect(() => {
+    if (v8rIdleTimer) clearTimeout(v8rIdleTimer);
+    const el = document.getElementById('v8rIdleNudge');
+    if (el) el.style.animation = 'none';
+    const t = setTimeout(() => {
+      const nudge = document.getElementById('v8rIdleNudge');
+      if (nudge) nudge.style.animation = 'v8r-nudgePulse 1.2s ease-in-out 2';
+    }, 5000);
+    setV8rIdleTimer(t);
+    return () => clearTimeout(t);
+  }, [pageIdx]); // eslint-disable-line
+
+  // v8r: nightfall progress
+  const lrTotalPages = story ? (isPdfBook ? pdfPageCount + 1 : 2 + (story.bookData?.pages || story.bookData?.setup_pages || []).length) : 1;
+  const v8rNightProgress = lrTotalPages <= 2 ? 0 : Math.min((pageIdx - 1) / (lrTotalPages - 2), 1);
+  const v8rTextBg = `rgb(${Math.round(6 - v8rNightProgress * 3)},${Math.round(9 - v8rNightProgress * 3)},${Math.round(18 - v8rNightProgress * 2)})`;
+  const v8rStarOpacity = v8rNightProgress * 0.35;
+
+  // v8r: ambient sound
+  const v8rStartAmbient = useCallback(() => {
+    try {
+      if (!v8rAudioCtxRef.current) v8rAudioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const ctx = v8rAudioCtxRef.current;
+      if (ctx.state === 'suspended') ctx.resume();
+      const master = ctx.createGain();
+      master.gain.setValueAtTime(.055, ctx.currentTime);
+      master.connect(ctx.destination);
+      const drone = ctx.createOscillator();
+      drone.type = 'sine'; drone.frequency.value = 55;
+      const dGain = ctx.createGain(); dGain.gain.value = .3;
+      drone.connect(dGain); dGain.connect(master); drone.start();
+      const pingIv = setInterval(() => {
+        if (!v8rAmbientNodesRef.current.gain) return;
+        const ping = ctx.createOscillator(); ping.type = 'sine';
+        ping.frequency.value = [523, 659, 784, 1047][Math.floor(Math.random() * 4)];
+        const pGain = ctx.createGain();
+        pGain.gain.setValueAtTime(0, ctx.currentTime);
+        pGain.gain.linearRampToValueAtTime(.038, ctx.currentTime + .06);
+        pGain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + 2.5);
+        ping.connect(pGain); pGain.connect(master); ping.start(); ping.stop(ctx.currentTime + 2.5);
+      }, 4000 + Math.random() * 5000);
+      v8rAmbientNodesRef.current = { osc: drone, gain: master, intervals: [pingIv] };
+    } catch {}
+  }, []);
+
+  const v8rStopAmbient = useCallback(() => {
+    const n = v8rAmbientNodesRef.current;
+    n.intervals?.forEach(clearInterval);
+    try { n.osc?.stop(); } catch {}
+    n.gain?.disconnect();
+    v8rAmbientNodesRef.current = {};
+    try { v8rAudioCtxRef.current?.suspend(); } catch {}
+  }, []);
+
+  useEffect(() => { if (v8rAmbientOn) v8rStartAmbient(); else v8rStopAmbient(); return v8rStopAmbient; }, [v8rAmbientOn]); // eslint-disable-line
+  useEffect(() => { return () => v8rStopAmbient(); }, []); // eslint-disable-line
+
+  // v8r: magic words
+  const v8rMagicWords = new Set(['sparkle','shimmer','glow','gleam','glimmer','golden','amber','silver','crystal','jewel','magic','magical','spell','enchant','wish','wonder','dream','dreaming','dreamed','shadow','whisper','whispered','lantern','flame','fire','light','bright','moon','star','stars','constellation','sky','forest','hollow','path','river','bridge','leap','soar','fly','dance','spin','tumble','creature','spirit','ancient','secret','hidden','brave','courage','gentle','kind','bold','silence','still','quiet','hush','soft']);
+
+  const v8rParseText = (text: string): string => {
+    if (!v8rWordMagic) return text;
+    return text.replace(/\b([A-Za-z']+)\b/g, (word) => {
+      if (!v8rMagicWords.has(word.toLowerCase())) return word;
+      return `<span class="v8r-mw" onclick="navigator.vibrate?.(6);this.style.animation='v8r-wordGlow .65s ease both';setTimeout(()=>this.style.animation='',700)">${word}</span>`;
+    });
+  };
+
+  const renderV8rStoryText = (text: string) => {
+    const baseStyle: React.CSSProperties = { fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: 22, lineHeight: 1.78, letterSpacing: '.012em', color: 'rgba(244,239,232,.97)' };
+    if (v8rWordMagic) return <div style={baseStyle} dangerouslySetInnerHTML={{ __html: v8rParseText(text) }} />;
+    return <div style={baseStyle}>{text}</div>;
+  };
+
+  // v8r: moon dots
+  const renderV8rMoonDots = () => {
+    const total = Math.min(lrTotalPages, 7);
+    return (
+      <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:7,padding:'9px 0 11px'}}>
+        {[...Array(total)].map((_,i) => {
+          const done = i < pageIdx - 1;
+          const cur = i === pageIdx - 1;
+          return <div key={i} style={{width:9,height:9,borderRadius:'50%',border:'1px solid rgba(245,184,76,.3)',background:done?'#F5B84C':cur?'rgba(245,184,76,.32)':'transparent',transition:'all .5s cubic-bezier(.2,.8,.3,1)',animation:cur?'v8r-moonPulse 2.5s ease-in-out infinite':'none',boxShadow:done?'0 0 6px rgba(245,184,76,.4)':'none'}}/>;
+        })}
+      </div>
+    );
+  };
+
+  // v8r: nightfall stars
+  const renderV8rNightfallStars = () => v8rStarOpacity < .01 ? null : (
+    <svg style={{position:'absolute',inset:0,pointerEvents:'none',zIndex:1,opacity:v8rStarOpacity}} viewBox="0 0 345 400" width="345" height="400">
+      {[...Array(14)].map((_,i) => <circle key={i} cx={(i*31+12)%330} cy={(i*47+8)%380} r={i%3===0?.9:.5} fill={`rgba(255,255,255,${.4+(i%3)*.2})`}/>)}
+    </svg>
+  );
+
+  // v8r: edge arrows
+  const renderV8rEdges = () => (
+    <>
+      {pageIdx > 0 && <div style={{position:'absolute',top:0,bottom:0,left:0,width:44,zIndex:25,pointerEvents:'none',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(to right,rgba(255,255,255,.022),transparent)'}}><svg viewBox="0 0 20 36" width="10" height="18" fill="none" stroke="rgba(234,242,255,.3)" strokeWidth="2" strokeLinecap="round" style={{opacity:.28}}><path d="m14 4-8 14 8 14"/></svg></div>}
+      <div style={{position:'absolute',top:0,bottom:0,right:0,width:44,zIndex:25,pointerEvents:'none',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(to left,rgba(255,255,255,.022),transparent)'}}><svg viewBox="0 0 20 36" width="10" height="18" fill="none" stroke="rgba(234,242,255,.3)" strokeWidth="2" strokeLinecap="round" style={{opacity:.28}}><path d="m6 4 8 14-8 14"/></svg></div>
+      <div id="v8rIdleNudge" style={{position:'absolute',right:0,top:0,bottom:0,width:3,zIndex:28,background:'linear-gradient(to bottom,transparent 20%,rgba(245,184,76,.48) 50%,transparent 80%)',opacity:0,pointerEvents:'none'}}/>
+    </>
+  );
+
+  // v8r: first page hint
+  const renderV8rHint = () => pageIdx !== 1 ? null : (
+    <div style={{position:'absolute',bottom:108,left:0,right:0,zIndex:35,pointerEvents:'none',display:'flex',flexDirection:'column',alignItems:'center',gap:7,animation:'v8r-hintFade 1s 3.5s ease both'}}>
+      <div style={{display:'flex',gap:10}}>
+        {['← prev','next →'].map(l=><div key={l} style={{padding:'6px 11px',background:'rgba(0,0,0,.55)',border:'1px solid rgba(255,255,255,.1)',borderRadius:18}}><span style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.5)',letterSpacing:'.3px'}}>{l}</span></div>)}
+      </div>
+    </div>
+  );
+
+  // v8r: top bar
+  const renderV8rTopBar = () => null;
+
+  // v8r: control tray (library version)
+  const renderV8rTray = () => (
+    <>
+      <div onClick={()=>setV8rTrayOpen(false)} style={{position:'absolute',inset:0,zIndex:58,background:v8rTrayOpen?'rgba(0,0,0,.52)':'rgba(0,0,0,0)',pointerEvents:v8rTrayOpen?'all':'none',transition:'background .28s'}}/>
+      <div style={{position:'absolute',bottom:0,left:0,right:0,zIndex:60,transform:v8rTrayOpen?'translateY(0)':'translateY(100%)',transition:'transform .36s cubic-bezier(.22,.8,.3,1)'}}>
+        <div style={{background:'rgba(7,12,36,.97)',borderTop:'.5px solid rgba(255,255,255,.09)',borderRadius:'22px 22px 0 0',backdropFilter:'blur(32px)',WebkitBackdropFilter:'blur(32px)',padding:'12px 18px 28px'}}>
+          <div style={{display:'flex',justifyContent:'center',marginBottom:14}}><div style={{width:36,height:4,borderRadius:2,background:'rgba(255,255,255,.14)'}}/></div>
+          <div style={{fontSize:8,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.26)',letterSpacing:'.9px',margin:'0 0 8px',paddingLeft:2}}>LISTEN</div>
+          <div style={{display:'flex',gap:7,marginBottom:10}}>
+            <button onClick={()=>{setReadAloudActive(!readAloudActive);setV8rTrayOpen(false);}} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:5,padding:'10px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.07)',background:readAloudActive?'rgba(245,184,76,.1)':'rgba(255,255,255,.04)',cursor:'pointer'}}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="rgba(234,242,255,.68)" strokeWidth="1.8" strokeLinecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              <span style={{fontSize:8.5,fontFamily:"'DM Mono',monospace",color:readAloudActive?'rgba(245,184,76,.8)':'rgba(234,242,255,.48)',letterSpacing:'.2px',textAlign:'center'}}>Story Voice</span>
+            </button>
+          </div>
+          <div onClick={()=>{setV8rAmbientOn(p=>!p);setV8rTrayOpen(false);}} style={{padding:'10px 14px',borderRadius:14,border:v8rAmbientOn?'1px solid rgba(245,184,76,.22)':'1px solid rgba(255,255,255,.07)',background:v8rAmbientOn?'rgba(245,184,76,.08)':'rgba(255,255,255,.04)',display:'flex',alignItems:'center',gap:10,cursor:'pointer',marginBottom:10}}>
+            <div style={{fontSize:18,lineHeight:1,animation:v8rAmbientOn?'v8r-soundPulse 2s ease-in-out infinite':'none'}}>🌙</div>
+            <div style={{flex:1}}><div style={{fontSize:11,fontWeight:700,color:v8rAmbientOn?'rgba(245,184,76,.9)':'rgba(234,242,255,.6)',fontFamily:"'Nunito',sans-serif"}}>Night Sounds</div></div>
+            <div style={{width:34,height:20,borderRadius:10,background:v8rAmbientOn?'#F5B84C':'rgba(255,255,255,.08)',position:'relative',transition:'background .2s',flexShrink:0}}><div style={{position:'absolute',top:3,left:v8rAmbientOn?17:3,width:14,height:14,borderRadius:'50%',background:'#fff',transition:'left .2s'}}/></div>
+          </div>
+          <div style={{fontSize:8,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.26)',letterSpacing:'.9px',margin:'12px 0 8px',paddingLeft:2}}>LEARN</div>
+          <div style={{display:'flex',gap:7,marginBottom:10}}>
+            <button onClick={()=>{setV8rWordMagic(p=>!p);setV8rTrayOpen(false);navigator.vibrate?.(8);}} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:5,padding:'10px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.07)',background:v8rWordMagic?'rgba(245,184,76,.1)':'rgba(255,255,255,.04)',cursor:'pointer',position:'relative'}}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="rgba(234,242,255,.68)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+              <span style={{fontSize:8.5,fontFamily:"'DM Mono',monospace",color:v8rWordMagic?'rgba(245,184,76,.8)':'rgba(234,242,255,.48)',letterSpacing:'.2px'}}>Word Magic</span>
+              {v8rWordMagic&&<div style={{position:'absolute',top:7,right:7,width:6,height:6,borderRadius:'50%',background:'#14d890'}}/>}
+            </button>
+            <button onClick={()=>{setLangPickerOpen(true);setV8rTrayOpen(false);}} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:5,padding:'10px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.07)',background:lang!=='en'?'rgba(245,184,76,.1)':'rgba(255,255,255,.04)',cursor:'pointer',position:'relative'}}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="rgba(234,242,255,.68)" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span style={{fontSize:8.5,fontFamily:"'DM Mono',monospace",color:lang!=='en'?'rgba(245,184,76,.8)':'rgba(234,242,255,.48)',letterSpacing:'.2px'}}>Language</span>
+              {lang!=='en'&&<div style={{position:'absolute',top:7,right:7,width:6,height:6,borderRadius:'50%',background:'#14d890'}}/>}
+            </button>
+            <button onClick={()=>{setLearningMode(!learningMode);setV8rTrayOpen(false);}} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:5,padding:'10px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.07)',background:learningMode?'rgba(20,216,144,.1)':'rgba(255,255,255,.04)',cursor:'pointer',position:'relative'}}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="rgba(234,242,255,.68)" strokeWidth="1.8" strokeLinecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span style={{fontSize:8.5,fontFamily:"'DM Mono',monospace",color:learningMode?'rgba(20,216,144,.8)':'rgba(234,242,255,.48)',letterSpacing:'.2px'}}>Learn Mode</span>
+              {learningMode&&<div style={{position:'absolute',top:7,right:7,width:6,height:6,borderRadius:'50%',background:'#14d890'}}/>}
+            </button>
+          </div>
+          <div style={{fontSize:8,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.26)',letterSpacing:'.9px',margin:'4px 0 8px',paddingLeft:2}}>SHARE & EXIT</div>
+          <div style={{display:'flex',gap:7}}>
+            <button onClick={()=>{setV8rTrayOpen(false);setV8rShareOpen(true);}} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:5,padding:'10px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.07)',background:'rgba(255,255,255,.04)',cursor:'pointer'}}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="rgba(234,242,255,.68)" strokeWidth="1.8" strokeLinecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              <span style={{fontSize:8.5,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.48)'}}>Share</span>
+            </button>
+            <button onClick={()=>{setV8rTrayOpen(false);setView('library');}} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:5,padding:'10px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.07)',background:'rgba(255,255,255,.04)',cursor:'pointer'}}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="rgba(234,242,255,.68)" strokeWidth="1.8" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span style={{fontSize:8.5,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.48)'}}>Exit</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+
+  // v8r: share modal (library version)
+  const renderV8rShareModal = () => {
+    if (!v8rShareOpen) return null;
+    return (
+      <>
+        <div onClick={()=>{setV8rShareOpen(false);setV8rLinkCopied(false);}} style={{position:'absolute',inset:0,zIndex:85,background:'rgba(0,0,0,.72)',animation:'v8r-shareReveal .2s ease both'}}/>
+        <div style={{position:'absolute',bottom:0,left:0,right:0,zIndex:88,background:'#0C1840',borderTop:'1px solid rgba(255,255,255,.09)',borderRadius:'24px 24px 0 0',animation:'v8r-shareReveal .36s cubic-bezier(.22,.8,.3,1) both'}}>
+          <div style={{display:'flex',justifyContent:'center',padding:'14px 0 4px'}}><div style={{width:36,height:4,borderRadius:2,background:'rgba(255,255,255,.15)'}}/></div>
+          <div style={{padding:'10px 22px 14px',borderBottom:'.5px solid rgba(255,255,255,.07)'}}>
+            <div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(154,127,212,.6)',letterSpacing:'.8px',marginBottom:4}}>SHARE</div>
+            <div style={{fontSize:18,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",letterSpacing:'-.3px',lineHeight:1.2}}>{story?.title??'This story'}</div>
+          </div>
+          <div style={{padding:'16px 22px 24px'}}>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:14}}>
+              <div onClick={()=>{navigator.clipboard.writeText(shareLink).catch(()=>{});setV8rLinkCopied(true);navigator.vibrate?.(6);}} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,padding:'11px 8px',borderRadius:16,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',cursor:'pointer'}}>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="rgba(245,184,76,.85)" strokeWidth="1.8" strokeLinecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <span style={{fontSize:8.5,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.5)'}}>{v8rLinkCopied?'Copied!':'Copy link'}</span>
+              </div>
+              <div onClick={handleShare} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,padding:'11px 8px',borderRadius:16,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',cursor:'pointer'}}>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="rgba(234,242,255,.55)"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                <span style={{fontSize:8.5,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.5)'}}>More</span>
+              </div>
+              <div onClick={()=>window.open('https://wa.me/?text='+encodeURIComponent(shareLink),'_blank')} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,padding:'11px 8px',borderRadius:16,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',cursor:'pointer'}}>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="rgba(37,211,102,.8)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+                <span style={{fontSize:8.5,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.5)'}}>WhatsApp</span>
+              </div>
+            </div>
+            {v8rLinkCopied&&<div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(20,216,144,.8)',textAlign:'center',marginBottom:8}}>✓ Link copied to clipboard</div>}
+          </div>
+        </div>
+      </>
+    );
+  };
+
   // ── Loading / Error states ──
   if (loading) return <div className="lr-load"><style>{CSS}</style>Loading story&hellip;</div>;
   if (isPdfBook && !pdfDoc && !error) return <div className="lr-load"><style>{CSS}</style><div style={{textAlign:'center'}}><div style={{fontSize:32,marginBottom:12}}>📖</div>Loading picture book&hellip;</div></div>;
@@ -539,6 +770,8 @@ export default function LibraryStoryReader({ slug }: Props) {
         <div className="lr-cover-for">A story for <b>{displayHero}</b></div>
         <div className="lr-cover-brand">SleepSeed {story.coverUrl ? '\u00B7 Curated' : '\u00B7 Made tonight'}</div>
       </div>
+      {/* Tap zone to advance from cover */}
+      <div style={{position:'absolute',inset:0,zIndex:10,cursor:'pointer'}} onClick={()=>goPage(1)} />
     </div>
   );
 
@@ -686,13 +919,19 @@ export default function LibraryStoryReader({ slug }: Props) {
         {/* Progress bar */}
         <div className="lr-pbar" style={{ width: `${totalPages > 1 ? (pageIdx / (totalPages - 1)) * 100 : 0}%` }} />
 
-        {/* Top chrome */}
-        <div className="lr-top" style={{ opacity: chromeOpacity }}>
-          <div className="lr-top-logo" onClick={() => setView('library')}>
-            <div className="lr-top-moon" /> SleepSeed
-          </div>
-          {!isPdfBook && <button className="lr-top-btn" onClick={() => setSheetOpen(true)}>{'\u22EF'}</button>}
+        {/* Back + Menu buttons */}
+        <div style={{position:'absolute',top:0,left:0,right:0,zIndex:70,padding:'max(14px,env(safe-area-inset-top)) 14px 0',display:'flex',alignItems:'center',justifyContent:'space-between',pointerEvents:'none'}}>
+          <button onClick={()=>setView('library')} style={{width:36,height:36,borderRadius:'50%',background:'rgba(0,0,0,.45)',border:'1px solid rgba(255,255,255,.12)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',pointerEvents:'all',backdropFilter:'blur(8px)'}}>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="rgba(234,242,255,.7)" strokeWidth="2.2" strokeLinecap="round"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <button onClick={()=>{setV8rTrayOpen(true);setV8rShareOpen(false);}} style={{width:36,height:36,borderRadius:'50%',background:'rgba(0,0,0,.45)',border:'1px solid rgba(255,255,255,.12)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',pointerEvents:'all',backdropFilter:'blur(8px)'}}>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="rgba(234,242,255,.7)" strokeWidth="2.2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
         </div>
+
+        {/* Tray + Share modal */}
+        {renderV8rTray()}
+        {renderV8rShareModal()}
 
         {/* Bottom chrome */}
         <div className="lr-bot" style={{ opacity: chromeOpacity }}>

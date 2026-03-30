@@ -184,40 +184,81 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
     return (Date.now()-created)<10*60*1000;
   },[user?.createdAt]);
 
+  // Helper to read localStorage instantly (no network)
+  const lsGet = <T,>(key: string): T[] => { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; } };
+
   const userId = user?.id;
   useEffect(()=>{
     if(!userId) return;
-    Promise.all([
-      getCharacters(userId),
-      getNightCards(userId),
-      getStories(userId),
-      hasSupabase ? getAllHatchedCreatures(userId) : Promise.resolve([] as HatchedCreature[]),
-    ]).then(async ([chars,cards,stories,creatures])=>{
-      const fc=chars.filter(c=>c.isFamily===true||(c.isFamily===undefined&&c.type==='human'));
-      const pri=fc.length>0?fc[0]:chars.length>0?chars[0]:null;
-      let egg: HatcheryEgg|null = null;
-      if(hasSupabase&&pri){
-        egg=await getActiveEgg(userId,pri.id);
-        if(!egg){const rc=CREATURES[Math.floor(Math.random()*CREATURES.length)];try{egg=await createEgg(userId,pri.id,rc.id,1);}catch{}}
-      }
-      setCharacters(chars);setAllCards(cards);setStoryCount(stories.length);
-      setAllStories(stories);
-      if(stories.length>0){const sorted=[...stories].sort((a,b)=>(b.date||'').localeCompare(a.date||''));setLastStory(sorted[0]);}
-      if(creatures.length>0) setHatchedCreature(creatures[0]);
-      if(pri){if(fc.length>0){setSelectedCharacters([fc[0]]);setWeekViewId(fc[0].id);}else{setSelectedCharacters([chars[0]]);setWeekViewId(chars[0].id);}}
-      if(egg) setActiveEgg(egg);
-      setLoading(false);
-    });
-  },[userId]); // eslint-disable-line
+    let cancelled = false;
 
-  // ── Load active StoryJourney for selected character ──
-  const primaryForJourney=selectedCharacters[0]??null;
-  useEffect(()=>{
-    if(!userId||!primaryForJourney?.id){setJourneyLoading(false);return;}
-    journeyService.getActiveJourney(userId,primaryForJourney.id)
-      .then(j=>{setActiveJourney(j);setJourneyLoading(false);})
-      .catch(()=>setJourneyLoading(false));
-  },[userId,primaryForJourney?.id]);
+    // ── PHASE 1: Instant render from localStorage (0ms) ──
+    const cachedChars = lsGet<Character>(`ss2_chars_${userId}`);
+    const cachedCards = lsGet<SavedNightCard>(`ss2_nightcards_${userId}`);
+    const cachedStories = lsGet<any>(`ss2_stories_${userId}`);
+    if (cachedChars.length > 0 || cachedCards.length > 0) {
+      const fc = cachedChars.filter((c: any) => c.isFamily === true || (c.isFamily === undefined && c.type === 'human'));
+      const pri = fc.length > 0 ? fc[0] : cachedChars[0] ?? null;
+      setCharacters(cachedChars);
+      setAllCards(cachedCards);
+      setStoryCount(cachedStories.length);
+      setAllStories(cachedStories);
+      if (cachedStories.length > 0) { const sorted = [...cachedStories].sort((a: any, b: any) => (b.date || '').localeCompare(a.date || '')); setLastStory(sorted[0]); }
+      if (pri) { setSelectedCharacters(fc.length > 0 ? [fc[0]] : [cachedChars[0]]); setWeekViewId(pri.id); }
+      setLoading(false); // Show dashboard immediately with cached data
+    }
+
+    // ── PHASE 2: Refresh from Supabase in background ──
+    (async () => {
+      try {
+        const [chars, cards, stories, creatures] = await Promise.all([
+          getCharacters(userId),
+          getNightCards(userId),
+          getStories(userId),
+          hasSupabase ? getAllHatchedCreatures(userId) : Promise.resolve([] as HatchedCreature[]),
+        ]);
+        if (cancelled) return;
+        const fc = chars.filter(c => c.isFamily === true || (c.isFamily === undefined && c.type === 'human'));
+        const pri = fc.length > 0 ? fc[0] : chars.length > 0 ? chars[0] : null;
+
+        let egg: HatcheryEgg | null = null;
+        let journey: StoryJourney | null = null;
+        if (hasSupabase && pri) {
+          egg = await getActiveEgg(userId, pri.id);
+          if (!egg) { const rc = CREATURES[Math.floor(Math.random() * CREATURES.length)]; try { egg = await createEgg(userId, pri.id, rc.id, 1); } catch {} }
+          try { journey = await journeyService.getActiveJourney(userId, pri.id); } catch {}
+        }
+        if (cancelled) return;
+
+        setCharacters(chars);
+        setAllCards(cards);
+        setStoryCount(stories.length);
+        setAllStories(stories);
+        if (stories.length > 0) { const sorted = [...stories].sort((a, b) => (b.date || '').localeCompare(a.date || '')); setLastStory(sorted[0]); }
+        if (creatures.length > 0) setHatchedCreature(creatures[0]);
+        if (pri) { setSelectedCharacters(fc.length > 0 ? [fc[0]] : [chars[0]]); setWeekViewId(pri.id); }
+        if (egg) setActiveEgg(egg);
+        setActiveJourney(journey);
+        setJourneyLoading(false);
+        setLoading(false);
+      } catch (e) {
+        if (!cancelled) { setLoading(false); setJourneyLoading(false); }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [userId]); // eslint-disable-line
+
+  // Journey reload when character switches (only after initial load)
+  const primaryForJourney = selectedCharacters[0] ?? null;
+  const initialLoadDone = useRef(false);
+  useEffect(() => {
+    if (!initialLoadDone.current) { initialLoadDone.current = !loading; return; }
+    if (!userId || !primaryForJourney?.id) { setJourneyLoading(false); return; }
+    setJourneyLoading(true);
+    journeyService.getActiveJourney(userId, primaryForJourney.id)
+      .then(j => { setActiveJourney(j); setJourneyLoading(false); })
+      .catch(() => setJourneyLoading(false));
+  }, [primaryForJourney?.id]); // eslint-disable-line
 
   const familyChars=useMemo(()=>characters.filter(c=>c.isFamily===true||(c.isFamily===undefined&&c.type==='human')),[characters]);
   const primary=selectedCharacters[0]??null;
@@ -378,6 +419,11 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   const hasActiveJourney = !journeyLoading && activeJourney && (activeJourney.chapters.length > 0 || activeJourney.readNumber >= 1);
   const readNumber = activeJourney?.readNumber ?? 0;
 
+  // ── Drawer state (must be before early returns — React hooks rule) ────────
+  const [nightCardDrawerOpen, setNightCardDrawerOpen] = useState(false);
+  const [activeDrawerChapter, setActiveDrawerChapter] = useState<number|null>(null);
+  const openNightCardDrawer = (i: number) => { setActiveDrawerChapter(i); setNightCardDrawerOpen(true); };
+
   // ── LOADING ────────────────────────────────────────────────────────────────
   if(!user) return null;
   if(loading) return(
@@ -402,11 +448,6 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
       </div>
     </div>
   );
-
-  // ── Drawer state ────────────────────────────────────────────────────────────
-  const [nightCardDrawerOpen, setNightCardDrawerOpen] = useState(false);
-  const [activeDrawerChapter, setActiveDrawerChapter] = useState<number|null>(null);
-  const openNightCardDrawer = (i: number) => { setActiveDrawerChapter(i); setNightCardDrawerOpen(true); };
 
   // ── Derived values for shared components ───────────────────────────────────
   const creatureEmoji = hatchedCreature?.creatureEmoji || '📖';
@@ -449,33 +490,6 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
           </div>
         </div>
       )}
-    </div>
-  );
-
-  // ── LOADING ────────────────────────────────────────────────────────────────
-  if(!user) return null;
-  if(loading) return(
-    <div className="dash">
-      <style>{CSS}</style>
-      <div className="dash-inner" style={{paddingTop:24}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:24}}>
-          <div>
-            <div className="dash-skel" style={{height:12,width:100,borderRadius:4,marginBottom:8}}/>
-            <div className="dash-skel" style={{height:30,width:180,borderRadius:8}}/>
-          </div>
-          <div className="dash-skel" style={{width:90,height:50,borderRadius:18}}/>
-        </div>
-        <div className="dash-skel" style={{height:200,borderRadius:22,marginBottom:16}}/>
-        <div style={{display:'flex',alignItems:'center',gap:0,marginLeft:-6,marginBottom:16}}>
-          {[0,1,2,3,4,5,6].map(i=>(
-            <div key={i} style={{width:28,height:28,display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <div className="dash-skel" style={{width:14,height:14,borderRadius:'50%'}}/>
-            </div>
-          ))}
-        </div>
-        <div className="dash-skel" style={{height:56,borderRadius:18,marginBottom:12}}/>
-        <div className="dash-skel" style={{height:52,borderRadius:18}}/>
-      </div>
     </div>
   );
 
@@ -600,6 +614,114 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
               </div>
             )}
 
+            {/* Sleeping creature — when no active journey */}
+            {!hasActiveJourney && hatchedCreature && (
+              <div style={{
+                background:'linear-gradient(168deg,rgba(4,14,12,.95),rgba(6,16,14,.98))',
+                border:'1px solid rgba(20,216,144,.18)',borderRadius:22,
+                padding:'24px 20px',textAlign:'center',
+              }}>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,letterSpacing:'.06em',padding:'3px 10px',borderRadius:20,background:'rgba(20,216,144,.1)',border:'1px solid rgba(20,216,144,.22)',color:'rgba(20,216,144,.72)'}}>
+                    Night {eggStage} of 7
+                  </div>
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontStyle:'italic',color:'rgba(234,242,255,.28)'}}>
+                    {nightsLeftLabel}
+                  </div>
+                </div>
+                <div style={{display:'flex',flexDirection:'column',alignItems:'center',marginBottom:16}}>
+                  <div style={{position:'relative',display:'inline-block',marginBottom:8}}>
+                    <div style={{fontSize:62,lineHeight:1,filter:'drop-shadow(0 0 20px rgba(20,216,144,.4))'}}>
+                      {hatchedCreature.creatureEmoji}
+                    </div>
+                    <div style={{position:'absolute',top:2,right:-6,fontFamily:"'Fraunces',serif",fontStyle:'italic',fontSize:13,color:'rgba(20,216,144,.5)',pointerEvents:'none'}}>z</div>
+                    <div style={{position:'absolute',top:14,right:-14,fontFamily:"'Fraunces',serif",fontStyle:'italic',fontSize:9,color:'rgba(20,216,144,.35)',pointerEvents:'none'}}>z</div>
+                  </div>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:'2px',textTransform:'uppercase',color:'rgba(20,216,144,.4)',marginBottom:4}}>
+                    {creatureName}
+                  </div>
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:'#F4EFE8',marginBottom:6}}>
+                    {hatchedCreature.name}
+                  </div>
+                  <div style={{fontFamily:"'Nunito',sans-serif",fontSize:12,fontStyle:'italic',color:'rgba(255,255,255,.45)',lineHeight:1.6,maxWidth:280}}>
+                    "{creatureSpeech}"
+                  </div>
+                </div>
+                {/* Egg progress dots */}
+                <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:7}}>
+                  {Array.from({length:7},(_,i)=>(
+                    <div key={i} style={{
+                      width:8,height:8,borderRadius:'50%',
+                      background:i<eggStage?'#14d890':'rgba(255,255,255,.08)',
+                      boxShadow:i<eggStage?'0 0 6px rgba(20,216,144,.4)':'none',
+                      border:i<eggStage?'none':'1px solid rgba(255,255,255,.1)',
+                      cursor:i<eggStage?'pointer':'default',
+                    }} onClick={()=>i<eggStage&&handleShardTap(i,true)}/>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Streak + Week dots bar */}
+            <div style={{
+              display:'flex',alignItems:'center',gap:14,
+              background:'rgba(13,17,32,.8)',border:'1px solid rgba(234,242,255,.06)',
+              borderRadius:20,padding:'14px 16px',
+            }}>
+              <div style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',borderRadius:20,background:'rgba(20,216,144,.08)',border:'1px solid rgba(20,216,144,.18)',flexShrink:0}}>
+                <span style={{fontSize:14}}>🔥</span>
+                <span style={{fontFamily:"'DM Mono',monospace",fontSize:13,fontWeight:700,color:'#14d890'}}>{glow}</span>
+                <span style={{fontFamily:"'Nunito',sans-serif",fontSize:10,fontWeight:600,color:'rgba(234,242,255,.6)'}}>night{glow!==1?'s':''}</span>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:4,flex:1,justifyContent:'flex-end'}}>
+                {weekDots.map((wd,i)=>(
+                  <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2}}>
+                    <div style={{fontFamily:"'DM Mono',monospace",fontSize:7,color:'rgba(255,255,255,.2)',width:10,textAlign:'center'}}>{wd.day}</div>
+                    <div style={{
+                      width:10,height:10,borderRadius:'50%',
+                      background:wd.isToday?'rgba(20,216,144,.25)':wd.isPast&&wd.done?'#14d890':wd.isPast&&!wd.done?'rgba(255,60,60,.15)':'rgba(255,255,255,.06)',
+                      border:wd.isToday?'1.5px solid rgba(20,216,144,.5)':wd.isPast&&!wd.done?'1px solid rgba(255,60,60,.25)':'1px solid rgba(255,255,255,.08)',
+                      boxShadow:wd.isPast&&wd.done?'0 0 6px rgba(20,216,144,.3)':'none',
+                    }}/>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Re-read last story */}
+            {lastStory && lastStory.bookData && onReadStory && (
+              <div onClick={()=>onReadStory(lastStory.bookData)} style={{
+                background:'rgba(10,12,24,.97)',border:'.5px solid rgba(255,255,255,.05)',
+                borderLeft:'2.5px solid #14d890',borderRadius:'0 14px 14px 0',
+                padding:'10px 14px',display:'flex',alignItems:'center',gap:8,
+                cursor:'pointer',
+              }}>
+                <span style={{fontSize:11,color:'#14d890',flexShrink:0}}>📖</span>
+                <span style={{fontFamily:"'Nunito',sans-serif",fontSize:11,color:'rgba(200,191,176,1)',lineHeight:1.5}}>Re-read: <em style={{color:'#14d890',fontStyle:'italic'}}>{lastStory.title}</em></span>
+              </div>
+            )}
+
+            {/* Recent memories */}
+            {recentCards.length > 0 && (
+              <div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:8.5,letterSpacing:'.9px',textTransform:'uppercase',color:'rgba(234,242,255,.24)',marginBottom:10}}>Recent memories</div>
+                <div style={{display:'flex',gap:8,overflowX:'auto',scrollbarWidth:'none',paddingBottom:4}}>
+                  {recentCards.map(card=>(
+                    <div key={card.id} onClick={()=>setModalCard(card)} style={{
+                      flex:'0 0 auto',width:200,
+                      background:'linear-gradient(148deg,rgba(8,12,32,.96),rgba(14,18,46,.96))',
+                      border:'1px solid rgba(154,127,212,.18)',borderRadius:14,
+                      padding:12,cursor:'pointer',
+                    }}>
+                      <div style={{fontFamily:"'Fraunces',serif",fontSize:12,fontWeight:700,color:'#F4EFE8',lineHeight:1.3,marginBottom:6,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{card.storyTitle||'A night to remember'}</div>
+                      {card.quote&&<div style={{fontFamily:"'Lora',serif",fontSize:11,fontStyle:'italic',color:'rgba(255,255,255,.45)',lineHeight:1.5,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden',marginBottom:6}}>"{card.quote}"</div>}
+                      <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:'rgba(255,255,255,.2)'}}>{new Date(card.date).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* MORE TONIGHT? */}
             <div style={{borderTop:'.5px solid rgba(234,242,255,.07)',paddingTop:16}}>
               <div style={{fontFamily:"'DM Mono',monospace",fontSize:8.5,color:'rgba(234,242,255,.22)',letterSpacing:'.9px',textTransform:'uppercase',textAlign:'center',marginBottom:8}}>MORE TONIGHT?</div>
@@ -607,6 +729,13 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
                 <button onClick={()=>setView('library')} style={{padding:'12px 8px',border:'1px solid rgba(234,242,255,.12)',borderRadius:14,background:'rgba(234,242,255,.04)',color:'rgba(234,242,255,.55)',fontFamily:"'DM Mono',monospace",fontSize:11,cursor:'pointer'}}>Discover</button>
                 <button onClick={()=>setView('story-wizard' as any)} style={{padding:'12px 8px',border:'1px solid rgba(234,242,255,.12)',borderRadius:14,background:'rgba(234,242,255,.04)',color:'rgba(234,242,255,.55)',fontFamily:"'DM Mono',monospace",fontSize:11,cursor:'pointer'}}>Create</button>
               </div>
+            </div>
+
+            {/* Quick links */}
+            <div style={{display:'flex',justifyContent:'center',gap:16,marginTop:4}}>
+              <button onClick={()=>setView('hatchery')} style={{background:'none',border:'none',fontSize:10,color:'rgba(20,216,144,.45)',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>View hatchery →</button>
+              <span style={{color:'rgba(234,242,255,.1)'}}>·</span>
+              <button onClick={()=>setView('journey-library')} style={{background:'none',border:'none',fontSize:10,color:'rgba(234,242,255,.25)',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>Our books →</button>
             </div>
           </div>
         )}

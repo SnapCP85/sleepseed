@@ -181,15 +181,26 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
   const [viewingCard, setViewingCard] = useState<SavedNightCard | null>(null);
 
   useEffect(() => {
+    // Phase 1: instant from localStorage cache
+    try {
+      const cachedStories = JSON.parse(localStorage.getItem(`ss2_stories_${userId}`) || '[]');
+      const cachedChars = JSON.parse(localStorage.getItem(`ss2_chars_${userId}`) || '[]');
+      const cachedCards = JSON.parse(localStorage.getItem(`ss2_nightcards_${userId}`) || '[]');
+      if (cachedStories.length) setStories(cachedStories);
+      if (cachedChars.length) setCharacters(cachedChars);
+      if (cachedCards.length) setNightCards(cachedCards);
+    } catch {}
+    try {
+      const fav = JSON.parse(localStorage.getItem(`ss_fav_stories_${userId}`) || '[]');
+      setFavorites(new Set(fav));
+    } catch {}
+
+    // Phase 2: refresh from Supabase in background
     getStories(userId).then(setStories);
     getCharacters(userId).then(setCharacters);
     getNightCards(userId).then(setNightCards);
     getFriends(userId).then(setFriends);
     getSharedStories(userId).then(setSharedWithMe);
-    try {
-      const fav = JSON.parse(localStorage.getItem(`ss_fav_stories_${userId}`) || '[]');
-      setFavorites(new Set(fav));
-    } catch {}
   }, [userId]);
 
   const toggleFav = (id: string) => {
