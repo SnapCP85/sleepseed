@@ -480,13 +480,52 @@ export default function NightDashboard({ night, initialScreen, onStartStory, onN
   }
 
   // ═══════════════════════════════════════════════════════════════════════
-  // NIGHT 3 — placeholder (built in next commit)
+  // NIGHT 3 RENDER
   // ═══════════════════════════════════════════════════════════════════════
-  if (night === 3) return (
-    <div style={{ position: 'fixed', inset: 0, background: '#060912', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F4EFE8', fontFamily: "'Fraunces', serif" }}>
-      Night 3 — coming next
-    </div>
-  );
+  if (night === 3) {
+    // ── N3-1: Tonight is different ──
+    return (
+      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+        <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(60,10,80,.85), #060912 62%)' }}>
+          <StarBackground opacity={0.9} />
+          <div className="ob-ct" style={{ paddingTop: 52, gap: 0, justifyContent: 'flex-start' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20, ...fadeUp(0.2) }}>
+              <DreamEgg state="cracked" size="sm" />
+            </div>
+            <div style={{ ...fadeUp(0.5), width: '100%' }}>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: 'rgba(255,130,184,.65)', letterSpacing: 1.4, textTransform: 'uppercase' as const, marginBottom: 14, textAlign: 'center' }}>
+                Night 3 · The Last Night
+              </div>
+              <div className="ob-h1" style={{ fontSize: 29, marginBottom: 12, textAlign: 'center' }}>
+                Tonight<br />is <em>different</em>.
+              </div>
+              <div style={{ fontFamily: "'Nunito', sans-serif", fontSize: 14, color: 'rgba(234,242,255,.44)', lineHeight: 1.75, marginBottom: 18, textAlign: 'center' }}>
+                Three nights of listening.<br />Tonight, your DreamKeeper<br />is ready to be born.
+              </div>
+              {/* Progress bar */}
+              <div style={{ padding: '12px 14px', background: 'rgba(255,130,184,.07)', border: '1px solid rgba(255,130,184,.18)', borderRadius: 14, marginBottom: 18, textAlign: 'left' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 }}>
+                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8.5, color: 'rgba(255,130,184,.6)', letterSpacing: 0.5 }}>DREAM EGG PROGRESS</div>
+                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8.5, color: 'rgba(255,130,184,.45)' }}>Night 3 of 3 🔥</div>
+                </div>
+                <div style={{ height: 4, background: 'rgba(255,255,255,.08)', borderRadius: 2, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: '94%', background: 'linear-gradient(90deg, rgba(246,197,111,.6), rgba(255,130,184,.8))', borderRadius: 2 }} />
+                </div>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: 'rgba(234,242,255,.28)', marginTop: 6, letterSpacing: 0.3 }}>Almost ready to hatch</div>
+              </div>
+              <button
+                className="ob-cta"
+                style={{ background: 'linear-gradient(135deg, rgba(246,197,111,.9), rgba(255,130,184,.7))', color: '#1a0818' }}
+                onClick={() => onStartStory('night3-choosing')}
+              >
+                Begin the hatching &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return null;
 }

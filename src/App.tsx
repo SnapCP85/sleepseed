@@ -46,7 +46,12 @@ import ParentOnboarding from './pages/ParentOnboarding';
 import type { ParentOnboardingResult } from './pages/ParentOnboarding';
 import CinematicTransition from './components/onboarding/CinematicTransition';
 import NightDashboard from './pages/NightDashboard';
-import { getRitualState } from './lib/ritualState';
+import Night3Story from './pages/Night3Story';
+import HatchCeremony from './components/onboarding/HatchCeremony';
+import PostHatch from './pages/PostHatch';
+import { getRitualState, completeNight3 } from './lib/ritualState';
+import { assignCreature } from './lib/creatureAssignment';
+import { V1_DREAMKEEPERS } from './lib/dreamkeepers';
 
 // Old BottomNav removed — replaced by src/components/BottomNavigation.tsx via AppLayout
 
@@ -702,6 +707,129 @@ function AppInner() {
       }}
     />
   );
+
+  // ── Night 3 Dashboard ────────────────────────────────────────────────
+  if (view === 'night-3') return (
+    <NightDashboard
+      night={3}
+      onStartStory={() => setView('night-3-story' as any)}
+      onNightComplete={() => {
+        setDashKey(k => k + 1);
+        setView('dashboard');
+      }}
+    />
+  );
+
+  // ── Night 3 Story (hardcoded "The Choosing") ─────────────────────────
+  if ((view as string) === 'night-3-story') {
+    let profile = parentSetupData;
+    if (!profile && user) {
+      try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); if (s) profile = JSON.parse(s); } catch {}
+    }
+    return <Night3Story childName={profile?.childName || 'friend'} onComplete={() => setView('hatch-ceremony')} />;
+  }
+
+  // ── Hatch Ceremony ───────────────────────────────────────────────────
+  if (view === 'hatch-ceremony') {
+    let profile = parentSetupData;
+    if (!profile && user) {
+      try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); if (s) profile = JSON.parse(s); } catch {}
+    }
+    // Determine creature from 3 nights of answers
+    const rs = user ? getRitualState(user.id) : null;
+    const assigned = assignCreature(rs?.smileAnswer || '', rs?.talentAnswer || '');
+
+    return <HatchCeremony
+      childName={profile?.childName || 'friend'}
+      creatureEmoji={assigned.emoji}
+      onComplete={async () => {
+        if (!user) { setView('dashboard'); return; }
+
+        // Complete Night 3 ritual
+        completeNight3(user.id);
+        try { localStorage.setItem(`sleepseed_ritual_complete_${user.id}`, '1'); } catch {}
+
+        // Save hatched creature to Supabase
+        const creatureTypeIsValid = CREATURES.some(c => c.id === assigned.id);
+        const creatureType = creatureTypeIsValid ? assigned.id : 'spirit';
+        const creatureId = crypto.randomUUID?.() || uid();
+
+        // Find the character (first family character)
+        let charId = '';
+        try {
+          const { getCharacters } = await import('./lib/storage');
+          const chars = await getCharacters(user.id);
+          const familyChar = chars.find(c => c.isFamily);
+          if (familyChar) {
+            charId = familyChar.id;
+            // Update character with creature emoji/color
+            familyChar.emoji = assigned.emoji;
+            familyChar.color = assigned.color;
+            await saveCharacter(familyChar);
+          }
+        } catch (e) { console.error('[hatch] getCharacters failed:', e); }
+
+        const creature: HatchedCreature = {
+          id: creatureId,
+          userId: user.id,
+          characterId: charId,
+          name: assigned.name,
+          creatureType,
+          creatureEmoji: assigned.emoji,
+          color: assigned.color,
+          rarity: 'common',
+          personalityTraits: assigned.personalityTraits,
+          dreamAnswer: rs?.smileAnswer || '',
+          parentSecret: '',
+          hatchedAt: new Date().toISOString(),
+          weekNumber: 1,
+        };
+
+        try { await saveHatchedCreature(creature); } catch (e) { console.error('[hatch] saveHatchedCreature failed:', e); }
+        setCompanionCreature(creature);
+
+        // Save Night 3 night card
+        const nc: SavedNightCard = {
+          id: crypto.randomUUID?.() || `nc_${Date.now()}`,
+          userId: user.id,
+          heroName: profile?.childName || 'friend',
+          storyTitle: 'The Night Your DreamKeeper Was Born',
+          characterIds: charId ? [charId] : [],
+          headline: 'The Night Your DreamKeeper Was Born',
+          quote: 'After three nights of listening, it chose to become theirs.',
+          emoji: assigned.emoji,
+          date: new Date().toISOString().split('T')[0],
+          isOrigin: false,
+          nightNumber: 3,
+          creatureEmoji: assigned.emoji,
+          creatureColor: assigned.color,
+        };
+        try { await saveNightCard(nc); } catch (e) { console.error('[hatch] saveNightCard failed:', e); }
+
+        // Route to post-hatch screens
+        setView('post-hatch' as any);
+      }}
+    />;
+  }
+
+  // ── Post-Hatch (first contact → photo card → born card) ──────────────
+  if ((view as string) === 'post-hatch') {
+    let profile = parentSetupData;
+    if (!profile && user) {
+      try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); if (s) profile = JSON.parse(s); } catch {}
+    }
+    const rs = user ? getRitualState(user.id) : null;
+    const assigned = assignCreature(rs?.smileAnswer || '', rs?.talentAnswer || '');
+    return <PostHatch
+      childName={profile?.childName || 'friend'}
+      creatureEmoji={assigned.emoji}
+      creatureName={assigned.name}
+      onComplete={() => {
+        setDashKey(k => k + 1);
+        setView('dashboard');
+      }}
+    />;
+  }
 
   // Parent setup — clean adult onboarding (LEGACY — kept as fallback)
   if (view === 'parent-setup') return (
