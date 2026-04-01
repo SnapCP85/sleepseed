@@ -44,6 +44,9 @@ import OnboardingRitual from './pages/OnboardingRitual';
 import { initRitualState, isRitualComplete } from './lib/ritualState';
 import ParentOnboarding from './pages/ParentOnboarding';
 import type { ParentOnboardingResult } from './pages/ParentOnboarding';
+import CinematicTransition from './components/onboarding/CinematicTransition';
+import NightDashboard from './pages/NightDashboard';
+import { getRitualState } from './lib/ritualState';
 
 // Old BottomNav removed — replaced by src/components/BottomNavigation.tsx via AppLayout
 
@@ -96,6 +99,8 @@ function AppInner() {
     } catch { return null; }
   });
   const [nightCardFilter,    setNightCardFilter]    = useState<string | undefined>(undefined);
+  // v9 onboarding: track which night sub-screen to show after story-builder returns
+  const [nightReturnTo, setNightReturnTo] = useState<{ night: 1 | 2 | 3; screen: string } | null>(null);
   const [viewingCharacter,   setViewingCharacter]   = useState<Character | null>(null);
 
   // Check for shared story / library links on mount
@@ -549,7 +554,7 @@ function AppInner() {
   if (view === 'onboarding-night0')  { setView('dashboard'); return null; }
 
   // ── Parent Onboarding v9 (cinematic 6-screen flow) ────────────────────
-  const handleParentOnboardingV9 = (result: ParentOnboardingResult) => {
+  const handleParentOnboardingV9 = async (result: ParentOnboardingResult) => {
     if (!user) return;
     // Store as ParentSetupResult shape for compatibility
     const compat: ParentSetupResult = {
@@ -563,14 +568,138 @@ function AppInner() {
       localStorage.setItem(`sleepseed_parent_setup_${user.id}`, '1');
       localStorage.setItem(`sleepseed_child_profile_${user.id}`, JSON.stringify(compat));
     } catch {}
-    // Route to cinematic transition (or Night 1 directly for now)
-    setView('onboarding');
+
+    // Create child character (no creature yet — that happens at hatch)
+    const charId = uid();
+    const character: Character = {
+      id: charId,
+      userId: user.id,
+      name: result.childName,
+      type: 'human',
+      ageDescription: result.childAge || '',
+      pronouns: (result.childPronouns || 'they/them') as any,
+      personalityTags: [],
+      weirdDetail: '',
+      currentSituation: '',
+      color: '#F5B84C',
+      emoji: '\uD83C\uDF19',
+      storyIds: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isFamily: true,
+    };
+    try { await saveCharacter(character); } catch (e) { console.error('[v9-onboarding] saveCharacter failed:', e); }
+    setSelectedCharacter(character);
+    setSelectedCharacters([character]);
+
+    // Create initial egg
+    try { await createEgg(user.id, charId, 'spirit', 1); } catch (e) { console.error('[v9-onboarding] createEgg failed:', e); }
+
+    // Mark parent setup done + onboarding done (creature not assigned yet, ritual starts)
+    try { localStorage.setItem(`sleepseed_onboarding_${user.id}`, '1'); } catch {}
+
+    // Initialize ritual state (creature TBD — will be assigned at hatch based on 3 nights of answers)
+    initRitualState(user.id, result.childName, 'Dream Egg', '\uD83E\uDD5A', '#F5B84C');
+
+    // Route to cinematic transition (Elder → name constellation → Night 1)
+    setView('cinematic-transition');
   };
 
   if (view === 'parent-onboarding') return (
     <ParentOnboarding
       onComplete={handleParentOnboardingV9}
       onSaveLater={() => setView('dashboard')}
+    />
+  );
+
+  // ── Cinematic Transition (Elder → name constellation → Night 1) ────────
+  if (view === 'cinematic-transition') {
+    let profile = parentSetupData;
+    if (!profile && user) {
+      try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); if (s) profile = JSON.parse(s); } catch {}
+    }
+    return <CinematicTransition childName={profile?.childName || 'friend'} onComplete={() => setView('night-1')} />;
+  }
+
+  // ── Night 1 Dashboard ────────────────────────────────────────────────
+  if (view === 'night-1') return (
+    <NightDashboard
+      night={1}
+      initialScreen={nightReturnTo?.night === 1 ? nightReturnTo.screen : undefined}
+      onStartStory={(ritualSeed) => {
+        // Build choices for SleepSeedCore ritual mode
+        let profile = parentSetupData;
+        if (!profile && user) {
+          try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); if (s) profile = JSON.parse(s); } catch {}
+        }
+        const heroName = profile?.childName || 'friend';
+        const heroGender = profile?.childPronouns === 'he/him' ? 'boy' : profile?.childPronouns === 'she/her' ? 'girl' : '';
+        setWizardChoices({
+          path: 'ritual',
+          heroName,
+          heroGender,
+          vibe: 'calm-cosy',
+          level: profile?.childAge ? (parseInt(profile.childAge) <= 5 ? 'age3' : parseInt(profile.childAge) <= 8 ? 'age5' : 'age7') : 'age5',
+          length: 'standard',
+          brief: ritualSeed,
+          chars: [],
+          lessons: [],
+          occasion: '',
+          occasionCustom: '',
+          style: 'standard',
+          pace: 'sleepy',
+        });
+        setNightReturnTo({ night: 1, screen: 'post-story' });
+        setPreloadedBook(null);
+        setView('story-builder');
+      }}
+      onNightComplete={() => {
+        setDashKey(k => k + 1);
+        setView('dashboard');
+      }}
+      onCreateAnotherStory={() => {
+        setPreloadedBook(null);
+        setWizardChoices(null);
+        setView('ritual-starter');
+      }}
+    />
+  );
+
+  // ── Night 2 Dashboard ────────────────────────────────────────────────
+  if (view === 'night-2') return (
+    <NightDashboard
+      night={2}
+      initialScreen={nightReturnTo?.night === 2 ? nightReturnTo.screen : undefined}
+      onStartStory={(ritualSeed) => {
+        let profile = parentSetupData;
+        if (!profile && user) {
+          try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); if (s) profile = JSON.parse(s); } catch {}
+        }
+        const heroName = profile?.childName || 'friend';
+        const heroGender = profile?.childPronouns === 'he/him' ? 'boy' : profile?.childPronouns === 'she/her' ? 'girl' : '';
+        setWizardChoices({
+          path: 'ritual',
+          heroName,
+          heroGender,
+          vibe: 'calm-cosy',
+          level: profile?.childAge ? (parseInt(profile.childAge) <= 5 ? 'age3' : parseInt(profile.childAge) <= 8 ? 'age5' : 'age7') : 'age5',
+          length: 'standard',
+          brief: ritualSeed,
+          chars: [],
+          lessons: [],
+          occasion: '',
+          occasionCustom: '',
+          style: 'standard',
+          pace: 'sleepy',
+        });
+        setNightReturnTo({ night: 2, screen: 'post-story' });
+        setPreloadedBook(null);
+        setView('story-builder');
+      }}
+      onNightComplete={() => {
+        setDashKey(k => k + 1);
+        setView('dashboard');
+      }}
     />
   );
 
@@ -656,37 +785,42 @@ function AppInner() {
           </div>
         )}
 
-        {/* Ritual in progress — continue the 3-night hatching sequence */}
-        {needsRitual && (
-          <div style={{
-            margin: '16px 16px 0', padding: '20px 20px', borderRadius: 16,
-            background: 'rgba(245,184,76,.06)', border: '1px solid rgba(245,184,76,.18)',
-            display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer',
-            transition: 'background .2s',
-            animation: 'fadeUp .4s ease-out',
-          }}
-            onClick={() => setView('onboarding-ritual')}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,184,76,.1)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(245,184,76,.06)')}
-          >
-            <div style={{ fontSize: 28, flexShrink: 0 }}>{companionCreature?.creatureEmoji || '🥚'}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{
-                fontFamily: "'Fraunces',Georgia,serif", fontWeight: 400, fontSize: 15,
-                color: '#F4EFE8', marginBottom: 3,
-              }}>
-                Continue tonight's ritual
+        {/* Ritual in progress — route to correct night dashboard */}
+        {needsRitual && (() => {
+          const rs = user ? getRitualState(user.id) : null;
+          const nightView = rs?.currentNight === 3 ? 'night-3' : rs?.currentNight === 2 ? 'night-2' : 'night-1';
+          const nightLabel = rs?.currentNight === 3 ? 'Night 3 — the hatching' : rs?.currentNight === 2 ? 'Night 2 — it remembers' : 'Night 1 — the egg arrives';
+          return (
+            <div style={{
+              margin: '16px 16px 0', padding: '20px 20px', borderRadius: 16,
+              background: 'rgba(245,184,76,.06)', border: '1px solid rgba(245,184,76,.18)',
+              display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer',
+              transition: 'background .2s',
+              animation: 'fadeUp .4s ease-out',
+            }}
+              onClick={() => setView(nightView)}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,184,76,.1)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(245,184,76,.06)')}
+            >
+              <div style={{ fontSize: 28, flexShrink: 0 }}>{companionCreature?.creatureEmoji || '\uD83E\uDD5A'}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontFamily: "'Fraunces',Georgia,serif", fontWeight: 400, fontSize: 15,
+                  color: '#F4EFE8', marginBottom: 3,
+                }}>
+                  Continue tonight's ritual
+                </div>
+                <div style={{
+                  fontFamily: "'DM Mono',monospace", fontSize: 11,
+                  color: 'rgba(244,239,232,.35)',
+                }}>
+                  {nightLabel}
+                </div>
               </div>
-              <div style={{
-                fontFamily: "'DM Mono',monospace", fontSize: 11,
-                color: 'rgba(244,239,232,.35)',
-              }}>
-                Your DreamKeeper egg is waiting for you
-              </div>
+              <div style={{ color: '#F5B84C', fontSize: 16, flexShrink: 0 }}>&rarr;</div>
             </div>
-            <div style={{ color: '#F5B84C', fontSize: 16, flexShrink: 0 }}>&rarr;</div>
-          </div>
-        )}
+          );
+        })()}
 
         <MySpace onSignUp={goAuth} onReadStory={openSavedStory} />
       </AppLayout>
@@ -894,6 +1028,13 @@ function AppInner() {
                   setView('book-complete');
                   return;
                 }
+              }
+              // v9 onboarding: return to the night dashboard post-story screen
+              if (nightReturnTo) {
+                const { night } = nightReturnTo;
+                setNightReturnTo(null);
+                setView(night === 1 ? 'night-1' : night === 2 ? 'night-2' : 'night-3');
+                return;
               }
               setView('dashboard');
             }}
