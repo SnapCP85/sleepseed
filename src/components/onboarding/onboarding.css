@@ -137,6 +137,57 @@
   70% { transform: rotate(-3deg) translateX(-3px) scale(1.01); }
 }
 
+/* ── Mobile Container ─────────────────────────────────────────────────────── */
+/* All onboarding screens render inside this. On desktop it centers as a phone
+   frame; on mobile it fills the viewport. Max width matches v9 design (390px
+   for comfortable mobile, not the narrow 345px prototype frame). */
+
+.ob-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #020408;
+  z-index: 100;
+}
+
+.ob-phone {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  height: 100%;
+  max-height: 932px;       /* iPhone 15 Pro Max height */
+  overflow: hidden;
+  background: #060912;
+  /* Creates a new stacking context so children with position:fixed
+     are visually clipped. We use CSS containment. */
+  contain: layout style paint;
+  transform: translateZ(0); /* Force GPU layer = new containing block for fixed children */
+}
+
+/* On desktop, add phone-like frame */
+@media (min-width: 481px) {
+  .ob-phone {
+    border-radius: 40px;
+    border: 1.5px solid rgba(255,255,255,.08);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.03),
+      0 60px 140px rgba(0,0,0,.94),
+      inset 0 1px 0 rgba(255,255,255,.07);
+    height: min(100vh - 48px, 932px);
+  }
+}
+
+/* On actual mobile, fill viewport fully */
+@media (max-width: 480px) {
+  .ob-phone {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
+}
+
 /* ── Shared Component Styles ──────────────────────────────────────────────── */
 
 .ob-slide {
@@ -156,8 +207,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 28px 28px;
+  padding: 56px 28px 24px;
   text-align: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ob-ct.bottom {

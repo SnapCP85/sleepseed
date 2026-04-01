@@ -52,6 +52,8 @@ import PostHatch from './pages/PostHatch';
 import { getRitualState, completeNight3 } from './lib/ritualState';
 import { assignCreature } from './lib/creatureAssignment';
 import { V1_DREAMKEEPERS } from './lib/dreamkeepers';
+import OnboardingV9Preview from './pages/OnboardingV9Preview';
+import OnboardingShell from './components/onboarding/OnboardingShell';
 
 // Old BottomNav removed — replaced by src/components/BottomNavigation.tsx via AppLayout
 
@@ -62,6 +64,8 @@ function AppInner() {
   if (new URLSearchParams(window.location.search).get('printCard')) return <PrintNightCard />;
   // DEV: instant route — no flash, no auth
   if (new URLSearchParams(window.location.search).get('view') === 'dev-story') return <DevStoryTest />;
+  // DEV: v9 onboarding preview — all screens with forward/back nav, no auth
+  if (new URLSearchParams(window.location.search).get('view') === 'v9-preview') return <OnboardingV9Preview />;
   // DEV: DreamKeeper onboarding preview — TEMPORARY, remove before production
   if (new URLSearchParams(window.location.search).get('view') === 'dk-test') return (
     <DreamKeeperOnboarding
@@ -623,12 +627,12 @@ function AppInner() {
     if (!profile && user) {
       try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); if (s) profile = JSON.parse(s); } catch {}
     }
-    return <CinematicTransition childName={profile?.childName || 'friend'} onComplete={() => setView('night-1')} />;
+    return <OnboardingShell><CinematicTransition childName={profile?.childName || 'friend'} onComplete={() => setView('night-1')} /></OnboardingShell>;
   }
 
   // ── Night 1 Dashboard ────────────────────────────────────────────────
   if (view === 'night-1') return (
-    <NightDashboard
+    <OnboardingShell><NightDashboard
       night={1}
       initialScreen={nightReturnTo?.night === 1 ? nightReturnTo.screen : undefined}
       onStartStory={(ritualSeed) => {
@@ -667,11 +671,12 @@ function AppInner() {
         setWizardChoices(null);
         setView('ritual-starter');
       }}
-    />
+    /></OnboardingShell>
   );
 
   // ── Night 2 Dashboard ────────────────────────────────────────────────
   if (view === 'night-2') return (
+    <OnboardingShell>
     <NightDashboard
       night={2}
       initialScreen={nightReturnTo?.night === 2 ? nightReturnTo.screen : undefined}
@@ -705,19 +710,19 @@ function AppInner() {
         setDashKey(k => k + 1);
         setView('dashboard');
       }}
-    />
+    /></OnboardingShell>
   );
 
   // ── Night 3 Dashboard ────────────────────────────────────────────────
   if (view === 'night-3') return (
-    <NightDashboard
+    <OnboardingShell><NightDashboard
       night={3}
       onStartStory={() => setView('night-3-story' as any)}
       onNightComplete={() => {
         setDashKey(k => k + 1);
         setView('dashboard');
       }}
-    />
+    /></OnboardingShell>
   );
 
   // ── Night 3 Story (hardcoded "The Choosing") ─────────────────────────
@@ -726,7 +731,7 @@ function AppInner() {
     if (!profile && user) {
       try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); if (s) profile = JSON.parse(s); } catch {}
     }
-    return <Night3Story childName={profile?.childName || 'friend'} onComplete={() => setView('hatch-ceremony')} />;
+    return <OnboardingShell><Night3Story childName={profile?.childName || 'friend'} onComplete={() => setView('hatch-ceremony')} /></OnboardingShell>;
   }
 
   // ── Hatch Ceremony ───────────────────────────────────────────────────
@@ -739,7 +744,7 @@ function AppInner() {
     const rs = user ? getRitualState(user.id) : null;
     const assigned = assignCreature(rs?.smileAnswer || '', rs?.talentAnswer || '');
 
-    return <HatchCeremony
+    return <OnboardingShell><HatchCeremony
       childName={profile?.childName || 'friend'}
       creatureEmoji={assigned.emoji}
       onComplete={async () => {
@@ -809,7 +814,7 @@ function AppInner() {
         // Route to post-hatch screens
         setView('post-hatch' as any);
       }}
-    />;
+    /></OnboardingShell>;
   }
 
   // ── Post-Hatch (first contact → photo card → born card) ──────────────
@@ -820,7 +825,7 @@ function AppInner() {
     }
     const rs = user ? getRitualState(user.id) : null;
     const assigned = assignCreature(rs?.smileAnswer || '', rs?.talentAnswer || '');
-    return <PostHatch
+    return <OnboardingShell><PostHatch
       childName={profile?.childName || 'friend'}
       creatureEmoji={assigned.emoji}
       creatureName={assigned.name}
@@ -828,7 +833,7 @@ function AppInner() {
         setDashKey(k => k + 1);
         setView('dashboard');
       }}
-    />;
+    /></OnboardingShell>;
   }
 
   // Parent setup — clean adult onboarding (LEGACY — kept as fallback)
