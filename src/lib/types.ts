@@ -100,6 +100,30 @@ export interface LibraryStory {
   submitterRefCode?: string;
 }
 
+// ── Story role metadata (for personalization / remix) ────────────────────
+export type StoryRoleType = 'protagonist' | 'companion' | 'friend' | 'parent' | 'pet' | 'creature' | 'worldSpirit';
+
+export interface StoryRole {
+  role: StoryRoleType;
+  originalName: string;
+  displayName: string;
+  type: string;               // from allChars: "hero", "creature", etc.
+  pronouns?: string;          // "she/her", "he/him", "they/them"
+  description?: string;
+  isSubstitutable: boolean;   // true for protagonist + companion
+}
+
+// ── Remix request ────────────────────────────────────────────────────────
+export interface RemixRequest {
+  storyId: string;
+  childName: string;
+  childAge?: string;
+  childDetail?: string;
+  childInterest?: string;
+  childFear?: string;
+  extraChars?: { type: string; name: string }[];
+}
+
 // ── Story vote ───────────────────────────────────────────────────────────
 export interface StoryVote {
   id: string;
@@ -273,6 +297,7 @@ export type AppView =
   | 'parent-setup'       // parent onboarding (3 screens, adult)
   | 'onboarding'         // kid onboarding flow (magical)
   | 'first-night'        // post-onboarding choice screen
+  | 'onboarding-ritual'  // 3-night DreamKeeper hatching ritual
   | 'hatchery'           // hatchery screen
   | 'library'            // public story library
   | 'library-story'      // single library story reader
@@ -286,7 +311,14 @@ export type AppView =
   | 'journey-library'
   | 'series-library'
   | 'book-library'
-  | 'completed-book-reader';
+  | 'completed-book-reader'
+  // ── Onboarding v9 ──
+  | 'parent-onboarding'    // new cinematic parent flow (P1-P6)
+  | 'night-1'              // Night 1 dashboard + story + card
+  | 'night-2'              // Night 2 dashboard + story + card
+  | 'night-3'              // Night 3 dashboard + story + hatch
+  | 'hatch-ceremony'       // Night 3 canvas hatch cinematic
+  | 'cinematic-transition'; // Elder → egg → Night 1 bridge
 
 // ══════════════════════════════════════════════════════════════════════════════
 // SLEEPSEED v3 — STORYJOURNEY SYSTEM TYPES

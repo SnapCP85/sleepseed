@@ -3,6 +3,7 @@ import { AppProvider, useApp } from './AppContext';
 import PublicHomepage from './pages/PublicHomepage';
 import Auth from './pages/Auth';
 import UserDashboard from './pages/UserDashboard';
+import MySpace from './pages/MySpace';
 import OnboardingFlow from './pages/OnboardingFlow';
 import ReadyStateDashboard from './pages/ReadyStateDashboard';
 import ParentSetup from './pages/ParentSetup';
@@ -31,57 +32,20 @@ import { chapterToBookData } from './components/journey/ChapterHandoff';
 // Lazy-loaded heavy components — not needed on initial render
 const SleepSeedCore = lazy(() => import('./SleepSeedCore'));
 const LibraryStoryReader = lazy(() => import('./pages/LibraryStoryReader'));
-import { saveCharacter, saveNightCard, saveStory, addFriendByCode } from './lib/storage';
+import { saveCharacter, saveNightCard, saveStory, addFriendByCode, uid } from './lib/storage';
 import { saveHatchedCreature, createEgg, getAllHatchedCreatures } from './lib/hatchery';
 import type { Character, HatchedCreature, SavedNightCard } from './lib/types';
+import DreamKeeperOnboarding from './pages/DreamKeeperOnboarding';
+import NewUserFlowTest from './pages/NewUserFlowTest';
+import type { DreamKeeperResult } from './pages/DreamKeeperOnboarding';
+import { CREATURES } from './lib/creatures';
+import AppLayout from './components/AppLayout';
+import OnboardingRitual from './pages/OnboardingRitual';
+import { initRitualState, isRitualComplete } from './lib/ritualState';
+import ParentOnboarding from './pages/ParentOnboarding';
+import type { ParentOnboardingResult } from './pages/ParentOnboarding';
 
-const NAV_CSS = `
-.bn5{position:fixed;bottom:0;left:0;right:0;height:76px;background:rgba(7,12,36,.95);border-top:.5px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-around;z-index:100;padding-bottom:env(safe-area-inset-bottom,0px);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px)}
-.bn5-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent}
-.bn5-ico{width:46px;height:38px;border-radius:14px;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.bn5-tab.on .bn5-ico{background:rgba(245,184,76,.13)}
-.bn5-ico:active{transform:scale(.84)}
-.bn5-tab svg{color:rgba(234,242,255,.28);transition:color .2s}
-.bn5-tab.on svg{color:#F5B84C}
-.bn5-tab.on .bn5-lbl{color:#F5B84C}
-.bn5-bar{position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:24px;height:3px;border-radius:0 0 4px 4px;background:#F5B84C;opacity:0;transition:opacity .2s}
-.bn5-tab.on .bn5-bar{opacity:1}
-.bn5-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1px;color:rgba(234,242,255,.28);transition:color .2s;white-space:nowrap;line-height:1}
-`;
-
-function BottomNav({ current, onNav }: { current: string; onNav: (v: string) => void }) {
-  const tabs: { id: string; label: string; icon: React.ReactNode }[] = [
-    { id: 'dashboard', label: 'Today', icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/></svg>
-    )},
-    { id: 'story-wizard', label: 'Create', icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
-    )},
-    { id: 'library', label: 'Discover', icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-    )},
-    { id: 'story-library', label: 'My Space', icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-    )},
-    { id: 'user-profile', label: 'Profile', icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    )},
-  ];
-  return (
-    <>
-      <style>{NAV_CSS}</style>
-      <div className="bn5">
-        {tabs.map(t => (
-          <div key={t.id} className={`bn5-tab${current === t.id ? ' on' : ''}`} onClick={() => onNav(t.id)}>
-            <div className="bn5-bar" />
-            <div className="bn5-ico">{t.icon}</div>
-            <div className="bn5-lbl">{t.label}</div>
-          </div>
-        ))}
-      </div>
-    </>
-  );
-}
+// Old BottomNav removed — replaced by src/components/BottomNavigation.tsx via AppLayout
 
 function AppInner() {
   // Shared night card — public, no auth required
@@ -90,6 +54,22 @@ function AppInner() {
   if (new URLSearchParams(window.location.search).get('printCard')) return <PrintNightCard />;
   // DEV: instant route — no flash, no auth
   if (new URLSearchParams(window.location.search).get('view') === 'dev-story') return <DevStoryTest />;
+  // DEV: DreamKeeper onboarding preview — TEMPORARY, remove before production
+  if (new URLSearchParams(window.location.search).get('view') === 'dk-test') return (
+    <DreamKeeperOnboarding
+      childName="Test Child"
+      childAge="6"
+      childPronouns="they/them"
+      onComplete={(result) => { console.log('[dk-test] DreamKeeper selected:', result); alert(`Selected: ${result.dreamKeeper.name} (${result.dreamKeeper.virtue})\nFeeling: ${result.feeling}`); }}
+      onBack={() => { window.location.href = window.location.pathname; }}
+    />
+  );
+  // DEV: Full new-user flow test — TEMPORARY, remove before production
+  // Simulates: ParentSetup → DreamKeeper → MySpace (first-time)
+  // Usage: /?view=new-user-test
+  if (new URLSearchParams(window.location.search).get('view') === 'new-user-test') {
+    return <NewUserFlowTest />;
+  }
 
   const {
     user, authLoading, view, setView, logout,
@@ -249,15 +229,19 @@ function AppInner() {
   const goCharacterDetail = (c: Character) => { setViewingCharacter(c); setView('character-detail' as any); };
   const handleNav = (v: string) => {
     clearLibraryUrl();
-    if (v === 'nightcard-library') goNightCards();
-    else if (v === 'story-wizard') goStoryBuilder();
-    else if (v === 'library') {
+    if (v === 'ritual-starter') {
+      // Create tab — go to ritual story creation
+      setPreloadedBook(null);
+      setWizardChoices(null);
+      setView('ritual-starter');
+    } else if (v === 'library') {
       const url = new URL(window.location.href);
       url.search = '?view=library';
       window.history.pushState({}, '', url.pathname + url.search);
       setView('library');
+    } else {
+      setView(v as any);
     }
-    else setView(v as any);
   };
 
   // Handle onboarding completion — save character, creature, egg, night card, story
@@ -352,6 +336,108 @@ function AppInner() {
     setView('first-night');
   };
 
+  // Handle DreamKeeper onboarding completion — save character + creature, route to ritual-starter
+  const handleDreamKeeperComplete = async (result: DreamKeeperResult) => {
+    if (!user) { setView('dashboard'); return; }
+
+    // Load child profile (same logic as the view === 'onboarding' block)
+    let profile = parentSetupData;
+    if (!profile) {
+      try {
+        const stored = localStorage.getItem(`sleepseed_child_profile_${user.id}`);
+        if (stored) profile = JSON.parse(stored);
+      } catch {}
+    }
+
+    const dk = result.dreamKeeper;
+    const charId = uid();
+    const creatureId = crypto.randomUUID?.() || uid();
+
+    // creatureType must be a valid id from creatures.ts where possible
+    // owl, bear, fox, bunny, dragon, cat, turtle all exist in creatures.ts
+    // sloth, seal, dog do NOT — use 'spirit' as a neutral fallback
+    // (getCreature('spirit') gracefully falls back to CREATURES[0] in Hatchery)
+    const creatureTypeIsValid = CREATURES.some(c => c.id === dk.id);
+    const creatureType = creatureTypeIsValid ? dk.id : 'spirit';
+
+    // Step 1: Save character — mirrors OnboardingFlow lines 757-772 exactly
+    const character: Character = {
+      id: charId,
+      userId: user.id,
+      name: profile?.childName || result.childName,
+      type: 'human',
+      ageDescription: profile?.childAge || '',
+      pronouns: (profile?.childPronouns || 'they/them') as any,
+      personalityTags: [],
+      weirdDetail: profile?.parentSecret || '',
+      currentSituation: '',
+      color: dk.color,
+      emoji: dk.emoji,
+      storyIds: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isFamily: true,
+    };
+
+    // Step 2: Save creature — mirrors OnboardingFlow lines 775-790 exactly
+    const creature: HatchedCreature = {
+      id: creatureId,
+      userId: user.id,
+      characterId: charId,
+      name: dk.name,
+      creatureType,
+      creatureEmoji: dk.emoji,
+      color: dk.color,
+      rarity: 'common',
+      personalityTraits: dk.personalityTraits,
+      dreamAnswer: result.feeling,
+      parentSecret: profile?.parentSecret || '',
+      hatchedAt: new Date().toISOString(),
+      weekNumber: 1,
+    };
+
+    const errors: string[] = [];
+    try { await saveCharacter(character); }
+    catch (e) { console.error('[dk-onboarding] saveCharacter failed:', e); errors.push('character'); }
+
+    try { await saveHatchedCreature(creature); }
+    catch (e) { console.error('[dk-onboarding] saveHatchedCreature failed:', e); errors.push('creature'); }
+
+    if (!errors.includes('character')) {
+      try { await createEgg(user.id, charId, creatureType, 1); }
+      catch (e) { console.error('[dk-onboarding] createEgg failed:', e); errors.push('egg'); }
+    }
+
+    if (errors.length > 0) {
+      console.error(`[dk-onboarding] Completed with ${errors.length} failed steps:`, errors);
+    } else {
+      console.log('[dk-onboarding] All saves completed successfully');
+    }
+
+    // Set context state
+    setCompanionCreature(creature);
+    setSelectedCharacter(character);
+    setSelectedCharacters([character]);
+
+    // Mark onboarding done (DreamKeeper selected — but ritual not yet complete)
+    try { localStorage.setItem(`sleepseed_onboarding_${user.id}`, '1'); } catch {}
+
+    // Initialize ritual state for the 3-night hatching sequence
+    const profile2 = parentSetupData || (() => {
+      try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); return s ? JSON.parse(s) : null; } catch { return null; }
+    })();
+    initRitualState(
+      user.id,
+      profile2?.childName || result.childName,
+      dk.name,
+      dk.emoji,
+      dk.color,
+    );
+
+    // Route to 3-night onboarding ritual (Night 1)
+    setView('onboarding-ritual');
+  };
+
   // Read a saved story directly — sets preloadedBook then routes to story-builder
   const openSavedStory = (bookData: any) => {
     console.log('[stories] Opening saved story:', bookData?.title, 'pages:', bookData?.pages?.length);
@@ -433,16 +519,16 @@ function AppInner() {
 
   // Library views — accessible to everyone (no auth required)
   if (view === 'library') return (
-    <div style={{paddingBottom: user && !user.isGuest ? 76 : 0}}>
-      <LibraryHome />
-      {user && !user.isGuest && <BottomNav current="library" onNav={handleNav} />}
-    </div>
+    user && !user.isGuest
+      ? <AppLayout currentTab="library" onNav={handleNav}><LibraryHome /></AppLayout>
+      : <LibraryHome />
   );
   if (view === 'library-story') return (
-    <div style={{paddingBottom: user && !user.isGuest ? 76 : 0}}>
-      <Suspense fallback={<div style={{minHeight:'100vh',background:'#060912',display:'flex',alignItems:'center',justifyContent:'center',color:'rgba(244,239,232,.3)',fontFamily:'system-ui',fontSize:14}}>Loading story&hellip;</div>}><LibraryStoryReader slug={libraryStorySlug ?? ''} /></Suspense>
-      {user && !user.isGuest && <BottomNav current="library" onNav={handleNav} />}
-    </div>
+    user && !user.isGuest
+      ? <AppLayout currentTab="library" onNav={handleNav}>
+          <Suspense fallback={<div style={{minHeight:'100vh',background:'#060912',display:'flex',alignItems:'center',justifyContent:'center',color:'rgba(244,239,232,.3)',fontFamily:'system-ui',fontSize:14}}>Loading story&hellip;</div>}><LibraryStoryReader slug={libraryStorySlug ?? ''} /></Suspense>
+        </AppLayout>
+      : <Suspense fallback={<div style={{minHeight:'100vh',background:'#060912',display:'flex',alignItems:'center',justifyContent:'center',color:'rgba(244,239,232,.3)',fontFamily:'system-ui',fontSize:14}}>Loading story&hellip;</div>}><LibraryStoryReader slug={libraryStorySlug ?? ''} /></Suspense>
   );
 
   if (view === 'public') return (
@@ -462,12 +548,50 @@ function AppInner() {
   if (view === 'onboarding-tour')    { setView('dashboard'); return null; }
   if (view === 'onboarding-night0')  { setView('dashboard'); return null; }
 
-  // Parent setup — clean adult onboarding
+  // ── Parent Onboarding v9 (cinematic 6-screen flow) ────────────────────
+  const handleParentOnboardingV9 = (result: ParentOnboardingResult) => {
+    if (!user) return;
+    // Store as ParentSetupResult shape for compatibility
+    const compat: ParentSetupResult = {
+      childName: result.childName,
+      childAge: result.childAge,
+      childPronouns: result.childPronouns,
+      parentRole: '',
+    };
+    setParentSetupData(compat);
+    try {
+      localStorage.setItem(`sleepseed_parent_setup_${user.id}`, '1');
+      localStorage.setItem(`sleepseed_child_profile_${user.id}`, JSON.stringify(compat));
+    } catch {}
+    // Route to cinematic transition (or Night 1 directly for now)
+    setView('onboarding');
+  };
+
+  if (view === 'parent-onboarding') return (
+    <ParentOnboarding
+      onComplete={handleParentOnboardingV9}
+      onSaveLater={() => setView('dashboard')}
+    />
+  );
+
+  // Parent setup — clean adult onboarding (LEGACY — kept as fallback)
   if (view === 'parent-setup') return (
     <ParentSetup onComplete={handleParentSetup} onSkip={() => setView('dashboard')} onSaveLater={handleParentSaveLater} />
   );
 
-  // Kid onboarding — magical experience with child present
+  // ── DreamKeeper onboarding (V1) ──────────────────────────────────────────
+  // Replaces the old creature-grid selection path (OnboardingFlow steps 1-4)
+  // for new users. After the child confirms their DreamKeeper, they route
+  // directly to ritual-starter to create their first story.
+  //
+  // OnboardingFlow.tsx is NOT deleted — it remains as:
+  //   1. Fallback (revert this block to restore the old flow instantly)
+  //   2. Test mode target (?test=onboarding still uses OnboardingFlow)
+  //
+  // Integration: handleDreamKeeperComplete (above) saves Character +
+  // HatchedCreature + Egg, sets companionCreature in context, then routes
+  // to ritual-starter. No night card or first story is created here — those
+  // come from the normal story creation flow.
   if (view === 'onboarding') {
     // Load child profile from localStorage if not in state
     let profile = parentSetupData;
@@ -477,7 +601,13 @@ function AppInner() {
         if (stored) profile = JSON.parse(stored);
       } catch {}
     }
-    return <OnboardingFlow onComplete={handleOnboardingComplete} childProfile={profile} />;
+    return <DreamKeeperOnboarding
+      childName={profile?.childName || ''}
+      childAge={profile?.childAge}
+      childPronouns={profile?.childPronouns}
+      onComplete={handleDreamKeeperComplete}
+      onBack={() => setView('dashboard')}
+    />;
   }
 
   if (view === 'dashboard') {
@@ -485,8 +615,14 @@ function AppInner() {
     const needsParentSetup = user && !user.isGuest && !parentSetupDone && !onboardingDone;
     const needsChildOnboarding = user && !user.isGuest && parentSetupDone && !onboardingDone;
 
+    // Ritual prompt — shown when DreamKeeper is selected but 3-night ritual is in progress
+    const ritualComplete = user && !user.isGuest
+      ? !!localStorage.getItem(`sleepseed_ritual_complete_${user.id}`) || isRitualComplete(user.id)
+      : true;
+    const needsRitual = user && !user.isGuest && onboardingDone && !ritualComplete;
+
     return (
-      <div style={{paddingBottom:76}}>
+      <AppLayout currentTab="dashboard" onNav={handleNav}>
         {friendToast}
 
         {/* Pending setup prompt */}
@@ -497,7 +633,7 @@ function AppInner() {
             display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer',
             transition: 'background .2s',
           }}
-            onClick={() => setView(needsParentSetup ? 'parent-setup' : 'onboarding')}
+            onClick={() => setView(needsParentSetup ? 'parent-onboarding' : 'onboarding')}
             onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,184,76,.07)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'rgba(245,184,76,.04)')}
           >
@@ -520,9 +656,40 @@ function AppInner() {
           </div>
         )}
 
-        <UserDashboard onSignUp={goAuth} onReadStory={openSavedStory} />
-        <BottomNav current="dashboard" onNav={handleNav} />
-      </div>
+        {/* Ritual in progress — continue the 3-night hatching sequence */}
+        {needsRitual && (
+          <div style={{
+            margin: '16px 16px 0', padding: '20px 20px', borderRadius: 16,
+            background: 'rgba(245,184,76,.06)', border: '1px solid rgba(245,184,76,.18)',
+            display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer',
+            transition: 'background .2s',
+            animation: 'fadeUp .4s ease-out',
+          }}
+            onClick={() => setView('onboarding-ritual')}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,184,76,.1)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(245,184,76,.06)')}
+          >
+            <div style={{ fontSize: 28, flexShrink: 0 }}>{companionCreature?.creatureEmoji || '🥚'}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontFamily: "'Fraunces',Georgia,serif", fontWeight: 400, fontSize: 15,
+                color: '#F4EFE8', marginBottom: 3,
+              }}>
+                Continue tonight's ritual
+              </div>
+              <div style={{
+                fontFamily: "'DM Mono',monospace", fontSize: 11,
+                color: 'rgba(244,239,232,.35)',
+              }}>
+                Your DreamKeeper egg is waiting for you
+              </div>
+            </div>
+            <div style={{ color: '#F5B84C', fontSize: 16, flexShrink: 0 }}>&rarr;</div>
+          </div>
+        )}
+
+        <MySpace onSignUp={goAuth} onReadStory={openSavedStory} />
+      </AppLayout>
     );
   }
 
@@ -546,11 +713,27 @@ function AppInner() {
   );
   if (view === 'first-night') { setView('dashboard'); return null; }
 
+  // ── 3-Night Onboarding Ritual ──────────────────────────────────────────
+  if (view === 'onboarding-ritual') return (
+    <OnboardingRitual
+      onRitualComplete={() => {
+        // Ritual complete — mark it and go to dashboard (My Space)
+        try { localStorage.setItem(`sleepseed_ritual_complete_${user!.id}`, '1'); } catch {}
+        setDashKey(k => k + 1);
+        setView('dashboard');
+      }}
+      onExit={() => {
+        // Night 1 or 2 complete — return to dashboard until next session
+        setDashKey(k => k + 1);
+        setView('dashboard');
+      }}
+    />
+  );
+
   if (view === 'hatchery') return (
-    <div style={{paddingBottom:76}}>
+    <AppLayout currentTab="" onNav={handleNav}>
       <Hatchery user={user!} onBack={goDashboard} />
-      <BottomNav current="" onNav={handleNav} />
-    </div>
+    </AppLayout>
   );
 
   // ── StoryJourney v3 views ──────────────────────────────────────────────
@@ -586,22 +769,23 @@ function AppInner() {
     />
   );
   if (view === 'user-profile') return (
-    <div style={{paddingBottom:76}}>
+    <AppLayout currentTab="user-profile" onNav={handleNav}>
       <UserProfile />
-      <BottomNav current="user-profile" onNav={handleNav} />
-    </div>
+    </AppLayout>
   );
 
   if (view === 'characters') return (
-    <><CharacterLibrary
-      userId={user!.id}
-      onBack={goDashboard}
-      onNew={goNewCharacter}
-      onEdit={goEditCharacter}
-      onUseInStory={char => goCharacterDetail(char)}
-      onReadStory={openSavedStory}
-      onViewNightCards={charId => goNightCards(charId)}
-    /></>
+    <AppLayout currentTab="user-profile" onNav={handleNav}>
+      <CharacterLibrary
+        userId={user!.id}
+        onBack={goDashboard}
+        onNew={goNewCharacter}
+        onEdit={goEditCharacter}
+        onUseInStory={char => goCharacterDetail(char)}
+        onReadStory={openSavedStory}
+        onViewNightCards={charId => goNightCards(charId)}
+      />
+    </AppLayout>
   );
 
   if (view === 'character-builder') return (
@@ -614,37 +798,37 @@ function AppInner() {
   );
 
   if (view === 'story-library') return (
-    <div style={{paddingBottom:76}}>
-    <StoryLibrary
-      userId={user!.id}
-      onBack={goDashboard}
-      onReadStory={openSavedStory}
-      onCreateStory={() => setView('ritual-starter')}
-    />
-    <BottomNav current="story-library" onNav={handleNav} />
-    </div>
+    <AppLayout currentTab="dashboard" onNav={handleNav}>
+      <StoryLibrary
+        userId={user!.id}
+        onBack={goDashboard}
+        onReadStory={openSavedStory}
+        onCreateStory={() => setView('ritual-starter')}
+      />
+    </AppLayout>
   );
 
   if (view === 'nightcard-library') return (
-    <div style={{paddingBottom:76}}>
-    <NightCardLibrary
-      userId={user!.id}
-      onBack={goDashboard}
-      filterCharacterId={nightCardFilter}
-    />
-    <BottomNav current="story-library" onNav={handleNav} />
-    </div>
+    <AppLayout currentTab="dashboard" onNav={handleNav}>
+      <NightCardLibrary
+        userId={user!.id}
+        onBack={goDashboard}
+        filterCharacterId={nightCardFilter}
+      />
+    </AppLayout>
   );
 
   if ((view as string) === 'character-detail' && viewingCharacter) return (
-    <><CharacterDetail
-      character={viewingCharacter}
-      userId={user!.id}
-      onBack={() => setView('characters')}
-      onEdit={goEditCharacter}
-      onUseInStory={char => goStoryBuilder(char)}
-      onReadStory={openSavedStory}
-    /></>
+    <AppLayout currentTab="user-profile" onNav={handleNav}>
+      <CharacterDetail
+        character={viewingCharacter}
+        userId={user!.id}
+        onBack={() => setView('characters')}
+        onEdit={goEditCharacter}
+        onUseInStory={char => goStoryBuilder(char)}
+        onReadStory={openSavedStory}
+      />
+    </AppLayout>
   );
 
   if (view === 'story-builder') {
