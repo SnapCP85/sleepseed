@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import WhisperBackground from '../components/onboarding/WhisperBackground';
+import OnboardingShell from '../components/onboarding/OnboardingShell';
 import '../components/onboarding/onboarding.css';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -168,7 +169,7 @@ export default function ParentOnboarding({ onComplete, onSaveLater }: Props) {
   // RENDER
   // ═══════════════════════════════════════════════════════════════════════
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#060912', overflow: 'hidden' }}>
+    <OnboardingShell>
       {/* ── P1: Battle ──────────────────────────────────────────────── */}
       {step === 0 && (
         <div className="ob-slide" style={{ background: 'linear-gradient(180deg, #060912, #080c1a)' }}>
@@ -513,6 +514,6 @@ export default function ParentOnboarding({ onComplete, onSaveLater }: Props) {
           </div>
         </div>
       )}
-    </div>
+    </OnboardingShell>
   );
 }

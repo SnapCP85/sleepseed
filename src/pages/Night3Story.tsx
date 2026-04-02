@@ -59,7 +59,7 @@ export default function Night3Story({ childName, onComplete }: Props) {
   })();
 
   return (
-    <div style={{ position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column', background: '#060912', overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#060912', overflow: 'hidden' }}>
       {/* Scene illustration (top 52%) */}
       <div style={{ height: '52%', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
         {sceneEl}

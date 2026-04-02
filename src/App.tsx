@@ -19,6 +19,7 @@ import SharedStoryViewer from './pages/SharedStoryViewer';
 import SharedNightCard from './pages/SharedNightCard';
 import PrintNightCard from './pages/PrintNightCard';
 import LibraryHome from './pages/LibraryHome';
+import StoryCover from './pages/StoryCover';
 import CharacterDetail from './features/characters/CharacterDetail';
 import Hatchery from './pages/Hatchery';
 import FirstNight from './pages/FirstNight';
@@ -119,7 +120,7 @@ function AppInner() {
     if (params.get('s')) { setIsSharedStory(true); return; }
 
     const librarySlug = params.get('library');
-    if (librarySlug) { setLibraryStorySlug(librarySlug); setView('library-story'); return; }
+    if (librarySlug) { setLibraryStorySlug(librarySlug); setView('story-cover'); return; }
 
     if (params.get('view') === 'library') { setView('library'); return; }
     if (params.get('view') === 'dev-story') { setView('dev-story'); return; }
@@ -536,6 +537,12 @@ function AppInner() {
     user && !user.isGuest
       ? <AppLayout currentTab="library" onNav={handleNav}><LibraryHome /></AppLayout>
       : <LibraryHome />
+  );
+  if (view === 'story-cover') return (
+    <StoryCover
+      slug={libraryStorySlug ?? ''}
+      onReadStory={() => setView('library-story')}
+    />
   );
   if (view === 'library-story') return (
     user && !user.isGuest

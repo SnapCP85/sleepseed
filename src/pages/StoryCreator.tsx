@@ -3,6 +3,7 @@ import { useApp } from '../AppContext';
 import { getCharacters } from '../lib/storage';
 import { getHatchedCreatures, getAllHatchedCreatures } from '../lib/hatchery';
 import type { BuilderChoices, Character, HatchedCreature } from '../lib/types';
+import { getDreamKeeperById, V1_DREAMKEEPERS } from '../lib/dreamkeepers';
 
 /* ══════════════════════════════════════════════════════════════════════
    CONSTANTS
@@ -405,6 +406,9 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
     return () => { cancelled = true; };
   }, [user?.id, primaryChar?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Ritual entry card selection (3-card picker shown before input) ──
+  const [ritualEntryDone, setRitualEntryDone] = useState(!isRitual);
+
   // ── Mode & input state ──
   const [mode, setMode] = useState<'today' | 'adventure'>('today');
   const [brief, setBrief] = useState('');
@@ -547,6 +551,14 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   const cEmoji = creature?.creatureEmoji ?? '\u{1F319}';
   const cType = creature?.creatureType ?? '';
   const creatureColor = creature?.color || '#F5B84C';
+
+  // Resolve DreamKeeper image (if available) — same cascade as MySpace
+  const cDk = creature
+    ? (getDreamKeeperById(creature.creatureType)
+       || V1_DREAMKEEPERS.find(dk => dk.emoji === creature.creatureEmoji)
+       || null)
+    : null;
+  const cImageSrc = cDk?.imageSrc;
 
   // Choose glow class based on mode/color
   const glowClass = isRitual ? 'sc-creature-glow'
@@ -752,7 +764,13 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
               <div className="sc-egg">{'\u{1F95A}'}</div>
             ) : (
               <>
-                <div className="sc-creature-emoji" style={{ animation: 'floatCreature 4.5s ease-in-out infinite, glowAmber 4s ease-in-out infinite', position: 'relative' as const, zIndex: 1 }}>{cEmoji}</div>
+                {cImageSrc ? (
+                  <div style={{ width: 120, height: 150, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'floatCreature 4.5s ease-in-out infinite', position: 'relative' as const, zIndex: 1 }}>
+                    <img src={cImageSrc} alt={cName} style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 18px rgba(245,184,76,.3))' }} />
+                  </div>
+                ) : (
+                  <div className="sc-creature-emoji" style={{ animation: 'floatCreature 4.5s ease-in-out infinite, glowAmber 4s ease-in-out infinite', position: 'relative' as const, zIndex: 1 }}>{cEmoji}</div>
+                )}
                 <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase' as const, color: 'rgba(245,184,76,.55)', marginTop: 4, textAlign: 'center' as const }}>{cName}</div>
                 {cType && (
                   <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 7.5, letterSpacing: '.08em', textTransform: 'uppercase' as const, color: 'rgba(255,255,255,.2)', marginTop: 2, textAlign: 'center' as const }}>
@@ -768,7 +786,13 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
               <div className="sc-egg" style={{ fontSize: 36 }}>{'\u{1F95A}'}</div>
             ) : (
               <>
-                <div style={{ fontSize: 42, animation: 'floatCreature 3.5s ease-in-out infinite, glowTeal 3s ease-in-out infinite', display: 'inline-block' }}>{cEmoji}</div>
+                {cImageSrc ? (
+                  <div style={{ width: 52, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, animation: 'floatCreature 3.5s ease-in-out infinite' }}>
+                    <img src={cImageSrc} alt={cName} style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(20,216,144,.3))' }} />
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 42, animation: 'floatCreature 3.5s ease-in-out infinite, glowTeal 3s ease-in-out infinite', display: 'inline-block' }}>{cEmoji}</div>
+                )}
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: "'Fraunces', serif", fontSize: 15, fontWeight: 700, color: 'var(--cream)', lineHeight: 1.3 }}>
                     What kind of story{' '}
@@ -783,8 +807,91 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
           </div>
         )}
 
-        {/* ─── SPEECH BUBBLE (ritual only) ─── */}
-        {isRitual && (
+        {/* ─── RITUAL 3-CARD ENTRY (ritual mode, before input) ─── */}
+        {isRitual && !ritualEntryDone && (
+          <div style={{ animation: 'slideUp .35s ease both', padding: '8px 0 0' }}>
+            {/* DreamKeeper message */}
+            <div className="sc-bubble" style={{ borderColor: 'rgba(245,184,76,.2)', background: 'rgba(245,184,76,.04)', opacity: 1, animation: 'bubblePop .35s ease forwards', marginBottom: 18 }}>
+              <div className="sc-bubble-text">
+                What story will we create <em style={{ color: '#F5B84C', fontStyle: 'normal', fontWeight: 700 }}>together</em> tonight?
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {/* Card 1: Tell me about today */}
+              <button onClick={() => { setMode('today'); setRitualEntryDone(true); }} style={{
+                width: '100%', padding: '18px 18px', borderRadius: 16, cursor: 'pointer', textAlign: 'left',
+                border: '1.5px solid rgba(245,184,76,.2)', background: 'rgba(245,184,76,.06)',
+                display: 'flex', alignItems: 'center', gap: 14, transition: 'all .2s',
+                fontFamily: "'Nunito',system-ui,sans-serif",
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.4)'; e.currentTarget.style.background = 'rgba(245,184,76,.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.2)'; e.currentTarget.style.background = 'rgba(245,184,76,.06)'; }}
+              >
+                <span style={{ fontSize: 28, flexShrink: 0 }}>{'\u2600\uFE0F'}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 600, color: '#F4EFE8', marginBottom: 2 }}>Tell me about today</div>
+                  <div style={{ fontSize: 11, color: 'rgba(244,239,232,.4)' }}>Turn something real into tonight's story</div>
+                </div>
+              </button>
+
+              {/* Card 2: Let's go somewhere */}
+              <button onClick={() => { setMode('adventure'); setRitualEntryDone(true); }} style={{
+                width: '100%', padding: '18px 18px', borderRadius: 16, cursor: 'pointer', textAlign: 'left',
+                border: '1.5px solid rgba(160,96,240,.2)', background: 'rgba(160,96,240,.06)',
+                display: 'flex', alignItems: 'center', gap: 14, transition: 'all .2s',
+                fontFamily: "'Nunito',system-ui,sans-serif", position: 'relative',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(160,96,240,.4)'; e.currentTarget.style.background = 'rgba(160,96,240,.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(160,96,240,.2)'; e.currentTarget.style.background = 'rgba(160,96,240,.06)'; }}
+              >
+                <span style={{ fontSize: 28, flexShrink: 0 }}>{'\u{1F680}'}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 600, color: '#F4EFE8', marginBottom: 2 }}>Let's go somewhere</div>
+                  <div style={{ fontSize: 11, color: 'rgba(244,239,232,.4)' }}>Pick a world for tonight's adventure</div>
+                </div>
+              </button>
+
+              {/* Card 3: Surprise me */}
+              <button onClick={() => {
+                setMode('today');
+                setBrief(`${cName} picks everything tonight — a surprise adventure just for ${childName}.`);
+                setRitualEntryDone(true);
+                // Auto-generate after a brief moment
+                setTimeout(() => {
+                  const heroChar = primaryChar;
+                  const castChars: { type: string; name: string; note: string }[] = [];
+                  if (creatureSelected && creature) {
+                    castChars.push({ type: 'creature', name: creature.name, note: creature.dreamAnswer ? `${creature.name} dreams about ${creature.dreamAnswer}` : `${creature.name} is the child's magical companion` });
+                  }
+                  onGenerate({
+                    path: 'ritual', heroName: heroChar?.name || '', heroGender: heroChar?.pronouns === 'he/him' ? 'boy' : heroChar?.pronouns === 'she/her' ? 'girl' : '',
+                    vibe: ['warm-funny', 'calm-cosy', 'exciting', 'heartfelt', 'mysterious'][Math.floor(Math.random() * 5)],
+                    level, length, brief: `${cName} picks everything tonight — a surprise adventure just for ${childName}.`,
+                    chars: castChars, lessons: [], occasion: '', occasionCustom: '', style: 'standard', pace: 'normal',
+                  });
+                }, 400);
+              }} style={{
+                width: '100%', padding: '18px 18px', borderRadius: 16, cursor: 'pointer', textAlign: 'left',
+                border: '1.5px solid rgba(111,231,221,.15)', background: 'rgba(111,231,221,.04)',
+                display: 'flex', alignItems: 'center', gap: 14, transition: 'all .2s',
+                fontFamily: "'Nunito',system-ui,sans-serif",
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(111,231,221,.35)'; e.currentTarget.style.background = 'rgba(111,231,221,.08)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(111,231,221,.15)'; e.currentTarget.style.background = 'rgba(111,231,221,.04)'; }}
+              >
+                <span style={{ fontSize: 28, flexShrink: 0 }}>{'\u{1F3B2}'}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 600, color: '#F4EFE8', marginBottom: 2 }}>Surprise me</div>
+                  <div style={{ fontSize: 11, color: 'rgba(244,239,232,.4)' }}>{cName} picks everything tonight</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ─── SPEECH BUBBLE (ritual only, after entry selection) ─── */}
+        {isRitual && ritualEntryDone && (
           <div className="sc-bubble" style={{ borderColor: 'rgba(245,184,76,.2)', background: 'rgba(245,184,76,.04)', opacity: 1, animation: 'bubblePop .35s ease forwards' }}>
             <div className="sc-bubble-text">{renderBubbleText()}</div>
           </div>
@@ -809,7 +916,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
         )}
 
         {/* ═══ MY DAY INPUT ZONE ═══ */}
-        {mode === 'today' && (
+        {mode === 'today' && (!isRitual || ritualEntryDone) && (
           <div style={{ animation: 'slideUp .25s ease both' }}>
             {/* Inspiration card */}
             {showInspiration && (
@@ -976,7 +1083,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
         )}
 
         {/* ═══ ADVENTURE INPUT ZONE ═══ */}
-        {mode === 'adventure' && (
+        {mode === 'adventure' && (!isRitual || ritualEntryDone) && (
           <div style={{ animation: 'slideUp .25s ease both' }}>
             {!showCustomWorldInput ? (
               <>
@@ -1258,17 +1365,19 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
 
       </div>
 
-      {/* ─── CTA ─── */}
-      <div className="sc-cta-wrap">
-        <button
-          className={`sc-cta ${ctaColor}`}
-          disabled={ctaDisabled}
-          onClick={handleGenerate}
-        >
-          <span className="sc-cta-main">{ctaLabel}</span>
-          <span className="sc-cta-sub">{ctaSub}</span>
-        </button>
-      </div>
+      {/* ─── CTA (hidden during ritual entry card selection) ─── */}
+      {(!isRitual || ritualEntryDone) && (
+        <div className="sc-cta-wrap">
+          <button
+            className={`sc-cta ${ctaColor}`}
+            disabled={ctaDisabled}
+            onClick={handleGenerate}
+          >
+            <span className="sc-cta-main">{ctaLabel}</span>
+            <span className="sc-cta-sub">{ctaSub}</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

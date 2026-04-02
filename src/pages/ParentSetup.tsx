@@ -37,6 +37,10 @@ const CSS = `
 @keyframes glowPulse{0%,100%{filter:drop-shadow(0 0 24px rgba(245,184,76,.25))}50%{filter:drop-shadow(0 0 48px rgba(245,184,76,.55))}}
 @keyframes breathe{0%,100%{opacity:.45}50%{opacity:1}}
 @keyframes slideLeft{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes ps-pillIn{0%{opacity:0;transform:translateY(8px) scale(.92)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes ps-pillFade{0%{opacity:1}80%{opacity:1}100%{opacity:.25}}
+@keyframes ps-progress{from{width:0}to{width:100%}}
+@keyframes ps-boldToDim{0%{color:rgba(244,239,232,.85);font-weight:500}100%{color:rgba(244,239,232,.3);font-weight:400}}
 
 .ps{position:fixed;inset:0;background:var(--night);font-family:var(--sans);color:var(--cream);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;overflow-y:auto;overflow-x:hidden}
 .ps-inner{width:100%;max-width:430px;min-height:100dvh;display:flex;flex-direction:column;padding:0 28px;position:relative}
@@ -123,7 +127,7 @@ const CSS = `
 .ps-btn-ghost:hover{border-color:rgba(244,239,232,.25);color:rgba(244,239,232,.7)}
 
 /* Beat pills (Moment 1 redesign) */
-.ps-pill{display:inline-block;padding:6px 14px;border-radius:50px;border:1px solid rgba(244,239,232,.12);color:rgba(244,239,232,.35);font-family:var(--mono);font-size:11px;font-weight:400;animation:breathe 3s ease-in-out infinite}
+.ps-pill{display:inline-block;padding:8px 18px;border-radius:50px;border:1px solid rgba(244,239,232,.12);color:rgba(244,239,232,.45);font-family:var(--mono);font-size:clamp(12px,3vw,14px);font-weight:400;opacity:0;animation:ps-pillIn .6s ease-out forwards}
 .ps-beat-pips{display:flex;gap:6px;justify-content:center;position:absolute;bottom:32px;left:0;right:0}
 .ps-beat-pip{width:6px;height:6px;border-radius:50%;transition:all .35s var(--ease-out)}
 @keyframes crossfade-in{from{opacity:0}to{opacity:1}}
@@ -178,7 +182,7 @@ export default function ParentSetup({ onComplete, onSkip, onSaveLater }: Props) 
   };
 
   // Moment 1 beat logic — must be before any early returns (Rules of Hooks)
-  const beatDurations = [4000, 7000, 3500];
+  const beatDurations = [12000, 12000, 10000];
   useEffect(() => {
     if (moment !== 1 || beatDone) return;
     if (beat >= 2) { setBeatDone(true); return; }
@@ -237,6 +241,19 @@ export default function ParentSetup({ onComplete, onSkip, onSaveLater }: Props) 
   );
 
   if (moment === 1) {
+    const progressBar = (duration: number) => (
+      <div style={{
+        position: 'absolute', bottom: 52, left: '10%', right: '10%', height: 2,
+        background: 'rgba(255,255,255,.06)', borderRadius: 1, overflow: 'hidden',
+      }}>
+        <div key={`prog-${beat}`} style={{
+          height: '100%', borderRadius: 1,
+          background: 'linear-gradient(90deg, rgba(245,184,76,.15), rgba(245,184,76,.4))',
+          animation: `ps-progress ${duration}ms linear forwards`,
+        }} />
+      </div>
+    );
+
     return (
       <div className="ps" onClick={advanceBeat} style={{ cursor: 'pointer' }}>
         <style>{CSS}</style>
@@ -247,19 +264,32 @@ export default function ParentSetup({ onComplete, onSkip, onSaveLater }: Props) 
 
             {/* Beat 0: Pills + "Bedtime is a battle. Until it isn't." */}
             {beat === 0 && (
-              <div style={{ animation: 'crossfade-in .8s ease both', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 8 }}>
+              <div style={{ animation: 'crossfade-in .8s ease both', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginBottom: 12 }}>
                   {['just five more minutes', "I'm not tired", 'one more show', "I can't sleep"].map((pill, i) => (
-                    <span key={i} className="ps-pill" style={{ animationDelay: `${i * 0.15}s` }}>{pill}</span>
+                    <span key={i} className="ps-pill" style={{ animationDelay: `${i * 1.2}s` }}>{pill}</span>
                   ))}
                 </div>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'rgba(244,239,232,.25)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 20 }}>
+                <div style={{
+                  fontFamily: 'var(--mono)', fontSize: 'clamp(11px,2.8vw,13px)',
+                  color: 'rgba(244,239,232,.85)', textTransform: 'uppercase',
+                  letterSpacing: '.08em', marginBottom: 20, fontWeight: 500,
+                  opacity: 0, animation: 'crossfade-in .6s 5s ease both, ps-boldToDim 1s 6.5s ease forwards',
+                }}>
                   Every parent knows this moment.
                 </div>
-                <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 'clamp(24px,5.5vw,30px)', color: 'var(--cream)', lineHeight: 1.35 }}>
+                <div style={{
+                  fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 300,
+                  fontSize: 'clamp(24px,5.5vw,30px)', color: 'var(--cream)', lineHeight: 1.35,
+                  opacity: 0, animation: 'crossfade-in .8s 6.5s ease both',
+                }}>
                   Bedtime is a battle.
                 </div>
-                <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 'clamp(24px,5.5vw,30px)', color: 'var(--amber)', lineHeight: 1.35 }}>
+                <div style={{
+                  fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 300,
+                  fontSize: 'clamp(24px,5.5vw,30px)', color: 'var(--amber)', lineHeight: 1.35,
+                  opacity: 0, animation: 'crossfade-in .8s 8s ease both',
+                }}>
                   Until it isn't.
                 </div>
               </div>
@@ -267,14 +297,18 @@ export default function ParentSetup({ onComplete, onSkip, onSaveLater }: Props) 
 
             {/* Beat 1: Life is loud. SleepSeed is the pause. */}
             {beat === 1 && (
-              <div style={{ animation: 'crossfade-in .8s ease both', maxWidth: 340 }}>
+              <div style={{ animation: 'crossfade-in .8s ease both', maxWidth: 360, padding: '0 8px' }}>
                 <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 'clamp(24px,5.5vw,30px)', color: 'var(--cream)', lineHeight: 1.3, marginBottom: 6 }}>
                   Life is loud.
                 </div>
-                <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 'clamp(24px,5.5vw,30px)', color: 'var(--amber)', lineHeight: 1.3, marginBottom: 24 }}>
+                <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 'clamp(24px,5.5vw,30px)', color: 'var(--amber)', lineHeight: 1.3, marginBottom: 28 }}>
                   SleepSeed is the pause.
                 </div>
-                <div style={{ fontSize: 13, fontWeight: 300, color: 'var(--cream-dim)', lineHeight: 1.8 }}>
+                <div style={{
+                  fontSize: 'clamp(14px,3.5vw,16px)', fontWeight: 300,
+                  color: 'rgba(244,239,232,.55)', lineHeight: 1.85,
+                  opacity: 0, animation: 'crossfade-in .8s 1.5s ease both',
+                }}>
                   Every family has a fragmenting force — the phone, Netflix, the endless scroll. SleepSeed gathers your family back to each other every single night, at the moment that matters most.
                 </div>
               </div>
@@ -282,7 +316,7 @@ export default function ParentSetup({ onComplete, onSkip, onSaveLater }: Props) 
 
             {/* Beat 2: "SleepSeed delivers the moment. You keep it forever." + Night Card */}
             {beat >= 2 && (
-              <div style={{ animation: 'crossfade-in .8s ease both', maxWidth: 360 }}>
+              <div style={{ animation: 'crossfade-in .8s ease both', maxWidth: 360, padding: '0 4px' }}>
                 <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 300, fontSize: 'clamp(22px,5vw,28px)', color: 'var(--cream)', lineHeight: 1.3, marginBottom: 6 }}>
                   SleepSeed delivers the moment.
                 </div>
@@ -290,31 +324,29 @@ export default function ParentSetup({ onComplete, onSkip, onSaveLater }: Props) 
                   You keep it forever.
                 </div>
 
-                {/* Mini night card — tilted, glowing */}
+                {/* Mini night card — tilted, glowing, with real photo */}
                 <div style={{
-                  width: 180, margin: '0 auto 24px',
+                  width: 200, margin: '0 auto 20px',
                   transform: 'rotate(-2deg)',
                   filter: 'drop-shadow(0 12px 32px rgba(0,0,0,.5))',
                 }}>
                   <div style={{
-                    background: '#faf6ee', borderRadius: 6, padding: '10px 10px 20px',
+                    background: '#faf6ee', borderRadius: 6, padding: '8px 8px 16px',
                     position: 'relative', overflow: 'hidden',
                   }}>
-                    {/* Photo area */}
+                    {/* Photo area — real night card photo */}
                     <div style={{
                       width: '100%', aspectRatio: '4/3', borderRadius: 3,
-                      background: 'linear-gradient(135deg, #0d1428, #1a1040)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      marginBottom: 10, position: 'relative', overflow: 'hidden',
+                      overflow: 'hidden', marginBottom: 10,
                     }}>
-                      <div style={{ fontSize: 28, filter: 'drop-shadow(0 0 12px rgba(245,184,76,.4))' }}>🌙</div>
-                      {/* Stars */}
-                      {[0,1,2].map(i => (
-                        <div key={i} style={{
-                          position: 'absolute', width: 3, height: 3, borderRadius: '50%', background: '#F5B84C',
-                          top: `${20 + i * 25}%`, left: `${15 + i * 30}%`, opacity: 0.5,
-                        }} />
-                      ))}
+                      <img
+                        src="/nightcard-hero.jpg"
+                        alt="A dad reading with his kids at bedtime"
+                        style={{
+                          width: '100%', height: '100%', objectFit: 'cover',
+                          objectPosition: 'center 35%', display: 'block',
+                        }}
+                      />
                     </div>
                     {/* Card text */}
                     <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 10, color: '#1a0f08', fontWeight: 400, marginBottom: 3, textAlign: 'center' }}>
@@ -335,6 +367,16 @@ export default function ParentSetup({ onComplete, onSkip, onSaveLater }: Props) 
                   </div>
                 </div>
 
+                {/* Founder quote */}
+                <div style={{
+                  fontSize: 'clamp(12px,3vw,14px)', fontWeight: 300,
+                  color: 'rgba(244,239,232,.45)', lineHeight: 1.75,
+                  fontStyle: 'italic', maxWidth: 320, margin: '0 auto 24px',
+                  opacity: 0, animation: 'crossfade-in .8s 1.5s ease both',
+                }}>
+                  "I built SleepSeed because I was watching unrepeatable moments disappear. The things my daughters said at bedtime — I couldn't remember them by morning."
+                </div>
+
                 {beatDone && (
                   <button className="ps-btn ps-btn-amber" onClick={e => { e.stopPropagation(); setMoment(2); }} style={{ animation: 'fadeUp .5s var(--ease-out)' }}>
                     That's beautiful &rarr;
@@ -343,6 +385,9 @@ export default function ParentSetup({ onComplete, onSkip, onSaveLater }: Props) 
               </div>
             )}
           </div>
+
+          {/* Progress bar (beats 0 and 1 only — beat 2 has manual CTA) */}
+          {beat < 2 && progressBar(beatDurations[beat])}
 
           {/* Beat pips */}
           <div className="ps-beat-pips">
@@ -559,7 +604,7 @@ export default function ParentSetup({ onComplete, onSkip, onSaveLater }: Props) 
               Complete later when {childName.trim()} is present &rarr;
             </button>
           )}
-          <div className="ps-caption">This is the part you do together.</div>
+          <div className="ps-caption" style={{ color: 'rgba(244,239,232,.5)', fontSize: 12 }}>This is the part you do together.</div>
         </div>
       </div>
     </div>

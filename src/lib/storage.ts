@@ -2,8 +2,8 @@
 // All data now lives in Postgres via Supabase.
 // Function signatures match the old localStorage version exactly.
 
-import { supabase } from './supabase';
-import type { Character, SavedStory, SavedNightCard, LibraryStory, UserProfile } from './types';
+import { supabase, hasSupabase } from './supabase';
+import type { Character, SavedStory, SavedNightCard, LibraryStory, UserProfile, StoryRole, StoryRoleType } from './types';
 
 // ── Utility ───────────────────────────────────────────────────────────────────
 
@@ -382,10 +382,17 @@ export const getLibraryStoryBySlug = async (slug: string): Promise<LibraryStory 
     delete story.bookData.parentNote;
     delete story.bookData.nightCard;
   }
-  supabase.from('stories')
-    .update({ read_count: (story.readCount || 0) + 1 })
-    .eq('id', story.id)
-    .then(() => {});
+  // Atomic increment — avoids race condition under concurrent reads
+  // Try RPC first, fall back to non-atomic if RPC doesn't exist yet
+  supabase.rpc('increment_read_count', { story_id: story.id })
+    .then(({ error: rpcErr }) => {
+      if (rpcErr) {
+        supabase.from('stories')
+          .update({ read_count: (story.readCount || 0) + 1 })
+          .eq('id', story.id)
+          .then(() => {});
+      }
+    });
   return story;
 };
 
@@ -554,6 +561,73 @@ export const isFavourited = async (userId: string, storyId: string): Promise<boo
     .eq('story_id', storyId)
     .single();
   return !!data;
+};
+
+// ── Library: role extraction ─────────────────────────────────────────────
+
+export function extractRoles(bookData: any): StoryRole[] {
+  const chars: any[] = bookData?.allChars || [];
+  if (chars.length === 0 && bookData?.heroName) {
+    return [{
+      role: 'protagonist' as StoryRoleType,
+      originalName: bookData.heroName,
+      displayName: bookData.heroName,
+      type: 'hero',
+      isSubstitutable: true,
+    }];
+  }
+  return chars.map((c: any) => ({
+    role: (c.type === 'hero' ? 'protagonist'
+         : c.type === 'creature' ? 'companion'
+         : c.type === 'parent' ? 'parent'
+         : c.type === 'pet' ? 'pet'
+         : 'friend') as StoryRoleType,
+    originalName: c.name || '',
+    displayName: c.name || '',
+    type: c.type || 'friend',
+    pronouns: c.gender === 'girl' ? 'she/her'
+            : c.gender === 'boy' ? 'he/him'
+            : undefined,
+    description: c.note || c.classify || undefined,
+    isSubstitutable: c.type === 'hero' || c.type === 'creature',
+  }));
+}
+
+// ── Library: related stories ────────────────────────────────────────────
+
+export const getRelatedStories = async (
+  storyId: string,
+  mood?: string,
+  vibe?: string,
+  limit = 6,
+): Promise<LibraryStory[]> => {
+  if (!hasSupabase) return [];
+  try {
+    let query = supabase
+      .from('stories')
+      .select('id,title,hero_name,library_slug,age_group,vibe,mood,thumbs_up,read_count,is_staff_pick,refrain')
+      .eq('is_public', true)
+      .neq('id', storyId)
+      .not('library_slug', 'is', null);
+
+    // Filter by matching mood or vibe for emotional adjacency
+    if (mood || vibe) {
+      const conditions: string[] = [];
+      if (mood) conditions.push(`mood.eq.${mood}`);
+      if (vibe) conditions.push(`vibe.eq.${vibe}`);
+      query = query.or(conditions.join(','));
+    }
+
+    const { data, error } = await query
+      .order('read_count', { ascending: false })
+      .limit(limit);
+
+    if (error || !data) return [];
+    return data.map(dbToLibraryStory);
+  } catch (e) {
+    console.error('[storage] getRelatedStories error:', e);
+    return [];
+  }
 };
 
 // ── Library: attribution ─────────────────────────────────────────────────

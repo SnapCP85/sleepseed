@@ -4,6 +4,8 @@ import { hasSupabase } from '../lib/supabase';
 import { getActiveEgg, getAllHatchedCreatures, createEgg } from '../lib/hatchery';
 import { CREATURES, getCreature } from '../lib/creatures';
 import type { CreatureDef } from '../lib/creatures';
+import { getRitualState, type RitualState } from '../lib/ritualState';
+import { getDreamKeeperById, V1_DREAMKEEPERS } from '../lib/dreamkeepers';
 
 const CSS = `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -137,6 +139,7 @@ export default function Hatchery({ user, onBack }: HatcheryProps) {
   const [loading,setLoading]=useState(true);
   const [selected,setSelected]=useState<HatchedCreature|null>(null);
   const [tipStar,setTipStar]=useState<{idx:number;x:number;y:number;creatureId:string}|null>(null);
+  const [ritualState,setRitualState]=useState<RitualState|null>(null);
 
   useEffect(()=>{
     if(!hasSupabase){setLoading(false);return;}
@@ -151,7 +154,9 @@ export default function Hatchery({ user, onBack }: HatcheryProps) {
         if(!egg){try{const rc=CREATURES[Math.floor(Math.random()*CREATURES.length)];egg=await createEgg(user.id,char.id,rc.id,1);}catch{}}
         if(egg)eggMap.set(char.id,egg);
       }
-      setEggs(eggMap);setLoading(false);
+      setEggs(eggMap);
+      setRitualState(getRitualState(user.id));
+      setLoading(false);
     };
     load();
   },[user.id]);
@@ -191,6 +196,84 @@ export default function Hatchery({ user, onBack }: HatcheryProps) {
       </div>
 
       <div className="ns-inner">
+        {/* ════════════════════════════════════
+            DREAMKEEPER EVOLUTION (ritual-aware)
+        ════════════════════════════════════ */}
+        {ritualState && !ritualState.ritualComplete && ritualState.creatureName && (
+          <div style={{
+            borderRadius:20, padding:'20px 18px', marginBottom:16, textAlign:'center',
+            background:'rgba(245,184,76,.04)', border:'1px solid rgba(245,184,76,.12)',
+            animation:'nsFade .4s ease both',
+          }}>
+            <div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(245,184,76,.45)',
+              letterSpacing:'.08em',textTransform:'uppercase',marginBottom:10}}>
+              Hatching in progress · Night {ritualState.currentNight} of 3
+            </div>
+            {/* Egg visual */}
+            <div style={{fontSize:48,lineHeight:1,marginBottom:10,
+              filter:'drop-shadow(0 0 16px rgba(245,184,76,.3))',
+              animation:ritualState.eggState==='hatching'?'eggRock 1.2s ease-in-out infinite':'nsFade .4s ease both',
+            }}>🥚</div>
+            <div style={{fontFamily:"'Fraunces',serif",fontSize:14,fontWeight:400,
+              color:'#F4EFE8',lineHeight:1.4,marginBottom:6}}>
+              {ritualState.eggState==='idle' && `${ritualState.creatureName}'s egg is listening`}
+              {ritualState.eggState==='cracked' && `${ritualState.creatureName}'s egg is starting to crack`}
+              {ritualState.eggState==='hatching' && `${ritualState.creatureName} is almost ready to hatch`}
+            </div>
+            {/* Progress bar */}
+            <div style={{width:'80%',height:4,borderRadius:2,background:'rgba(255,255,255,.06)',
+              margin:'0 auto',overflow:'hidden'}}>
+              <div style={{
+                width: ritualState.currentNight === 1 ? '15%' : ritualState.currentNight === 2 ? '50%' : '85%',
+                height:'100%',borderRadius:2,
+                background:'linear-gradient(90deg, #F5B84C, #ff82b8)',
+                transition:'width .8s ease-out',
+              }}/>
+            </div>
+          </div>
+        )}
+
+        {/* DreamKeeper evolution — post-ritual, shows current stage */}
+        {ritualState?.ritualComplete && creatures.length > 0 && (() => {
+          const c = creatures[0];
+          const dk = getDreamKeeperById(c.creatureType) || V1_DREAMKEEPERS.find(d => d.emoji === c.creatureEmoji);
+          if (!dk) return null;
+          const storyN = allCards.filter(card => card.characterIds?.includes(c.characterId)).length;
+          const stage = storyN < 3 ? 'baby' : storyN < 12 ? 'growing' : 'full';
+          const stageLabel = stage === 'baby' ? 'Baby DreamKeeper' : stage === 'growing' ? 'Growing Companion' : 'Fully Formed';
+          const stageMsg = stage === 'baby' ? "You've been growing something beautiful"
+            : stage === 'growing' ? 'I remember everything we\'ve made'
+            : "I'm here because of every night together";
+          return (
+            <div style={{
+              borderRadius:20, padding:'20px 18px', marginBottom:16, textAlign:'center',
+              background:`rgba(${parseInt(dk.color.slice(1,3),16)},${parseInt(dk.color.slice(3,5),16)},${parseInt(dk.color.slice(5,7),16)},.04)`,
+              border:`1px solid ${dk.color}18`,
+              animation:'nsFade .4s ease both',
+            }}>
+              <div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:`${dk.color}66`,
+                letterSpacing:'.08em',textTransform:'uppercase',marginBottom:8}}>
+                {stageLabel} · {storyN} {storyN===1?'memory':'memories'}
+              </div>
+              {dk.imageSrc ? (
+                <div style={{width:80,height:96,margin:'0 auto 10px',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <img src={dk.imageSrc} alt={dk.name} style={{width:'100%',height:'100%',objectFit:'contain',
+                    filter:`drop-shadow(0 0 14px ${dk.color}40)`}}/>
+                </div>
+              ) : (
+                <div style={{fontSize:48,lineHeight:1,marginBottom:10,
+                  filter:`drop-shadow(0 0 14px ${dk.color}40)`}}>{dk.emoji}</div>
+              )}
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:14,fontWeight:400,
+                color:'#F4EFE8',lineHeight:1.4,marginBottom:4}}>{dk.name}</div>
+              <div style={{fontFamily:"'Lora','Fraunces',Georgia,serif",fontStyle:'italic',
+                fontSize:12,color:'rgba(244,239,232,.4)',lineHeight:1.5}}>
+                "{stageMsg}"
+              </div>
+            </div>
+          );
+        })()}
+
         {/* ════════════════════════════════════
             THE SKY — all completed constellations
         ════════════════════════════════════ */}

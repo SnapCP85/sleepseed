@@ -3,6 +3,7 @@ import { useApp } from '../AppContext';
 import ElderDreamKeeper from '../components/onboarding/ElderDreamKeeper';
 import DreamEgg from '../components/onboarding/DreamEgg';
 import StarBackground from '../components/onboarding/StarBackground';
+import OnboardingShell from '../components/onboarding/OnboardingShell';
 import '../components/onboarding/onboarding.css';
 import { getRitualState, completeNight1, completeNight2 } from '../lib/ritualState';
 import { saveNightCard } from '../lib/storage';
@@ -121,7 +122,7 @@ export default function NightDashboard({ night, initialScreen, onStartStory, onN
   if (night === 1) {
     // ── C1: Welcome ──
     if (n1Screen === 'welcome') return (
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 28%, rgba(50,25,110,.9), #060912 65%)' }}>
           <StarBackground />
           <div style={{ position: 'absolute', top: 72, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 5, ...fadeUp(0.2) }}>
@@ -147,7 +148,7 @@ export default function NightDashboard({ night, initialScreen, onStartStory, onN
 
     // ── C2: Lore ──
     if (n1Screen === 'lore') return (
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 22%, rgba(25,14,70,.88), #060912 55%)' }}>
           <StarBackground opacity={0.65} />
           <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 220, height: 200, background: 'radial-gradient(ellipse at 50% 0%, rgba(246,197,111,.08), transparent 70%)', pointerEvents: 'none' }} />
@@ -180,7 +181,7 @@ export default function NightDashboard({ night, initialScreen, onStartStory, onN
     if (n1Screen === 'share') {
       const smileOpts = ['Playing', 'A hug', 'My pet', 'Something silly', 'Being outside', 'Something else'];
       return (
-        <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
           <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 18%, rgba(246,197,111,.07), #060912 54%)' }}>
             <StarBackground opacity={0.55} />
             <div className="ob-ct" style={{ paddingTop: 52, gap: 0 }}>
@@ -233,7 +234,7 @@ export default function NightDashboard({ night, initialScreen, onStartStory, onN
 
     // ── C7: Post-story close ("That was your first story together") ──
     if (n1Screen === 'post-story') return (
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 44%, rgba(20,8,55,.98), #030408 70%)' }}>
           <StarBackground opacity={0.55} />
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 44px', textAlign: 'center' }}>
@@ -263,7 +264,7 @@ export default function NightDashboard({ night, initialScreen, onStartStory, onN
 
     // ── C8: Night Card ──
     if (n1Screen === 'card') return (
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 26%, rgba(20,80,60,.3), #060912 58%)' }}>
           <StarBackground opacity={0.72} />
           <div className="ob-ct" style={{ paddingTop: 64 }}>
@@ -329,7 +330,7 @@ export default function NightDashboard({ night, initialScreen, onStartStory, onN
 
     // ── C9: Tuck in ──
     if (n1Screen === 'tuck-in') return (
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 38%, rgba(20,60,50,.35), #060912 62%)' }}>
           <StarBackground opacity={0.88} />
           <div className="ob-ct">
@@ -374,7 +375,7 @@ export default function NightDashboard({ night, initialScreen, onStartStory, onN
 
     // ── N2-1: Return ──
     if (n2Screen === 'return') return (
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 28%, rgba(20,50,90,.85), #060912 62%)' }}>
           <StarBackground opacity={0.75} />
           <div className="ob-ct">
@@ -414,7 +415,7 @@ export default function NightDashboard({ night, initialScreen, onStartStory, onN
     if (n2Screen === 'question') {
       const talentOpts = ['Making things', 'Helping others', 'Running fast', 'Being kind', 'Making people laugh', 'Something else'];
       return (
-        <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
           <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 14%, rgba(246,197,111,.05), #060912 50%)' }}>
             <StarBackground opacity={0.5} />
             <div className="ob-ct" style={{ padding: '56px 28px 28px', gap: 0, justifyContent: 'flex-start' }}>
@@ -453,7 +454,7 @@ export default function NightDashboard({ night, initialScreen, onStartStory, onN
 
     // ── N2 post-story ──
     if (n2Screen === 'post-story') return (
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 38%, rgba(14,48,36,.35), #060912 62%)' }}>
           <StarBackground opacity={0.82} />
           <div className="ob-ct">
@@ -485,7 +486,7 @@ export default function NightDashboard({ night, initialScreen, onStartStory, onN
   if (night === 3) {
     // ── N3-1: Tonight is different ──
     return (
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(60,10,80,.85), #060912 62%)' }}>
           <StarBackground opacity={0.9} />
           <div className="ob-ct" style={{ paddingTop: 52, gap: 0, justifyContent: 'flex-start' }}>

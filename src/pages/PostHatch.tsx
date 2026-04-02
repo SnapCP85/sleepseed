@@ -19,7 +19,7 @@ export default function PostHatch({ childName, creatureEmoji, creatureName, onCo
 
   // ── First Contact ──
   if (screen === 'contact') return (
-    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
       <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(50,20,80,.7), #060912 60%)' }}>
         <StarBackground opacity={0.85} />
         <div className="ob-ct" style={{ paddingTop: 64, justifyContent: 'center' }}>
@@ -54,7 +54,7 @@ export default function PostHatch({ childName, creatureEmoji, creatureName, onCo
 
   // ── Photo Night Card ──
   if (screen === 'photo-card') return (
-    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
       <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 26%, rgba(50,10,60,.35), #060912 58%)' }}>
         <StarBackground opacity={0.75} />
         <div className="ob-ct" style={{ paddingTop: 64 }}>
@@ -107,7 +107,7 @@ export default function PostHatch({ childName, creatureEmoji, creatureName, onCo
 
   // ── Born Card (final screen) ──
   return (
-    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
       <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 26%, rgba(60,10,80,.35), #060912 58%)' }}>
         <StarBackground opacity={0.75} />
         <div className="ob-ct" style={{ paddingTop: 64 }}>

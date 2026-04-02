@@ -7,6 +7,8 @@ import { saveStory as dbSaveStory, saveNightCard as dbSaveNightCard, submitStory
 import { BASE_URL } from "./lib/config";
 import { getSceneByVibe } from "./lib/storyScenes";
 import type { HatchedCreature } from "./lib/types";
+import StoryCard from "./components/StoryCard";
+import { shareStoryCardForInstagram } from "./lib/shareUtils";
 
 const FONTS = ``; // fonts loaded via index.html <link>
 
@@ -1576,6 +1578,7 @@ export default function SleepSeed({
   const [v8rTrayOpen,      setV8rTrayOpen]      = useState(false);
   const [v8rShareOpen,     setV8rShareOpen]     = useState(false);
   const [v8rLinkCopied,    setV8rLinkCopied]    = useState(false);
+  const [v8rShareIncludeNightCard, setV8rShareIncludeNightCard] = useState(false);
   const [v8rWordMagic,     setV8rWordMagic]     = useState(false);
   const [v8rAmbientOn,     setV8rAmbientOn]     = useState(false);
   const [v8rCreatureAnim,  setV8rCreatureAnim]  = useState<'idle'|'bounce'|'wiggle'|'sparkle'>('idle');
@@ -2135,14 +2138,14 @@ export default function SleepSeed({
     }
   };
 
-  // ── PDF Download ──────────────────────────────────────────────────────
+  // ── PDF Download — Keepsake-quality portrait storybook ──────────────
   const downloadStory = async () => {
     if(!book) return;
     try {
       const { jsPDF } = await import("jspdf");
-      // A4 landscape: 297 × 210 mm
-      const doc = new jsPDF({ orientation:"landscape", unit:"mm", format:"a4" });
-      const W = 297, H = 210;
+      // A5 portrait — natural storybook feel
+      const doc = new jsPDF({ orientation:"portrait", unit:"mm", format:"a5" });
+      const W = 148, H = 210;
 
       // Colours
       const NAVY:  [number,number,number] = [13,  21,  53];
@@ -2152,11 +2155,12 @@ export default function SleepSeed({
       const INK:   [number,number,number] = [26,  20,  16];
       const RULE:  [number,number,number] = [228, 220, 216];
       const PG_NUM:[number,number,number] = [184, 168, 152];
-      const URL_C: [number,number,number] = [200, 189, 176];
-      const REFRAIN:[number,number,number]= [74,  56,  128];
+      const REFRAIN_C:[number,number,number]= [74,  56,  128];
       const FOR_LBL:[number,number,number]= [176, 160, 144];
+      const PAD = 18;
+      const TW = W - PAD*2; // text width
 
-      // Moon crescent helper (drawn with two circles)
+      // Moon crescent helper
       const drawMoon = (cx:number, cy:number, r:number) => {
         doc.setFillColor(...GOLD);
         doc.circle(cx, cy, r, "F");
@@ -2164,174 +2168,165 @@ export default function SleepSeed({
         doc.circle(cx - r*0.35, cy - r*0.1, r*0.82, "F");
       };
 
-      // Thin rule line helper
       const rule = (x:number, y:number, w:number) => {
         doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
         doc.line(x, y, x+w, y);
       };
 
-      // ── SHEET 1: COVER ────────────────────────────────────────────────
-      // Left brand panel
-      const LP = 108; // left panel width mm
+      // ── COVER PAGE ────────────────────────────────────────────────────
       doc.setFillColor(...NAVY);
-      doc.rect(0, 0, LP, H, "F");
+      doc.rect(0, 0, W, H, "F");
 
-      // Moon centred in left panel, upper third
-      drawMoon(LP/2, 68, 8);
+      // Stars
+      for(let i=0;i<20;i++){
+        const sx=((i*37+13)%130)+9, sy=((i*53+7)%100)+10;
+        doc.setFillColor(238,232,255); doc.setGState(new (doc as any).GState({opacity:0.15+((i%5)*0.04)}));
+        doc.circle(sx,sy,0.5,"F");
+      }
+      doc.setGState(new (doc as any).GState({opacity:1}));
 
-      // SleepSeed wordmark
-      doc.setFont("times", "bold");
-      doc.setFontSize(18);
+      // Moon
+      drawMoon(W/2, 50, 10);
+
+      // SleepSeed
+      doc.setFont("times", "bold"); doc.setFontSize(12);
       doc.setTextColor(...WHITE);
-      doc.text("SleepSeed", LP/2, 85, { align:"center" });
+      doc.text("SleepSeed", W/2, 68, { align:"center" });
+      doc.setFont("helvetica", "normal"); doc.setFontSize(6);
+      doc.setTextColor(...GOLD);
+      doc.text("BEDTIME STORIES", W/2, 74, { align:"center" });
 
-      // Tagline
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      doc.setTextColor(212, 160, 48);
-      doc.text("BEDTIME STORIES", LP/2, 93, { align:"center" });
+      // Gold rule
+      doc.setDrawColor(...GOLD); doc.setLineWidth(0.4);
+      doc.line(W/2-30, 82, W/2+30, 82);
 
-      // URL at bottom of brand panel
-      doc.setFontSize(6.5);
-      doc.setTextColor(255, 255, 255, 0.18 as any);
+      // "A bedtime story for"
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+      doc.setTextColor(...FOR_LBL);
+      doc.text("A bedtime story for", W/2, 94, { align:"center" });
+
+      // Hero name
+      doc.setFont("times", "bold"); doc.setFontSize(22);
+      doc.setTextColor(...WHITE);
+      doc.text(book.heroName, W/2, 106, { align:"center" });
+
+      // Title
+      doc.setFont("times", "normal"); doc.setFontSize(13);
+      doc.setTextColor(250, 233, 168);
+      const coverTitleLines = doc.splitTextToSize(book.title, TW);
+      doc.text(coverTitleLines, W/2, 120, { align:"center" });
+
+      // Creature
+      if (companionCreature?.creatureEmoji) {
+        doc.setFontSize(28);
+        doc.text(companionCreature.creatureEmoji, W/2, 160, { align:"center" });
+      }
+
+      // Footer
+      doc.setFont("helvetica", "normal"); doc.setFontSize(5.5);
       doc.setTextColor(100, 100, 130);
-      doc.text("sleepseed.vercel.app", LP/2, H-12, { align:"center" });
+      doc.text("sleepseed.vercel.app", W/2, H-10, { align:"center" });
 
-      // Right title panel
-      doc.setFillColor(...WHITE);
-      doc.rect(LP, 0, W-LP, H, "F");
-
-      const RX = LP + 24; // text left margin in right panel
-      const RW = W - LP - 48; // text width
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      doc.setTextColor(...FOR_LBL);
-      doc.text("A BEDTIME STORY FOR", RX, 62);
-
-      doc.setFont("times", "bold");
-      doc.setFontSize(34);
-      doc.setTextColor(...INK);
-      doc.text(book.heroName, RX, 80);
-
-      doc.setFont("times", "normal");
-      doc.setFontSize(15);
-      doc.setTextColor(...INK);
-      const titleLines = doc.splitTextToSize(book.title, RW);
-      doc.text(titleLines, RX, 96);
-
-      rule(RX, 96 + titleLines.length*7 + 4, RW);
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      doc.setTextColor(...FOR_LBL);
-      doc.text("Written just for tonight", RX, 96 + titleLines.length*7 + 12);
-      doc.text("sleepseed.vercel.app", RX, 96 + titleLines.length*7 + 19);
-
-      // ── STORY PAGES: 2 per sheet ──────────────────────────────────────
+      // ── STORY PAGES (one per page) ────────────────────────────────────
       const allPages = book.isAdventure
         ? [...(book.setup_pages||[]), ...(book.path_a||[]), ...(book.path_b||[])]
         : (book.pages||[]);
 
-      const PW = W / 2; // each panel = 148.5mm
-      const PAD_X = 18;  // horizontal padding inside each panel
-      const PAD_TOP = 20;
-      const PAD_BOT = 18;
-      const TEXT_W = PW - PAD_X*2;
-      const TEXT_H = H - PAD_TOP - PAD_BOT - 14; // reserve footer
-
-      const drawStoryPage = (
-        pgIndex: number,    // 0-based index in allPages
-        side: "left"|"right"
-      ) => {
-        const pg = allPages[pgIndex];
-        if(!pg) return;
-        const X0 = side === "left" ? 0 : PW;
-        const isEven = pgIndex % 2 === 1; // alternate tint
-        const bgColor = isEven ? CREAM_BG : WHITE;
-
-        doc.setFillColor(...bgColor);
-        doc.rect(X0, 0, PW, H, "F");
-
-        // Divider between panels (only draw on left side to avoid double)
-        if(side === "left") {
-          doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
-          doc.line(PW, 8, PW, H-8);
-        }
+      allPages.forEach((pg: any, i: number) => {
+        doc.addPage();
+        const isEven = i % 2 === 0;
+        doc.setFillColor(...(isEven ? CREAM_BG : WHITE));
+        doc.rect(0, 0, W, H, "F");
 
         // Page text
-        doc.setFont("times", "normal");
-        doc.setFontSize(11);
+        doc.setFont("times", "normal"); doc.setFontSize(11);
         doc.setTextColor(...INK);
-        const lines = doc.splitTextToSize(pg.text||"", TEXT_W);
-        doc.text(lines, X0+PAD_X, PAD_TOP);
+        const lines = doc.splitTextToSize(pg.text||"", TW);
+        doc.text(lines, PAD, 24);
 
-        // Refrain — show on every even-index page (right-side feel)
-        const hasRefrain = book.refrain && pgIndex % 2 === 1;
-        if(hasRefrain) {
-          const refrainY = H - PAD_BOT - 14;
-          rule(X0+PAD_X, refrainY - 3, TEXT_W);
-          doc.setFont("times", "italic");
-          doc.setFontSize(9.5);
-          doc.setTextColor(...REFRAIN);
-          const rLines = doc.splitTextToSize(`"${book.refrain}"`, TEXT_W);
-          doc.text(rLines, X0+PAD_X, refrainY + 4);
+        // Refrain on even pages
+        if(book.refrain && i % 2 === 1) {
+          rule(PAD, H - 36, TW);
+          doc.setFont("times", "italic"); doc.setFontSize(8.5);
+          doc.setTextColor(...REFRAIN_C);
+          const rLines = doc.splitTextToSize(`"${book.refrain}"`, TW);
+          doc.text(rLines, PAD, H - 30);
         }
 
-        // Footer rule
-        rule(X0+PAD_X, H - PAD_BOT + 1, TEXT_W);
-
-        // Page number
-        doc.setFont("times", "italic");
-        doc.setFontSize(7);
+        // Footer
+        rule(PAD, H - 16, TW);
+        doc.setFont("times", "italic"); doc.setFontSize(6.5);
         doc.setTextColor(...PG_NUM);
-        doc.text(String(pgIndex+1), X0+PAD_X, H - PAD_BOT + 7);
+        doc.text(String(i+1), PAD, H - 11);
+        doc.setFont("helvetica", "normal"); doc.setFontSize(5.5);
+        doc.text("sleepseed.vercel.app", W - PAD, H - 11, { align:"right" });
+      });
 
-        // URL
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(6);
-        doc.setTextColor(...URL_C);
-        doc.text("sleepseed.vercel.app", X0+PW-PAD_X, H - PAD_BOT + 7, { align:"right" });
-      };
+      // ── THE END PAGE ──────────────────────────────────────────────────
+      doc.addPage();
+      doc.setFillColor(...NAVY);
+      doc.rect(0, 0, W, H, "F");
 
-      // Pair pages onto sheets
-      for(let i=0; i<allPages.length; i+=2) {
-        doc.addPage();
-        drawStoryPage(i, "left");
-        drawStoryPage(i+1, "right");
+      drawMoon(W/2, 55, 8);
+
+      doc.setFont("times", "bold"); doc.setFontSize(22);
+      doc.setTextColor(...WHITE);
+      doc.text("The End", W/2, 78, { align:"center" });
+
+      doc.setDrawColor(...GOLD); doc.setLineWidth(0.4);
+      doc.line(W/2-25, 84, W/2+25, 84);
+
+      // Refrain prominently
+      if(book.refrain) {
+        doc.setFont("times", "italic"); doc.setFontSize(10);
+        doc.setTextColor(250, 233, 168);
+        const rLines = doc.splitTextToSize(`"${book.refrain}"`, TW - 10);
+        doc.text(rLines, W/2, 98, { align:"center" });
       }
 
-      // ── FINAL SHEET: The End ──────────────────────────────────────────
-      doc.addPage();
-      // Left: brand panel (matching cover)
-      doc.setFillColor(...NAVY);
-      doc.rect(0, 0, LP, H, "F");
-      drawMoon(LP/2, 68, 8);
-      doc.setFont("times", "bold");
-      doc.setFontSize(18);
-      doc.setTextColor(...WHITE);
-      doc.text("SleepSeed", LP/2, 85, { align:"center" });
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      doc.setTextColor(...GOLD);
-      doc.text("BEDTIME STORIES", LP/2, 93, { align:"center" });
-      doc.setFontSize(6.5);
-      doc.setTextColor(100, 100, 130);
-      doc.text("sleepseed.vercel.app", LP/2, H-12, { align:"center" });
-
-      // Right: The End
-      doc.setFillColor(...WHITE);
-      doc.rect(LP, 0, W-LP, H, "F");
-      doc.setFont("times", "bold");
-      doc.setFontSize(28);
-      doc.setTextColor(...INK);
-      doc.text("The End.", RX, H/2 - 8);
-      rule(RX, H/2 - 2, RW);
-      doc.setFont("times", "italic");
-      doc.setFontSize(10);
+      doc.setFont("times", "italic"); doc.setFontSize(9);
       doc.setTextColor(...FOR_LBL);
-      doc.text(`Sweet dreams, ${book.heroName}.`, RX, H/2 + 7);
-      doc.text("Tomorrow night, another adventure awaits.", RX, H/2 + 15);
+      doc.text(`Sweet dreams, ${book.heroName}.`, W/2, 130, { align:"center" });
+      doc.setFontSize(8);
+      doc.text("Tomorrow night, another adventure awaits.", W/2, 139, { align:"center" });
+
+      // ── NIGHT CARD PAGE (optional) ────────────────────────────────────
+      if (book.nightCard && v8rShareIncludeNightCard) {
+        const nc = book.nightCard;
+        doc.addPage();
+        doc.setFillColor(...CREAM_BG);
+        doc.rect(0, 0, W, H, "F");
+
+        doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+        doc.setTextColor(...FOR_LBL);
+        doc.text("TONIGHT'S NIGHT CARD", W/2, 20, { align:"center" });
+
+        doc.setFont("times", "bold"); doc.setFontSize(14);
+        doc.setTextColor(...INK);
+        const hlLines = doc.splitTextToSize(nc.headline||nc.storyTitle||'', TW);
+        doc.text(hlLines, W/2, 38, { align:"center" });
+
+        rule(PAD, 38 + hlLines.length*6 + 6, TW);
+
+        doc.setFont("times", "italic"); doc.setFontSize(11);
+        doc.setTextColor(74, 56, 40);
+        const qLines = doc.splitTextToSize(`"${nc.quote||''}"`, TW - 10);
+        doc.text(qLines, W/2, 58, { align:"center" });
+
+        if (nc.memory_line) {
+          doc.setFont("times", "normal"); doc.setFontSize(9);
+          doc.setTextColor(...FOR_LBL);
+          const mLines = doc.splitTextToSize(nc.memory_line, TW);
+          doc.text(mLines, W/2, 58 + qLines.length*6 + 14, { align:"center" });
+        }
+
+        // Footer
+        doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+        doc.setTextColor(...PG_NUM);
+        doc.text(`${nc.heroName}  ·  ${nc.date}`, W/2, H - 20, { align:"center" });
+        doc.setFontSize(6); doc.setTextColor(200, 189, 176);
+        doc.text("Night Card — SleepSeed", W/2, H - 13, { align:"center" });
+      }
 
       doc.save(`${book.title.replace(/[^a-z0-9]/gi,"_").toLowerCase()}.pdf`);
     } catch(err) {
@@ -2845,6 +2840,16 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
       const simpleSchema = `{"title":"3-6 word title","cover_prompt":"[15-20 words: wide magical bedtime scene establishing the story world, cozy glowing folk-art atmosphere]","pages":[${pgSchema(totalN)}],"refrain":"4-8 word refrain from the story"}`;
       const advSchema = `{"title":"3-6 word title","cover_prompt":"[15-20 words: wide magical bedtime scene establishing the story world, cozy glowing folk-art atmosphere]","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"exciting choice question for ${name}","option_a_label":"4-7 words","option_b_label":"4-7 words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}],"refrain":"4-8 word refrain from the story"}`;
 
+      // ── DreamKeeper context (additive — omitted if no creature) ────────
+      // Injected here in SleepSeedCore rather than in buildStoryPrompt()
+      // because companionCreature is a prop available here but not in the
+      // base prompt builder's brief interface. The prompt module remains
+      // untouched — this block is appended alongside the other contextual
+      // sections (age, characters, setting) that SleepSeedCore already adds.
+      const dreamKeeperCtx = companionCreature?.name
+        ? `\n━━━ DREAMKEEPER CONTEXT ━━━\nThis child's DreamKeeper is ${companionCreature.name} (a ${companionCreature.creatureType !== 'spirit' ? companionCreature.creatureType : 'magical creature'}).\nThe DreamKeeper should be a subtle presence — a safe companion felt within the story world.\nDo not make the DreamKeeper a main character unless the story is about them.\nWeave the DreamKeeper naturally: a familiar warmth, a background detail, a small moment of comfort.\n`
+        : '';
+
       // ── Assemble final prompt with characters + age + JSON output ───────
       const storyPrompt = `${promptUser}
 
@@ -2853,7 +2858,7 @@ ${ageLine}
 
 ━━━ CHARACTERS ━━━
 ${charCtx}
-
+${dreamKeeperCtx}
 ━━━ SETTING, OCCASION, AND CONTEXT ━━━
 ${worldLine}${guidLine}${occLine}${lesLine}${moodLine}${paceLine}${styleLine}${traitLine}
 
@@ -3368,7 +3373,13 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
 
   const renderV8rShareModal = () => {
     if (!v8rShareOpen) return null;
-    const storyUrl = window.location.origin + '/story/' + (book?.librarySlug ?? '');
+    const storyUrl = window.location.origin + '/stories/' + (book?.librarySlug ?? '');
+    const shareBtn = (icon: React.ReactNode, label: string, onClick: ()=>void, accent?: string) => (
+      <div onClick={onClick} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,padding:'11px 8px',borderRadius:16,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',cursor:'pointer'}}>
+        {icon}
+        <span style={{fontSize:8.5,fontFamily:"'DM Mono',monospace",color:accent||'rgba(234,242,255,.5)'}}>{label}</span>
+      </div>
+    );
     return (
       <>
         <div onClick={()=>{setV8rShareOpen(false);setV8rLinkCopied(false);}} style={{position:'absolute',inset:0,zIndex:85,background:'rgba(0,0,0,.72)',animation:'v8r-shareReveal .2s ease both'}}/>
@@ -3380,10 +3391,42 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
             <div style={{fontSize:10,color:'rgba(234,242,255,.36)',fontFamily:"'Nunito',sans-serif",marginTop:3}}>A story for {book?.heroName}</div>
           </div>
           <div style={{padding:'16px 22px 24px'}}>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:14}}>
-              <div onClick={()=>{navigator.clipboard.writeText(storyUrl).catch(()=>{});setV8rLinkCopied(true);navigator.vibrate?.(6);}} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,padding:'11px 8px',borderRadius:16,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',cursor:'pointer'}}><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="rgba(245,184,76,.85)" strokeWidth="1.8" strokeLinecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span style={{fontSize:8.5,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.5)'}}>{v8rLinkCopied?'Copied!':'Copy link'}</span></div>
-              <div onClick={()=>{downloadStory();setV8rShareOpen(false);}} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,padding:'11px 8px',borderRadius:16,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',cursor:'pointer'}}><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="rgba(20,216,144,.85)" strokeWidth="1.8" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span style={{fontSize:8.5,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.5)'}}>Download</span></div>
-              <div onClick={shareStory} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,padding:'11px 8px',borderRadius:16,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',cursor:'pointer'}}><svg viewBox="0 0 24 24" width="22" height="22" fill="rgba(234,242,255,.55)"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg><span style={{fontSize:8.5,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.5)'}}>More</span></div>
+            {/* Night Card toggle — only show if story has a night card */}
+            {book?.nightCard && (
+              <label style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',marginBottom:14,borderRadius:14,border:'1px solid rgba(245,184,76,.15)',background:'rgba(245,184,76,.06)',cursor:'pointer'}}>
+                <input type="checkbox" checked={v8rShareIncludeNightCard??false} onChange={e=>{(setV8rShareIncludeNightCard as any)?.(e.target.checked)}} style={{accentColor:'#F5B84C',width:16,height:16}} />
+                <div>
+                  <div style={{fontSize:12,fontWeight:700,color:'rgba(244,239,232,.7)',fontFamily:"'Nunito',sans-serif"}}>Include Night Card</div>
+                  <div style={{fontSize:9,color:'rgba(244,239,232,.35)',fontFamily:"'DM Mono',monospace"}}>Attach tonight's memory (private fields hidden)</div>
+                </div>
+              </label>
+            )}
+            <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:6,marginBottom:14}}>
+              {shareBtn(
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="rgba(245,184,76,.85)" strokeWidth="1.8" strokeLinecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>,
+                v8rLinkCopied?'Copied!':'Copy link',
+                ()=>{navigator.clipboard.writeText(storyUrl).catch(()=>{});setV8rLinkCopied(true);navigator.vibrate?.(6);}
+              )}
+              {shareBtn(
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="rgba(232,100,200,.8)" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="18" cy="6" r="1.5" fill="rgba(232,100,200,.8)"/></svg>,
+                'Instagram',
+                ()=>{shareStoryCardForInstagram({title:book?.title??'',heroName:book?.heroName??'',refrain:book?.refrain,creatureEmoji:companionCreature?.creatureEmoji,creatureName:companionCreature?.name,vibe:book?.vibe});setV8rShareOpen(false);}
+              )}
+              {shareBtn(
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="rgba(37,211,102,.8)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>,
+                'WhatsApp',
+                ()=>window.open('https://wa.me/?text='+encodeURIComponent(`${book?.title} — a bedtime story for ${book?.heroName}\n\n${storyUrl}`),'_blank')
+              )}
+              {shareBtn(
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="rgba(20,216,144,.85)" strokeWidth="1.8" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+                'PDF',
+                ()=>{downloadStory();setV8rShareOpen(false);}
+              )}
+              {shareBtn(
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="rgba(234,242,255,.55)"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>,
+                'More',
+                ()=>{if(navigator.share){navigator.share({title:book?.title,text:`A bedtime story for ${book?.heroName}`,url:storyUrl}).catch(()=>{});}else{navigator.clipboard.writeText(storyUrl).catch(()=>{});setV8rLinkCopied(true);}}
+              )}
             </div>
             {v8rLinkCopied&&<div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(20,216,144,.8)',textAlign:'center',marginBottom:8}}>✓ Link copied to clipboard</div>}
           </div>
@@ -3430,11 +3473,20 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
             <div style={{fontSize:13,color:'rgba(244,239,232,.6)',fontFamily:"'Lora',serif",fontStyle:'italic',lineHeight:1.6}}>"{book.refrain}"</div>
           </div>
         )}
-        <div style={{marginBottom:24,animation:'nc-fadeUp .6s .5s ease both, nc-floatY 5s ease-in-out infinite',opacity:0}}>
-          <div style={{fontSize:64,lineHeight:1}}>{companionCreature?.creatureEmoji??'🐰'}</div>
+        {/* Story Card artifact */}
+        <div style={{marginBottom:20,animation:'nc-fadeUp .6s .5s ease both',opacity:0}}>
+          <StoryCard
+            title={book?.title??'Tonight\'s Story'}
+            heroName={book?.heroName??heroName}
+            quote={book?.refrain}
+            creatureEmoji={companionCreature?.creatureEmoji??'🐰'}
+            creatureName={companionCreature?.name??'SleepSeed'}
+            width={220}
+          />
         </div>
-        <div style={{fontSize:13,color:'rgba(234,242,255,.45)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.65,marginBottom:32,animation:'nc-fadeUp .6s .6s ease both',opacity:0}}>
-          {companionCreature?.name??'Your companion'} wants to save<br/>a memory from tonight.
+        <div style={{fontSize:12,color:'rgba(234,242,255,.38)',fontFamily:"'DM Mono',monospace",letterSpacing:'.5px',marginBottom:8,animation:'nc-fadeUp .6s .55s ease both',opacity:0}}>TONIGHT'S STORY</div>
+        <div style={{fontSize:13,color:'rgba(234,242,255,.45)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.65,marginBottom:24,animation:'nc-fadeUp .6s .6s ease both',opacity:0}}>
+          Keep this moment
         </div>
         <div style={{width:'100%',animation:'nc-fadeUp .6s .7s ease both',opacity:0,display:'flex',flexDirection:'column',gap:10}}>
           {v8rGoldenSeed && renderV8rGoldenSeed()}

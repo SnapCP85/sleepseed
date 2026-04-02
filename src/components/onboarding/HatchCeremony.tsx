@@ -123,7 +123,7 @@ export default function HatchCeremony({ childName, creatureEmoji, onComplete }: 
   }, [childName]);
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#030408', overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', inset: 0, background: '#030408', overflow: 'hidden' }}>
       <canvas
         ref={canvasRef}
         width={345} height={748}

@@ -24,122 +24,102 @@ const COVER_PALETTES = [
   { bg: 'linear-gradient(145deg,#240c10,#14080a)', accent: '#ff7878' },
 ];
 
+// ── Upgraded CSS ─────────────────────────────────────────────────────────────
+
 const CSS = `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--night:#060912;--amber:#F5B84C;--teal:#14d890;--cream:#F4EFE8;--serif:'Fraunces',Georgia,serif;--sans:'Nunito',system-ui,sans-serif;--mono:'DM Mono',monospace}
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes lFloat{0%,100%{transform:translateY(0) translate(-50%,-50%)}50%{transform:translateY(-6px) translate(-50%,-50%)}}
+@keyframes dFadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes dFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes dTwinkle{0%,100%{opacity:.05}50%{opacity:.2}}
+@keyframes dShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
-.lh{min-height:100dvh;background:#060912;font-family:var(--sans);color:#F4EFE8;padding:0;display:flex;flex-direction:column}
+.dsc{min-height:100dvh;background:linear-gradient(180deg,#060912 0%,#0a0e24 50%,#0f0a20 100%);font-family:var(--sans);color:var(--cream);position:relative;overflow-x:hidden}
+.dsc-inner{max-width:430px;margin:0 auto;padding:0 20px 32px;position:relative;z-index:5}
+.dsc-star{position:fixed;border-radius:50%;background:#EEE8FF;pointer-events:none;z-index:0}
 
 /* header */
-.lh-header{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 0;margin-bottom:16px}
-.lh-header-title{font-family:var(--serif);font-size:26px;font-weight:900;letter-spacing:-0.5px;color:#F4EFE8}
-.lh-header-btn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(234,242,255,.5);transition:all .18s}
-.lh-header-btn:hover{border-color:rgba(255,255,255,.2);color:#F4EFE8}
-.lh-header-btn svg{width:14px;height:14px}
+.dsc-header{padding:48px 0 8px;text-align:center}
 
-/* genre pills */
-.lh-genres{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;padding:0 20px;margin-bottom:16px}
-.lh-genres::-webkit-scrollbar{display:none}
-.lh-gpill{flex-shrink:0;padding:6px 13px;border-radius:20px;font-size:10.5px;font-family:var(--mono);cursor:pointer;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(234,242,255,.38);transition:all .18s;font-weight:400}
-.lh-gpill:hover{border-color:rgba(255,255,255,.18);color:rgba(234,242,255,.55)}
-.lh-gpill.on{background:rgba(245,184,76,.12);border-color:rgba(245,184,76,.32);color:#F5B84C;font-weight:600}
+/* emotional chips */
+.dsc-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:4px 0 12px;-webkit-overflow-scrolling:touch}
+.dsc-chips::-webkit-scrollbar{display:none}
+.dsc-chip{flex-shrink:0;padding:8px 16px;border-radius:20px;font-size:12px;font-family:var(--sans);font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(244,239,232,.4);transition:all .2s cubic-bezier(.16,1,.3,1);-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:5px}
+.dsc-chip:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14)}
+.dsc-chip.on{background:rgba(245,184,76,.1);border-color:rgba(245,184,76,.3);color:#F5B84C;font-weight:600}
 
 /* search */
-.lh-search{padding:0 20px;margin-bottom:16px;position:relative}
-.lh-search-icon{position:absolute;left:32px;top:50%;transform:translateY(-50%);pointer-events:none;color:rgba(234,242,255,.3)}
-.lh-search-icon svg{width:13px;height:13px;display:block}
-.lh-search input{width:100%;padding:10px 12px 10px 32px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);font-size:12px;color:#F4EFE8;font-family:var(--sans);outline:none;transition:border-color .15s}
-.lh-search input::placeholder{color:rgba(234,242,255,.3)}
-.lh-search input:focus{border-color:rgba(255,255,255,.2)}
+.dsc-search{position:relative;margin-bottom:16px}
+.dsc-search-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:rgba(244,239,232,.25)}
+.dsc-search-ico svg{width:14px;height:14px;display:block}
+.dsc-search input{width:100%;padding:11px 14px 11px 36px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);font-size:13px;color:var(--cream);font-family:var(--sans);outline:none;transition:border-color .2s}
+.dsc-search input::placeholder{color:rgba(244,239,232,.22)}
+.dsc-search input:focus{border-color:rgba(245,184,76,.3)}
 
-/* stats row */
-.lh-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 20px;margin-bottom:16px}
-.lh-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:10px 8px;text-align:center}
-.lh-stat-num{font-family:var(--serif);font-size:20px;font-weight:900;color:#F4EFE8;line-height:1.1}
-.lh-stat-label{font-family:var(--mono);font-size:7px;letter-spacing:.7px;text-transform:uppercase;color:rgba(234,242,255,.26);margin-top:2px}
+/* tonight card */
+.dsc-tonight{border-radius:20px;overflow:hidden;cursor:pointer;position:relative;border:1px solid rgba(245,184,76,.12);margin-bottom:20px;transition:transform .2s}
+.dsc-tonight:hover{transform:translateY(-2px)}
+.dsc-tonight-cover{height:130px;position:relative;overflow:hidden}
+.dsc-tonight-glow{position:absolute;top:30%;left:50%;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(245,184,76,.12),transparent 70%);transform:translate(-50%,-50%);pointer-events:none}
+.dsc-tonight-emoji{position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);font-size:42px;animation:dFloat 4s ease-in-out infinite}
+.dsc-tonight-fade{position:absolute;bottom:0;left:0;right:0;height:65%;background:linear-gradient(180deg,transparent,rgba(6,9,18,.9))}
+.dsc-tonight-body{position:absolute;bottom:0;left:0;right:0;padding:14px 16px 16px;z-index:2}
 
-/* hero / story of the day */
-.lh-hero-label{font-family:var(--mono);font-size:8.5px;letter-spacing:.9px;text-transform:uppercase;color:rgba(20,216,144,.52);margin-bottom:9px;padding:0 20px}
-.lh-hero-wrap{padding:0 20px;margin-bottom:16px}
-.lh-hero{border-radius:22px;overflow:hidden;cursor:pointer;position:relative;border:1px solid rgba(20,216,144,.16);transition:all .22s;animation:fadeUp .5s ease}
-.lh-hero:hover{transform:translateY(-2px)}
-.lh-hero-cover{height:112px;position:relative;overflow:hidden}
-.lh-hero-glow{position:absolute;top:20%;left:50%;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(20,216,144,.18),transparent 70%);transform:translate(-50%,-50%);pointer-events:none}
-.lh-hero-emoji{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;animation:lFloat 3.5s ease-in-out infinite}
-.lh-hero-fade{position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(180deg,transparent,rgba(6,9,18,.85))}
-.lh-hero-reads{position:absolute;top:10px;right:12px;font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:10px;background:rgba(20,216,144,.15);border:1px solid rgba(20,216,144,.25);color:var(--teal)}
-.lh-hero-bottom{position:absolute;bottom:0;left:0;right:0;padding:10px 14px 12px;z-index:2}
-.lh-hero-title{font-family:var(--serif);font-size:15px;font-weight:900;color:#F4EFE8;line-height:1.25;margin-bottom:2px}
-.lh-hero-hook{font-family:var(--sans);font-size:11px;font-style:italic;color:rgba(234,242,255,.5);line-height:1.35}
-
-/* section header with toggle */
-.lh-sec-head{display:flex;align-items:center;justify-content:space-between;padding:0 20px;margin-bottom:20px}
-.lh-sec-label{font-family:var(--mono);font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:rgba(234,242,255,.35)}
-.lh-toggle{display:flex;gap:2px;background:rgba(255,255,255,.03);border-radius:8px;padding:2px;border:1px solid rgba(255,255,255,.07)}
-.lh-toggle-btn{padding:5px 10px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;border:none;font-family:var(--mono);transition:all .15s;color:rgba(234,242,255,.35);background:transparent}
-.lh-toggle-btn.on{background:rgba(245,184,76,.12);color:var(--amber)}
+/* section */
+.dsc-sec{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;margin-top:8px}
+.dsc-sec-label{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(244,239,232,.3)}
+.dsc-toggle{display:flex;gap:2px;background:rgba(255,255,255,.03);border-radius:10px;padding:2px;border:1px solid rgba(255,255,255,.06)}
+.dsc-toggle-btn{padding:5px 12px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:none;font-family:var(--mono);transition:all .18s;color:rgba(244,239,232,.3);background:transparent}
+.dsc-toggle-btn.on{background:rgba(245,184,76,.1);color:var(--amber)}
 
 /* story grid */
-.lh-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:0 20px;margin-bottom:20px}
-.lh-card{border:1px solid rgba(255,255,255,.07);border-radius:18px;overflow:hidden;cursor:pointer;transition:all .22s;animation:fadeUp .4s ease both}
-.lh-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.14)}
-.lh-card-cover{height:88px;position:relative;overflow:hidden}
-.lh-card-cover-emoji{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:27px}
-.lh-card-cover-fade{position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(180deg,transparent,rgba(6,9,18,.9))}
-.lh-card-cover-title{position:absolute;bottom:6px;left:8px;right:8px;font-family:var(--serif);font-size:11px;font-weight:900;color:#F4EFE8;line-height:1.25;z-index:2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.lh-card-pick{position:absolute;top:6px;left:6px;font-family:var(--mono);font-size:7px;letter-spacing:.5px;text-transform:uppercase;padding:2px 6px;border-radius:6px;background:rgba(245,184,76,.15);border:1px solid rgba(245,184,76,.25);color:#F5B84C;z-index:3}
-.lh-card-meta{padding:9px 10px;background:rgba(0,0,0,.2);display:flex;flex-direction:column;gap:7px}
-.lh-card-hook{font-family:var(--sans);font-size:10.5px;font-style:italic;color:rgba(234,242,255,.5);line-height:1.3;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
-.lh-card-bottom{display:flex;align-items:center;justify-content:space-between}
-.lh-card-label{font-family:var(--mono);font-size:8px;letter-spacing:.4px;color:rgba(234,242,255,.3);text-transform:uppercase}
-.lh-card-star{width:16px;height:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(234,242,255,.2);transition:color .15s;background:none;border:none;padding:0}
-.lh-card-star:hover{color:var(--amber)}
-.lh-card-star.on{color:#F5B84C}
+.dsc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+.dsc-card{border:1px solid rgba(255,255,255,.06);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .2s;animation:dFadeUp .4s ease both}
+.dsc-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.12)}
+.dsc-card-cover{height:90px;position:relative;overflow:hidden}
+.dsc-card-emoji{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:26px}
+.dsc-card-fade{position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(180deg,transparent,rgba(6,9,18,.9))}
+.dsc-card-title{position:absolute;bottom:8px;left:10px;right:10px;font-family:var(--serif);font-size:12px;font-weight:600;color:var(--cream);line-height:1.3;z-index:2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dsc-card-pick{position:absolute;top:6px;left:6px;font-family:var(--mono);font-size:7px;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:8px;background:rgba(245,184,76,.12);border:1px solid rgba(245,184,76,.2);color:#F5B84C;z-index:3}
+.dsc-card-meta{padding:10px 10px 9px;display:flex;flex-direction:column;gap:6px}
+.dsc-card-hook{font-family:var(--sans);font-size:11px;font-style:italic;color:rgba(244,239,232,.4);line-height:1.3;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.dsc-card-bottom{display:flex;align-items:center;justify-content:space-between}
+.dsc-card-label{font-family:var(--mono);font-size:8px;letter-spacing:.04em;color:rgba(244,239,232,.25);text-transform:uppercase}
+.dsc-card-fav{display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(244,239,232,.18);transition:color .15s;background:none;border:none;padding:2px;font-size:14px}
+.dsc-card-fav:hover{color:var(--amber)}
+.dsc-card-fav.on{color:#F5B84C}
+
+/* create bridge */
+.dsc-create{border-radius:16px;padding:20px;text-align:center;background:rgba(245,184,76,.03);border:1px solid rgba(245,184,76,.1);margin-bottom:20px;cursor:pointer;transition:background .2s}
+.dsc-create:hover{background:rgba(245,184,76,.06)}
 
 /* promo */
-.lh-promo{margin:16px 20px;border-radius:16px;padding:20px 22px;text-align:center}
-.lh-promo.amber{background:rgba(245,184,76,.04);border:1px solid rgba(245,184,76,.18)}
-.lh-promo.teal{background:rgba(20,216,144,.04);border:1px solid rgba(20,216,144,.18)}
-.lh-promo-text{font-size:14px;color:rgba(234,242,255,.6);line-height:1.65;margin-bottom:12px}
-.lh-promo-btn{padding:10px 24px;border-radius:50px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans);transition:all .18s}
-.lh-promo-btn.amber{background:var(--amber);color:#120800}
-.lh-promo-btn.teal{background:var(--teal);color:#021008}
-
-/* load more */
-.lh-more{display:flex;justify-content:center;padding:20px 20px 40px}
-.lh-more-btn{padding:10px 28px;border-radius:50px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:rgba(234,242,255,.45);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .18s}
-.lh-more-btn:hover{border-color:rgba(255,255,255,.2);color:#F4EFE8}
+.dsc-promo{border-radius:16px;padding:18px 20px;text-align:center;margin-bottom:16px}
 
 /* lock */
-.lh-lock{position:relative}
-.lh-lock-overlay{position:absolute;inset:0;background:rgba(6,9,18,.7);backdrop-filter:blur(6px);border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:5;padding:16px}
-.lh-lock-text{font-size:12px;color:rgba(234,242,255,.6);text-align:center;line-height:1.5}
-.lh-lock-btn{padding:8px 18px;border-radius:50px;border:none;background:var(--amber);color:#120800;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans)}
+.dsc-lock{position:relative}
+.dsc-lock-over{position:absolute;inset:0;background:rgba(6,9,18,.7);backdrop-filter:blur(6px);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:5;padding:16px}
+
+/* load more */
+.dsc-more{display:flex;justify-content:center;padding:16px 0 24px}
+.dsc-more-btn{padding:10px 28px;border-radius:50px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(244,239,232,.35);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .18s}
+.dsc-more-btn:hover{border-color:rgba(255,255,255,.16);color:var(--cream)}
 
 /* empty */
-.lh-empty{text-align:center;padding:48px 20px;color:rgba(234,242,255,.4)}
-.lh-empty-ico{font-size:42px;margin-bottom:12px}
-.lh-empty-h{font-family:var(--serif);font-size:18px;font-weight:700;color:#F4EFE8;margin-bottom:6px}
-
-/* footer */
-.lh-footer{text-align:center;padding:32px 20px;border-top:1px solid rgba(255,255,255,.04);margin-top:40px}
-.lh-footer-btn{padding:10px 24px;border-radius:50px;border:1px solid rgba(245,184,76,.25);background:rgba(245,184,76,.06);color:var(--amber);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .18s;margin-bottom:12px}
-.lh-footer-btn:hover{background:rgba(245,184,76,.12)}
+.dsc-empty{text-align:center;padding:48px 20px;color:rgba(244,239,232,.35)}
 `;
 
-const GENRE_FILTERS = [
-  { label: 'All', value: '' },
-  { label: 'Adventure', value: 'exciting' },
-  { label: 'Fantasy', value: 'heartfelt' },
-  { label: 'Comedy', value: 'funny' },
-  { label: 'Magic', value: 'mysterious' },
-  { label: 'Wonder', value: 'heartfelt' },
-  { label: 'Cozy', value: 'calm' },
-  { label: 'Brave', value: 'brave' },
-  { label: 'Animals', value: 'dreamy' },
-  { label: 'Space', value: 'exciting' },
+// ── Emotional category chips (deduplicated, with emojis) ─────────────────────
+
+const MOOD_CHIPS = [
+  { label: 'All',       emoji: '',   value: '' },
+  { label: 'Cozy',      emoji: '🧸', value: 'calm' },
+  { label: 'Adventure', emoji: '🗺️', value: 'exciting' },
+  { label: 'Funny',     emoji: '😄', value: 'funny' },
+  { label: 'Wonder',    emoji: '✨', value: 'heartfelt' },
+  { label: 'Brave',     emoji: '🦁', value: 'brave' },
+  { label: 'Mystery',   emoji: '🔮', value: 'mysterious' },
+  { label: 'Dreamy',    emoji: '🌙', value: 'dreamy' },
 ];
 
 const AGE_LABELS: Record<string, string> = {
@@ -160,11 +140,12 @@ const MOOD_HOOKS: Record<string, string[]> = {
 function pickHook(s: LibraryStory): string {
   const key = s.mood || s.vibe || '';
   const hooks = MOOD_HOOKS[key] || MOOD_HOOKS[''];
-  // Deterministic pick based on title hash
   let h = 0;
   for (let i = 0; i < (s.title || '').length; i++) h = (h * 31 + s.title.charCodeAt(i)) | 0;
   return hooks[Math.abs(h) % hooks.length];
 }
+
+// ── Component ────────────────────────────────────────────────────────────────
 
 export default function LibraryHome() {
   const { user, setView, setLibraryStorySlug, isSubscribed } = useApp();
@@ -198,7 +179,6 @@ export default function LibraryHome() {
     setFavSet(next);
   };
 
-  // Load active child for personalization
   useEffect(() => {
     if (!user || user.isGuest) return;
     getCharacters(user.id).then(chars => {
@@ -207,9 +187,7 @@ export default function LibraryHome() {
     });
   }, [user]);
 
-  // Initial loads — show cached data instantly, refresh in background
   useEffect(() => {
-    // Phase 1: instant from cache
     try {
       const cached = JSON.parse(localStorage.getItem('ss_library_cache') || 'null');
       if (cached?.stories?.length) {
@@ -221,7 +199,6 @@ export default function LibraryHome() {
       }
     } catch {}
 
-    // Phase 2: refresh from Supabase
     Promise.all([
       getBookOfDay(),
       getFeaturedLibraryStories(10),
@@ -236,7 +213,6 @@ export default function LibraryHome() {
     });
   }, []);
 
-  // Filter/sort/search changes
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
@@ -277,7 +253,6 @@ export default function LibraryHome() {
   const openStory = (story: LibraryStory) => {
     setLibraryStorySlug(story.librarySlug);
     setView('library-story');
-    // Persist in URL so refresh works
     const url = new URL(window.location.href);
     url.searchParams.set('library', story.librarySlug);
     window.history.pushState({}, '', url.toString());
@@ -285,180 +260,259 @@ export default function LibraryHome() {
 
   const guestLimit = 5;
   const heroStory = bookOfDay || (staffPicks.length > 0 ? staffPicks[0] : null);
-
-  // Get today's stories
-  const todayStr = new Date().toISOString().split('T')[0];
-  const newTonight = useMemo(() => stories.filter(s => (s as any).createdAt?.split('T')[0] === todayStr).slice(0, 8), [stories, todayStr]);
-
   const staffPickIds = useMemo(() => new Set(staffPicks.map(s => s.id)), [staffPicks]);
-
   const getPalette = (i: number) => COVER_PALETTES[i % 6];
-
   const isFiltering = !!search || !!filterMood;
 
+  // Stars
+  const stars = useMemo(() => {
+    const arr: { x: number; y: number; s: number; d: number; dl: number }[] = [];
+    for (let i = 0; i < 30; i++) arr.push({
+      x: Math.random() * 100, y: Math.random() * 40,
+      s: 1 + Math.random() * 0.6, d: 3 + Math.random() * 4, dl: Math.random() * 5,
+    });
+    return arr;
+  }, []);
+
   return (
-    <div className="lh">
+    <div className="dsc">
       <style>{CSS}</style>
 
-      {/* HEADER */}
-      <header className="lh-header">
-        <div className="lh-header-title">Discover</div>
-        <button className="lh-header-btn">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            <line x1="2" y1="4" x2="14" y2="4"/><line x1="2" y1="8" x2="14" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/>
-            <circle cx="5" cy="4" r="1.2" fill="currentColor" stroke="none"/><circle cx="10" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="7" cy="12" r="1.2" fill="currentColor" stroke="none"/>
-          </svg>
-        </button>
-      </header>
+      {/* Ambient stars */}
+      {stars.map((s, i) => (
+        <div key={i} className="dsc-star" style={{
+          left: `${s.x}%`, top: `${s.y}%`, width: s.s, height: s.s,
+          animation: `dTwinkle ${s.d}s ${s.dl}s ease-in-out infinite`,
+        }} />
+      ))}
 
-      {/* GENRE PILLS */}
-      <div className="lh-genres">
-        {GENRE_FILTERS.map((f, i) => {
-          const isActive = f.value === '' ? filterMood === '' : filterMood === f.value;
-          return (
-            <button key={f.label + i} className={`lh-gpill${isActive ? ' on' : ''}`}
-              onClick={() => setFilterMood(f.value === '' ? '' : (filterMood === f.value ? '' : f.value))}>
-              {f.label}
-            </button>
-          );
-        })}
-      </div>
+      <div className="dsc-inner">
 
-      {/* SEARCH */}
-      <div className="lh-search">
-        <span className="lh-search-icon">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            <circle cx="7" cy="7" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
-          </svg>
-        </span>
-        <input placeholder="Search stories, themes, creatures..." value={search} onChange={e => setSearch(e.target.value)} />
-      </div>
-
-      {/* STATS ROW */}
-      <div className="lh-stats">
-        <div className="lh-stat">
-          <div className="lh-stat-num">{stories.length}</div>
-          <div className="lh-stat-label">Stories</div>
+        {/* ═══ HEADER ═══ */}
+        <div className="dsc-header" style={{ animation: 'dFadeUp .5s ease-out' }}>
+          <div style={{
+            fontFamily: "var(--serif)", fontWeight: 300,
+            fontSize: 'clamp(22px,5.5vw,28px)', lineHeight: 1.3,
+            marginBottom: 4,
+          }}>
+            Discover
+          </div>
+          <div style={{
+            fontFamily: "var(--mono)", fontSize: 11,
+            color: 'rgba(244,239,232,.3)', letterSpacing: '.03em',
+          }}>
+            Bedtime stories from the SleepSeed library
+          </div>
         </div>
-        <div className="lh-stat">
-          <div className="lh-stat-num">{newTonight.length}</div>
-          <div className="lh-stat-label">Today</div>
-        </div>
-        <div className="lh-stat">
-          <div className="lh-stat-num">{stories.length}</div>
-          <div className="lh-stat-label">Reads</div>
-        </div>
-      </div>
 
-      {/* STORY OF THE DAY */}
-      {heroStory && !isFiltering && (
-        <>
-          <div className="lh-hero-label">STORY OF THE DAY</div>
-          <div className="lh-hero-wrap">
-            <div className="lh-hero" onClick={() => openStory(heroStory)}>
-              <div className="lh-hero-cover" style={{ background: getPalette(0).bg }}>
-                <div className="lh-hero-glow" />
-                <div className="lh-hero-emoji">{(heroStory as any).emoji || '\u{1F4D6}'}</div>
-                <div className="lh-hero-fade" />
-                <span className="lh-hero-reads">{(heroStory as any).readCount || stories.length} reads</span>
-                <div className="lh-hero-bottom">
-                  <div className="lh-hero-title">{heroStory.title}</div>
-                  <div className="lh-hero-hook">{pickHook(heroStory)}</div>
+        {/* ═══ EMOTIONAL CHIPS ═══ */}
+        <div className="dsc-chips" style={{ animation: 'dFadeUp .5s .1s ease-out both' }}>
+          {MOOD_CHIPS.map(c => {
+            const isActive = c.value === '' ? filterMood === '' : filterMood === c.value;
+            return (
+              <button
+                key={c.value || 'all'}
+                className={`dsc-chip${isActive ? ' on' : ''}`}
+                onClick={() => setFilterMood(c.value === '' ? '' : (filterMood === c.value ? '' : c.value))}
+              >
+                {c.emoji && <span>{c.emoji}</span>}
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ═══ SEARCH ═══ */}
+        <div className="dsc-search" style={{ animation: 'dFadeUp .5s .15s ease-out both' }}>
+          <span className="dsc-search-ico">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <circle cx="7" cy="7" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
+            </svg>
+          </span>
+          <input placeholder="Search stories..." value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+
+        {/* ═══ TONIGHT'S STORY (hero card) ═══ */}
+        {heroStory && !isFiltering && (
+          <div style={{ animation: 'dFadeUp .5s .2s ease-out both' }}>
+            <div style={{
+              fontFamily: "var(--mono)", fontSize: 9, letterSpacing: '.08em',
+              textTransform: 'uppercase' as const, color: 'rgba(245,184,76,.5)',
+              marginBottom: 8,
+            }}>
+              Tonight's story
+            </div>
+            <div className="dsc-tonight" onClick={() => openStory(heroStory)}>
+              <div className="dsc-tonight-cover" style={{ background: getPalette(0).bg }}>
+                <div className="dsc-tonight-glow" />
+                <div className="dsc-tonight-emoji">{(heroStory as any).emoji || '\u{2728}'}</div>
+                <div className="dsc-tonight-fade" />
+                <div className="dsc-tonight-body">
+                  <div style={{
+                    fontFamily: "var(--serif)", fontSize: 17, fontWeight: 600,
+                    color: 'var(--cream)', lineHeight: 1.3, marginBottom: 4,
+                  }}>
+                    {heroStory.title}
+                  </div>
+                  <div style={{
+                    fontFamily: "'Lora','Fraunces',Georgia,serif",
+                    fontStyle: 'italic', fontSize: 12, color: 'rgba(244,239,232,.45)',
+                    lineHeight: 1.4,
+                  }}>
+                    {pickHook(heroStory)}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </>
-      )}
+        )}
 
-      {/* CONVERSION PROMPTS */}
-      {isGuest && !search && (
-        <div className="lh-promo amber">
-          <div className="lh-promo-text">Create a free account to vote on stories and save your favourites</div>
-          <button className="lh-promo-btn amber" onClick={() => setView('auth')}>Sign up free</button>
-        </div>
-      )}
-      {isFree && !search && (
-        <div className="lh-promo teal">
-          <div className="lh-promo-text">Upgrade to personalise any story — make your child the hero</div>
-          <button className="lh-promo-btn teal" onClick={() => setView('public')}>See Family plan</button>
-        </div>
-      )}
+        {/* ═══ CONVERSION PROMPTS ═══ */}
+        {isGuest && !search && (
+          <div className="dsc-promo" style={{ background: 'rgba(245,184,76,.03)', border: '1px solid rgba(245,184,76,.12)' }}>
+            <div style={{ fontSize: 13, color: 'rgba(244,239,232,.5)', lineHeight: 1.6, marginBottom: 12 }}>
+              Create a free account to save favourites and vote
+            </div>
+            <button
+              onClick={() => setView('auth')}
+              style={{
+                padding: '10px 24px', borderRadius: 50, border: 'none',
+                background: 'var(--amber)', color: '#120800',
+                fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)',
+              }}
+            >
+              Sign up free
+            </button>
+          </div>
+        )}
+        {isFree && !search && (
+          <div className="dsc-promo" style={{ background: 'rgba(20,216,144,.03)', border: '1px solid rgba(20,216,144,.12)' }}>
+            <div style={{ fontSize: 13, color: 'rgba(244,239,232,.5)', lineHeight: 1.6, marginBottom: 12 }}>
+              Personalise any story — make your child the hero
+            </div>
+            <button
+              onClick={() => setView('public')}
+              style={{
+                padding: '10px 24px', borderRadius: 50, border: 'none',
+                background: 'var(--teal)', color: '#021008',
+                fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)',
+              }}
+            >
+              See Family plan
+            </button>
+          </div>
+        )}
 
-      {/* ALL STORIES SECTION HEADER */}
-      <div className="lh-sec-head">
-        <span className="lh-sec-label">ALL STORIES</span>
-        <div className="lh-toggle">
-          <button className={`lh-toggle-btn${sortBy === 'popular' ? ' on' : ''}`} onClick={() => setSortBy('popular')}>Trending</button>
-          <button className={`lh-toggle-btn${sortBy === 'recent' ? ' on' : ''}`} onClick={() => setSortBy('recent')}>New</button>
-        </div>
-      </div>
+        {/* ═══ CREATE YOUR OWN bridge ═══ */}
+        {!isGuest && !isFiltering && (
+          <div className="dsc-create" onClick={() => setView('ritual-starter')} style={{ animation: 'dFadeUp .5s .3s ease-out both' }}>
+            <div style={{
+              fontFamily: "var(--serif)", fontSize: 14, fontWeight: 300,
+              color: 'rgba(244,239,232,.55)', marginBottom: 4,
+            }}>
+              Have your own story to tell tonight?
+            </div>
+            <div style={{
+              fontFamily: "var(--mono)", fontSize: 10, color: 'rgba(245,184,76,.5)',
+              letterSpacing: '.04em',
+            }}>
+              Create a story {'\u2192'}
+            </div>
+          </div>
+        )}
 
-      {/* STORY GRID */}
-      {loading && stories.length === 0 ? (
-        <div className="lh-empty">
-          <div className="lh-empty-ico">{'\u{1F319}'}</div>
-          <div>Loading stories...</div>
+        {/* ═══ ALL STORIES HEADER ═══ */}
+        <div className="dsc-sec" style={{ animation: 'dFadeUp .5s .35s ease-out both' }}>
+          <span className="dsc-sec-label">All stories</span>
+          <div className="dsc-toggle">
+            <button className={`dsc-toggle-btn${sortBy === 'popular' ? ' on' : ''}`} onClick={() => setSortBy('popular')}>Trending</button>
+            <button className={`dsc-toggle-btn${sortBy === 'recent' ? ' on' : ''}`} onClick={() => setSortBy('recent')}>New</button>
+          </div>
         </div>
-      ) : stories.length === 0 ? (
-        <div className="lh-empty">
-          <div className="lh-empty-ico">{'\u{1F4DA}'}</div>
-          <div className="lh-empty-h">No stories found</div>
-          <div>Try a different search or filter.</div>
-        </div>
-      ) : (
-        <div className="lh-grid">
-          {stories.map((s, i) => {
-            const locked = isGuest && i >= guestLimit;
-            const palette = getPalette(i);
-            const isFav = favSet.has(s.id);
-            const isPick = staffPickIds.has(s.id);
-            return (
-              <div key={s.id} className={locked ? 'lh-lock' : ''} style={{ animationDelay: `${i * 0.04}s` }}>
-                <div className="lh-card" onClick={() => !locked && openStory(s)} style={locked ? { filter: 'blur(3px)', pointerEvents: 'none' as const } : {}}>
-                  <div className="lh-card-cover" style={{ background: palette.bg }}>
-                    <div className="lh-card-cover-emoji">{(s as any).emoji || '\u{1F4D6}'}</div>
-                    <div className="lh-card-cover-fade" />
-                    <div className="lh-card-cover-title">{s.title}</div>
-                    {isPick && <span className="lh-card-pick">Staff pick</span>}
-                  </div>
-                  <div className="lh-card-meta">
-                    <div className="lh-card-hook">{pickHook(s)}</div>
-                    <div className="lh-card-bottom">
-                      <span className="lh-card-label">Read tonight</span>
-                      <button className={`lh-card-star${isFav ? ' on' : ''}`}
-                        onClick={e => { e.stopPropagation(); toggleFav(s.id); }}>
-                        {isFav ? '\u2605' : '\u2606'}
-                      </button>
+
+        {/* ═══ STORY GRID ═══ */}
+        {loading && stories.length === 0 ? (
+          <div className="dsc-empty">
+            <div style={{ fontSize: 36, marginBottom: 12 }}>{'\u{1F319}'}</div>
+            <div style={{ fontSize: 14 }}>Loading stories...</div>
+          </div>
+        ) : stories.length === 0 ? (
+          <div className="dsc-empty">
+            <div style={{ fontSize: 36, marginBottom: 12 }}>{'\u{1F4DA}'}</div>
+            <div style={{ fontFamily: 'var(--serif)', fontSize: 17, fontWeight: 600, color: 'var(--cream)', marginBottom: 6 }}>No stories found</div>
+            <div style={{ fontSize: 13 }}>Try a different search or filter.</div>
+          </div>
+        ) : (
+          <div className="dsc-grid">
+            {stories.map((s, i) => {
+              const locked = isGuest && i >= guestLimit;
+              const palette = getPalette(i);
+              const isFav = favSet.has(s.id);
+              const isPick = staffPickIds.has(s.id);
+              return (
+                <div key={s.id} className={locked ? 'dsc-lock' : ''} style={{ animationDelay: `${0.35 + i * 0.04}s` }}>
+                  <div className="dsc-card" onClick={() => !locked && openStory(s)} style={locked ? { filter: 'blur(3px)', pointerEvents: 'none' as const } : {}}>
+                    <div className="dsc-card-cover" style={{ background: palette.bg }}>
+                      <div className="dsc-card-emoji">{(s as any).emoji || '\u{1F4D6}'}</div>
+                      <div className="dsc-card-fade" />
+                      <div className="dsc-card-title">{s.title}</div>
+                      {isPick && <span className="dsc-card-pick">Staff pick</span>}
+                    </div>
+                    <div className="dsc-card-meta">
+                      <div className="dsc-card-hook">{pickHook(s)}</div>
+                      <div className="dsc-card-bottom">
+                        <span className="dsc-card-label">Read tonight</span>
+                        <button className={`dsc-card-fav${isFav ? ' on' : ''}`}
+                          onClick={e => { e.stopPropagation(); toggleFav(s.id); }}>
+                          {isFav ? '\u2605' : '\u2606'}
+                        </button>
+                      </div>
                     </div>
                   </div>
+                  {locked && (
+                    <div className="dsc-lock-over">
+                      <div style={{ fontSize: 12, color: 'rgba(244,239,232,.55)', textAlign: 'center', lineHeight: 1.5 }}>Create a free account to read all stories</div>
+                      <button onClick={() => setView('auth')} style={{
+                        padding: '8px 18px', borderRadius: 50, border: 'none',
+                        background: 'var(--amber)', color: '#120800',
+                        fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--sans)',
+                      }}>
+                        Sign up free
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {locked && (
-                  <div className="lh-lock-overlay">
-                    <div className="lh-lock-text">Create a free account to read all stories</div>
-                    <button className="lh-lock-btn" onClick={() => setView('auth')}>Sign up free</button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {hasMore && !isGuest && stories.length > 0 && (
-        <div className="lh-more">
-          <button className="lh-more-btn" onClick={loadMore}>Load more stories</button>
-        </div>
-      )}
-
-      {/* FOOTER */}
-      <footer className="lh-footer">
-        {isSubscribed && (
-          <button className="lh-footer-btn" onClick={() => setView('story-library')}>
-            Add your story to the library
-          </button>
+              );
+            })}
+          </div>
         )}
-      </footer>
+
+        {hasMore && !isGuest && stories.length > 0 && (
+          <div className="dsc-more">
+            <button className="dsc-more-btn" onClick={loadMore}>Load more stories</button>
+          </div>
+        )}
+
+        {/* ═══ FOOTER ═══ */}
+        {isSubscribed && (
+          <div style={{ textAlign: 'center', padding: '24px 0', borderTop: '1px solid rgba(255,255,255,.04)', marginTop: 20 }}>
+            <button
+              onClick={() => setView('story-library')}
+              style={{
+                padding: '10px 24px', borderRadius: 50, fontSize: 13, fontWeight: 600,
+                border: '1px solid rgba(245,184,76,.2)', background: 'rgba(245,184,76,.04)',
+                color: 'var(--amber)', cursor: 'pointer', fontFamily: 'var(--sans)',
+                transition: 'background .18s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,184,76,.1)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(245,184,76,.04)')}
+            >
+              Add your story to the library
+            </button>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }

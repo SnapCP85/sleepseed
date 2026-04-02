@@ -3,8 +3,9 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
-    { "source": "/stories/:slug", "destination": "/?library=:slug" },
+    { "source": "/stories/:slug", "destination": "/api/og/:slug" },
     { "source": "/stories", "destination": "/?view=library" },
+    { "source": "/nightcard/:token", "destination": "/api/og-nightcard/:token" },
     { "source": "/sitemap.xml", "destination": "/api/sitemap" }
   ],
   "functions": {
@@ -18,7 +19,12 @@
     "api/story-journeys/[id]/read.js":      { "maxDuration": 120 },
     "api/story-journeys/[id]/complete.js":  { "maxDuration": 120 },
     "api/story-journeys/[id]/summary.js":   { "maxDuration": 30 },
-    "api/story-series/start-from-book.js":  { "maxDuration": 30 }
+    "api/story-series/start-from-book.js":  { "maxDuration": 30 },
+    "api/remix.js":                         { "maxDuration": 60 },
+    "api/og/[slug].js":                     { "maxDuration": 10 },
+    "api/og-image/[slug].js":               { "maxDuration": 10 },
+    "api/og-nightcard/[token].js":          { "maxDuration": 10 },
+    "api/og-nightcard-image/[token].js":    { "maxDuration": 10 }
   },
   "crons": [{
     "path": "/api/book-of-day",

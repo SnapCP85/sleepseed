@@ -318,7 +318,8 @@ export type AppView =
   | 'night-2'              // Night 2 dashboard + story + card
   | 'night-3'              // Night 3 dashboard + story + hatch
   | 'hatch-ceremony'       // Night 3 canvas hatch cinematic
-  | 'cinematic-transition'; // Elder → egg → Night 1 bridge
+  | 'cinematic-transition' // Elder → egg → Night 1 bridge
+  | 'story-cover';         // shared story landing page (before reader)
 
 // ══════════════════════════════════════════════════════════════════════════════
 // SLEEPSEED v3 — STORYJOURNEY SYSTEM TYPES
