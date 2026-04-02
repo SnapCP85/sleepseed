@@ -6,7 +6,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CSS = `
-.ss-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:0 12px env(safe-area-inset-bottom,0px) 12px}
+.ss-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:100;padding:0 12px env(safe-area-inset-bottom,0px) 12px}
 .ss-nav-bar{display:flex;align-items:center;justify-content:space-around;height:64px;border-radius:20px;background:rgba(8,12,28,.98);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 -4px 24px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.04) inset;margin-bottom:6px}
 .ss-nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative;padding:6px 0}
 .ss-nav-ico{width:40px;height:32px;border-radius:12px;display:flex;align-items:center;justify-content:center;transition:all .25s cubic-bezier(.16,1,.3,1)}
