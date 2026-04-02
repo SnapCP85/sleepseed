@@ -3586,8 +3586,8 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
           const thoughtSet=gen.stepIdx<=1?GEN_THOUGHTS[0]:gen.stepIdx===2?[...GEN_THOUGHTS[0],...GEN_THOUGHTS[1]]:[...GEN_THOUGHTS[0],...GEN_THOUGHTS[1].map(t=>({...t,done:true})),...GEN_THOUGHTS[2]];
           const ringClass=isReady?'teal':'';const portalClass=isReady?'ready':'';const titleClass=isReady?'teal':'';
           return(
-          <div className="screen" style={{maxWidth:400}}>
-            <div className="card" style={{textAlign:'center',padding:'12px 16px 14px',display:'flex',flexDirection:'column',alignItems:'center',position:'relative',zIndex:2,gap:4}}>
+          <div className="screen" style={{maxWidth:400,width:'100%',overflow:'hidden'}}>
+            <div className="card" style={{textAlign:'center',padding:'12px 16px 14px',display:'flex',flexDirection:'column',alignItems:'center',position:'relative',zIndex:2,gap:4,overflow:'hidden',maxWidth:'100%'}}>
 
               {/* CREATURE */}
               <div className="gen-cz">

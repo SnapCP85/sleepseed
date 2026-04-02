@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useApp } from '../AppContext';
 import ElderDreamKeeper from '../components/onboarding/ElderDreamKeeper';
 import DreamEgg from '../components/onboarding/DreamEgg';
@@ -36,6 +36,15 @@ export default function NightDashboard({ night, initialScreen, onInitialScreenCo
   const [n1Screen, setN1Screen] = useState<N1Screen>((initialScreen as N1Screen) || 'welcome');
   const [smileAnswer, setSmileAnswer] = useState('');
   const [n1PhotoAdded, setN1PhotoAdded] = useState(false);
+  const [n1Photo, setN1Photo] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { setN1Photo(reader.result as string); setN1PhotoAdded(true); };
+    reader.readAsDataURL(file);
+  };
 
   // Night 2 state
   const [n2Screen, setN2Screen] = useState<N2Screen>((initialScreen as N2Screen) || 'return');
@@ -87,6 +96,7 @@ export default function NightDashboard({ night, initialScreen, onInitialScreenCo
           headline: 'The Night Your Dream Egg First Listened',
           quote: `Tonight, ${childName} shared that ${smileAnswer} made them smile. The Elder DreamKeeper brought a Dream Egg to begin the journey.`,
           emoji: ritual?.creatureEmoji || '\uD83E\uDD5A',
+          photo: n1Photo || undefined,
           date: today,
           isOrigin: true,
           nightNumber: 1,
@@ -329,9 +339,10 @@ export default function NightDashboard({ night, initialScreen, onInitialScreenCo
             </div>
             {/* Photo + Save */}
             <div style={{ ...fadeUp(0.55), width: '100%', marginTop: 6 }}>
-              {!n1PhotoAdded && (
+              <input type="file" ref={photoInputRef} accept="image/*" capture="environment" style={{ display: 'none' }} onChange={handlePhotoUpload} />
+              {!n1PhotoAdded ? (
                 <div
-                  onClick={() => setN1PhotoAdded(true)}
+                  onClick={() => photoInputRef.current?.click()}
                   style={{
                     width: '100%', padding: '12px 14px',
                     background: 'rgba(246,197,111,.06)', border: '1.5px dashed rgba(246,197,111,.24)',
@@ -346,7 +357,11 @@ export default function NightDashboard({ night, initialScreen, onInitialScreenCo
                     <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: 'rgba(234,242,255,.36)', marginTop: 2, letterSpacing: 0.3 }}>TAP TO CAPTURE THIS MOMENT</div>
                   </div>
                 </div>
-              )}
+              ) : n1Photo ? (
+                <div style={{ width: '100%', marginBottom: 14, borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(246,197,111,.2)' }}>
+                  <img src={n1Photo} alt="Tonight's moment" style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block' }} />
+                </div>
+              ) : null}
               <button className="ob-cta" onClick={() => setN1Screen('tuck-in')}>Save to collection &rarr;</button>
             </div>
           </div>

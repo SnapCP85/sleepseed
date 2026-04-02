@@ -834,13 +834,17 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
         <style>{CSS}</style>
         {starField}
         <div className="ob-inner">
-          <div className="ob-screen" style={{ justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-            {/* WELCOME text — hidden once stars appear to prevent overlap */}
+          <div className="ob-screen" style={{
+            justifyContent: welcomePhase === 'title' ? 'center' : 'flex-start',
+            alignItems: 'center',
+            textAlign: 'center',
+            paddingTop: welcomePhase !== 'title' ? 'max(12vh, 60px)' : undefined,
+          }}>
+            {/* WELCOME text — hidden once stars appear */}
             {welcomePhase === 'title' && (
               <div style={{
                 fontFamily: 'var(--serif)', fontSize: 'clamp(32px,8vw,42px)', fontWeight: 300,
                 color: 'var(--amber)', letterSpacing: '.06em',
-                marginBottom: 24,
                 animation: 'fadeUp .6s var(--ease-out)',
               }}>WELCOME</div>
             )}
@@ -849,17 +853,15 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
             {(welcomePhase === 'stars' || welcomePhase === 'egg' || welcomePhase === 'text') && (() => {
               const vw = nameStars[0]?.viewWidth || 100;
               const sr = nameStars[0]?.starR || 1.8;
-              const svgWidth = Math.min(340, Math.max(220, vw * 2.8));
+              const svgWidth = Math.min(300, Math.max(200, vw * 2.5));
               const vh = 60;
               return (
-                <svg viewBox={`0 0 ${vw} ${vh}`} style={{ width: svgWidth, height: svgWidth * (vh / vw), margin: '0 auto 32px', flexShrink: 0 }}>
+                <svg viewBox={`0 0 ${vw} ${vh}`} style={{ width: svgWidth, height: svgWidth * (vh / vw), margin: '0 auto', flexShrink: 0 }}>
                   {nameStars.map((s, i) => (
                     <g key={i}>
-                      {/* Glow */}
                       <circle cx={s.x} cy={s.y} r={sr * 3} fill="rgba(245,184,76,.08)" opacity="0">
                         <animate attributeName="opacity" from="0" to="1" begin={`${0.3 + i * stepDelay}s`} dur="0.4s" fill="freeze" />
                       </circle>
-                      {/* Star */}
                       <circle cx={s.x} cy={s.y} r={sr} fill="var(--amber)" opacity="0">
                         <animate attributeName="opacity" from="0" to="1" begin={`${0.3 + i * stepDelay}s`} dur="0.3s" fill="freeze" />
                         <animate attributeName="r" from="0" to={sr} begin={`${0.3 + i * stepDelay}s`} dur="0.3s" fill="freeze" />
@@ -870,13 +872,17 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
               );
             })()}
 
+            {/* Spacer between stars and egg */}
+            {(welcomePhase === 'egg' || welcomePhase === 'text') && (
+              <div style={{ height: 40, flexShrink: 0 }} />
+            )}
+
             {/* Egg */}
             {(welcomePhase === 'egg' || welcomePhase === 'text') && (
               <div
                 style={{
-                  fontSize: 64, cursor: 'pointer',
+                  fontSize: 56, cursor: 'pointer',
                   animation: 'scaleIn .5s var(--ease-spring), glowPulse 3s ease-in-out .5s infinite',
-                  marginBottom: 8,
                 }}
                 onClick={() => { setEggTapped(true); setTimeout(goNext, 400); }}
                 role="button"
@@ -889,16 +895,17 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
             {welcomePhase === 'text' && !eggTapped && (
               <div style={{
                 fontFamily: 'var(--mono)', fontSize: 11, color: 'rgba(244,239,232,.3)',
-                animation: 'breathe 2s ease-in-out infinite', marginBottom: 16,
+                animation: 'breathe 2s ease-in-out infinite', marginTop: 12,
               }}>Tap the egg</div>
             )}
 
-            {/* Story intro text */}
+            {/* Story intro text — positioned below with clear spacing */}
             {welcomePhase === 'text' && (
               <div style={{
                 fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 300,
-                fontSize: 15, color: 'var(--cream-dim)', lineHeight: 1.7,
-                maxWidth: 320, textAlign: 'center',
+                fontSize: 14, color: 'var(--cream-dim)', lineHeight: 1.7,
+                maxWidth: 300, textAlign: 'center',
+                marginTop: 28,
                 animation: 'fadeUp .6s var(--ease-out)',
               }}>
                 Something has been waiting for you, {childName}. It arrived last night, while you were sleeping.
@@ -910,7 +917,7 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
               style={{
                 background: 'none', border: 'none', color: 'rgba(244,239,232,.2)',
                 fontFamily: 'var(--mono)', fontSize: 11, cursor: 'pointer',
-                marginTop: 28, letterSpacing: '.03em', transition: 'color .15s',
+                marginTop: 'auto', paddingBottom: 20, letterSpacing: '.03em', transition: 'color .15s',
               }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(244,239,232,.4)')}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(244,239,232,.2)')}

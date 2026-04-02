@@ -435,7 +435,7 @@ export default function ParentOnboarding({ onComplete, onSaveLater }: Props) {
 
             {/* Age selector */}
             <div style={{ ...fadeUp(0.4), width: '100%', marginBottom: 12 }}>
-              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8.5, color: 'rgba(234,242,255,.3)', letterSpacing: 0.7, marginBottom: 8, textAlign: 'left' }}>AGE</div>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8.5, color: 'rgba(234,242,255,.3)', letterSpacing: 0.7, marginBottom: 8, textAlign: 'center' }}>AGE</div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
                 {['3', '4', '5', '6', '7', '8', '9', '10+'].map(age => (
                   <button
@@ -458,7 +458,7 @@ export default function ParentOnboarding({ onComplete, onSaveLater }: Props) {
 
             {/* Pronoun selector */}
             <div style={{ ...fadeUp(0.48), width: '100%', marginBottom: 16 }}>
-              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8.5, color: 'rgba(234,242,255,.3)', letterSpacing: 0.7, marginBottom: 8, textAlign: 'left' }}>PRONOUN</div>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8.5, color: 'rgba(234,242,255,.3)', letterSpacing: 0.7, marginBottom: 8, textAlign: 'center' }}>PRONOUN</div>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
                 {[
                   { value: 'he/him', label: 'he/him' },
