@@ -1,2 +1,2 @@
-// Re-export from modular homepage — preserves the same import path for App.tsx
-export { default } from './homepage';
+// Re-export legacy homepage — the original pre-modular version
+export { default } from './PublicHomepage_LEGACY';
