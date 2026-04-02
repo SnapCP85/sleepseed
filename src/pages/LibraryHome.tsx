@@ -122,6 +122,20 @@ const MOOD_CHIPS = [
   { label: 'Dreamy',    emoji: '🌙', value: 'dreamy' },
 ];
 
+const AGE_CHIPS = [
+  { label: 'All ages', value: '' },
+  { label: '3-5',      value: 'age3' },
+  { label: '5-7',      value: 'age5' },
+  { label: '7-9',      value: 'age7' },
+  { label: '9+',       value: 'age10' },
+];
+
+const SORT_OPTIONS: { label: string; value: 'recent' | 'popular' | 'thumbs' }[] = [
+  { label: 'Recent',    value: 'recent' },
+  { label: 'Popular',   value: 'popular' },
+  { label: 'Top rated', value: 'thumbs' },
+];
+
 const AGE_LABELS: Record<string, string> = {
   age3: 'Ages 3-5', age5: 'Ages 5-7', age7: 'Ages 7-9', age10: 'Ages 9-11',
 };
@@ -262,7 +276,7 @@ export default function LibraryHome() {
   const heroStory = bookOfDay || (staffPicks.length > 0 ? staffPicks[0] : null);
   const staffPickIds = useMemo(() => new Set(staffPicks.map(s => s.id)), [staffPicks]);
   const getPalette = (i: number) => COVER_PALETTES[i % 6];
-  const isFiltering = !!search || !!filterMood;
+  const isFiltering = !!search || !!filterMood || !!filterAge;
 
   // Stars
   const stars = useMemo(() => {
@@ -322,14 +336,49 @@ export default function LibraryHome() {
           })}
         </div>
 
-        {/* ═══ SEARCH ═══ */}
-        <div className="dsc-search" style={{ animation: 'dFadeUp .5s .15s ease-out both' }}>
+        {/* ═══ AGE CHIPS ═══ */}
+        <div className="dsc-chips" style={{ animation: 'dFadeUp .5s .12s ease-out both', paddingTop: 0 }}>
+          {AGE_CHIPS.map(c => {
+            const isActive = c.value === '' ? filterAge === '' : filterAge === c.value;
+            return (
+              <button
+                key={c.value || 'all-ages'}
+                className={`dsc-chip${isActive ? ' on' : ''}`}
+                onClick={() => setFilterAge(c.value === '' ? '' : (filterAge === c.value ? '' : c.value))}
+              >
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ═══ SORT + SEARCH ROW ═══ */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, animation: 'dFadeUp .5s .15s ease-out both' }}>
+          <div style={{ display: 'flex', gap: 2, background: 'rgba(255,255,255,.03)', borderRadius: 10, padding: 2, border: '1px solid rgba(255,255,255,.06)', flexShrink: 0 }}>
+            {SORT_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setSortBy(opt.value)}
+                style={{
+                  padding: '5px 10px', borderRadius: 8, fontSize: 10, fontWeight: 600,
+                  cursor: 'pointer', border: 'none', fontFamily: 'var(--mono)',
+                  transition: 'all .18s',
+                  color: sortBy === opt.value ? 'var(--amber)' : 'rgba(244,239,232,.3)',
+                  background: sortBy === opt.value ? 'rgba(245,184,76,.1)' : 'transparent',
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <div className="dsc-search" style={{ flex: 1, marginBottom: 0 }}>
           <span className="dsc-search-ico">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <circle cx="7" cy="7" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
             </svg>
           </span>
           <input placeholder="Search stories..." value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
         </div>
 
         {/* ═══ TONIGHT'S STORY (hero card) ═══ */}
@@ -424,10 +473,6 @@ export default function LibraryHome() {
         {/* ═══ ALL STORIES HEADER ═══ */}
         <div className="dsc-sec" style={{ animation: 'dFadeUp .5s .35s ease-out both' }}>
           <span className="dsc-sec-label">All stories</span>
-          <div className="dsc-toggle">
-            <button className={`dsc-toggle-btn${sortBy === 'popular' ? ' on' : ''}`} onClick={() => setSortBy('popular')}>Trending</button>
-            <button className={`dsc-toggle-btn${sortBy === 'recent' ? ' on' : ''}`} onClick={() => setSortBy('recent')}>New</button>
-          </div>
         </div>
 
         {/* ═══ STORY GRID ═══ */}

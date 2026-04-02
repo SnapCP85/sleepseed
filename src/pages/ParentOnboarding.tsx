@@ -426,7 +426,7 @@ export default function ParentOnboarding({ onComplete, onSaveLater }: Props) {
               ))}
               <input
                 className="ob-p-input"
-                placeholder="Their name\u2026"
+                placeholder="Their name..."
                 value={childName}
                 onChange={e => setChildName(e.target.value)}
                 autoFocus

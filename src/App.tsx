@@ -4,6 +4,7 @@ import PublicHomepage from './pages/PublicHomepage';
 import Auth from './pages/Auth';
 import UserDashboard from './pages/UserDashboard';
 import MySpace from './pages/MySpace';
+import MySpaceHub from './pages/MySpaceHub';
 import OnboardingFlow from './pages/OnboardingFlow';
 import ReadyStateDashboard from './pages/ReadyStateDashboard';
 import ParentSetup from './pages/ParentSetup';
@@ -112,6 +113,9 @@ function AppInner() {
   // v9 onboarding: track which night sub-screen to show after story-builder returns
   const [nightReturnTo, setNightReturnTo] = useState<{ night: 1 | 2 | 3; screen: string } | null>(null);
   const [viewingCharacter,   setViewingCharacter]   = useState<Character | null>(null);
+  // Multi-child: name entry for additional children before DreamKeeper onboarding
+  const [addChildName, setAddChildName] = useState<string | null>(null);
+  const [addChildNameInput, setAddChildNameInput] = useState('');
 
   // Check for shared story / library links on mount
   const [isSharedStory, setIsSharedStory] = useState(false);
@@ -237,7 +241,7 @@ function AppInner() {
     setWizardChoices(null);
     setView('story-wizard');
   };
-  const goNewCharacter  = () => { setEditingCharacter(null); setView('onboarding'); };
+  const goNewCharacter  = () => { setEditingCharacter(null); setAddChildName(null); setAddChildNameInput(''); setView('onboarding'); };
   const goEditCharacter = (c: Character) => { setEditingCharacter(c); setView('character-builder'); };
   const goNightCards    = (filterId?: string) => { setNightCardFilter(filterId); setView('nightcard-library'); };
   const goStoryLibrary  = () => setView('story-library');
@@ -379,7 +383,7 @@ function AppInner() {
     const character: Character = {
       id: charId,
       userId: user.id,
-      name: profile?.childName || result.childName,
+      name: result.childName || profile?.childName || '',
       type: 'human',
       ageDescription: profile?.childAge || '',
       pronouns: (profile?.childPronouns || 'they/them') as any,
@@ -443,7 +447,7 @@ function AppInner() {
     })();
     initRitualState(
       user.id,
-      profile2?.childName || result.childName,
+      result.childName || profile2?.childName || 'friend',
       dk.name,
       dk.emoji,
       dk.color,
@@ -642,6 +646,7 @@ function AppInner() {
     <OnboardingShell><NightDashboard
       night={1}
       initialScreen={nightReturnTo?.night === 1 ? nightReturnTo.screen : undefined}
+      onInitialScreenConsumed={() => setNightReturnTo(null)}
       onStartStory={(ritualSeed) => {
         // Build choices for SleepSeedCore ritual mode
         let profile = parentSetupData;
@@ -687,6 +692,7 @@ function AppInner() {
     <NightDashboard
       night={2}
       initialScreen={nightReturnTo?.night === 2 ? nightReturnTo.screen : undefined}
+      onInitialScreenConsumed={() => setNightReturnTo(null)}
       onStartStory={(ritualSeed) => {
         let profile = parentSetupData;
         if (!profile && user) {
@@ -870,12 +876,95 @@ function AppInner() {
         if (stored) profile = JSON.parse(stored);
       } catch {}
     }
+
+    // ── Multi-child: returning parent adding another child ──
+    // If onboarding is already done (they have at least 1 child), show a name entry first
+    const isReturningParent = onboardingDone && user && !user.isGuest;
+    if (isReturningParent && !addChildName) {
+      return (
+        <div style={{
+          minHeight: '100vh', background: 'linear-gradient(180deg,#060912 0%,#0a0e24 40%,#0f0a20 100%)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          padding: '24px', fontFamily: "'Nunito',system-ui,sans-serif",
+        }}>
+          <div style={{ maxWidth: 400, width: '100%', textAlign: 'center' }}>
+            <div style={{ fontSize: 48, marginBottom: 20 }}>🌙</div>
+            <div style={{
+              fontFamily: "'Fraunces',Georgia,serif", fontSize: 26, fontWeight: 300,
+              color: '#F4EFE8', marginBottom: 8, lineHeight: 1.3,
+            }}>
+              Adding a new dreamer
+            </div>
+            <div style={{
+              fontSize: 14, color: 'rgba(244,239,232,.4)', marginBottom: 32, lineHeight: 1.6,
+            }}>
+              What's your child's name?
+            </div>
+            <input
+              autoFocus
+              value={addChildNameInput}
+              onChange={e => setAddChildNameInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && addChildNameInput.trim()) {
+                  setAddChildName(addChildNameInput.trim());
+                }
+              }}
+              placeholder="Their first name"
+              style={{
+                width: '100%', padding: '16px 20px', borderRadius: 14,
+                background: 'rgba(255,255,255,.06)', border: '1.5px solid rgba(255,255,255,.12)',
+                color: '#F4EFE8', fontSize: 20, fontFamily: "'Fraunces',Georgia,serif",
+                textAlign: 'center', outline: 'none',
+                transition: 'border-color .2s',
+              }}
+              onFocus={e => e.currentTarget.style.borderColor = 'rgba(245,184,76,.5)'}
+              onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,.12)'}
+            />
+            <button
+              disabled={!addChildNameInput.trim()}
+              onClick={() => setAddChildName(addChildNameInput.trim())}
+              style={{
+                width: '100%', marginTop: 20, padding: '16px 24px', border: 'none', borderRadius: 14,
+                background: addChildNameInput.trim()
+                  ? 'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)'
+                  : 'rgba(255,255,255,.06)',
+                color: addChildNameInput.trim() ? '#080200' : 'rgba(244,239,232,.25)',
+                fontSize: 16, fontWeight: 700, cursor: addChildNameInput.trim() ? 'pointer' : 'not-allowed',
+                fontFamily: "'Nunito',system-ui,sans-serif",
+                transition: 'all .2s',
+              }}
+            >
+              Continue
+            </button>
+            <button
+              onClick={() => { setAddChildName(null); setAddChildNameInput(''); setView('dashboard'); }}
+              style={{
+                marginTop: 14, padding: '10px 20px', background: 'transparent', border: 'none',
+                color: 'rgba(244,239,232,.3)', fontSize: 13, cursor: 'pointer',
+                fontFamily: "'Nunito',system-ui,sans-serif",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // Use addChildName for returning parents, or profile for first-time
+    const childNameForOnboarding = addChildName || profile?.childName || '';
+
     return <DreamKeeperOnboarding
-      childName={profile?.childName || ''}
-      childAge={profile?.childAge}
-      childPronouns={profile?.childPronouns}
-      onComplete={handleDreamKeeperComplete}
-      onBack={() => setView('dashboard')}
+      childName={childNameForOnboarding}
+      childAge={addChildName ? undefined : profile?.childAge}
+      childPronouns={addChildName ? undefined : profile?.childPronouns}
+      onComplete={(result) => {
+        // Reset addChild state after completion
+        setAddChildName(null);
+        setAddChildNameInput('');
+        handleDreamKeeperComplete(result);
+      }}
+      onBack={() => { setAddChildName(null); setAddChildNameInput(''); setView('dashboard'); }}
     />;
   }
 
@@ -1002,6 +1091,12 @@ function AppInner() {
         setView('dashboard');
       }}
     />
+  );
+
+  if (view === 'my-space') return (
+    <AppLayout currentTab="my-space" onNav={handleNav}>
+      <MySpaceHub onSignUp={goAuth} onReadStory={openSavedStory} />
+    </AppLayout>
   );
 
   if (view === 'hatchery') return (
@@ -1170,9 +1265,10 @@ function AppInner() {
                 }
               }
               // v9 onboarding: return to the night dashboard post-story screen
+              // NOTE: Don't clear nightReturnTo here — NightDashboard needs it on remount.
+              // It will be cleared via onInitialScreenConsumed callback after the component reads it.
               if (nightReturnTo) {
                 const { night } = nightReturnTo;
-                setNightReturnTo(null);
                 setView(night === 1 ? 'night-1' : night === 2 ? 'night-2' : 'night-3');
                 return;
               }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../AppContext';
 import { getStories, getNightCards, getCharacters } from '../lib/storage';
+import { getAllHatchedCreatures } from '../lib/hatchery';
 import { getDreamKeeperById, V1_DREAMKEEPERS, type DreamKeeper } from '../lib/dreamkeepers';
 import type { Character, HatchedCreature } from '../lib/types';
 
@@ -27,6 +28,14 @@ const CSS = `
 @keyframes ms-twinkle{0%,100%{opacity:.05}50%{opacity:.22}}
 @keyframes ms-shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 @keyframes ms-ctaPulse{0%,100%{box-shadow:0 6px 28px rgba(200,130,20,.25)}50%{box-shadow:0 8px 36px rgba(200,130,20,.42)}}
+@keyframes ms-streakGlow{0%,100%{box-shadow:0 0 6px rgba(245,184,76,.25)}50%{box-shadow:0 0 14px rgba(245,184,76,.5)}}
+
+.ms-child-toggle{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:4px;animation:ms-fadeUp .5s ease-out}
+.ms-child-pill{display:flex;align-items:center;gap:5px;padding:5px 12px 5px 8px;border-radius:20px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;font-family:'Nunito',system-ui,sans-serif;font-size:12px;font-weight:600;color:rgba(244,239,232,.45)}
+.ms-child-pill:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15)}
+.ms-child-pill.ms-active{background:rgba(245,184,76,.1);border-color:rgba(245,184,76,.35);color:#F5B84C}
+.ms-child-pill .ms-pill-emoji{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:rgba(255,255,255,.06)}
+.ms-child-pill.ms-active .ms-pill-emoji{background:rgba(245,184,76,.15)}
 `;
 
 // Resolve a HatchedCreature to a DreamKeeper with a valid imageSrc.
@@ -52,14 +61,43 @@ function hexToRgb(hex: string): string {
   return `${r},${g},${b}`;
 }
 
+/** Calculate consecutive-day streak from night cards (most recent backwards). */
+function calcStreak(cards: { date: string }[]): number {
+  if (!cards.length) return 0;
+  // Unique dates (YYYY-MM-DD), sorted descending
+  const dates = [...new Set(cards.map(c => c.date?.slice(0, 10)).filter(Boolean))].sort().reverse();
+  if (!dates.length) return 0;
+
+  const toDay = (iso: string) => {
+    const [y, m, d] = iso.split('-').map(Number);
+    return Math.floor(new Date(y, m - 1, d).getTime() / 86400000);
+  };
+
+  // The most recent card must be today or yesterday to count
+  const todayDay = toDay(new Date().toISOString().slice(0, 10));
+  const latestDay = toDay(dates[0]);
+  if (todayDay - latestDay > 1) return 0;
+
+  let streak = 1;
+  for (let i = 1; i < dates.length; i++) {
+    if (toDay(dates[i - 1]) - toDay(dates[i]) === 1) streak++;
+    else break;
+  }
+  return streak;
+}
+
 export default function MySpace({ onSignUp, onReadStory }: Props) {
-  const { user, setView, companionCreature } = useApp();
+  const { user, setView, companionCreature, setCompanionCreature, selectedCharacter, setSelectedCharacter } = useApp();
 
   const [characters, setCharacters] = useState<Character[]>([]);
+  const [allStories, setAllStories] = useState<any[]>([]);
+  const [allCards, setAllCards] = useState<any[]>([]);
+  const [allCreatures, setAllCreatures] = useState<HatchedCreature[]>([]);
   const [storyCount, setStoryCount] = useState(0);
   const [recentStories, setRecentStories] = useState<any[]>([]);
   const [recentCards, setRecentCards] = useState<any[]>([]);
   const [cardCount, setCardCount] = useState(0);
+  const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const userId = user?.id;
@@ -76,10 +114,13 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
       const cards: any[] = JSON.parse(localStorage.getItem(`ss2_nightcards_${userId}`) || '[]');
       if (chars.length || stories.length || cards.length) {
         setCharacters(chars);
+        setAllStories(stories);
+        setAllCards(cards);
         setStoryCount(stories.length);
         setRecentStories(stories.slice(-5).reverse());
         setRecentCards(cards.slice(-5).reverse());
         setCardCount(cards.length);
+        setStreak(calcStreak(cards));
         setLoading(false);
       }
     } catch {}
@@ -89,21 +130,69 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
       getCharacters(userId),
       getStories(userId),
       getNightCards(userId),
-    ]).then(([chars, stories, cards]) => {
+      getAllHatchedCreatures(userId),
+    ]).then(([chars, stories, cards, creatures]) => {
       if (cancelled) return;
       setCharacters(chars);
+      setAllStories(stories);
+      setAllCards(cards);
+      setAllCreatures(creatures);
       setStoryCount(stories.length);
       setRecentStories(stories.slice(-5).reverse());
       setRecentCards(cards.slice(-5).reverse());
       setCardCount(cards.length);
+      setStreak(calcStreak(cards));
       setLoading(false);
     }).catch(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };
   }, [userId]);
 
+  // ── Multi-child: family characters ─────────────────────────────────────────
+  const familyChildren = useMemo(
+    () => characters.filter(c => c.isFamily && c.type === 'human'),
+    [characters],
+  );
+  const hasMultipleChildren = familyChildren.length > 1;
+
+  // Determine which child is active — default to selectedCharacter or first family child
+  const activeChild = useMemo(() => {
+    if (selectedCharacter && familyChildren.some(c => c.id === selectedCharacter.id)) {
+      return selectedCharacter;
+    }
+    return familyChildren[0] || characters[0] || null;
+  }, [selectedCharacter, familyChildren, characters]);
+
+  // When active child changes, update filtered data
+  useEffect(() => {
+    if (!activeChild || !hasMultipleChildren) return;
+    // Filter stories and cards by the active child's character ID
+    const childId = activeChild.id;
+    const filteredStories = allStories.filter(
+      s => !s.characterIds?.length || s.characterIds.includes(childId) || s.heroName === activeChild.name
+    );
+    const filteredCards = allCards.filter(
+      c => !c.characterIds?.length || c.characterIds.includes(childId) || c.heroName === activeChild.name
+    );
+    setStoryCount(filteredStories.length);
+    setRecentStories(filteredStories.slice(-5).reverse());
+    setRecentCards(filteredCards.slice(-5).reverse());
+    setCardCount(filteredCards.length);
+    setStreak(calcStreak(filteredCards));
+
+    // Switch companion creature to match active child
+    const childCreature = allCreatures.find(cr => cr.characterId === childId);
+    if (childCreature && childCreature.id !== companionCreature?.id) {
+      setCompanionCreature(childCreature);
+    }
+  }, [activeChild?.id, hasMultipleChildren, allStories, allCards, allCreatures]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleChildSwitch = (child: Character) => {
+    setSelectedCharacter(child);
+  };
+
   // ── Derived data ───────────────────────────────────────────────────────────
-  const primaryChild = characters.find(c => c.isFamily && c.type === 'human') || characters[0];
+  const primaryChild = activeChild || characters.find(c => c.isFamily && c.type === 'human') || characters[0];
   const childName = primaryChild?.name || user?.displayName || 'friend';
 
   // First-time detection
@@ -204,6 +293,44 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
             }
           </div>
         </div>
+
+        {/* ═══ 1a. CHILD TOGGLE (multi-child) ═══ */}
+        {hasMultipleChildren && (
+          <div className="ms-child-toggle" style={{ paddingTop: 4, marginBottom: 6 }}>
+            {familyChildren.map(child => (
+              <div
+                key={child.id}
+                className={`ms-child-pill${activeChild?.id === child.id ? ' ms-active' : ''}`}
+                onClick={() => handleChildSwitch(child)}
+              >
+                <span className="ms-pill-emoji">{child.emoji || '🌙'}</span>
+                <span>{child.name}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ═══ 1b. STREAK PILL ═══ */}
+        {streak > 0 && (
+          <div style={{
+            display: 'flex', justifyContent: 'center',
+            marginBottom: 4, marginTop: 2,
+            animation: 'ms-fadeUp .7s .1s ease-out both',
+          }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              padding: '3px 10px', borderRadius: 20,
+              background: 'rgba(245,184,76,.08)',
+              border: '1px solid rgba(245,184,76,.15)',
+              fontFamily: "'DM Mono',monospace", fontSize: 10,
+              color: 'rgba(245,184,76,.7)', letterSpacing: '.03em',
+              ...(streak >= 7 ? { animation: 'ms-streakGlow 3s ease-in-out infinite' } : {}),
+            }}>
+              <span style={{ fontSize: 11, lineHeight: 1 }}>{'\uD83D\uDD25'}</span>
+              <span>{streak} night streak</span>
+            </div>
+          </div>
+        )}
 
         {/* ═══ 2. DREAMKEEPER SCENE ═══ */}
         <div style={{

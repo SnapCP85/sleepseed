@@ -22,6 +22,20 @@ const RITUAL_QUESTIONS = [
   "Did anything surprise you about them today?",
 ];
 
+// DreamKeeper-framed versions of the ritual questions (used in inspiration card)
+const RITUAL_QUESTIONS_FRAMED = [
+  "Tell me\u2026 was there a moment today you wanted to hold onto?",
+  "I can feel it\u2026 did something happen today that's still sitting with you?",
+  "I'm curious\u2026 was anyone kind to them today \u2014 or unkind?",
+  "Whisper it to me\u2026 what do you wish you'd said or done differently today?",
+  "I wonder\u2026 was there a quiet moment today that mattered more than it looked?",
+  "Tell me the words\u2026 what did they say today that you don't want to forget?",
+  "I'll carry it too\u2026 was there something heavy they brought home today?",
+  "I love this one\u2026 what made them laugh today \u2014 really laugh?",
+  "Show me\u2026 was there a moment today where you saw who they're becoming?",
+  "I'm all ears\u2026 did anything surprise you about them today?",
+];
+
 const CREATE_QUESTIONS = [
   "What's something weird your child said this week?",
   "If they could go anywhere impossible tonight, where?",
@@ -47,45 +61,60 @@ const OCCASION_OPTIONS = [
 ];
 
 const WORLDS = [
-  { emoji: '\u{1F680}', label: 'Outer Space', key: 'space' },
-  { emoji: '\u{1F30A}', label: 'Deep Ocean', key: 'ocean' },
-  { emoji: '\u{1F332}', label: 'Magic Forest', key: 'forest' },
-  { emoji: '\u{1F3F0}', label: 'Ancient Castle', key: 'castle' },
-  { emoji: '\u{1F30B}', label: 'Volcano Island', key: 'volcano' },
-  { emoji: '\u270F\uFE0F', label: 'Somewhere else\u2026', key: 'custom' },
+  { emoji: '🛏️', label: 'The Kingdom Beneath the Blankets', key: 'blankets' },
+  { emoji: '☁️', label: "The Cloudmakers' Sky", key: 'clouds' },
+  { emoji: '🫧', label: 'The City of Floating Moments', key: 'bubbles' },
+  { emoji: '🔍', label: 'The Kingdom of Small Things', key: 'tiny' },
+  { emoji: '🪐', label: "Somewhere That Doesn't Make Sense", key: 'weird' },
+  { emoji: '📖', label: 'The Dream Archive', key: 'archive' },
+  { emoji: '✨', label: 'Somewhere else...', key: 'custom' },
 ];
 
 const WORLD_DETAILS: Record<string, string[]> = {
-  space: [
-    'The astronaut only speaks in rhymes',
-    "There's a traffic jam between the planets",
-    "The moon smells like dad's old car",
+  blankets: [
+    'The pillows have their own government',
+    'A sock has been missing for so long it became a person',
+    'The bed is bigger on the inside than the outside',
   ],
-  ocean: [
-    'The fish are running a very formal meeting',
-    'The treasure chest is full of lost socks',
-    'A crab has been waiting here for 200 years',
+  clouds: [
+    'Someone is building a bridge that goes nowhere',
+    'The clouds taste different depending on who made them',
+    'There is a room up here with no floor and no ceiling',
   ],
-  forest: [
-    'The trees have been arguing for 100 years',
-    'One mushroom knows everything',
-    "Something got lost here and it's still looking",
+  bubbles: [
+    'A memory keeps replaying but one detail changes each time',
+    'Someone left a moment behind and it floated here',
+    'The city only exists while someone is remembering it',
   ],
-  castle: [
-    'The dragon collects spoons, not gold',
-    'The knight is terrified of butterflies',
-    'The princess has been awake for 3 days',
+  tiny: [
+    'A button thinks it used to be important',
+    'The dust under the fridge has its own economy',
+    'A paperclip is on a very serious quest',
   ],
-  volcano: [
-    'The lava is actually strawberry jam',
-    'A flamingo lives at the top',
-    'Someone left a shoe here 10 years ago',
+  weird: [
+    'Gravity works sideways on Tuesdays',
+    'The sky is below and the ground is above but nobody mentions it',
+    'A door opens into the same room but everything is slightly wrong',
+  ],
+  archive: [
+    'A story that was never finished is trying to find its ending',
+    'The shelves rearrange themselves when nobody is looking',
+    'One book remembers the reader who loved it most',
   ],
   custom: [
     'Something is not where it should be',
     'One character knows a secret',
     'Things keep going slightly wrong',
   ],
+};
+
+const WORLD_DESCRIPTIONS: Record<string, string> = {
+  blankets: 'The Kingdom Beneath the Blankets — a world where cozy, familiar objects become magical. Pillows are territories, blanket folds hide kingdoms, stuffed animals hold office. The emotional core is safety: the feeling that the most magical place in the world is right here, in bed.',
+  clouds: "The Cloudmakers' Sky — a world of impossible structures built from clouds, sky-scaffolding, and architecture that shouldn't stand but does. The emotional core is imagination: the thrill of building something from nothing, of making the impossible feel inevitable.",
+  bubbles: 'The City of Floating Moments — a world where memories drift as soap-bubble-like orbs, each containing a moment that can be entered, replayed, or remixed. The emotional core is memory: the bittersweetness of moments passing and the magic of holding onto them.',
+  tiny: 'The Kingdom of Small Things — a world where everyday objects become characters and miniature adventures unfold on desktops, in drawers, under furniture. A paperclip is a knight, a crumb is a boulder. The emotional core is curiosity: looking closely and discovering that the smallest things have the biggest stories.',
+  weird: "Somewhere That Doesn't Make Sense — a surreal, dream-logic world where the rules change without warning. Gravity is optional, clocks run in spirals, fish walk and birds swim. The emotional core is creativity: the freedom of a place where nonsense is the only sense that matters.",
+  archive: 'The Dream Archive — a vast, quiet library of stories that have been dreamed before, some finished, some not. Books whisper, shelves rearrange, and forgotten tales try to be remembered. The emotional core is meaning: the sense that every story matters, even the ones nobody finished telling.',
 };
 
 const VIBE_OPTIONS = [
@@ -409,6 +438,13 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   // ── Ritual entry card selection (3-card picker shown before input) ──
   const [ritualEntryDone, setRitualEntryDone] = useState(!isRitual);
 
+  // ── Gift mode state ──
+  const [giftMode, setGiftMode] = useState(false);
+  const [giftName, setGiftName] = useState('');
+  const [giftAge, setGiftAge] = useState('');
+  const [giftPronoun, setGiftPronoun] = useState('');
+  const [giftFormDone, setGiftFormDone] = useState(false);
+
   // ── Mode & input state ──
   const [mode, setMode] = useState<'today' | 'adventure'>('today');
   const [brief, setBrief] = useState('');
@@ -467,14 +503,16 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   }, [isRitual]);
 
   // ── Inspiration & occasion derived values ──
-  const questionBank = entryMode === 'ritual' ? RITUAL_QUESTIONS : CREATE_QUESTIONS;
+  const questionBank = entryMode === 'ritual' ? RITUAL_QUESTIONS_FRAMED : CREATE_QUESTIONS;
+  const questionBankPlain = entryMode === 'ritual' ? RITUAL_QUESTIONS : CREATE_QUESTIONS;
   const currentQuestion = questionBank[questionIndex % questionBank.length];
+  const currentQuestionPlain = questionBankPlain[questionIndex % questionBankPlain.length];
   const hasContent = (transcript.trim().length > 3) || (brief.trim().length > 3);
   const showInspiration = !hasContent;
   const showOccasionTag = hasContent && !occasionDismissed;
 
   const shuffleQuestion = () => setQuestionIndex(i => i + 1);
-  const useQuestion = () => { setBrief(currentQuestion); setTranscript(''); };
+  const useQuestion = () => { setBrief(currentQuestionPlain); setTranscript(''); };
 
   const renderInspoQuestion = (q: string): ReactNode => {
     const accentColor = entryMode === 'ritual' ? '#F5B84C' : '#14d890';
@@ -583,9 +621,14 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
       return <>Got it! {amber(words + '\u2026')} Ready when you are. {'\u2728'}</>;
     }
 
+    // gift mode
+    if (giftMode && !giftFormDone) return (
+      <>A gift story for someone {amber('special')}! Tell me about them. {'\u{1F381}'}</>
+    );
+
     // adventure mode
     if (!worldChoice) return (
-      <>Forget today! {amber('Where should we go')} tonight? Pick a world and I&apos;ll write us in. {'\u{1F680}'}</>
+      <>{giftMode ? <>A story for {amber(giftName || 'them')}!</> : <>Forget today!</>} {amber('Where should we go')} tonight? Pick a world and I&apos;ll write us in. {'\u{1F680}'}</>
     );
 
     const worldLabel = worldChoice === 'custom'
@@ -650,15 +693,17 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
     // Build brief
     const finalBrief = mode === 'today'
       ? (transcript.trim() || brief.trim() || VIBE_BRIEF[vibe] || 'about to go on an adventure')
-      : `Adventure in ${worldChoice === 'custom' ? customWorld : WORLDS.find(w => w.key === worldChoice)?.label || worldChoice}. ${adventureDetail}`.trim();
+      : `Adventure in ${worldChoice === 'custom' ? customWorld : WORLDS.find(w => w.key === worldChoice)?.label || worldChoice}. ${WORLD_DESCRIPTIONS[worldChoice] ? `[World: ${WORLD_DESCRIPTIONS[worldChoice]}] ` : ''}${adventureDetail}`.trim();
 
     const finalVibe = vibe || inferVibe(finalBrief);
 
     const choices: BuilderChoices = {
       path: mode === 'today' ? 'ritual' : 'free',
-      heroName: heroChar?.name || '',
-      heroGender: heroChar?.pronouns === 'he/him' ? 'boy'
-        : heroChar?.pronouns === 'she/her' ? 'girl' : '',
+      heroName: giftMode ? giftName.trim() : (heroChar?.name || ''),
+      heroGender: giftMode
+        ? giftPronoun
+        : (heroChar?.pronouns === 'he/him' ? 'boy'
+          : heroChar?.pronouns === 'she/her' ? 'girl' : ''),
       vibe: finalVibe,
       level,
       length,
@@ -886,12 +931,132 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                   <div style={{ fontSize: 11, color: 'rgba(244,239,232,.4)' }}>{cName} picks everything tonight</div>
                 </div>
               </button>
+
+              {/* Card 4: Gift a story */}
+              <button onClick={() => { setGiftMode(true); setRitualEntryDone(true); setMode('adventure'); }} style={{
+                width: '100%', padding: '18px 18px', borderRadius: 16, cursor: 'pointer', textAlign: 'left',
+                border: '1.5px solid rgba(245,184,76,.15)', background: 'rgba(245,184,76,.03)',
+                display: 'flex', alignItems: 'center', gap: 14, transition: 'all .2s',
+                fontFamily: "'Nunito',system-ui,sans-serif",
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.35)'; e.currentTarget.style.background = 'rgba(245,184,76,.08)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.15)'; e.currentTarget.style.background = 'rgba(245,184,76,.03)'; }}
+              >
+                <span style={{ fontSize: 28, flexShrink: 0 }}>{'\u{1F381}'}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 600, color: '#F4EFE8', marginBottom: 2 }}>Gift a story</div>
+                  <div style={{ fontSize: 11, color: 'rgba(244,239,232,.4)' }}>Make a story for someone special</div>
+                </div>
+              </button>
             </div>
           </div>
         )}
 
-        {/* ─── SPEECH BUBBLE (ritual only, after entry selection) ─── */}
-        {isRitual && ritualEntryDone && (
+        {/* ─── GIFT MODE FORM ─── */}
+        {giftMode && !giftFormDone && ritualEntryDone && (
+          <div style={{ animation: 'slideUp .35s ease both', padding: '8px 0 0' }}>
+            <div className="sc-bubble" style={{ borderColor: 'rgba(245,184,76,.2)', background: 'rgba(245,184,76,.04)', opacity: 1, animation: 'bubblePop .35s ease forwards', marginBottom: 18 }}>
+              <div className="sc-bubble-text">
+                A story gift! <em style={{ color: '#F5B84C', fontStyle: 'normal', fontWeight: 700 }}>Who is it for?</em> {'\u{1F381}'}
+              </div>
+            </div>
+
+            {/* Child's name */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '.08em', textTransform: 'uppercase' as const, color: 'rgba(245,184,76,.45)', marginBottom: 8 }}>
+                Who is this story for?
+              </div>
+              <input
+                type="text"
+                value={giftName}
+                onChange={e => setGiftName(e.target.value)}
+                placeholder="Their name..."
+                autoFocus
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: 14,
+                  border: '1.5px solid rgba(245,184,76,.25)', background: 'rgba(245,184,76,.05)',
+                  color: 'var(--cream)', fontSize: 14, fontFamily: 'var(--body)', fontWeight: 700,
+                  outline: 'none', transition: 'border-color .2s, box-shadow .2s',
+                }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.45)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(245,184,76,.07)'; }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.25)'; e.currentTarget.style.boxShadow = 'none'; }}
+              />
+            </div>
+
+            {/* Age pills */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '.08em', textTransform: 'uppercase' as const, color: 'rgba(245,184,76,.45)', marginBottom: 8 }}>
+                How old are they?
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[{ key: '3-5', label: '3\u20135' }, { key: '6-8', label: '6\u20138' }, { key: '9-11', label: '9\u201311' }].map(a => (
+                  <button
+                    key={a.key}
+                    onClick={() => setGiftAge(giftAge === a.key ? '' : a.key)}
+                    style={{
+                      padding: '8px 18px', borderRadius: 20, cursor: 'pointer', transition: 'all .2s',
+                      fontFamily: 'var(--body)', fontSize: 12, fontWeight: 700,
+                      border: giftAge === a.key ? '1.5px solid rgba(245,184,76,.4)' : '1.5px solid rgba(255,255,255,.1)',
+                      background: giftAge === a.key ? 'rgba(245,184,76,.12)' : 'rgba(255,255,255,.04)',
+                      color: giftAge === a.key ? '#F5B84C' : 'rgba(255,255,255,.35)',
+                    }}
+                  >
+                    {a.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Pronoun pills (optional) */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '.08em', textTransform: 'uppercase' as const, color: 'rgba(245,184,76,.45)', marginBottom: 8 }}>
+                Pronouns <span style={{ color: 'rgba(255,255,255,.2)' }}>(optional)</span>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[{ key: 'boy', label: 'He/him' }, { key: 'girl', label: 'She/her' }, { key: 'they', label: 'They/them' }].map(p => (
+                  <button
+                    key={p.key}
+                    onClick={() => setGiftPronoun(giftPronoun === p.key ? '' : p.key)}
+                    style={{
+                      padding: '8px 16px', borderRadius: 20, cursor: 'pointer', transition: 'all .2s',
+                      fontFamily: 'var(--body)', fontSize: 12, fontWeight: 700,
+                      border: giftPronoun === p.key ? '1.5px solid rgba(245,184,76,.4)' : '1.5px solid rgba(255,255,255,.1)',
+                      background: giftPronoun === p.key ? 'rgba(245,184,76,.12)' : 'rgba(255,255,255,.04)',
+                      color: giftPronoun === p.key ? '#F5B84C' : 'rgba(255,255,255,.35)',
+                    }}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Continue button */}
+            <button
+              disabled={!giftName.trim() || !giftAge}
+              onClick={() => {
+                setGiftFormDone(true);
+                // Map gift age to level
+                if (giftAge === '3-5') setLevel('age3');
+                else if (giftAge === '6-8') setLevel('age5');
+                else if (giftAge === '9-11') setLevel('age7');
+              }}
+              style={{
+                width: '100%', padding: '14px', borderRadius: 14, cursor: 'pointer',
+                border: 'none', fontFamily: 'var(--cta)', fontSize: 14, fontWeight: 700,
+                background: (!giftName.trim() || !giftAge) ? 'rgba(245,184,76,.15)' : 'linear-gradient(145deg,#7a4a08,#F5B84C 48%,#7a4a08)',
+                color: (!giftName.trim() || !giftAge) ? 'rgba(255,255,255,.25)' : '#060200',
+                transition: 'all .2s',
+                opacity: (!giftName.trim() || !giftAge) ? 0.5 : 1,
+              }}
+            >
+              Continue {'\u2192'}
+            </button>
+          </div>
+        )}
+
+        {/* ─── SPEECH BUBBLE (ritual only, after entry selection, not during gift form) ─── */}
+        {isRitual && ritualEntryDone && (!giftMode || giftFormDone) && (
           <div className="sc-bubble" style={{ borderColor: 'rgba(245,184,76,.2)', background: 'rgba(245,184,76,.04)', opacity: 1, animation: 'bubblePop .35s ease forwards' }}>
             <div className="sc-bubble-text">{renderBubbleText()}</div>
           </div>
@@ -951,8 +1116,8 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                     alignItems: 'center',
                     gap: 5,
                   }}>
-                    {entryMode === 'ritual' ? '\u2726' : '\u2728'}{' '}
-                    Need some inspiration?
+                    {entryMode === 'ritual' ? <>{cEmoji}{' '}</> : <>{'\u2728'}{' '}</>}
+                    {entryMode === 'ritual' ? `${cName} wants to know\u2026` : 'Need some inspiration?'}
                   </div>
                   <button
                     onClick={shuffleQuestion}
@@ -1075,7 +1240,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                   rows={2}
                   value={brief}
                   onChange={e => { setBrief(e.target.value); setTranscript(''); }}
-                  placeholder="We found a really fat frog under the plant pot\u2026"
+                  placeholder="We found a really fat frog under the plant pot..."
                 />
               </>
             )}
@@ -1083,11 +1248,12 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
         )}
 
         {/* ═══ ADVENTURE INPUT ZONE ═══ */}
-        {mode === 'adventure' && (!isRitual || ritualEntryDone) && (
+        {mode === 'adventure' && (!isRitual || ritualEntryDone) && (!giftMode || giftFormDone) && (
           <div style={{ animation: 'slideUp .25s ease both' }}>
             {!showCustomWorldInput ? (
               <>
-                <div className="sc-world-label">Where do we go tonight?</div>
+                <div className="sc-world-label">Where should we go tonight?</div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'rgba(245,184,76,.5)', textAlign: 'center', marginBottom: 10, letterSpacing: '.04em' }}>pick a world and I'll write us in</div>
                 <div className="sc-world-grid">
                   {WORLDS.map(w => (
                     <div
@@ -1111,7 +1277,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                   rows={2}
                   value={customWorld}
                   onChange={e => setCustomWorld(e.target.value)}
-                  placeholder="A world where everything is tiny\u2026"
+                  placeholder="A world where everything is tiny..."
                   autoFocus
                 />
               </>
@@ -1142,7 +1308,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                   rows={2}
                   value={detailChips.includes(adventureDetail) ? '' : adventureDetail}
                   onChange={e => setAdventureDetail(e.target.value)}
-                  placeholder="The spaceship smells like dad's old car\u2026"
+                  placeholder="The spaceship smells like dad's old car..."
                 />
               </div>
             )}
@@ -1235,6 +1401,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
         )}
 
         {/* ═══ CAST SECTION ═══ */}
+        {(!giftMode || giftFormDone) && <>
         <div className="sc-cast-label">Who's in the story?</div>
         <div className="sc-cast-row">
           {/* Hero pill (always first, not deselectable) */}
@@ -1362,11 +1529,12 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
             </div>
           </div>
         </div>
+        </>}
 
       </div>
 
-      {/* ─── CTA (hidden during ritual entry card selection) ─── */}
-      {(!isRitual || ritualEntryDone) && (
+      {/* ─── CTA (hidden during ritual entry card selection and gift form) ─── */}
+      {(!isRitual || ritualEntryDone) && (!giftMode || giftFormDone) && (
         <div className="sc-cta-wrap">
           <button
             className={`sc-cta ${ctaColor}`}

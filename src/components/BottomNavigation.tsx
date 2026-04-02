@@ -1,13 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // BottomNavigation — 4-tab mobile-first bottom nav for SleepSeed
 // ─────────────────────────────────────────────────────────────────────────────
-// Tabs: Discover, My Space, Create (emphasized), Profile
+// Tabs: Discover, Today, Create (emphasized), My Space
 // Premium dark glass style, soft transitions, calm active state.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CSS = `
 .ss-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:0 12px env(safe-area-inset-bottom,0px) 12px}
-.ss-nav-bar{display:flex;align-items:center;justify-content:space-around;height:64px;border-radius:20px;background:rgba(8,12,28,.92);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 -4px 24px rgba(0,0,0,.35),0 0 0 .5px rgba(255,255,255,.04) inset;margin-bottom:6px}
+.ss-nav-bar{display:flex;align-items:center;justify-content:space-around;height:64px;border-radius:20px;background:rgba(8,12,28,.98);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 -4px 24px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.04) inset;margin-bottom:6px}
 .ss-nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative;padding:6px 0}
 .ss-nav-ico{width:40px;height:32px;border-radius:12px;display:flex;align-items:center;justify-content:center;transition:all .25s cubic-bezier(.16,1,.3,1)}
 .ss-nav-tab.on .ss-nav-ico{background:rgba(245,184,76,.1)}
@@ -41,10 +41,10 @@ export default function BottomNavigation({ current, onNav }: Props) {
       ),
     },
     {
-      id: 'dashboard', label: 'My Space',
+      id: 'dashboard', label: 'Today',
       icon: (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
         </svg>
       ),
     },
@@ -58,11 +58,15 @@ export default function BottomNavigation({ current, onNav }: Props) {
       ),
     },
     {
-      id: 'user-profile', label: 'Profile',
+      id: 'my-space', label: 'My Space',
       icon: (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
+          <path d="M12 2l1.09 3.36h3.53l-2.86 2.08 1.09 3.36L12 8.72l-2.85 2.08 1.09-3.36-2.86-2.08h3.53z"/>
+          <circle cx="5" cy="18" r="1.5"/>
+          <circle cx="19" cy="18" r="1.5"/>
+          <circle cx="12" cy="20" r="1"/>
+          <circle cx="8" cy="15" r="1"/>
+          <circle cx="16" cy="15" r="1"/>
         </svg>
       ),
     },

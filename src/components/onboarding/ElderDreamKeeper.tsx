@@ -18,17 +18,7 @@ export default function ElderDreamKeeper({ scale = 1, animate = true }: { scale?
       margin: '0 auto',
       ...(animate ? { animation: 'ob-elderFloat 4.5s ease-in-out infinite' } : {}),
     }}>
-      {/* Ambient glow — matches the image's blue-purple-gold palette */}
-      <div style={{
-        position: 'absolute',
-        width: glowSize,
-        height: glowSize,
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(184,161,255,.35) 0%, rgba(246,197,111,.18) 35%, transparent 68%)',
-        filter: `blur(${18 * scale}px)`,
-        animation: 'ob-glowPulse 3s ease-in-out infinite',
-        pointerEvents: 'none',
-      }} />
+      {/* Ambient glow removed — was visible as a disk through the Elder image */}
 
       {/* The Elder image */}
       <img

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useApp } from '../AppContext';
 import ElderDreamKeeper from '../components/onboarding/ElderDreamKeeper';
 import DreamEgg from '../components/onboarding/DreamEgg';
@@ -6,13 +6,14 @@ import StarBackground from '../components/onboarding/StarBackground';
 import OnboardingShell from '../components/onboarding/OnboardingShell';
 import '../components/onboarding/onboarding.css';
 import { getRitualState, completeNight1, completeNight2 } from '../lib/ritualState';
-import { saveNightCard } from '../lib/storage';
+import { saveNightCard, getNightCards } from '../lib/storage';
 import type { SavedNightCard } from '../lib/types';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface Props {
   night: 1 | 2 | 3;
   initialScreen?: string;
+  onInitialScreenConsumed?: () => void;
   onStartStory: (ritualSeed: string) => void;
   onNightComplete: () => void;
   onCreateAnotherStory?: () => void;
@@ -28,7 +29,7 @@ const fadeUp = (delay: number): React.CSSProperties => ({
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-export default function NightDashboard({ night, initialScreen, onStartStory, onNightComplete, onCreateAnotherStory }: Props) {
+export default function NightDashboard({ night, initialScreen, onInitialScreenConsumed, onStartStory, onNightComplete, onCreateAnotherStory }: Props) {
   const { user } = useApp();
 
   // Night 1 state
@@ -39,6 +40,16 @@ export default function NightDashboard({ night, initialScreen, onStartStory, onN
   // Night 2 state
   const [n2Screen, setN2Screen] = useState<N2Screen>((initialScreen as N2Screen) || 'return');
   const [talentAnswer, setTalentAnswer] = useState('');
+
+  // BUG 1 FIX: Clear nightReturnTo after this component has consumed the initialScreen value.
+  // This prevents the value from being cleared before the remount reads it.
+  useEffect(() => {
+    if (initialScreen && onInitialScreenConsumed) {
+      onInitialScreenConsumed();
+    }
+    // Only run on mount — the initial screen has been consumed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Get ritual state for context
   const ritual = user ? getRitualState(user.id) : null;
@@ -61,23 +72,30 @@ export default function NightDashboard({ night, initialScreen, onStartStory, onN
     if (!user) return;
     completeNight1(user.id, smileAnswer);
 
-    // Save Night Card
-    const card: SavedNightCard = {
-      id: crypto.randomUUID?.() || `nc_${Date.now()}`,
-      userId: user.id,
-      heroName: childName,
-      storyTitle: 'The Night Your Dream Egg First Listened',
-      characterIds: [],
-      headline: 'The Night Your Dream Egg First Listened',
-      quote: `Tonight, ${childName} shared that ${smileAnswer} made them smile. The Elder DreamKeeper brought a Dream Egg to begin the journey.`,
-      emoji: ritual?.creatureEmoji || '\uD83E\uDD5A',
-      date: new Date().toISOString().split('T')[0],
-      isOrigin: true,
-      nightNumber: 1,
-      creatureEmoji: ritual?.creatureEmoji,
-      creatureColor: ritual?.creatureColor,
-    };
-    try { await saveNightCard(card); } catch (e) { console.error('[night1] saveNightCard failed:', e); }
+    // Save Night Card — skip if one already exists for today + night 1 (prevents duplicates with SleepSeedCore)
+    const today = new Date().toISOString().split('T')[0];
+    try {
+      const existing = await getNightCards(user.id);
+      const alreadySaved = existing.some(c => c.date === today && c.nightNumber === 1);
+      if (!alreadySaved) {
+        const card: SavedNightCard = {
+          id: crypto.randomUUID?.() || `nc_${Date.now()}`,
+          userId: user.id,
+          heroName: childName,
+          storyTitle: 'The Night Your Dream Egg First Listened',
+          characterIds: [],
+          headline: 'The Night Your Dream Egg First Listened',
+          quote: `Tonight, ${childName} shared that ${smileAnswer} made them smile. The Elder DreamKeeper brought a Dream Egg to begin the journey.`,
+          emoji: ritual?.creatureEmoji || '\uD83E\uDD5A',
+          date: today,
+          isOrigin: true,
+          nightNumber: 1,
+          creatureEmoji: ritual?.creatureEmoji,
+          creatureColor: ritual?.creatureColor,
+        };
+        await saveNightCard(card);
+      }
+    } catch (e) { console.error('[night1] saveNightCard failed:', e); }
 
     onNightComplete();
   }, [user, smileAnswer, childName, ritual, onNightComplete]);
@@ -97,21 +115,29 @@ export default function NightDashboard({ night, initialScreen, onStartStory, onN
     if (!user) return;
     completeNight2(user.id, talentAnswer);
 
-    const card: SavedNightCard = {
-      id: crypto.randomUUID?.() || `nc_${Date.now()}`,
-      userId: user.id,
-      heroName: childName,
-      storyTitle: 'The Night It Remembered Your Smile',
-      characterIds: [],
-      headline: 'The Night It Remembered Your Smile',
-      quote: `${childName} shared something again tonight. The egg is listening more closely now.`,
-      emoji: ritual?.creatureEmoji || '\uD83E\uDD5A',
-      date: new Date().toISOString().split('T')[0],
-      nightNumber: 2,
-      creatureEmoji: ritual?.creatureEmoji,
-      creatureColor: ritual?.creatureColor,
-    };
-    try { await saveNightCard(card); } catch (e) { console.error('[night2] saveNightCard failed:', e); }
+    // Save Night Card — skip if one already exists for today + night 2 (prevents duplicates with SleepSeedCore)
+    const today = new Date().toISOString().split('T')[0];
+    try {
+      const existing = await getNightCards(user.id);
+      const alreadySaved = existing.some(c => c.date === today && c.nightNumber === 2);
+      if (!alreadySaved) {
+        const card: SavedNightCard = {
+          id: crypto.randomUUID?.() || `nc_${Date.now()}`,
+          userId: user.id,
+          heroName: childName,
+          storyTitle: 'The Night It Remembered Your Smile',
+          characterIds: [],
+          headline: 'The Night It Remembered Your Smile',
+          quote: `${childName} shared something again tonight. The egg is listening more closely now.`,
+          emoji: ritual?.creatureEmoji || '\uD83E\uDD5A',
+          date: today,
+          nightNumber: 2,
+          creatureEmoji: ritual?.creatureEmoji,
+          creatureColor: ritual?.creatureColor,
+        };
+        await saveNightCard(card);
+      }
+    } catch (e) { console.error('[night2] saveNightCard failed:', e); }
 
     onNightComplete();
   }, [user, talentAnswer, childName, ritual, onNightComplete]);

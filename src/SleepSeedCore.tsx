@@ -202,12 +202,12 @@ body{background:var(--night);font-family:var(--sans);color:var(--cream);min-heig
 @keyframes orbPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
 .gen-title{font-family:'Fraunces',serif;font-size:21px;font-weight:700;color:var(--cream);margin-bottom:7px}
 .gen-sub{font-size:13px;color:var(--dim);line-height:1.7;margin-bottom:20px}
-.pbar{height:6px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;margin-bottom:5px}
-.pfill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:99px;transition:width .6s ease}
+.pbar{height:6px;background:rgba(244,239,232,.08);border-radius:99px;overflow:hidden;margin-bottom:5px}
+.pfill{height:100%;background:linear-gradient(90deg,#E8972A,#F5B84C);border-radius:99px;transition:width .6s ease}
 .plabel{font-size:11px;color:var(--dim);font-weight:700;text-align:right;margin-bottom:14px}
-.pstep{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--dimmer);padding:3px 0;transition:color .3s}
-.pstep.active{color:var(--gold2);font-weight:700}
-.pstep.done{color:var(--green2)}
+.pstep{display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(244,239,232,.35);padding:3px 0;transition:color .3s;font-family:'Fraunces',serif}
+.pstep.active{color:#F5B84C;font-weight:700}
+.pstep.done{color:#14d890}
 .pstep-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
 .img-dot{width:26px;height:26px;border-radius:7px;border:1.5px solid rgba(255,255,255,.1);
   background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .4s}
@@ -450,9 +450,9 @@ body{background:var(--night);font-family:var(--sans);color:var(--cream);min-heig
 
 /* ── GENERATION SCREEN MAGIC ── */
 @keyframes genAuAmber{0%,100%{opacity:.06;transform:translateX(-50%) scale(1)}50%{opacity:.2;transform:translateX(-50%) scale(1.1)}}
-@keyframes genAuGreen{0%,100%{opacity:.08;transform:translateX(-50%) scale(1)}50%{opacity:.28;transform:translateX(-50%) scale(1.12)}}
+@keyframes genAuGreen{0%,100%{opacity:.08;transform:translateX(-50%) scale(1)}50%{opacity:.22;transform:translateX(-50%) scale(1.12)}}
 @keyframes genGlowAmber{0%,100%{filter:drop-shadow(0 0 12px rgba(245,184,76,.5))}50%{filter:drop-shadow(0 0 36px rgba(245,184,76,.95))}}
-@keyframes genGlowGreen{0%,100%{filter:drop-shadow(0 0 14px rgba(76,200,144,.5))}50%{filter:drop-shadow(0 0 42px rgba(76,200,144,.95))}}
+@keyframes genGlowGreen{0%,100%{filter:drop-shadow(0 0 14px rgba(20,216,144,.5))}50%{filter:drop-shadow(0 0 42px rgba(20,216,144,.9))}}
 @keyframes genGlowTeal{0%,100%{filter:drop-shadow(0 0 14px rgba(20,216,144,.5))}50%{filter:drop-shadow(0 0 44px rgba(20,216,144,.95))}}
 @keyframes genFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 @keyframes genReadyExcite{0%,100%{filter:drop-shadow(0 0 20px rgba(20,216,144,.7));transform:translateY(0) scale(1)}30%{transform:translateY(-12px) scale(1.08)}50%{filter:drop-shadow(0 0 60px rgba(20,216,144,1));transform:translateY(-14px) scale(1.1)}}
@@ -473,53 +473,53 @@ body{background:var(--night);font-family:var(--sans);color:var(--cream);min-heig
 .gen-cz{display:flex;flex-direction:column;align-items:center;position:relative;z-index:5;margin-bottom:4px}
 .gen-aura{position:absolute;width:160px;height:160px;border-radius:50%;top:-36px;left:50%;pointer-events:none}
 .gen-aura.amber{background:radial-gradient(circle,rgba(245,184,76,.08),transparent 70%);animation:genAuAmber 6s ease-in-out infinite}
-.gen-aura.green{background:radial-gradient(circle,rgba(76,200,144,.1),transparent 70%);animation:genAuGreen 6s ease-in-out infinite}
+.gen-aura.green{background:radial-gradient(circle,rgba(20,216,144,.1),transparent 70%);animation:genAuGreen 6s ease-in-out infinite}
 .gen-aura.teal{background:radial-gradient(circle,rgba(20,216,144,.12),transparent 70%);animation:genAuGreen 5s ease-in-out infinite}
 .gen-creature-emo{display:inline-block;position:relative;z-index:2;font-size:58px;animation:genFloat 5s ease-in-out infinite,genGlowAmber 5s ease-in-out infinite}
 .gen-creature-emo.react{animation:genFloat 5s ease-in-out infinite,genGlowGreen 5s ease-in-out infinite}
 .gen-creature-emo.ready{animation:genReadyExcite 2s ease-in-out 3,genFloat 5s ease-in-out 6s infinite,genGlowTeal 5s ease-in-out 6s infinite}
 .gen-creature-nm{font-family:'Fraunces',serif;font-size:12px;font-weight:700;letter-spacing:.02em;position:relative;z-index:2;margin-top:2px}
 .gen-creature-nm.amber{color:rgba(245,184,76,.78)}
-.gen-creature-nm.react{color:rgba(76,200,144,.78)}
+.gen-creature-nm.react{color:rgba(20,216,144,.78)}
 .gen-creature-nm.ready{color:rgba(20,216,144,.8)}
 .gen-bub{background:rgba(12,18,48,.92);border:1px solid rgba(245,184,76,.2);border-radius:18px 18px 18px 4px;padding:8px 13px;max-width:230px;position:relative;z-index:5;margin-bottom:8px;animation:genBubbleIn .35s cubic-bezier(.16,1,.3,1) both}
 .gen-bub::before{content:'';position:absolute;bottom:-7px;left:14px;width:12px;height:7px;background:rgba(12,18,48,.92);clip-path:polygon(0 0,100% 0,0 100%);border-left:1px solid rgba(245,184,76,.2)}
 .gen-bub-txt{font-family:'Fraunces',serif;font-size:11.5px;font-style:italic;color:rgba(245,184,76,.9);line-height:1.6;text-align:center}
 .gen-bub-txt em{color:#f5e8c8;font-style:normal;font-weight:700}
-.gen-bub.react{border-color:rgba(76,200,144,.32);background:rgba(8,22,14,.92);animation:genReactionIn .38s cubic-bezier(.16,1,.3,1) both}
-.gen-bub.react::before{background:rgba(8,22,14,.92);border-left-color:rgba(76,200,144,.32)}
-.gen-bub.react .gen-bub-txt{color:rgba(76,200,144,.88)}
-.gen-bub.ready{border-color:rgba(20,216,144,.35);background:rgba(6,20,12,.92);animation:genReactionIn .38s cubic-bezier(.16,1,.3,1) both}
+.gen-bub.react{border-color:rgba(20,216,144,.28);background:rgba(8,14,28,.92);animation:genReactionIn .38s cubic-bezier(.16,1,.3,1) both}
+.gen-bub.react::before{background:rgba(8,14,28,.92);border-left-color:rgba(20,216,144,.28)}
+.gen-bub.react .gen-bub-txt{color:rgba(20,216,144,.85)}
+.gen-bub.ready{border-color:rgba(20,216,144,.35);background:rgba(6,12,24,.92);animation:genReactionIn .38s cubic-bezier(.16,1,.3,1) both}
 .gen-bub.ready .gen-bub-txt{color:rgba(20,216,144,.88)}
 .gen-portal-wrap{position:relative;z-index:5;display:flex;flex-direction:column;align-items:center;margin-bottom:6px}
 .gen-portal-eyebrow{font-family:'DM Mono',monospace;font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,184,76,.35);margin-bottom:5px;display:flex;align-items:center;gap:6px;width:180px}
 .gen-portal-eyebrow::before,.gen-portal-eyebrow::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,.2),transparent)}
 .gen-portal-eyebrow.teal{color:rgba(20,216,144,.45)}
-.gen-portal{width:148px;height:148px;border-radius:50%;overflow:hidden;position:relative;background:radial-gradient(circle at 42% 35%,#1c2d6a 0%,#0c1838 45%,#07101e 100%);animation:genPortalPulse 4.5s ease-in-out infinite;flex-shrink:0}
+.gen-portal{width:148px;height:148px;border-radius:50%;overflow:hidden;position:relative;background:radial-gradient(circle at 42% 35%,#0e1530 0%,#090e1e 45%,#060912 100%);animation:genPortalPulse 4.5s ease-in-out infinite;flex-shrink:0}
 .gen-portal.ready{animation:genPortalPulseTeal 2.8s ease-in-out infinite}
 .gen-portal-ring{position:absolute;inset:-2.5px;border-radius:50%;border:1.5px solid transparent;border-top-color:rgba(245,184,76,.55);border-right-color:rgba(245,184,76,.18);animation:genRingRotate 7s linear infinite;pointer-events:none;z-index:12}
 .gen-portal-ring.teal{border-top-color:rgba(20,216,144,.55);border-right-color:rgba(20,216,144,.18);animation-duration:5s}
 .gen-portal-ring2{position:absolute;inset:-5px;border-radius:50%;border:1px solid transparent;border-bottom-color:rgba(245,184,76,.2);border-left-color:rgba(245,184,76,.08);animation:genRingRev 12s linear infinite;pointer-events:none;z-index:12}
 .gen-portal-ring2.teal{border-bottom-color:rgba(20,216,144,.2);border-left-color:rgba(20,216,144,.08)}
 .gen-portal-sky{position:absolute;inset:0;overflow:hidden;border-radius:50%}
-.gen-portal-moon{position:absolute;border-radius:50%;background:radial-gradient(circle at 36% 34%,#fef0b8,#e8c040);box-shadow:0 0 10px rgba(240,190,50,.45);width:24px;height:24px;top:16px;right:28px;animation:genMoonBob 5s ease-in-out infinite}
-.gen-portal-moon::after{content:'';position:absolute;border-radius:50%;background:#0c1838;top:-20%;left:-22%;width:88%;height:88%}
-.gen-portal-ground{position:absolute;bottom:0;left:0;right:0;height:46px;background:linear-gradient(0deg,#1e3d22,#142a18);border-radius:0 0 50% 50%}
-.gen-portal-grass{position:absolute;bottom:44px;left:0;right:0;display:flex;justify-content:space-around;padding:0 8px}
-.gen-gblade{width:2px;border-radius:2px 2px 0 0;background:linear-gradient(0deg,#1e3d22,rgba(76,200,144,.65));transform-origin:bottom center;animation:genGrassWave var(--gd) var(--gl) ease-in-out infinite}
+.gen-portal-moon{position:absolute;border-radius:50%;background:radial-gradient(circle at 36% 34%,#F5B84C,#E8972A);box-shadow:0 0 14px rgba(245,184,76,.55),0 0 30px rgba(245,184,76,.2);width:24px;height:24px;top:16px;right:28px;animation:genMoonBob 5s ease-in-out infinite}
+.gen-portal-moon::after{content:'';position:absolute;border-radius:50%;background:#090e1e;top:-20%;left:-22%;width:88%;height:88%}
+.gen-portal-ground{position:absolute;bottom:0;left:0;right:0;height:46px;background:linear-gradient(0deg,#0a0e1c 0%,#0f1628 40%,rgba(245,184,76,.08) 100%);border-radius:0 0 50% 50%}
+.gen-portal-grass{position:absolute;bottom:44px;left:0;right:0;display:flex;justify-content:space-around;padding:0 12px}
+.gen-gblade{width:2px;border-radius:2px 2px 0 0;background:linear-gradient(0deg,rgba(245,184,76,.15),rgba(245,184,76,.5));transform-origin:bottom center;animation:genGrassWave var(--gd) var(--gl) ease-in-out infinite}
 .gen-portal-creature{position:absolute;bottom:46px;z-index:4;line-height:1;animation:genCreatureWalk 7s linear infinite;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
-.gen-portal-cloud{position:absolute;opacity:.38;line-height:1;animation:genCloudDrift var(--cd) var(--cdl) ease-in-out infinite alternate}
-.gen-portal-vignette{position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 36px rgba(4,6,20,.72);pointer-events:none;z-index:10}
+.gen-portal-cloud{position:absolute;opacity:.22;line-height:1;color:rgba(244,239,232,.6);animation:genCloudDrift var(--cd) var(--cdl) ease-in-out infinite alternate}
+.gen-portal-vignette{position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 40px rgba(6,9,18,.8);pointer-events:none;z-index:10}
 .gen-portal-title{position:absolute;bottom:5px;left:0;right:0;font-family:'Fraunces',serif;font-style:italic;color:rgba(245,184,76,.58);text-align:center;z-index:8;text-shadow:0 1px 6px rgba(0,0,0,.7);line-height:1;font-size:8px}
 .gen-portal-title.teal{color:rgba(20,216,144,.58)}
 .gen-thoughts{width:100%;display:flex;flex-direction:column;gap:5px;position:relative;z-index:5;margin-bottom:8px}
-.gen-thought{display:flex;align-items:flex-start;gap:7px;padding:7px 10px;border-radius:11px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);position:relative;overflow:hidden;animation:genThoughtIn var(--ti) var(--td) cubic-bezier(.16,1,.3,1) both}
-.gen-thought.active{border-color:rgba(245,184,76,.14);background:rgba(245,184,76,.04)}
+.gen-thought{display:flex;align-items:flex-start;gap:7px;padding:7px 10px;border-radius:11px;background:rgba(244,239,232,.03);border:1px solid rgba(244,239,232,.07);position:relative;overflow:hidden;animation:genThoughtIn var(--ti) var(--td) cubic-bezier(.16,1,.3,1) both}
+.gen-thought.active{border-color:rgba(245,184,76,.18);background:rgba(245,184,76,.05)}
 .gen-thought-ico{font-size:13px;flex-shrink:0;margin-top:1px;line-height:1}
-.gen-thought-txt{font-family:'Fraunces',serif;font-size:10.5px;font-style:italic;color:rgba(255,255,255,.48);line-height:1.55;flex:1}
-.gen-thought-txt em{color:rgba(245,184,76,.75);font-style:normal;font-weight:700}
-.gen-thought-txt .done{color:rgba(76,200,144,.7);font-style:normal}
-.gen-thought.active .gen-thought-txt{color:rgba(245,184,76,.6)}
+.gen-thought-txt{font-family:'Fraunces',serif;font-size:10.5px;font-style:italic;color:rgba(244,239,232,.4);line-height:1.55;flex:1}
+.gen-thought-txt em{color:rgba(245,184,76,.8);font-style:normal;font-weight:700}
+.gen-thought-txt .done{color:rgba(20,216,144,.7);font-style:normal}
+.gen-thought.active .gen-thought-txt{color:rgba(244,239,232,.65)}
 .gen-think-dots{display:flex;gap:3px;align-items:center;margin-top:4px}
 .gen-think-dot{width:4px;height:4px;border-radius:50%;background:rgba(245,184,76,.4)}
 .gen-think-dot:nth-child(1){animation:genThinkDot 1.4s 0s ease-in-out infinite}
@@ -785,6 +785,7 @@ body{background:var(--night);font-family:var(--sans);color:var(--cream);min-heig
 @keyframes nc-writingDot{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
 @keyframes nc-cardReveal{from{transform:translateY(40px) scale(.94);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
 @keyframes nc-polaroid{0%{filter:brightness(2.5) saturate(0) contrast(.6);opacity:.3}30%{filter:brightness(1.6) saturate(.3) contrast(.8);opacity:.7}70%{filter:brightness(1.1) saturate(.8) contrast(.95);opacity:.95}100%{filter:brightness(1) saturate(1) contrast(1);opacity:1}}
+@keyframes nc-micPulse{0%,100%{box-shadow:0 0 0 0 rgba(245,184,76,.45)}50%{box-shadow:0 0 0 8px rgba(245,184,76,0)}}
 @keyframes v8r-moonPulse{0%,100%{box-shadow:0 0 4px rgba(245,184,76,.3)}50%{box-shadow:0 0 12px rgba(245,184,76,.7)}}
 @keyframes v8r-edgePulse{0%,100%{opacity:0}50%{opacity:1}}
 @keyframes v8r-hintFade{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(8px)}}
@@ -1336,11 +1337,23 @@ const callClaude = async (messages, system="", maxTokens=4000, retries=2) => {
   let lastErr;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const r = await fetch("/api/claude",{
+      // Client-side timeout: 90s (Vercel function has 120s max)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
+      let r;
+      try {
+      r = await fetch("/api/claude",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify(body),
+        signal: controller.signal,
       });
+      } catch(fetchErr: any) {
+        clearTimeout(timeoutId);
+        if (fetchErr.name === 'AbortError') throw new Error("Story generation timed out — tap Try Again (it usually works on the second attempt).");
+        throw new Error(`Network error: ${fetchErr.message || 'Could not reach server'}`);
+      }
+      clearTimeout(timeoutId);
       const raw = await r.text();
       let d;
       try { d = JSON.parse(raw); } catch(_) {
@@ -1357,7 +1370,7 @@ const callClaude = async (messages, system="", maxTokens=4000, retries=2) => {
     } catch(e) {
       lastErr = e;
       if (attempt < retries) {
-        const delay = 1000 * (attempt + 1); // 1s, 2s
+        const delay = 1500 * (attempt + 1); // 1.5s, 3s
         console.warn(`[callClaude] Attempt ${attempt+1} failed: ${e.message}. Retrying in ${delay}ms...`);
         await new Promise(r => setTimeout(r, delay));
       }
@@ -1553,6 +1566,8 @@ export default function SleepSeed({
   const [ncFacing,       setNcFacing]       = useState<'user'|'environment'>('user');
   const ncCamVideoRef  = useRef<HTMLVideoElement>(null);
   const ncCamStreamRef = useRef<MediaStream|null>(null);
+  const ncSrRef        = useRef<any>(null);                          // speech recognition instance
+  const [ncListening,    setNcListening]    = useState(false);       // mic active for Night Card
   const [ncGenerating,   setNcGenerating]   = useState(false);      // Claude generating
   const [ncResult,       setNcResult]       = useState<any>(null);  // final Night Card
   const [ncRevealed,     setNcRevealed]     = useState(false);      // polaroid reveal done
@@ -2359,9 +2374,9 @@ export default function SleepSeed({
     if(stage!=='generating')return;
     const container=document.getElementById('gen-portal-stars');if(!container)return;
     container.innerHTML='';
-    const colours=['#fff8e0','#e8d8ff','#d0f0e8','#c8e8ff','#fff'];
-    for(let i=0;i<22;i++){const s=document.createElement('div');const sz=Math.random()<.35?2:1.2;
-      s.style.cssText=`position:absolute;border-radius:50%;width:${sz}px;height:${sz}px;left:${(Math.random()*100).toFixed(1)}%;top:${(Math.random()*55).toFixed(1)}%;background:${colours[i%colours.length]};animation:genPortalStarTw ${(1.8+Math.random()*2.2).toFixed(1)}s ${(Math.random()*3).toFixed(1)}s ease-in-out infinite`;
+    const colours=['#F5B84C','#F4EFE8','#E8972A','#F5B84C','#F4EFE8','#9482ff'];
+    for(let i=0;i<28;i++){const s=document.createElement('div');const sz=Math.random()<.3?2.2:Math.random()<.5?1.5:1;
+      s.style.cssText=`position:absolute;border-radius:50%;width:${sz}px;height:${sz}px;left:${(Math.random()*100).toFixed(1)}%;top:${(Math.random()*60).toFixed(1)}%;background:${colours[i%colours.length]};opacity:${(.3+Math.random()*.5).toFixed(2)};animation:genPortalStarTw ${(1.8+Math.random()*2.2).toFixed(1)}s ${(Math.random()*3).toFixed(1)}s ease-in-out infinite`;
       container.appendChild(s);}
   },[stage]);
 
@@ -2870,11 +2885,21 @@ ${resolvedAdv
 Return ONLY this exact JSON object. No extra text, no markdown, no explanation. Title must be 3-6 words. Each illustration_prompt must be 10-15 words (visual details added automatically by the system).
 ${resolvedAdv ? advSchema : simpleSchema}`;
 
-      const raw = await callClaude(
-        [{role:"user",content:storyPrompt}],
-        promptSystem,
-        4096
-      );
+      // Simulate smooth progress during API call (26% -> ~72%)
+      const progTimer = setInterval(() => {
+        setGen(g => {
+          if (g.progress >= 72) { clearInterval(progTimer); return g; }
+          return {...g, progress: Math.min(72, g.progress + 1.2)};
+        });
+      }, 1800);
+      let raw;
+      try {
+        raw = await callClaude(
+          [{role:"user",content:storyPrompt}],
+          promptSystem,
+          4096
+        );
+      } finally { clearInterval(progTimer); }
 
       const story = extractJSON(raw);
 
@@ -2934,12 +2959,15 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
       console.error("SleepSeed error:",e);
       const msg = e.message||"Something went wrong";
       const isParseErr = msg.toLowerCase().includes("json")||msg.toLowerCase().includes("parse")||msg.toLowerCase().includes("missing");
-      const isTimeout = msg.toLowerCase().includes("server error")||msg.toLowerCase().includes("timeout")||msg.toLowerCase().includes("502")||msg.toLowerCase().includes("504");
+      const isTimeout = msg.toLowerCase().includes("server error")||msg.toLowerCase().includes("timed out")||msg.toLowerCase().includes("timeout")||msg.toLowerCase().includes("502")||msg.toLowerCase().includes("504");
+      const isNetwork = msg.toLowerCase().includes("network error")||msg.toLowerCase().includes("failed to fetch")||msg.toLowerCase().includes("could not reach");
       const isOverloaded = msg.includes("529")||msg.includes("503")||msg.toLowerCase().includes("overloaded");
       const userMsg = msg.includes("ANTHROPIC_KEY")
         ? "API key not set — check your Vercel environment variables."
         : isOverloaded
           ? "The AI is busy right now — please wait a moment and try again."
+          : isNetwork
+            ? "Could not connect to the server — check your internet and tap Try Again."
           : isTimeout
             ? "The story took too long to generate — tap Try Again (it usually works on the second attempt)."
           : isParseErr
@@ -3439,7 +3467,7 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
     setNcStep(0);setNcBondingA(ncBondingA||"");setNcGratitude("");setNcExtra("");
     setNcPhoto(null);setNcCountdown(0);setNcGenerating(false);
     setNcResult(null);setNcRevealed(false);setNcPhotoMode('idle');
-    setNcGenTextIdx(0);setNcGenPct(0);
+    setNcGenTextIdx(0);setNcGenPct(0);ncSrRef.current?.stop();setNcListening(false);
     window.speechSynthesis?.cancel();
     if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}
     autoReadRef.current=false;setIsReading(false);
@@ -3581,10 +3609,10 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                     <div className="gen-portal-moon"/>
                     <div className="gen-portal-cloud" style={{left:14,top:38,fontSize:16,'--cd':'5s','--cdl':'0s'} as any}>&#9729;</div>
                     <div className="gen-portal-cloud" style={{right:18,top:52,fontSize:11,'--cd':'7s','--cdl':'1.5s'} as any}>&#9729;</div>
-                    {isReady&&<div style={{position:'absolute',bottom:46,left:22,fontSize:13,animation:'genMoonBob 3s ease-in-out infinite'}}>{'\uD83C\uDF38'}</div>}
+                    {isReady&&<div style={{position:'absolute',bottom:46,left:22,fontSize:13,animation:'genMoonBob 3s ease-in-out infinite'}}>{'\u2728'}</div>}
                     <div className="gen-portal-ground"/>
                     <div className="gen-portal-grass">
-                      {[12,16,11,14,18,13,17,12,15].map((h,i)=><div key={i} className="gen-gblade" style={{height:h,'--gd':`${2.1+i*.08}s`,'--gl':`${i*.22}s`} as any}/>)}
+                      {[8,11,7,10,13,9,12,8,10].map((h,i)=><div key={i} className="gen-gblade" style={{height:h,'--gd':`${2.1+i*.08}s`,'--gl':`${i*.22}s`} as any}/>)}
                     </div>
                     <div className="gen-portal-creature" style={{fontSize:22}}>{companionCreature?.creatureEmoji??'\uD83E\uDD5A'}</div>
                     {ncBondingA?.trim()&&<div style={{position:'absolute',bottom:46,left:10,zIndex:4,lineHeight:1,fontSize:11,animation:'genCreatureWalk 12s linear infinite'}}>{'\uD83D\uDC0C'}</div>}
@@ -3971,7 +3999,24 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
                   <div style={{fontSize:20,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",letterSpacing:'-.4px',lineHeight:1.2,marginBottom:6,animation:'nc-fadeUp .35s .05s ease both',opacity:0}}>{book?.heroName??heroName}, what do<br/>you think?</div>
                   <div style={{fontSize:12,color:'rgba(234,242,255,.36)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',marginBottom:22,animation:'nc-fadeUp .35s .1s ease both',opacity:0}}>Say it aloud or type it below</div>
                   <div style={{marginBottom:14,animation:'nc-fadeUp .35s .15s ease both',opacity:0}}>
-                    <textarea value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)} placeholder="Type what they said…" style={{width:'100%',minHeight:80,padding:'14px 16px',borderRadius:16,border:'1px solid rgba(154,127,212,.28)',background:'rgba(154,127,212,.07)',color:'rgba(234,242,255,.82)',fontSize:14,fontFamily:"'Nunito',sans-serif",resize:'none',outline:'none',lineHeight:1.55}}/>
+                    <div style={{position:'relative'}}>
+                      <textarea value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)} placeholder="Type what they said…" style={{width:'100%',minHeight:80,padding:'14px 48px 14px 16px',borderRadius:16,border:`1px solid ${ncListening?'rgba(245,184,76,.55)':'rgba(154,127,212,.28)'}`,background:ncListening?'rgba(245,184,76,.08)':'rgba(154,127,212,.07)',color:'rgba(234,242,255,.82)',fontSize:14,fontFamily:"'Nunito',sans-serif",resize:'none',outline:'none',lineHeight:1.55,transition:'border-color .25s,background .25s'}}/>
+                      {typeof window!=='undefined'&&!!((window as any).SpeechRecognition||(window as any).webkitSpeechRecognition)&&(
+                        <button onClick={()=>{
+                          const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
+                          if(!SR)return;
+                          if(ncListening){ncSrRef.current?.stop();setNcListening(false);return;}
+                          const sr=new SR();
+                          sr.continuous=false;sr.interimResults=false;sr.lang='en-US';
+                          sr.onresult=(e:any)=>{const t=e.results[0]?.[0]?.transcript||'';setNcBondingA(prev=>prev?(prev.trimEnd()+' '+t):t);setNcListening(false);};
+                          sr.onerror=()=>setNcListening(false);
+                          sr.onend=()=>setNcListening(false);
+                          sr.start();ncSrRef.current=sr;setNcListening(true);
+                        }} style={{position:'absolute',right:8,top:8,width:32,height:32,borderRadius:'50%',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',background:ncListening?'rgba(245,184,76,.92)':'rgba(154,127,212,.18)',transition:'background .25s,transform .15s',transform:ncListening?'scale(1.08)':'scale(1)',animation:ncListening?'nc-micPulse 1.2s ease-in-out infinite':'none'}} aria-label={ncListening?'Stop listening':'Start voice input'}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={ncListening?'#172200':'rgba(234,242,255,.7)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="1" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div style={{marginTop:'auto',display:'flex',flexDirection:'column',gap:9,animation:'nc-fadeUp .35s .25s ease both',opacity:0}}>
                     <button onClick={()=>setNcStep(1)} style={{position:'relative',width:'100%',padding:'17px 20px',borderRadius:18,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)'}}>

@@ -216,9 +216,9 @@ export default function Hatchery({ user, onBack }: HatcheryProps) {
             }}>🥚</div>
             <div style={{fontFamily:"'Fraunces',serif",fontSize:14,fontWeight:400,
               color:'#F4EFE8',lineHeight:1.4,marginBottom:6}}>
-              {ritualState.eggState==='idle' && `${ritualState.creatureName}'s egg is listening`}
-              {ritualState.eggState==='cracked' && `${ritualState.creatureName}'s egg is starting to crack`}
-              {ritualState.eggState==='hatching' && `${ritualState.creatureName} is almost ready to hatch`}
+              {ritualState.eggState==='idle' && 'Your Dream Egg is listening'}
+              {ritualState.eggState==='cracked' && 'Your Dream Egg is starting to crack'}
+              {ritualState.eggState==='hatching' && 'Your DreamKeeper is almost ready to hatch'}
             </div>
             {/* Progress bar */}
             <div style={{width:'80%',height:4,borderRadius:2,background:'rgba(255,255,255,.06)',

@@ -117,7 +117,8 @@
       "Bash(pkill -f \"vite\")",
       "Bash(node -e \"console.log\\(require\\('./node_modules/framer-motion/package.json'\\).version\\)\")",
       "Bash(cp src/pages/PublicHomepage.tsx src/pages/PublicHomepage_LEGACY.tsx)",
-      "Bash(mkdir -p src/pages/homepage)"
+      "Bash(mkdir -p src/pages/homepage)",
+      "Bash(vercel project:*)"
     ]
   }
 }
