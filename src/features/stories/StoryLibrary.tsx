@@ -332,6 +332,54 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
           </button>
           <span className="sl-book-child-name">{s.heroName} · {isRitual ? 'Ritual' : 'Adventure'}</span>
         </div>
+
+        {/* Share to Library button */}
+        {isSubscribed && !s.isPublic && (
+          <div style={{ padding: '0 10px 10px' }}>
+            <button
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  await submitStoryToLibrary(s.id, userId, { ageGroup: s.ageGroup, vibe: s.vibe, mood: s.mood, storyStyle: s.storyStyle, storyLength: s.storyLength, lessons: s.lessons });
+                  getStories(userId).then(setStories);
+                } catch (err) { console.error('Submit to library:', err); }
+              }}
+              style={{
+                width: '100%', padding: '7px 12px', borderRadius: 20,
+                background: 'rgba(245,184,76,.12)', border: '1px solid rgba(245,184,76,.3)',
+                color: '#F5B84C', fontSize: 10, fontWeight: 700,
+                fontFamily: "var(--mono)", letterSpacing: '.04em',
+                cursor: 'pointer', transition: 'all .15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(245,184,76,.2)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245,184,76,.12)'; }}
+            >
+              Share to Library
+            </button>
+          </div>
+        )}
+        {s.isPublic && (
+          <div style={{ padding: '0 10px 10px' }}>
+            <button
+              onClick={async (e) => {
+                e.stopPropagation();
+                await removeStoryFromLibrary(s.id, userId);
+                getStories(userId).then(setStories);
+              }}
+              style={{
+                width: '100%', padding: '7px 12px', borderRadius: 20,
+                background: 'rgba(20,216,144,.08)', border: '1px solid rgba(20,216,144,.25)',
+                color: '#14d890', fontSize: 10, fontWeight: 700,
+                fontFamily: "var(--mono)", letterSpacing: '.04em',
+                cursor: 'pointer', transition: 'all .15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(20,216,144,.15)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(20,216,144,.08)'; }}
+            >
+              In Library ✓
+            </button>
+          </div>
+        )}
       </div>
     );
   };
@@ -341,15 +389,21 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
       <style>{CSS}</style>
 
       {/* Header */}
-      <div className="sl-header">
-        <div className="sl-header-title">My Space</div>
-        <button className="sl-header-dots" onClick={e => e.stopPropagation()}>
-          <svg width="4" height="16" viewBox="0 0 4 16" fill="currentColor">
-            <circle cx="2" cy="2" r="1.5"/>
-            <circle cx="2" cy="8" r="1.5"/>
-            <circle cx="2" cy="14" r="1.5"/>
-          </svg>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '20px 20px 0', marginBottom: 14 }}>
+        <button onClick={onBack} style={{
+          width: 36, height: 36, borderRadius: '50%',
+          border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.04)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', flexShrink: 0, transition: 'background .2s',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.1)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; }}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(234,242,255,.55)" strokeWidth="2" strokeLinecap="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
+        <div>
+          <div style={{ fontSize: 9, color: 'rgba(245,184,76,.5)', fontFamily: "var(--mono)", letterSpacing: '1px', marginBottom: 4 }}>LIBRARY</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#F4EFE8', fontFamily: "var(--serif)", letterSpacing: '-.5px' }}>My Stories</div>
+        </div>
       </div>
 
       {/* Child filter tabs */}

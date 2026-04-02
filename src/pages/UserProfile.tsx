@@ -1,13 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../AppContext';
-import { getCharacters, getStories, getNightCards, getFriends, ensureRefCode } from '../lib/storage';
-import type { Friend } from '../lib/storage';
+import { getCharacters, ensureRefCode } from '../lib/storage';
 import { BASE_URL } from '../lib/config';
 import { supabase } from '../lib/supabase';
 import { getAllHatchedCreatures } from '../lib/hatchery';
 import { getCreature } from '../lib/creatures';
-import type { Character, SavedStory, SavedNightCard, HatchedCreature } from '../lib/types';
-import NightCard from '../features/nightcards/NightCard';
+import type { Character, HatchedCreature } from '../lib/types';
 import { getBedtimeSettings, saveBedtimeSettings, requestNotificationPermission } from '../lib/bedtimeReminder';
 
 const CSS = `
@@ -19,21 +17,10 @@ const CSS = `
 .pf-inner{max-width:500px;margin:0 auto;padding:0 20px;position:relative;z-index:5}
 
 /* Header */
-.pf-hdr{padding:20px 20px 0;max-width:500px;margin:0 auto}
-.pf-hdr h1{font-family:var(--serif);font-size:28px;font-weight:900;color:var(--cream);letter-spacing:-.5px;margin:0 0 4px}
-
-/* Child card */
-.pf-child{background:rgba(244,239,232,.05);border:1.5px solid rgba(245,184,76,.16);border-radius:22px;padding:17px;display:flex;align-items:center;gap:14px;margin-top:12px;animation:pFadeUp .5s ease both}
-.pf-child-av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;border:2px solid rgba(245,184,76,.3);background:rgba(245,184,76,.13);font-family:var(--serif);font-weight:900;color:var(--amber)}
-.pf-child-info{flex:1;min-width:0}
-.pf-child-name{font-family:var(--serif);font-size:20px;font-weight:900;color:var(--cream);letter-spacing:-.3px}
-.pf-child-meta{font-family:var(--mono);font-size:10px;color:rgba(234,242,255,.38);margin-top:3px}
-
-/* Stats row */
-.pf-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;animation:pFadeUp .5s .05s ease both}
-.pf-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:13px 8px;text-align:center}
-.pf-stat-num{font-family:var(--serif);font-size:24px;font-weight:900;color:var(--cream);line-height:1}
-.pf-stat-lbl{font-family:var(--mono);font-size:7px;color:rgba(234,242,255,.28);text-transform:uppercase;letter-spacing:.7px;margin-top:2px}
+.pf-hdr{padding:20px 20px 0;max-width:500px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.pf-back{background:none;border:none;color:rgba(234,242,255,.4);font-size:20px;cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center;border-radius:10px;transition:background .15s}
+.pf-back:hover{background:rgba(255,255,255,.05)}
+.pf-hdr h1{font-family:var(--serif);font-size:24px;font-weight:900;color:var(--cream);letter-spacing:-.5px;margin:0}
 
 /* Section */
 .pf-sec{margin-top:20px;animation:pFadeUp .5s .1s ease both}
@@ -46,7 +33,6 @@ const CSS = `
 .pf-kid-info{flex:1;min-width:0}
 .pf-kid-name{font-family:var(--serif);font-size:14px;font-weight:900;color:var(--cream)}
 .pf-kid-meta{font-family:var(--mono);font-size:10px;color:rgba(234,242,255,.38);margin-top:2px}
-.pf-kid-streak{font-family:var(--mono);font-size:11px;color:var(--amber);flex-shrink:0}
 .pf-kid-add{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px dashed rgba(234,242,255,.1);border-radius:18px;cursor:pointer;transition:all .18s;margin-bottom:8px}
 .pf-kid-add:hover{border-color:rgba(234,242,255,.2);background:rgba(234,242,255,.02)}
 
@@ -59,13 +45,6 @@ const CSS = `
 .pf-link-chev{color:rgba(234,242,255,.24);font-size:14px;flex-shrink:0}
 .pf-link.danger .pf-link-lbl{color:rgba(255,90,90,.7)}
 
-/* Memory grid */
-.pf-mem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
-.pf-mem-overflow{aspect-ratio:1;border-radius:14px;border:1.5px dashed rgba(234,242,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s}
-.pf-mem-overflow:hover{border-color:rgba(234,242,255,.2)}
-.pf-see-all{width:100%;padding:10px;background:transparent;border:1.5px dashed rgba(234,242,255,.1);border-radius:14px;font-family:var(--sans);font-size:12px;color:rgba(234,242,255,.38);cursor:pointer;transition:all .18s;text-align:center}
-.pf-see-all:hover{border-color:rgba(234,242,255,.2);color:rgba(234,242,255,.6)}
-
 /* Dev section */
 .pf-dev{border:2px solid rgba(255,60,60,.3);border-radius:14px;padding:14px;background:rgba(255,60,60,.03);margin-top:20px}
 `;
@@ -73,9 +52,6 @@ const CSS = `
 export default function UserProfile() {
   const { user, logout, setView, setEditingCharacter, isSubscribed, setIsSubscribed } = useApp();
   const [characters, setCharacters] = useState<Character[]>([]);
-  const [allStories, setAllStories] = useState<SavedStory[]>([]);
-  const [allNightCards, setAllNightCards] = useState<SavedNightCard[]>([]);
-  const [friends, setFriends] = useState<Friend[]>([]);
   const [inviteLink, setInviteLink] = useState('');
   const [copied, setCopied] = useState(false);
   const [creatures, setCreatures] = useState<HatchedCreature[]>([]);
@@ -87,15 +63,9 @@ export default function UserProfile() {
     if (!user) return;
     Promise.all([
       getCharacters(user.id),
-      getStories(user.id),
-      getNightCards(user.id),
-      getFriends(user.id),
       getAllHatchedCreatures(user.id),
-    ]).then(([chars, strs, ncs, frs, crs]) => {
+    ]).then(([chars, crs]) => {
       setCharacters(chars);
-      setAllStories(strs);
-      setAllNightCards(ncs);
-      setFriends(frs);
       setCreatures(crs);
     });
     ensureRefCode(user.id).then(code => {
@@ -104,24 +74,6 @@ export default function UserProfile() {
   }, [user]);
 
   const familyChars = useMemo(() => characters.filter(c => c.isFamily === true || (c.isFamily === undefined && c.type === 'human')), [characters]);
-
-  const bestStreak = useMemo(() => {
-    const dates = new Set(allNightCards.map(c => c.date.split('T')[0]));
-    let best = 0, cur = 0;
-    const sorted = [...dates].sort();
-    for (let i = 0; i < sorted.length; i++) {
-      if (i === 0) { cur = 1; } else {
-        const prev = new Date(sorted[i - 1]); prev.setDate(prev.getDate() + 1);
-        cur = prev.toISOString().split('T')[0] === sorted[i] ? cur + 1 : 1;
-      }
-      if (cur > best) best = cur;
-    }
-    return best;
-  }, [allNightCards]);
-
-  const favCount = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem(`ss_fav_stories_${user?.id}`) || '[]').length; } catch { return 0; }
-  }, [user?.id]);
 
   const childCreatureMap = useMemo(() => {
     const map: Record<string, HatchedCreature | undefined> = {};
@@ -134,10 +86,6 @@ export default function UserProfile() {
   if (!user) return null;
 
   const memberSince = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
-  const displayCards = allNightCards.slice(0, 5);
-  const remainingCards = Math.max(0, allNightCards.length - 5);
-  const primaryChild = familyChars[0] ?? null;
-  const primaryCreature = primaryChild ? childCreatureMap[primaryChild.id] : undefined;
 
   return (
     <div className="pf">
@@ -145,76 +93,40 @@ export default function UserProfile() {
 
       {/* Header */}
       <div className="pf-hdr">
-        <h1>Profile</h1>
+        <button className="pf-back" onClick={() => setView('my-space')}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <h1>Settings</h1>
       </div>
 
       <div className="pf-inner">
 
-        {/* Child card */}
-        {primaryChild && (
-          <div className="pf-child" onClick={() => setView('characters')}>
-            <div className="pf-child-av" style={{ background: primaryChild.color ? `linear-gradient(145deg,${primaryChild.color}30,rgba(12,24,64,.6))` : undefined }}>
-              {primaryChild.photo
-                ? <img src={primaryChild.photo} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                : (primaryChild.emoji || primaryChild.name?.charAt(0))}
+        {/* Display name + member info */}
+        <div style={{
+          textAlign: 'center', padding: '20px 0 4px',
+          animation: 'pFadeUp .5s ease both',
+        }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: '50%', margin: '0 auto 10px',
+            background: 'rgba(245,184,76,.1)', border: '2px solid rgba(245,184,76,.25)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'var(--serif)', fontSize: 22, fontWeight: 900, color: 'var(--amber)',
+          }}>
+            {user.displayName?.charAt(0)?.toUpperCase() || '?'}
+          </div>
+          <div style={{ fontFamily: 'var(--serif)', fontSize: 18, fontWeight: 900, color: 'var(--cream)' }}>
+            {user.displayName || 'Parent'}
+          </div>
+          {memberSince && (
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'rgba(234,242,255,.25)', letterSpacing: '.8px', textTransform: 'uppercase', marginTop: 4 }}>
+              Member since {memberSince}
             </div>
-            <div className="pf-child-info">
-              <div className="pf-child-name">{primaryChild.name}</div>
-              <div className="pf-child-meta">
-                {primaryChild.ageDescription ? `Age ${primaryChild.ageDescription}` : ''}
-                {primaryCreature ? ` · ${primaryCreature.name}` : ''}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Stats row */}
-        <div className="pf-stats">
-          <div className="pf-stat">
-            <div className="pf-stat-num">{allNightCards.length}</div>
-            <div className="pf-stat-lbl">Nights</div>
-          </div>
-          <div className="pf-stat">
-            <div className="pf-stat-num">{allStories.length}</div>
-            <div className="pf-stat-lbl">Books</div>
-          </div>
-          <div className="pf-stat">
-            <div className="pf-stat-num">{creatures.length}</div>
-            <div className="pf-stat-lbl">Creatures</div>
-          </div>
-        </div>
-
-        {/* Night Cards */}
-        <div className="pf-sec">
-          <div className="pf-sec-lbl">Night Cards</div>
-          {allNightCards.length === 0 ? (
-            <div style={{ fontSize: 12, color: 'rgba(234,242,255,.38)', fontStyle: 'italic', padding: '4px 0' }}>
-              Night Cards are saved at the end of each story — your child's words, captured forever.
-            </div>
-          ) : (
-            <>
-              <div className="pf-mem-grid">
-                {displayCards.map(nc => (
-                  <div key={nc.id} style={{ aspectRatio: '1', borderRadius: 14, overflow: 'hidden' }}>
-                    <NightCard card={nc} size="mini" onTap={() => setView('nightcard-library')} />
-                  </div>
-                ))}
-                {remainingCards > 0 && (
-                  <div className="pf-mem-overflow" onClick={() => setView('nightcard-library')}>
-                    <div style={{ fontFamily: 'var(--serif)', fontSize: 18, fontWeight: 900, color: '#F5B84C' }}>+{remainingCards}</div>
-                  </div>
-                )}
-              </div>
-              <button className="pf-see-all" onClick={() => setView('nightcard-library')}>
-                See all {allNightCards.length} memories →
-              </button>
-            </>
           )}
         </div>
 
         {/* Children */}
         <div className="pf-sec">
-          <div className="pf-sec-lbl">Our Children</div>
+          <div className="pf-sec-lbl">Children</div>
           {familyChars.length === 0 ? (
             <div style={{ fontSize: 12, color: 'rgba(234,242,255,.38)', fontStyle: 'italic', padding: '4px 0 8px' }}>
               Save your child's details once — used in every story automatically.
@@ -223,17 +135,8 @@ export default function UserProfile() {
             familyChars.map(c => {
               const cr = childCreatureMap[c.id];
               const crDef = cr ? getCreature(cr.creatureType) : null;
-              const childCards = allNightCards.filter(nc => nc.characterIds?.includes(c.id));
-              let streak = 0;
-              const d = new Date(); d.setHours(0, 0, 0, 0);
-              for (let i = 0; i < 365; i++) {
-                const ds = d.toISOString().split('T')[0];
-                if (childCards.some(nc => nc.date.split('T')[0] === ds)) { streak++; d.setDate(d.getDate() - 1); }
-                else if (i === 0) { d.setDate(d.getDate() - 1); }
-                else break;
-              }
               return (
-                <div key={c.id} className="pf-kid" onClick={() => setView('characters')}>
+                <div key={c.id} className="pf-kid" onClick={() => { setEditingCharacter(c); setView('characters'); }}>
                   <div className="pf-kid-av" style={{ background: c.color ? `linear-gradient(145deg,${c.color}30,rgba(12,24,64,.6))` : 'rgba(255,255,255,.06)', borderColor: c.color ? c.color + '50' : 'rgba(245,184,76,.3)' }}>
                     {c.photo ? <img src={c.photo} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (c.emoji || c.name?.charAt(0))}
                   </div>
@@ -242,10 +145,10 @@ export default function UserProfile() {
                     <div className="pf-kid-meta">
                       {c.ageDescription ? `Age ${c.ageDescription}` : ''}
                       {cr ? ` · ${cr.name}` : ''}
-                      {crDef ? ` · Night ${Math.min(childCards.length, 7)}/7` : ''}
+                      {crDef ? ` · ${crDef.name}` : ''}
                     </div>
                   </div>
-                  {streak > 0 && <div className="pf-kid-streak">{streak} nights</div>}
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(234,242,255,.24)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
                 </div>
               );
             })
@@ -298,15 +201,6 @@ export default function UserProfile() {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(234,242,255,.24)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
           </div>
         </div>
-
-        {/* Profile info */}
-        {memberSince && (
-          <div style={{ textAlign: 'center', padding: '20px 0 8px' }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'rgba(234,242,255,.2)', letterSpacing: '.8px', textTransform: 'uppercase' }}>
-              {user.displayName} · Member since {memberSince}
-            </div>
-          </div>
-        )}
 
         {/* Dev subscription toggle */}
         <div className="pf-dev">

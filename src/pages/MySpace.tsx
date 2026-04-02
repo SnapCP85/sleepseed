@@ -272,6 +272,32 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
 
       <div className="ms-inner">
 
+        {/* ═══ 0. PROFILE BUTTON ═══ */}
+        <div style={{
+          position: 'absolute', top: 18, right: 0, zIndex: 10,
+          animation: 'ms-fadeUp .5s ease-out',
+        }}>
+          <button
+            onClick={() => setView('user-profile')}
+            style={{
+              width: 36, height: 36, borderRadius: '50%',
+              background: 'rgba(255,255,255,.05)',
+              border: '1px solid rgba(255,255,255,.08)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', transition: 'background .15s, border-color .15s',
+              padding: 0,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,.15)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,.08)'; }}
+            aria-label="Profile settings"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(244,239,232,.45)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </button>
+        </div>
+
         {/* ═══ 1. HEADER ═══ */}
         <div style={{
           paddingTop: 52, marginBottom: 8, textAlign: 'center',

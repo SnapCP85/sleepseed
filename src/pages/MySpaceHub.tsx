@@ -238,7 +238,8 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
                 const angle = (360 / orbitCards.length) * i;
                 const duration = 40 + i * 5;
                 const color = ORBIT_COLORS[i % ORBIT_COLORS.length];
-                const dotSize = 10 + (i === 0 ? 4 : 0);
+                const hasPhoto = !!card.photo;
+                const dotSize = hasPhoto ? 22 : (10 + (i === 0 ? 4 : 0));
                 return (
                   <div
                     key={card.id || i}
@@ -247,17 +248,25 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
                       position: 'absolute', left: '50%', top: '50%',
                       width: dotSize, height: dotSize, marginLeft: -dotSize / 2, marginTop: -dotSize / 2,
                       borderRadius: '50%',
-                      background: color,
-                      boxShadow: `0 0 8px ${color}66`,
+                      background: card.photo ? 'none' : color,
+                      boxShadow: card.photo ? `0 0 10px ${color}44` : `0 0 8px ${color}66`,
+                      overflow: 'hidden',
                       '--orbit-r': '130px',
                       animation: `msh-orbit ${duration}s linear infinite`,
                       animationDelay: `${-(duration / orbitCards.length) * i}s`,
                       cursor: 'pointer',
                       pointerEvents: 'auto',
                       zIndex: 3,
+                      border: card.photo ? `1.5px solid ${color}88` : 'none',
                     } as React.CSSProperties}
                     title={card.headline || card.storyTitle || 'Memory'}
-                  />
+                  >
+                    {card.photo && (
+                      <img src={card.photo} alt="" style={{
+                        width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%',
+                      }} />
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -307,156 +316,91 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
               </div>
             </div>
           )}
+
+          {/* Orbit instruction */}
+          {orbitCards.length > 0 && (
+            <div style={{
+              textAlign: 'center', marginTop: 10, position: 'relative', zIndex: 4,
+              fontFamily: "'DM Mono',monospace", fontSize: 9,
+              color: 'rgba(244,239,232,.25)', letterSpacing: '.03em',
+            }}>
+              Tap the orbs to view memories
+            </div>
+          )}
         </div>
 
-        {/* ═══ NIGHT CARDS STRIP ═══ */}
-        {recentCards.length > 0 && (
-          <div style={{ animation: 'msh-fadeUp .7s .3s ease-out both', marginTop: 28, marginBottom: 24 }}>
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10,
-            }}>
+        {/* ═══ BIG NAV BUTTONS ═══ */}
+        <div style={{
+          animation: 'msh-fadeUp .7s .3s ease-out both',
+          marginTop: 28, marginBottom: 24,
+          display: 'flex', flexDirection: 'column', gap: 10,
+        }}>
+          {/* Memories button */}
+          <button
+            onClick={() => setView('nightcard-library')}
+            style={{
+              width: '100%', height: 60, borderRadius: 18,
+              background: 'rgba(154,127,212,.08)',
+              border: '1px solid rgba(154,127,212,.2)',
+              display: 'flex', alignItems: 'center', gap: 14,
+              padding: '0 20px', cursor: 'pointer',
+              transition: 'background .2s, border-color .2s',
+              fontFamily: "'Nunito',system-ui,sans-serif",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(154,127,212,.14)'; e.currentTarget.style.borderColor = 'rgba(154,127,212,.35)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(154,127,212,.08)'; e.currentTarget.style.borderColor = 'rgba(154,127,212,.2)'; }}
+          >
+            <span style={{ fontSize: 22 }}>{'\uD83C\uDF19\u2728'}</span>
+            <div style={{ flex: 1, textAlign: 'left' }}>
               <div style={{
-                fontFamily: "'DM Mono',monospace", fontSize: 10,
-                color: 'rgba(244,239,232,.3)', letterSpacing: '.06em',
-                textTransform: 'uppercase',
+                fontFamily: "'Fraunces',Georgia,serif", fontSize: 16, fontWeight: 500,
+                color: '#F4EFE8',
               }}>
-                Night Cards
+                Memories
               </div>
-              {allCards.length > 5 && (
-                <div
-                  onClick={() => setView('nightcard-library')}
-                  style={{
-                    fontFamily: "'DM Mono',monospace", fontSize: 9,
-                    color: 'rgba(245,184,76,.4)', cursor: 'pointer',
-                    letterSpacing: '.04em',
-                  }}
-                >
-                  See all {allCards.length} &rarr;
-                </div>
-              )}
+              <div style={{
+                fontFamily: "'DM Mono',monospace", fontSize: 9,
+                color: 'rgba(154,127,212,.6)', letterSpacing: '.04em',
+              }}>
+                {allCards.length} night card{allCards.length !== 1 ? 's' : ''}
+              </div>
             </div>
-            <div className="msh-scroll" style={{
-              display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4,
-            }}>
-              {recentCards.map((card, i) => (
-                <div
-                  key={card.id || i}
-                  onClick={() => setSelectedCard(card)}
-                  style={{
-                    flexShrink: 0, width: 140, borderRadius: 14, overflow: 'hidden',
-                    cursor: 'pointer', transition: 'transform .15s',
-                    border: '1px solid rgba(255,255,255,.06)',
-                    background: 'rgba(255,255,255,.02)',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
-                >
-                  <div style={{
-                    height: 56, position: 'relative', overflow: 'hidden',
-                    background: card.isOrigin
-                      ? 'linear-gradient(to bottom, #150e05, #2a1808)'
-                      : 'linear-gradient(to bottom, #0d1428, #1a1040)',
-                  }}>
-                    <div style={{
-                      position: 'absolute', top: '50%', left: '50%',
-                      transform: 'translate(-50%,-50%)', fontSize: 20,
-                    }}>
-                      {card.creatureEmoji || card.emoji || dk?.emoji || '\uD83C\uDF19'}
-                    </div>
-                    <div style={{
-                      position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%',
-                      background: 'linear-gradient(transparent, rgba(15,10,32,.9))',
-                    }} />
-                  </div>
-                  <div style={{ padding: '7px 10px 9px' }}>
-                    <div style={{
-                      fontFamily: "'Fraunces',Georgia,serif", fontSize: 11, fontWeight: 400,
-                      color: '#F4EFE8', lineHeight: 1.3, marginBottom: 3,
-                      overflow: 'hidden', textOverflow: 'ellipsis',
-                      display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-                    } as React.CSSProperties}>
-                      {card.headline || card.storyTitle || 'A memory'}
-                    </div>
-                    <div style={{
-                      fontFamily: "'DM Mono',monospace", fontSize: 8,
-                      color: 'rgba(244,239,232,.2)',
-                    }}>
-                      {card.date ? new Date(card.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''}
-                      {card.nightNumber ? ` \u00B7 Night ${card.nightNumber}` : ''}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(154,127,212,.5)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
 
-        {/* ═══ STORIES STRIP ═══ */}
-        {recentStories.length > 0 && (
-          <div style={{ animation: 'msh-fadeUp .7s .45s ease-out both', marginBottom: 24 }}>
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10,
-            }}>
+          {/* My Stories button */}
+          <button
+            onClick={() => setView('story-library')}
+            style={{
+              width: '100%', height: 60, borderRadius: 18,
+              background: 'rgba(245,184,76,.06)',
+              border: '1px solid rgba(245,184,76,.18)',
+              display: 'flex', alignItems: 'center', gap: 14,
+              padding: '0 20px', cursor: 'pointer',
+              transition: 'background .2s, border-color .2s',
+              fontFamily: "'Nunito',system-ui,sans-serif",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(245,184,76,.12)'; e.currentTarget.style.borderColor = 'rgba(245,184,76,.32)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245,184,76,.06)'; e.currentTarget.style.borderColor = 'rgba(245,184,76,.18)'; }}
+          >
+            <span style={{ fontSize: 22 }}>{'\uD83D\uDCD6'}</span>
+            <div style={{ flex: 1, textAlign: 'left' }}>
               <div style={{
-                fontFamily: "'DM Mono',monospace", fontSize: 10,
-                color: 'rgba(244,239,232,.3)', letterSpacing: '.06em',
-                textTransform: 'uppercase',
+                fontFamily: "'Fraunces',Georgia,serif", fontSize: 16, fontWeight: 500,
+                color: '#F4EFE8',
               }}>
-                Saved Stories
+                My Stories
               </div>
-              {storyCount > 4 && (
-                <div
-                  onClick={() => setView('story-library')}
-                  style={{
-                    fontFamily: "'DM Mono',monospace", fontSize: 9,
-                    color: 'rgba(245,184,76,.4)', cursor: 'pointer',
-                    letterSpacing: '.04em',
-                  }}
-                >
-                  See all {storyCount} &rarr;
-                </div>
-              )}
+              <div style={{
+                fontFamily: "'DM Mono',monospace", fontSize: 9,
+                color: 'rgba(245,184,76,.5)', letterSpacing: '.04em',
+              }}>
+                {storyCount} stor{storyCount !== 1 ? 'ies' : 'y'}
+              </div>
             </div>
-            <div className="msh-scroll" style={{
-              display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4,
-            }}>
-              {recentStories.map((story, i) => (
-                <div
-                  key={story.id || i}
-                  onClick={() => onReadStory?.(story.bookData)}
-                  style={{
-                    flexShrink: 0, width: 125, padding: '14px 12px 11px',
-                    borderRadius: 14,
-                    background: 'rgba(255,255,255,.03)',
-                    border: '1px solid rgba(255,255,255,.06)',
-                    cursor: 'pointer',
-                    transition: 'background .2s, transform .15s',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.06)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.03)'; e.currentTarget.style.transform = ''; }}
-                >
-                  <div style={{ fontSize: 18, marginBottom: 5 }}>
-                    {primaryCreature?.creatureEmoji || dk?.emoji || '\uD83C\uDF19'}
-                  </div>
-                  <div style={{
-                    fontFamily: "'Fraunces',Georgia,serif", fontSize: 12, fontWeight: 400,
-                    color: '#F4EFE8', lineHeight: 1.35,
-                    overflow: 'hidden', textOverflow: 'ellipsis',
-                    display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-                  } as React.CSSProperties}>
-                    {story.title || 'Untitled'}
-                  </div>
-                  <div style={{
-                    fontFamily: "'DM Mono',monospace", fontSize: 9,
-                    color: 'rgba(244,239,232,.2)', marginTop: 4,
-                  }}>
-                    {story.date ? new Date(story.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(245,184,76,.45)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </div>
 
         {/* ═══ EMPTY STATE ═══ */}
         {!loading && recentCards.length === 0 && recentStories.length === 0 && (

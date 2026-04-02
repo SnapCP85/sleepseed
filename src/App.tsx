@@ -1167,10 +1167,10 @@ function AppInner() {
   );
 
   if (view === 'story-library') return (
-    <AppLayout currentTab="dashboard" onNav={handleNav}>
+    <AppLayout currentTab="my-space" onNav={handleNav}>
       <StoryLibrary
         userId={user!.id}
-        onBack={goDashboard}
+        onBack={() => setView('my-space')}
         onReadStory={openSavedStory}
         onCreateStory={() => setView('ritual-starter')}
       />
@@ -1178,10 +1178,10 @@ function AppInner() {
   );
 
   if (view === 'nightcard-library') return (
-    <AppLayout currentTab="dashboard" onNav={handleNav}>
+    <AppLayout currentTab="my-space" onNav={handleNav}>
       <NightCardLibrary
         userId={user!.id}
-        onBack={goDashboard}
+        onBack={() => setView('my-space')}
         filterCharacterId={nightCardFilter}
       />
     </AppLayout>

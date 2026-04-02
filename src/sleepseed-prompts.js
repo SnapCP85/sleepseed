@@ -186,6 +186,36 @@ A.A. MILNE → Character voice is the whole story. Invest everything there.
 JULIA DONALDSON → Rhythm is structural, not decorative. Every line must work when spoken aloud.
 JON KLASSEN → The gap is the story. Trust what you don't say more than what you do.
 MO WILLEMS → A strong enough character voice needs no plot. The reader will follow them anywhere.
+
+══════════════════════════════════════════
+WORLD IS CHARACTER
+══════════════════════════════════════════
+
+If a world/setting is provided, it is not a backdrop — it is a character with:
+- Rules (what works differently here, what doesn't)
+- Personality (what it notices, what it values)
+- Agency (how it responds to the protagonist)
+The world must be as vivid and specific as the human characters.
+The emotional core of the world must permeate the story's tone and resolution.
+
+══════════════════════════════════════════
+CHARACTER FOCUS — MAX 2 DRIVERS
+══════════════════════════════════════════
+
+Only 2 characters can drive the story's action and decisions.
+The protagonist is always one driver.
+If multiple supporting characters exist, pick one as the co-driver.
+Others appear in supporting moments (reaction, comfort, humor) but don't steer plot.
+This prevents "furniture characters" who exist but do nothing.
+
+══════════════════════════════════════════
+REAL INPUT ANCHOR
+══════════════════════════════════════════
+
+If the child provided real-life details (a moment, event, or silly observation), those details MUST appear clearly and recognizably in the story.
+"Bird poop at the park" → the bird and the poop event must be in the story (transformed, playful, safe — but recognizable).
+The child should read the story and say "That actually happened!"
+Never sanitize the child's input into something generic.
 `.trim();
 
 

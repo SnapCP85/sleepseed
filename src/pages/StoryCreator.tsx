@@ -61,13 +61,13 @@ const OCCASION_OPTIONS = [
 ];
 
 const WORLDS = [
-  { emoji: '🛏️', label: 'The Kingdom Beneath the Blankets', key: 'blankets' },
-  { emoji: '☁️', label: "The Cloudmakers' Sky", key: 'clouds' },
-  { emoji: '🫧', label: 'The City of Floating Moments', key: 'bubbles' },
-  { emoji: '🔍', label: 'The Kingdom of Small Things', key: 'tiny' },
-  { emoji: '🪐', label: "Somewhere That Doesn't Make Sense", key: 'weird' },
-  { emoji: '📖', label: 'The Dream Archive', key: 'archive' },
-  { emoji: '✨', label: 'Somewhere else...', key: 'custom' },
+  { emoji: '\u{1F6CF}\uFE0F', label: 'Blankets', key: 'blankets' },
+  { emoji: '\u2601\uFE0F', label: 'Clouds', key: 'clouds' },
+  { emoji: '\u{1FAE7}', label: 'Bubbles', key: 'bubbles' },
+  { emoji: '\u{1F50D}', label: 'Tiny', key: 'tiny' },
+  { emoji: '\u{1FA90}', label: 'Weird', key: 'weird' },
+  { emoji: '\u{1F4D6}', label: 'Archive', key: 'archive' },
+  { emoji: '\u2728', label: 'Custom', key: 'custom' },
 ];
 
 const WORLD_DETAILS: Record<string, string[]> = {
@@ -109,13 +109,23 @@ const WORLD_DETAILS: Record<string, string[]> = {
 };
 
 const WORLD_DESCRIPTIONS: Record<string, string> = {
-  blankets: 'The Kingdom Beneath the Blankets — a world where cozy, familiar objects become magical. Pillows are territories, blanket folds hide kingdoms, stuffed animals hold office. The emotional core is safety: the feeling that the most magical place in the world is right here, in bed.',
-  clouds: "The Cloudmakers' Sky — a world of impossible structures built from clouds, sky-scaffolding, and architecture that shouldn't stand but does. The emotional core is imagination: the thrill of building something from nothing, of making the impossible feel inevitable.",
-  bubbles: 'The City of Floating Moments — a world where memories drift as soap-bubble-like orbs, each containing a moment that can be entered, replayed, or remixed. The emotional core is memory: the bittersweetness of moments passing and the magic of holding onto them.',
-  tiny: 'The Kingdom of Small Things — a world where everyday objects become characters and miniature adventures unfold on desktops, in drawers, under furniture. A paperclip is a knight, a crumb is a boulder. The emotional core is curiosity: looking closely and discovering that the smallest things have the biggest stories.',
-  weird: "Somewhere That Doesn't Make Sense — a surreal, dream-logic world where the rules change without warning. Gravity is optional, clocks run in spirals, fish walk and birds swim. The emotional core is creativity: the freedom of a place where nonsense is the only sense that matters.",
-  archive: 'The Dream Archive — a vast, quiet library of stories that have been dreamed before, some finished, some not. Books whisper, shelves rearrange, and forgotten tales try to be remembered. The emotional core is meaning: the sense that every story matters, even the ones nobody finished telling.',
+  blankets: 'The Kingdom Beneath the Blankets \u2014 a world where cozy, familiar objects become magical. Pillows are territories, blanket folds hide kingdoms, stuffed animals hold office. The emotional core is safety: the feeling that the most magical place in the world is right here, in bed.',
+  clouds: "The Cloudmakers' Sky \u2014 a world of impossible structures built from clouds, sky-scaffolding, and architecture that shouldn't stand but does. The emotional core is imagination: the thrill of building something from nothing, of making the impossible feel inevitable.",
+  bubbles: 'The City of Floating Moments \u2014 a world where memories drift as soap-bubble-like orbs, each containing a moment that can be entered, replayed, or remixed. The emotional core is memory: the bittersweetness of moments passing and the magic of holding onto them.',
+  tiny: 'The Kingdom of Small Things \u2014 a world where everyday objects become characters and miniature adventures unfold on desktops, in drawers, under furniture. A paperclip is a knight, a crumb is a boulder. The emotional core is curiosity: looking closely and discovering that the smallest things have the biggest stories.',
+  weird: "Somewhere That Doesn't Make Sense \u2014 a surreal, dream-logic world where the rules change without warning. Gravity is optional, clocks run in spirals, fish walk and birds swim. The emotional core is creativity: the freedom of a place where nonsense is the only sense that matters.",
+  archive: 'The Dream Archive \u2014 a vast, quiet library of stories that have been dreamed before, some finished, some not. Books whisper, shelves rearrange, and forgotten tales try to be remembered. The emotional core is meaning: the sense that every story matters, even the ones nobody finished telling.',
 };
+
+const WORLD_REACTIONS = [
+  "Ooh, I love that one!",
+  "Great choice \u2014 let's go!",
+  "I've been wanting to go back there\u2026",
+  "Perfect. I know just the way in.",
+  "That's going to be wild tonight.",
+  "I was hoping you'd pick that one!",
+  "Alright, hold on tight\u2026",
+];
 
 const VIBE_OPTIONS = [
   { key: 'warm-funny', label: 'Funny' },
@@ -154,7 +164,14 @@ const VIBE_BRIEF: Record<string, string> = {
   'mysterious': 'about to discover something magical and mysterious',
 };
 
-/* ── Helpers ── */
+const MAKE_ANYTHING_CHARS = [
+  { key: 'dreamkeeper', label: 'My DreamKeeper', emoji: '' },
+  { key: 'someone', label: 'Someone I know', emoji: '\u{1F9D1}' },
+  { key: 'pet', label: 'A pet', emoji: '\u{1F43E}' },
+  { key: 'silly', label: 'Something silly', emoji: '\u{1F92A}' },
+];
+
+/* \u2500\u2500 Helpers \u2500\u2500 */
 
 function ageDescToLevel(desc: string | undefined): string {
   if (!desc) return 'age5';
@@ -188,44 +205,48 @@ function settingsSummary(style: string, length: string, vibe: string, level: str
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   CSS
+   CSS \u2014 v7 Design System
    ══════════════════════════════════════════════════════════════════════ */
 
 const CSS = `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#040a16;--amber:#F5B84C;--amber-dk:#a06010;--teal:#14d890;--teal-dk:#0a7a50;
-  --purple:#c090ff;--purple-dk:#5010a0;--cream:#f5e8c8;--muted:rgba(255,255,255,.35);
+  --bg:#020408;--gold:#F6C56F;--gold-dk:#a06010;--purple:#9A7FD4;--purple-lt:#B8A1FF;
+  --cyan:#6FE7DD;--dark:#0C1840;--cream:#F4EFE8;--muted:rgba(255,255,255,.35);
   --card:rgba(6,10,28,.92);--border:rgba(255,255,255,.07);
   --heading:'Fraunces',Georgia,serif;--body:'Nunito',system-ui,sans-serif;
   --cta:'Baloo 2',system-ui,sans-serif;--mono:'DM Mono',monospace;
+  --lora:'Lora','Fraunces',Georgia,serif;
 }
 .sc{min-height:100dvh;font-family:var(--body);color:var(--cream);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
-.sc.ritual{background:radial-gradient(ellipse at 50% 0%,#0a1428 0%,#040810 55%,#020406 100%)}
-.sc.create{background:radial-gradient(ellipse at 50% 0%,#061820 0%,#030c10 55%,#020408 100%)}
+.sc.ritual{background:radial-gradient(ellipse at 50% 0%,#0C1840 0%,#040810 55%,#020408 100%)}
+.sc.create{background:radial-gradient(ellipse at 50% 0%,#0C1840 0%,#030c10 55%,#020408 100%)}
 
 /* animations */
 @keyframes floatCreature{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
-@keyframes glowAmber{0%,100%{filter:drop-shadow(0 0 10px rgba(245,184,76,.4))}50%{filter:drop-shadow(0 0 28px rgba(245,184,76,.55))}}
-@keyframes glowTeal{0%,100%{filter:drop-shadow(0 0 8px rgba(96,220,160,.35))}50%{filter:drop-shadow(0 0 22px rgba(96,220,160,.5))}}
-@keyframes glowPurple{0%,100%{filter:drop-shadow(0 0 8px rgba(160,96,240,.35))}50%{filter:drop-shadow(0 0 22px rgba(160,96,240,.5))}}
+@keyframes glowGold{0%,100%{filter:drop-shadow(0 0 10px rgba(246,197,111,.4))}50%{filter:drop-shadow(0 0 28px rgba(246,197,111,.55))}}
+@keyframes glowPurple{0%,100%{filter:drop-shadow(0 0 8px rgba(154,127,212,.35))}50%{filter:drop-shadow(0 0 22px rgba(154,127,212,.5))}}
+@keyframes glowCyan{0%,100%{filter:drop-shadow(0 0 8px rgba(111,231,221,.35))}50%{filter:drop-shadow(0 0 22px rgba(111,231,221,.5))}}
 @keyframes shimmer{0%{transform:translateX(-130%)}100%{transform:translateX(170%)}}
 @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes typingDot{0%,100%{transform:scale(.7)}50%{transform:scale(1)}}
 @keyframes waveBar{0%,100%{height:4px}50%{height:18px}}
 @keyframes eggRock{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
-@keyframes micPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes micPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 @keyframes bubblePop{0%{opacity:0;transform:scale(.94) translateY(6px)}100%{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes twinkle{0%,100%{opacity:.04;transform:scale(.35)}50%{opacity:.9;transform:scale(1.4)}}
 @keyframes waveBarIdle{0%,100%{height:3px;opacity:.28}50%{height:8px;opacity:.62}}
 @keyframes pulse{0%,100%{opacity:.15;transform:translateX(-50%) scale(1)}50%{opacity:.45;transform:translateX(-50%) scale(1.1)}}
+@keyframes purpleGlowBorder{0%,100%{border-color:rgba(154,127,212,.2);box-shadow:0 0 0 0 rgba(154,127,212,0)}50%{border-color:rgba(184,161,255,.45);box-shadow:0 0 18px rgba(154,127,212,.12)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes micRipple{0%{transform:scale(1);opacity:.5}100%{transform:scale(2.2);opacity:0}}
+@keyframes crossfade{from{opacity:0}to{opacity:1}}
 
 /* nav */
-.sc-nav{display:flex;align-items:center;justify-content:space-between;padding:0 5%;height:52px;position:sticky;top:0;z-index:20;background:rgba(4,10,22,.92);backdrop-filter:blur(16px)}
-.sc.ritual .sc-nav{border-bottom:1px solid rgba(245,184,76,.07)}
-.sc.create .sc-nav{border-bottom:1px solid rgba(20,216,144,.07)}
+.sc-nav{display:flex;align-items:center;justify-content:space-between;padding:0 5%;height:52px;position:sticky;top:0;z-index:20;background:rgba(2,4,8,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(246,197,111,.07)}
 .sc-logo{font-family:var(--heading);font-size:15px;font-weight:700;display:flex;align-items:center;gap:7px;color:var(--cream)}
-.sc-logo-moon{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020);flex-shrink:0}
+.sc-logo-moon{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F6C56F,#C87020);flex-shrink:0}
 .sc-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:6px;line-height:1;transition:color .15s}
 .sc-close:hover{color:var(--cream)}
 
@@ -237,24 +258,20 @@ const CSS = `
 .sc-creature.create-creature{flex-direction:row;align-items:center;gap:12px;padding:16px 0 4px}
 .sc-creature-emoji{font-size:72px;animation:floatCreature 4s ease-in-out infinite}
 .sc-creature.create-creature .sc-creature-emoji{font-size:42px}
-.sc-creature-glow{animation:glowAmber 3s ease-in-out infinite}
-.sc-creature-glow-teal{animation:glowTeal 3s ease-in-out infinite}
-.sc-creature-glow-purple{animation:glowPurple 3s ease-in-out infinite}
-.sc-creature-name{font-size:9px;font-weight:400;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-family:var(--mono);margin-top:4px}
-.sc-creature-type{font-size:8px;color:rgba(255,255,255,.2);font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase}
 .sc-egg{font-size:56px;animation:eggRock 2s ease-in-out infinite;display:inline-block}
 
-/* bubble */
+/* speech bubble */
 .sc-bubble{position:relative;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:14px 18px;margin:12px 0 18px;text-align:center;animation:bubblePop .4s ease forwards .2s;opacity:0}
 .sc-bubble::before{content:'';position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:7px solid rgba(255,255,255,.1)}
 .sc-bubble-text{font-family:var(--body);font-size:13.5px;font-weight:600;color:rgba(255,255,255,.72);line-height:1.6}
 
-/* mode toggle */
-.sc-mode{display:flex;gap:8px;margin-bottom:18px}
-.sc-mode-btn{flex:1;padding:12px;border-radius:14px;font-family:var(--cta);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--muted)}
-.sc-mode-btn:hover{border-color:rgba(255,255,255,.15)}
-.sc-mode-btn.today-on{background:rgba(245,184,76,.12);border-color:rgba(245,184,76,.4);color:#F5B84C}
-.sc-mode-btn.adv-on{background:rgba(160,96,240,.1);border-color:rgba(160,96,240,.4);color:#c090ff}
+/* v7 entry cards */
+.sc-entry-card{
+  width:100%;padding:18px 18px;border-radius:16px;cursor:pointer;text-align:left;
+  display:flex;align-items:center;gap:14px;transition:all .2s;
+  font-family:var(--body);position:relative;overflow:hidden;
+}
+.sc-entry-card:active{transform:scale(.97);opacity:.9}
 
 /* occasion pills */
 .sc-occ-label{font-size:9px;font-weight:400;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);margin-bottom:8px}
@@ -262,21 +279,17 @@ const CSS = `
 .sc-occ-row::-webkit-scrollbar{display:none}
 .sc-occ{padding:7px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:var(--body);display:flex;align-items:center;gap:4px;flex-shrink:0}
 .sc-occ:hover{border-color:rgba(255,255,255,.18)}
-.sc-occ.on{background:rgba(245,184,76,.12);border-color:rgba(245,184,76,.4);color:#F5B84C}
+.sc-occ.on{background:rgba(246,197,111,.12);border-color:rgba(246,197,111,.4);color:#F6C56F}
 
 /* voice button */
-.sc-voice{width:100%;padding:13px 16px;border-radius:14px;border:1.5px solid rgba(245,184,76,.22);background:rgba(10,15,35,.7);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;margin-bottom:8px;font-family:var(--body)}
-.sc-voice:hover{border-color:rgba(245,184,76,.4);background:rgba(245,184,76,.07)}
+.sc-voice{width:100%;padding:13px 16px;border-radius:14px;border:1.5px solid rgba(246,197,111,.22);background:rgba(10,15,35,.7);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;margin-bottom:8px;font-family:var(--body)}
+.sc-voice:hover{border-color:rgba(246,197,111,.4);background:rgba(246,197,111,.07)}
 .sc-voice.rec{border-color:rgba(245,76,76,.6);background:rgba(245,76,76,.05);animation:micPulse 1.2s ease-in-out infinite}
-.sc-voice.teal{border-color:rgba(20,216,144,.2);background:rgba(6,20,16,.7)}
-.sc-voice.teal:hover{border-color:rgba(20,216,144,.4);background:rgba(20,216,144,.07)}
 .sc-voice-icon{font-size:20px;flex-shrink:0}
-.sc-voice-text{flex:1;font-size:13px;font-weight:600;color:#F5B84C;text-align:left}
-.sc-voice.teal .sc-voice-text{color:#14d890}
+.sc-voice-text{flex:1;font-size:13px;font-weight:600;color:#F6C56F;text-align:left}
 .sc-voice.rec .sc-voice-text{color:#FF8070}
 .sc-voice-waves{display:flex;align-items:center;gap:2px;flex-shrink:0}
-.sc-wave-bar{width:4px;border-radius:2px;background:var(--amber)}
-.sc-voice.teal .sc-wave-bar{background:var(--teal)}
+.sc-wave-bar{width:4px;border-radius:2px;background:var(--gold)}
 
 /* or divider */
 .sc-or{display:flex;align-items:center;gap:10px;margin:10px 0}
@@ -284,41 +297,39 @@ const CSS = `
 .sc-or-text{font-size:9px;color:rgba(255,255,255,.2);letter-spacing:.06em;white-space:nowrap}
 
 /* textarea */
-.sc-textarea{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid rgba(245,184,76,.25);background:rgba(245,184,76,.05);color:var(--cream);font-size:13px;font-family:var(--body);font-weight:700;outline:none;resize:none;min-height:60px;line-height:1.65;transition:border-color .2s,box-shadow .2s;margin-bottom:6px}
-.sc-textarea:focus{border-color:rgba(245,184,76,.45);box-shadow:0 0 0 3px rgba(245,184,76,.07)}
+.sc-textarea{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid rgba(246,197,111,.25);background:rgba(246,197,111,.05);color:var(--cream);font-size:13px;font-family:var(--body);font-weight:700;outline:none;resize:none;min-height:60px;line-height:1.65;transition:border-color .2s,box-shadow .2s;margin-bottom:6px}
+.sc-textarea:focus{border-color:rgba(246,197,111,.45);box-shadow:0 0 0 3px rgba(246,197,111,.07)}
 .sc-textarea::placeholder{color:rgba(255,255,255,.18);font-style:italic}
-.sc-textarea.teal{border-color:rgba(20,216,144,.2);background:rgba(255,255,255,.05)}
-.sc-textarea.teal:focus{border-color:rgba(20,216,144,.45);box-shadow:0 0 0 3px rgba(20,216,144,.07)}
-.sc-textarea.purple{border-color:rgba(160,96,240,.3)}
-.sc-textarea.purple:focus{border-color:rgba(160,96,240,.55)}
+.sc-textarea.purple{border-color:rgba(154,127,212,.3);background:rgba(154,127,212,.05)}
+.sc-textarea.purple:focus{border-color:rgba(184,161,255,.55);box-shadow:0 0 0 3px rgba(154,127,212,.07)}
+.sc-textarea.cyan{border-color:rgba(111,231,221,.25);background:rgba(111,231,221,.05)}
+.sc-textarea.cyan:focus{border-color:rgba(111,231,221,.45);box-shadow:0 0 0 3px rgba(111,231,221,.07)}
 
 /* transcript card */
-.sc-transcript{background:rgba(245,184,76,.06);border:1px solid rgba(245,184,76,.2);border-radius:14px;padding:11px 14px;margin-bottom:10px;animation:slideUp .25s ease both}
+.sc-transcript{background:rgba(246,197,111,.06);border:1px solid rgba(246,197,111,.2);border-radius:14px;padding:11px 14px;margin-bottom:10px;animation:slideUp .25s ease both}
 .sc-transcript-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.sc-transcript-label{font-size:9px;font-family:var(--mono);color:var(--amber);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:4px}
-.sc-transcript-edit{font-size:10px;color:rgba(245,184,76,.5);background:none;border:none;cursor:pointer;font-family:var(--body);font-weight:600;transition:color .15s}
-.sc-transcript-edit:hover{color:var(--amber)}
+.sc-transcript-label{font-size:9px;font-family:var(--mono);color:var(--gold);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:4px}
+.sc-transcript-edit{font-size:10px;color:rgba(246,197,111,.5);background:none;border:none;cursor:pointer;font-family:var(--body);font-weight:600;transition:color .15s}
+.sc-transcript-edit:hover{color:var(--gold)}
 .sc-transcript-text{font-family:var(--body);font-size:13px;font-weight:600;color:rgba(255,255,255,.82);line-height:1.6}
 
-/* world grid */
-.sc-world-label{font-family:var(--heading);font-style:italic;font-size:15px;color:rgba(255,255,255,.65);text-align:center;margin-bottom:14px}
-.sc-world-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-.sc-world{height:72px;border-radius:14px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:all .2s}
-.sc-world:hover{border-color:rgba(255,255,255,.18)}
-.sc-world.on{background:rgba(160,96,240,.1);border-color:rgba(160,96,240,.55)}
-.sc-world-emoji{font-size:22px}
-.sc-world-name{font-size:11px;font-weight:600;color:var(--muted)}
-.sc-world.on .sc-world-name{color:#c090ff}
-.sc-world-back{font-size:11px;color:rgba(160,96,240,.5);background:none;border:none;cursor:pointer;font-family:var(--body);font-weight:600;margin-bottom:10px;transition:color .15s}
-.sc-world-back:hover{color:var(--purple)}
+/* world pills (horizontal scroll) */
+.sc-world-scroll{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.sc-world-scroll::-webkit-scrollbar{display:none}
+.sc-world-pill{width:72px;height:72px;border-radius:16px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:all .2s;flex-shrink:0}
+.sc-world-pill:hover{border-color:rgba(255,255,255,.18)}
+.sc-world-pill.on{background:rgba(154,127,212,.12);border-color:rgba(184,161,255,.55)}
+.sc-world-pill-emoji{font-size:22px}
+.sc-world-pill-name{font-size:9px;font-weight:700;color:var(--muted);font-family:var(--body)}
+.sc-world-pill.on .sc-world-pill-name{color:#B8A1FF}
 
 /* detail chips */
 .sc-detail-section{animation:slideUp .3s ease both}
 .sc-detail-label{font-size:9px;font-family:var(--mono);color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
 .sc-detail-chips{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
 .sc-detail-chip{padding:9px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);font-family:var(--heading);font-style:italic;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;text-align:left}
-.sc-detail-chip:hover{border-color:rgba(160,96,240,.25)}
-.sc-detail-chip.on{background:rgba(160,96,240,.1);border-color:rgba(160,96,240,.35);color:#c090ff}
+.sc-detail-chip:hover{border-color:rgba(154,127,212,.25)}
+.sc-detail-chip.on{background:rgba(154,127,212,.1);border-color:rgba(184,161,255,.35);color:#B8A1FF}
 
 /* cast */
 .sc-cast-label{font-size:9px;font-family:var(--mono);color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;margin-top:18px}
@@ -326,12 +337,12 @@ const CSS = `
 .sc-cast-row::-webkit-scrollbar{display:none}
 .sc-cast-pill{display:flex;align-items:center;gap:5px;padding:5px 10px 5px 7px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);cursor:pointer;transition:all .2s;flex-shrink:0;white-space:nowrap}
 .sc-cast-pill:hover{border-color:rgba(255,255,255,.2)}
-.sc-cast-pill.on{background:rgba(245,184,76,.1);border-color:rgba(245,184,76,.4)}
-.sc-cast-pill.hero{background:rgba(245,184,76,.1);border-color:rgba(245,184,76,.4);cursor:default}
+.sc-cast-pill.on{background:rgba(246,197,111,.1);border-color:rgba(246,197,111,.4)}
+.sc-cast-pill.hero{background:rgba(246,197,111,.1);border-color:rgba(246,197,111,.4);cursor:default}
 .sc-cast-pill.dim{opacity:.4;cursor:not-allowed}
 .sc-cast-emoji{font-size:16px;line-height:1}
 .sc-cast-name{font-family:var(--cta);font-size:11px;font-weight:600;color:var(--muted)}
-.sc-cast-pill.on .sc-cast-name,.sc-cast-pill.hero .sc-cast-name{color:#F5B84C}
+.sc-cast-pill.on .sc-cast-name,.sc-cast-pill.hero .sc-cast-name{color:#F6C56F}
 
 /* settings */
 .sc-settings-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;margin-top:16px;margin-bottom:8px}
@@ -339,7 +350,7 @@ const CSS = `
 .sc-settings-left{font-size:10px;font-family:var(--mono);color:var(--muted);letter-spacing:.05em}
 .sc-settings-right{display:flex;align-items:center;gap:8px}
 .sc-settings-badges{display:flex;gap:4px;flex-wrap:wrap}
-.sc-settings-badge{font-size:9px;padding:2px 7px;border-radius:10px;background:rgba(245,184,76,.1);color:var(--amber);font-family:var(--mono);white-space:nowrap}
+.sc-settings-badge{font-size:9px;padding:2px 7px;border-radius:10px;background:rgba(246,197,111,.1);color:var(--gold);font-family:var(--mono);white-space:nowrap}
 .sc-settings-chevron{font-size:11px;color:var(--muted);transition:transform .2s}
 .sc-settings-chevron.open{transform:rotate(180deg)}
 .sc-settings-body{overflow:hidden;transition:max-height .3s ease,opacity .2s ease}
@@ -350,24 +361,41 @@ const CSS = `
 .sc-settings-pills{display:flex;gap:6px;flex-wrap:wrap;flex:1}
 .sc-spill{padding:7px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--body);white-space:nowrap}
 .sc-spill:hover{border-color:rgba(255,255,255,.18)}
-.sc-spill.on{background:rgba(245,184,76,.1);border-color:rgba(245,184,76,.4);color:#F5B84C}
-.sc.create .sc-spill.on{background:rgba(20,216,144,.1);border-color:rgba(20,216,144,.4);color:#14d890}
+.sc-spill.on{background:rgba(246,197,111,.1);border-color:rgba(246,197,111,.4);color:#F6C56F}
 
 /* CTA */
-.sc-cta-wrap{position:fixed;bottom:0;left:0;right:0;padding:10px 5% calc(env(safe-area-inset-bottom,8px) + 12px);z-index:15;display:flex;justify-content:center}
-.sc.ritual .sc-cta-wrap{background:linear-gradient(0deg,rgba(2,4,6,.98) 65%,transparent)}
-.sc.create .sc-cta-wrap{background:linear-gradient(0deg,rgba(3,12,10,.98) 65%,transparent)}
+.sc-cta-wrap{position:fixed;bottom:0;left:0;right:0;padding:10px 5% calc(env(safe-area-inset-bottom,8px) + 12px);z-index:15;display:flex;justify-content:center;background:linear-gradient(0deg,rgba(2,4,8,.98) 65%,transparent)}
 .sc-cta{width:100%;max-width:540px;padding:16px;border:none;border-radius:16px;cursor:pointer;font-family:var(--cta);transition:all .2s;position:relative;overflow:hidden;text-align:center}
 .sc-cta:hover{filter:brightness(1.1);transform:scale(1.02) translateY(-1px)}
 .sc-cta:active{transform:scale(.97)}
 .sc-cta:disabled{opacity:.35;cursor:not-allowed;transform:none;filter:none}
-.sc-cta.amber{background:linear-gradient(145deg,#7a4a08,#F5B84C 48%,#7a4a08);color:#060200;box-shadow:0 10px 35px rgba(200,130,20,.45)}
-.sc-cta.teal{background:linear-gradient(145deg,#0a7a50,#14d890 48%,#0a7a50);color:#020c08;box-shadow:0 10px 35px rgba(20,216,144,.35)}
-.sc-cta.purple{background:linear-gradient(145deg,#5010a0,#c090ff 48%,#5010a0);color:#0a0020;box-shadow:0 10px 35px rgba(160,96,240,.38)}
+.sc-cta.gold{background:linear-gradient(145deg,#7a4a08,#F6C56F 48%,#7a4a08);color:#060200;box-shadow:0 10px 35px rgba(200,130,20,.45)}
+.sc-cta.purple{background:linear-gradient(145deg,#5010a0,#B8A1FF 48%,#5010a0);color:#0a0020;box-shadow:0 10px 35px rgba(154,127,212,.38)}
+.sc-cta.cyan{background:linear-gradient(145deg,#0a6a5a,#6FE7DD 48%,#0a6a5a);color:#020c08;box-shadow:0 10px 35px rgba(111,231,221,.35)}
 .sc-cta-main{font-size:15px;font-weight:700;display:block}
 .sc-cta-sub{font-size:10px;font-weight:500;opacity:.7;display:block;margin-top:2px}
 .sc-cta::after{content:'';position:absolute;top:0;left:0;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);animation:shimmer 3s ease-in-out infinite}
 .sc-cta:disabled::after{display:none}
+
+/* make-anything character add buttons */
+.sc-ma-char{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1.5px solid rgba(111,231,221,.12);background:rgba(111,231,221,.04);cursor:pointer;transition:all .2s;font-family:var(--body)}
+.sc-ma-char:hover{border-color:rgba(111,231,221,.25);background:rgba(111,231,221,.08)}
+.sc-ma-char.on{border-color:rgba(111,231,221,.4);background:rgba(111,231,221,.1)}
+.sc-ma-char-emoji{font-size:18px;flex-shrink:0}
+.sc-ma-char-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.6)}
+.sc-ma-char.on .sc-ma-char-label{color:#6FE7DD}
+
+/* large voice button (make anything) */
+.sc-voice-lg{
+  width:80px;height:80px;border-radius:50%;border:2px solid rgba(111,231,221,.3);
+  background:radial-gradient(circle,rgba(111,231,221,.12),rgba(2,4,8,.8));
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;
+  position:relative;margin:0 auto;
+}
+.sc-voice-lg:hover{border-color:rgba(111,231,221,.5);background:radial-gradient(circle,rgba(111,231,221,.18),rgba(2,4,8,.8))}
+.sc-voice-lg.rec{border-color:rgba(245,76,76,.5);animation:micPulse 1.2s ease-in-out infinite}
+.sc-voice-lg::before{content:'';position:absolute;inset:-6px;border-radius:50%;border:1.5px solid rgba(111,231,221,.08);animation:micRipple 2.5s ease-out infinite;pointer-events:none}
+.sc-voice-lg.rec::before{border-color:rgba(245,76,76,.15)}
 
 /* hidden voice */
 .sc-no-voice{display:none}
@@ -438,15 +466,8 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   // ── Ritual entry card selection (3-card picker shown before input) ──
   const [ritualEntryDone, setRitualEntryDone] = useState(!isRitual);
 
-  // ── Gift mode state ──
-  const [giftMode, setGiftMode] = useState(false);
-  const [giftName, setGiftName] = useState('');
-  const [giftAge, setGiftAge] = useState('');
-  const [giftPronoun, setGiftPronoun] = useState('');
-  const [giftFormDone, setGiftFormDone] = useState(false);
-
   // ── Mode & input state ──
-  const [mode, setMode] = useState<'today' | 'adventure'>('today');
+  const [mode, setMode] = useState<'today' | 'adventure' | 'free'>('today');
   const [brief, setBrief] = useState('');
   const [transcript, setTranscript] = useState('');
   const [isListening, setIsListening] = useState(false);
@@ -462,6 +483,16 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   const [customWorld, setCustomWorld] = useState('');
   const [showCustomWorldInput, setShowCustomWorldInput] = useState(false);
   const [adventureDetail, setAdventureDetail] = useState('');
+  const [worldReaction, setWorldReaction] = useState('');
+
+  // Make Anything state
+  const [freeBrief, setFreeBrief] = useState('');
+  const [freeTranscript, setFreeTranscript] = useState('');
+  const [freeStep, setFreeStep] = useState<1 | 2>(1);
+  const [freeChars, setFreeChars] = useState<Array<{ key: string; name: string }>>([]);
+  const [freeCharInput, setFreeCharInput] = useState('');
+  const [freeCharInputKey, setFreeCharInputKey] = useState('');
+  const [freeListening, setFreeListening] = useState(false);
 
   // Settings state
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -480,6 +511,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
 
   // Voice ref
   const srRef = useRef<any>(null);
+  const freeSrRef = useRef<any>(null);
 
   // Detect speech API availability
   const hasSpeechAPI = typeof window !== 'undefined' &&
@@ -491,16 +523,16 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
     if (!container) return;
     container.innerHTML = '';
     const colours = ['#fff8e0','#e8d8ff','#d0f0e8','#c8e8ff','#ffffff'];
-    const count = isRitual ? 55 : 40;
+    const count = 55;
     for (let i = 0; i < count; i++) {
       const s = document.createElement('div');
       const sz = Math.random() < .28 ? 2.2 : Math.random() < .6 ? 1.4 : .7;
-      const dur = isRitual ? (2.8 + Math.random() * 4).toFixed(1) : (1.8 + Math.random() * 2.5).toFixed(1);
+      const dur = (2.8 + Math.random() * 4).toFixed(1);
       const delay = (Math.random() * 5).toFixed(1);
       s.style.cssText = ['position:absolute','border-radius:50%',`width:${sz}px`,`height:${sz}px`,`left:${(Math.random()*100).toFixed(1)}%`,`top:${(Math.random()*72).toFixed(1)}%`,`background:${colours[i % colours.length]}`,`animation:twinkle ${dur}s -${delay}s ease-in-out infinite`,'pointer-events:none'].join(';');
       container.appendChild(s);
     }
-  }, [isRitual]);
+  }, []);
 
   // ── Inspiration & occasion derived values ──
   const questionBank = entryMode === 'ritual' ? RITUAL_QUESTIONS_FRAMED : CREATE_QUESTIONS;
@@ -515,7 +547,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   const useQuestion = () => { setBrief(currentQuestionPlain); setTranscript(''); };
 
   const renderInspoQuestion = (q: string): ReactNode => {
-    const accentColor = entryMode === 'ritual' ? '#F5B84C' : '#14d890';
+    const accentColor = '#F6C56F';
     const highlightMatch = q.match(
       /\b(wanted to hold onto|still sitting with you|unkind|done differently|mattered more|don't want to forget|carried home|really laugh|becoming|surprise you|weird.*said|anywhere impossible|funny if|obsessed|silliest|superpower|slightly wrong|convinced is true|companion say|most dramatic)\b/i
     );
@@ -530,7 +562,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   };
 
   // ── Mode switch clears relevant state ──
-  const switchMode = useCallback((m: 'today' | 'adventure') => {
+  const switchMode = useCallback((m: 'today' | 'adventure' | 'free') => {
     setMode(m);
     setBrief('');
     setTranscript('');
@@ -542,21 +574,29 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
     setQuestionIndex(0);
     setOccasionTag('');
     setOccasionDismissed(false);
+    setFreeBrief('');
+    setFreeTranscript('');
+    setFreeStep(1);
+    setFreeChars([]);
+    setFreeCharInput('');
+    setFreeCharInputKey('');
+    setWorldReaction('');
     if (isListening) { srRef.current?.stop(); setIsListening(false); }
-  }, [isListening]);
+    if (freeListening) { freeSrRef.current?.stop(); setFreeListening(false); }
+  }, [isListening, freeListening]);
 
   // ── Vibe inference (debounced, only when not manual) ──
   const vibeTimerRef = useRef<ReturnType<typeof setTimeout>>();
   useEffect(() => {
     if (manualVibe) return;
     clearTimeout(vibeTimerRef.current);
-    const text = mode === 'today' ? (transcript || brief) : adventureDetail;
+    const text = mode === 'today' ? (transcript || brief) : mode === 'free' ? (freeTranscript || freeBrief) : adventureDetail;
     if (!text.trim()) { setVibe('calm-cosy'); return; }
     vibeTimerRef.current = setTimeout(() => {
       setVibe(inferVibe(text));
     }, 300);
     return () => clearTimeout(vibeTimerRef.current);
-  }, [brief, transcript, adventureDetail, mode, manualVibe]);
+  }, [brief, transcript, adventureDetail, freeBrief, freeTranscript, mode, manualVibe]);
 
   // ── Voice ──
   const toggleVoice = useCallback(() => {
@@ -584,13 +624,37 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
     setIsListening(true);
   }, [isListening]);
 
+  // ── Free mode voice ──
+  const toggleFreeVoice = useCallback(() => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return;
+    if (freeListening) {
+      freeSrRef.current?.stop();
+      setFreeListening(false);
+      return;
+    }
+    const sr = new SR();
+    sr.continuous = false;
+    sr.interimResults = false;
+    sr.lang = 'en-US';
+    sr.onresult = (e: any) => {
+      const t = e.results[0]?.[0]?.transcript || '';
+      setFreeTranscript(t);
+      setFreeListening(false);
+    };
+    sr.onerror = () => setFreeListening(false);
+    sr.onend = () => setFreeListening(false);
+    sr.start();
+    freeSrRef.current = sr;
+    setFreeListening(true);
+  }, [freeListening]);
+
   // ── Creature display ──
   const cName = creature?.name ?? 'Moonbeam';
   const cEmoji = creature?.creatureEmoji ?? '\u{1F319}';
   const cType = creature?.creatureType ?? '';
-  const creatureColor = creature?.color || '#F5B84C';
 
-  // Resolve DreamKeeper image (if available) — same cascade as MySpace
+  // Resolve DreamKeeper image (if available) \u2014 same cascade as MySpace
   const cDk = creature
     ? (getDreamKeeperById(creature.creatureType)
        || V1_DREAMKEEPERS.find(dk => dk.emoji === creature.creatureEmoji)
@@ -598,16 +662,10 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
     : null;
   const cImageSrc = cDk?.imageSrc;
 
-  // Choose glow class based on mode/color
-  const glowClass = isRitual ? 'sc-creature-glow'
-    : mode === 'adventure' ? 'sc-creature-glow-purple'
-    : creatureColor.toLowerCase().includes('60c8') || creatureColor.toLowerCase().includes('14d8') ? 'sc-creature-glow-teal'
-    : 'sc-creature-glow';
-
   // ── Bubble text ──
   const renderBubbleText = (): ReactNode => {
-    const amber = (text: string) => (
-      <em style={{ color: '#F5B84C', fontStyle: 'normal', fontWeight: 700 }}>{text}</em>
+    const gold = (text: string) => (
+      <em style={{ color: '#F6C56F', fontStyle: 'normal', fontWeight: 700 }}>{text}</em>
     );
 
     if (isListening) return <>I&apos;m listening&hellip; {'\u{1F399}\uFE0F'}</>;
@@ -615,27 +673,42 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
     if (mode === 'today') {
       const hasAny = transcript.trim() || brief.trim();
       if (!hasAny) return (
-        <>{childName ? <>{amber(childName)}! </> : null}What happened today worth putting in a story? Could be {amber('anything')} &mdash; big, small, silly, or strange. {'\u{1F319}'}</>
+        <>{childName ? <>{gold(childName)}! </> : null}What happened today worth putting in a story? Could be {gold('anything')} &mdash; big, small, silly, or strange. {'\u{1F319}'}</>
       );
       const words = (transcript || brief).trim().split(/\s+/).slice(0, 4).join(' ');
-      return <>Got it! {amber(words + '\u2026')} Ready when you are. {'\u2728'}</>;
+      return <>Got it! {gold(words + '\u2026')} Ready when you are. {'\u2728'}</>;
     }
 
-    // gift mode
-    if (giftMode && !giftFormDone) return (
-      <>A gift story for someone {amber('special')}! Tell me about them. {'\u{1F381}'}</>
-    );
+    if (mode === 'adventure') {
+      if (!worldChoice) return (
+        <>{gold('Where should we go')} tonight? Pick a world and I&apos;ll write us in. {'\u{1F680}'}</>
+      );
 
-    // adventure mode
-    if (!worldChoice) return (
-      <>{giftMode ? <>A story for {amber(giftName || 'them')}!</> : <>Forget today!</>} {amber('Where should we go')} tonight? Pick a world and I&apos;ll write us in. {'\u{1F680}'}</>
-    );
+      if (worldReaction) return <>{worldReaction}</>;
 
-    const worldLabel = worldChoice === 'custom'
-      ? customWorld || 'your world'
-      : WORLDS.find(w => w.key === worldChoice)?.label || worldChoice;
+      const worldLabel = worldChoice === 'custom'
+        ? customWorld || 'your world'
+        : WORLDS.find(w => w.key === worldChoice)?.label || worldChoice;
 
-    return <>A story set in {amber(worldLabel)}! Give me one {amber('weird detail')} and we&apos;re off. {'\u2728'}</>;
+      return <>A story set in {gold(worldLabel)}! Give me one {gold('weird detail')} and we&apos;re off. {'\u2728'}</>;
+    }
+
+    // free mode
+    if (mode === 'free') {
+      const hasFreeContent = freeTranscript.trim() || freeBrief.trim();
+      if (freeStep === 1 && !hasFreeContent) return (
+        <>What should our story be about {gold('tonight')}? Tell me anything. {'\u2728'}</>
+      );
+      if (freeStep === 1 && hasFreeContent) {
+        const words = (freeTranscript || freeBrief).trim().split(/\s+/).slice(0, 4).join(' ');
+        return <>Love it! {gold(words + '\u2026')} Who should be in this story? {'\u{1F31F}'}</>
+      }
+      if (freeStep === 2) return (
+        <>Great cast! Ready to {gold('make this story')}? {'\u2728'}</>
+      );
+    }
+
+    return null;
   };
 
   // ── Cast helpers ──
@@ -664,7 +737,21 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
       setCustomWorld('');
     }
     setAdventureDetail('');
+    // DreamKeeper reaction
+    setWorldReaction(WORLD_REACTIONS[Math.floor(Math.random() * WORLD_REACTIONS.length)]);
+    setTimeout(() => setWorldReaction(''), 2500);
   };
+
+  // ── Make Anything char helpers ──
+  const addFreeChar = (key: string, name: string) => {
+    if (freeChars.some(c => c.key === key)) {
+      setFreeChars(prev => prev.filter(c => c.key !== key));
+    } else {
+      setFreeChars(prev => [...prev, { key, name }]);
+    }
+  };
+
+  const isFreeCharSelected = (key: string) => freeChars.some(c => c.key === key);
 
   // ── Generate ──
   const handleGenerate = () => {
@@ -690,20 +777,45 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
       });
     }
 
+    // For free mode, add freeChars
+    if (mode === 'free') {
+      for (const fc of freeChars) {
+        if (fc.key === 'dreamkeeper' && creature) {
+          // already added above if creatureSelected
+          if (!creatureSelected) {
+            castChars.push({
+              type: 'creature',
+              name: creature.name,
+              note: creature.dreamAnswer
+                ? `${creature.name} dreams about ${creature.dreamAnswer}`
+                : `${creature.name} is the child's magical companion`,
+            });
+          }
+        } else if (fc.key === 'silly') {
+          castChars.push({ type: 'other', name: 'Something Silly', note: 'A silly, unexpected character' });
+        } else {
+          castChars.push({ type: 'human', name: fc.name, note: '' });
+        }
+      }
+    }
+
     // Build brief
-    const finalBrief = mode === 'today'
-      ? (transcript.trim() || brief.trim() || VIBE_BRIEF[vibe] || 'about to go on an adventure')
-      : `Adventure in ${worldChoice === 'custom' ? customWorld : WORLDS.find(w => w.key === worldChoice)?.label || worldChoice}. ${WORLD_DESCRIPTIONS[worldChoice] ? `[World: ${WORLD_DESCRIPTIONS[worldChoice]}] ` : ''}${adventureDetail}`.trim();
+    let finalBrief: string;
+    if (mode === 'today') {
+      finalBrief = transcript.trim() || brief.trim() || VIBE_BRIEF[vibe] || 'about to go on an adventure';
+    } else if (mode === 'free') {
+      finalBrief = freeTranscript.trim() || freeBrief.trim() || 'a completely original story';
+    } else {
+      finalBrief = `Adventure in ${worldChoice === 'custom' ? customWorld : WORLDS.find(w => w.key === worldChoice)?.label || worldChoice}. ${WORLD_DESCRIPTIONS[worldChoice] ? `[World: ${WORLD_DESCRIPTIONS[worldChoice]}] ` : ''}${adventureDetail}`.trim();
+    }
 
     const finalVibe = vibe || inferVibe(finalBrief);
 
     const choices: BuilderChoices = {
       path: mode === 'today' ? 'ritual' : 'free',
-      heroName: giftMode ? giftName.trim() : (heroChar?.name || ''),
-      heroGender: giftMode
-        ? giftPronoun
-        : (heroChar?.pronouns === 'he/him' ? 'boy'
-          : heroChar?.pronouns === 'she/her' ? 'girl' : ''),
+      heroName: heroChar?.name || '',
+      heroGender: heroChar?.pronouns === 'he/him' ? 'boy'
+        : heroChar?.pronouns === 'she/her' ? 'girl' : '',
       vibe: finalVibe,
       level,
       length,
@@ -724,17 +836,21 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   // ── CTA state ──
   const ctaDisabled = mode === 'today'
     ? brief.trim().length < 4 && transcript.trim().length < 4
-    : !worldChoice && adventureDetail.trim().length < 4;
+    : mode === 'free'
+      ? (freeBrief.trim().length < 4 && freeTranscript.trim().length < 4)
+      : !worldChoice && adventureDetail.trim().length < 4;
 
-  const ctaLabel = isRitual
+  const ctaLabel = mode === 'today'
     ? '\u2726 Write tonight\u2019s story'
-    : (mode === 'today' ? 'Let\u2019s make a story! \u2192' : '\u{1F680} Begin the adventure!');
-  const ctaColor = isRitual
-    ? 'amber'
-    : (mode === 'today' ? 'teal' : 'purple');
-  const ctaSub = isRitual
-    ? `${cName} has been waiting`
-    : `${cName} is ready`;
+    : mode === 'free'
+      ? '\u2728 Let\u2019s make this story'
+      : '\u{1F680} Begin the adventure!';
+  const ctaColor = mode === 'today'
+    ? 'gold'
+    : mode === 'free'
+      ? 'cyan'
+      : 'purple';
+  const ctaSub = `${cName} is ready`;
 
   // ── Settings summary ──
   const summary = settingsSummary(style, length, vibe, level);
@@ -745,12 +861,18 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   // ── Other characters for cast (not the hero) ──
   const otherChars = characters.filter(c => c.id !== primaryChar?.id);
 
+  // ── Free mode has content check ──
+  const freeHasContent = freeTranscript.trim().length > 3 || freeBrief.trim().length > 3;
+
+  // ── Stagger delay helper ──
+  const stagger = (i: number) => `${i * 60}ms`;
+
   return (
     <div className={`sc ${isRitual ? 'ritual' : 'create'}`}>
       <style>{CSS}</style>
       <div id="sc-stars" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }} />
 
-      {/* ─── NAV ─── */}
+      {/* NAV */}
       <nav className="sc-nav">
         <div className="sc-logo">
           <div className="sc-logo-moon" />
@@ -761,20 +883,20 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
 
       <div className="sc-inner">
 
-        {/* ─── NIGHT BADGE (ritual only) ─── */}
+        {/* NIGHT BADGE */}
         {isRitual && (
           <div style={{
             display: 'flex',
             justifyContent: 'center',
             padding: '4px 0 8px',
-            animation: 'slideUp .3s ease both',
+            animation: 'fadeUp .3s ease both',
           }}>
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: 6,
-              background: 'rgba(245,184,76,.08)',
-              border: '1px solid rgba(245,184,76,.18)',
+              background: 'rgba(246,197,111,.08)',
+              border: '1px solid rgba(246,197,111,.18)',
               borderRadius: 20,
               padding: '4px 14px',
             }}>
@@ -782,8 +904,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                 width: 5,
                 height: 5,
                 borderRadius: '50%',
-                background: '#F5B84C',
-                animation: 'shimmer 2s ease-in-out infinite',
+                background: '#F6C56F',
                 flexShrink: 0,
               }} />
               <span style={{
@@ -791,7 +912,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                 fontSize: 8,
                 letterSpacing: '.1em',
                 textTransform: 'uppercase' as const,
-                color: 'rgba(245,184,76,.65)',
+                color: 'rgba(246,197,111,.65)',
               }}>
                 {cName} is ready
               </span>
@@ -799,24 +920,24 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
           </div>
         )}
 
-        {/* ─── CREATURE ZONE ─── */}
-        {isRitual ? (
-          <div className="sc-creature">
+        {/* CREATURE ZONE + SPEECH BUBBLE (above cards) */}
+        {(!ritualEntryDone || isRitual) && (
+          <div className="sc-creature" style={{ animation: `fadeUp .4s ease both ${stagger(0)}` }}>
             {isRitual && (
-              <div style={{ position: 'absolute', width: 180, height: 180, borderRadius: '50%', background: 'radial-gradient(circle, rgba(245,184,76,.1), transparent 70%)', top: -40, left: '50%', transform: 'translateX(-50%)', animation: 'pulse 5s ease-in-out infinite', pointerEvents: 'none' as const, zIndex: 0 }} />
+              <div style={{ position: 'absolute', width: 180, height: 180, borderRadius: '50%', background: 'radial-gradient(circle, rgba(246,197,111,.1), transparent 70%)', top: -40, left: '50%', transform: 'translateX(-50%)', animation: 'pulse 5s ease-in-out infinite', pointerEvents: 'none' as const, zIndex: 0 }} />
             )}
             {loading ? (
               <div className="sc-egg">{'\u{1F95A}'}</div>
             ) : (
               <>
                 {cImageSrc ? (
-                  <div style={{ width: 120, height: 150, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'floatCreature 4.5s ease-in-out infinite', position: 'relative' as const, zIndex: 1 }}>
-                    <img src={cImageSrc} alt={cName} style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 18px rgba(245,184,76,.3))' }} />
+                  <div style={{ width: 100, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'floatCreature 4.5s ease-in-out infinite', position: 'relative' as const, zIndex: 1 }}>
+                    <img src={cImageSrc} alt={cName} style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 18px rgba(246,197,111,.3))' }} />
                   </div>
                 ) : (
-                  <div className="sc-creature-emoji" style={{ animation: 'floatCreature 4.5s ease-in-out infinite, glowAmber 4s ease-in-out infinite', position: 'relative' as const, zIndex: 1 }}>{cEmoji}</div>
+                  <div className="sc-creature-emoji" style={{ animation: 'floatCreature 4.5s ease-in-out infinite, glowGold 4s ease-in-out infinite', position: 'relative' as const, zIndex: 1 }}>{cEmoji}</div>
                 )}
-                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase' as const, color: 'rgba(245,184,76,.55)', marginTop: 4, textAlign: 'center' as const }}>{cName}</div>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase' as const, color: 'rgba(246,197,111,.55)', marginTop: 4, textAlign: 'center' as const }}>{cName}</div>
                 {cType && (
                   <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 7.5, letterSpacing: '.08em', textTransform: 'uppercase' as const, color: 'rgba(255,255,255,.2)', marginTop: 2, textAlign: 'center' as const }}>
                     {cType.charAt(0).toUpperCase() + cType.slice(1).replace(/-/g, ' ')}
@@ -825,277 +946,208 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
               </>
             )}
           </div>
-        ) : (
-          <div className="sc-creature create-creature">
-            {loading ? (
-              <div className="sc-egg" style={{ fontSize: 36 }}>{'\u{1F95A}'}</div>
-            ) : (
-              <>
-                {cImageSrc ? (
-                  <div style={{ width: 52, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, animation: 'floatCreature 3.5s ease-in-out infinite' }}>
-                    <img src={cImageSrc} alt={cName} style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(20,216,144,.3))' }} />
-                  </div>
-                ) : (
-                  <div style={{ fontSize: 42, animation: 'floatCreature 3.5s ease-in-out infinite, glowTeal 3s ease-in-out infinite', display: 'inline-block' }}>{cEmoji}</div>
-                )}
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "'Fraunces', serif", fontSize: 15, fontWeight: 700, color: 'var(--cream)', lineHeight: 1.3 }}>
-                    What kind of story{' '}
-                    <em style={{ color: '#14d890', fontStyle: 'italic' }}>tonight?</em>
-                  </div>
-                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: '.1em', textTransform: 'uppercase' as const, color: 'rgba(20,216,144,.4)', marginTop: 3 }}>
-                    {cName} {'\u00B7'} ready to write
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
         )}
 
-        {/* ─── RITUAL 3-CARD ENTRY (ritual mode, before input) ─── */}
+        {/* DreamKeeper speech bubble above cards */}
         {isRitual && !ritualEntryDone && (
-          <div style={{ animation: 'slideUp .35s ease both', padding: '8px 0 0' }}>
-            {/* DreamKeeper message */}
-            <div className="sc-bubble" style={{ borderColor: 'rgba(245,184,76,.2)', background: 'rgba(245,184,76,.04)', opacity: 1, animation: 'bubblePop .35s ease forwards', marginBottom: 18 }}>
-              <div className="sc-bubble-text">
-                What story will we create <em style={{ color: '#F5B84C', fontStyle: 'normal', fontWeight: 700 }}>together</em> tonight?
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {/* Card 1: Tell me about today */}
-              <button onClick={() => { setMode('today'); setRitualEntryDone(true); }} style={{
-                width: '100%', padding: '18px 18px', borderRadius: 16, cursor: 'pointer', textAlign: 'left',
-                border: '1.5px solid rgba(245,184,76,.2)', background: 'rgba(245,184,76,.06)',
-                display: 'flex', alignItems: 'center', gap: 14, transition: 'all .2s',
-                fontFamily: "'Nunito',system-ui,sans-serif",
-              }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.4)'; e.currentTarget.style.background = 'rgba(245,184,76,.1)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.2)'; e.currentTarget.style.background = 'rgba(245,184,76,.06)'; }}
-              >
-                <span style={{ fontSize: 28, flexShrink: 0 }}>{'\u2600\uFE0F'}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 600, color: '#F4EFE8', marginBottom: 2 }}>Tell me about today</div>
-                  <div style={{ fontSize: 11, color: 'rgba(244,239,232,.4)' }}>Turn something real into tonight's story</div>
-                </div>
-              </button>
-
-              {/* Card 2: Let's go somewhere */}
-              <button onClick={() => { setMode('adventure'); setRitualEntryDone(true); }} style={{
-                width: '100%', padding: '18px 18px', borderRadius: 16, cursor: 'pointer', textAlign: 'left',
-                border: '1.5px solid rgba(160,96,240,.2)', background: 'rgba(160,96,240,.06)',
-                display: 'flex', alignItems: 'center', gap: 14, transition: 'all .2s',
-                fontFamily: "'Nunito',system-ui,sans-serif", position: 'relative',
-              }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(160,96,240,.4)'; e.currentTarget.style.background = 'rgba(160,96,240,.1)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(160,96,240,.2)'; e.currentTarget.style.background = 'rgba(160,96,240,.06)'; }}
-              >
-                <span style={{ fontSize: 28, flexShrink: 0 }}>{'\u{1F680}'}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 600, color: '#F4EFE8', marginBottom: 2 }}>Let's go somewhere</div>
-                  <div style={{ fontSize: 11, color: 'rgba(244,239,232,.4)' }}>Pick a world for tonight's adventure</div>
-                </div>
-              </button>
-
-              {/* Card 3: Surprise me */}
-              <button onClick={() => {
-                setMode('today');
-                setBrief(`${cName} picks everything tonight — a surprise adventure just for ${childName}.`);
-                setRitualEntryDone(true);
-                // Auto-generate after a brief moment
-                setTimeout(() => {
-                  const heroChar = primaryChar;
-                  const castChars: { type: string; name: string; note: string }[] = [];
-                  if (creatureSelected && creature) {
-                    castChars.push({ type: 'creature', name: creature.name, note: creature.dreamAnswer ? `${creature.name} dreams about ${creature.dreamAnswer}` : `${creature.name} is the child's magical companion` });
-                  }
-                  onGenerate({
-                    path: 'ritual', heroName: heroChar?.name || '', heroGender: heroChar?.pronouns === 'he/him' ? 'boy' : heroChar?.pronouns === 'she/her' ? 'girl' : '',
-                    vibe: ['warm-funny', 'calm-cosy', 'exciting', 'heartfelt', 'mysterious'][Math.floor(Math.random() * 5)],
-                    level, length, brief: `${cName} picks everything tonight — a surprise adventure just for ${childName}.`,
-                    chars: castChars, lessons: [], occasion: '', occasionCustom: '', style: 'standard', pace: 'normal',
-                  });
-                }, 400);
-              }} style={{
-                width: '100%', padding: '18px 18px', borderRadius: 16, cursor: 'pointer', textAlign: 'left',
-                border: '1.5px solid rgba(111,231,221,.15)', background: 'rgba(111,231,221,.04)',
-                display: 'flex', alignItems: 'center', gap: 14, transition: 'all .2s',
-                fontFamily: "'Nunito',system-ui,sans-serif",
-              }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(111,231,221,.35)'; e.currentTarget.style.background = 'rgba(111,231,221,.08)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(111,231,221,.15)'; e.currentTarget.style.background = 'rgba(111,231,221,.04)'; }}
-              >
-                <span style={{ fontSize: 28, flexShrink: 0 }}>{'\u{1F3B2}'}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 600, color: '#F4EFE8', marginBottom: 2 }}>Surprise me</div>
-                  <div style={{ fontSize: 11, color: 'rgba(244,239,232,.4)' }}>{cName} picks everything tonight</div>
-                </div>
-              </button>
-
-              {/* Card 4: Gift a story */}
-              <button onClick={() => { setGiftMode(true); setRitualEntryDone(true); setMode('adventure'); }} style={{
-                width: '100%', padding: '18px 18px', borderRadius: 16, cursor: 'pointer', textAlign: 'left',
-                border: '1.5px solid rgba(245,184,76,.15)', background: 'rgba(245,184,76,.03)',
-                display: 'flex', alignItems: 'center', gap: 14, transition: 'all .2s',
-                fontFamily: "'Nunito',system-ui,sans-serif",
-              }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.35)'; e.currentTarget.style.background = 'rgba(245,184,76,.08)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.15)'; e.currentTarget.style.background = 'rgba(245,184,76,.03)'; }}
-              >
-                <span style={{ fontSize: 28, flexShrink: 0 }}>{'\u{1F381}'}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 600, color: '#F4EFE8', marginBottom: 2 }}>Gift a story</div>
-                  <div style={{ fontSize: 11, color: 'rgba(244,239,232,.4)' }}>Make a story for someone special</div>
-                </div>
-              </button>
+          <div className="sc-bubble" style={{
+            borderColor: 'rgba(246,197,111,.2)',
+            background: 'rgba(246,197,111,.04)',
+            opacity: 1,
+            animation: `bubblePop .35s ease forwards ${stagger(1)}`,
+            marginBottom: 18,
+          }}>
+            <div className="sc-bubble-text" style={{ fontFamily: "var(--lora)", fontStyle: 'italic' }}>
+              What kind of story <em style={{ color: '#F6C56F', fontStyle: 'normal', fontWeight: 700 }}>tonight</em>? {cEmoji}
             </div>
           </div>
         )}
 
-        {/* ─── GIFT MODE FORM ─── */}
-        {giftMode && !giftFormDone && ritualEntryDone && (
-          <div style={{ animation: 'slideUp .35s ease both', padding: '8px 0 0' }}>
-            <div className="sc-bubble" style={{ borderColor: 'rgba(245,184,76,.2)', background: 'rgba(245,184,76,.04)', opacity: 1, animation: 'bubblePop .35s ease forwards', marginBottom: 18 }}>
-              <div className="sc-bubble-text">
-                A story gift! <em style={{ color: '#F5B84C', fontStyle: 'normal', fontWeight: 700 }}>Who is it for?</em> {'\u{1F381}'}
-              </div>
-            </div>
+        {/* RITUAL 3-CARD ENTRY */}
+        {isRitual && !ritualEntryDone && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
-            {/* Child's name */}
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '.08em', textTransform: 'uppercase' as const, color: 'rgba(245,184,76,.45)', marginBottom: 8 }}>
-                Who is this story for?
-              </div>
-              <input
-                type="text"
-                value={giftName}
-                onChange={e => setGiftName(e.target.value)}
-                placeholder="Their name..."
-                autoFocus
-                style={{
-                  width: '100%', padding: '12px 14px', borderRadius: 14,
-                  border: '1.5px solid rgba(245,184,76,.25)', background: 'rgba(245,184,76,.05)',
-                  color: 'var(--cream)', fontSize: 14, fontFamily: 'var(--body)', fontWeight: 700,
-                  outline: 'none', transition: 'border-color .2s, box-shadow .2s',
-                }}
-                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.45)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(245,184,76,.07)'; }}
-                onBlur={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.25)'; e.currentTarget.style.boxShadow = 'none'; }}
-              />
-            </div>
-
-            {/* Age pills */}
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '.08em', textTransform: 'uppercase' as const, color: 'rgba(245,184,76,.45)', marginBottom: 8 }}>
-                How old are they?
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[{ key: '3-5', label: '3\u20135' }, { key: '6-8', label: '6\u20138' }, { key: '9-11', label: '9\u201311' }].map(a => (
-                  <button
-                    key={a.key}
-                    onClick={() => setGiftAge(giftAge === a.key ? '' : a.key)}
-                    style={{
-                      padding: '8px 18px', borderRadius: 20, cursor: 'pointer', transition: 'all .2s',
-                      fontFamily: 'var(--body)', fontSize: 12, fontWeight: 700,
-                      border: giftAge === a.key ? '1.5px solid rgba(245,184,76,.4)' : '1.5px solid rgba(255,255,255,.1)',
-                      background: giftAge === a.key ? 'rgba(245,184,76,.12)' : 'rgba(255,255,255,.04)',
-                      color: giftAge === a.key ? '#F5B84C' : 'rgba(255,255,255,.35)',
-                    }}
-                  >
-                    {a.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Pronoun pills (optional) */}
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: '.08em', textTransform: 'uppercase' as const, color: 'rgba(245,184,76,.45)', marginBottom: 8 }}>
-                Pronouns <span style={{ color: 'rgba(255,255,255,.2)' }}>(optional)</span>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[{ key: 'boy', label: 'He/him' }, { key: 'girl', label: 'She/her' }, { key: 'they', label: 'They/them' }].map(p => (
-                  <button
-                    key={p.key}
-                    onClick={() => setGiftPronoun(giftPronoun === p.key ? '' : p.key)}
-                    style={{
-                      padding: '8px 16px', borderRadius: 20, cursor: 'pointer', transition: 'all .2s',
-                      fontFamily: 'var(--body)', fontSize: 12, fontWeight: 700,
-                      border: giftPronoun === p.key ? '1.5px solid rgba(245,184,76,.4)' : '1.5px solid rgba(255,255,255,.1)',
-                      background: giftPronoun === p.key ? 'rgba(245,184,76,.12)' : 'rgba(255,255,255,.04)',
-                      color: giftPronoun === p.key ? '#F5B84C' : 'rgba(255,255,255,.35)',
-                    }}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Continue button */}
+            {/* Card 1: Tell me about today */}
             <button
-              disabled={!giftName.trim() || !giftAge}
-              onClick={() => {
-                setGiftFormDone(true);
-                // Map gift age to level
-                if (giftAge === '3-5') setLevel('age3');
-                else if (giftAge === '6-8') setLevel('age5');
-                else if (giftAge === '9-11') setLevel('age7');
-              }}
+              className="sc-entry-card"
+              onClick={() => { setMode('today'); setRitualEntryDone(true); }}
               style={{
-                width: '100%', padding: '14px', borderRadius: 14, cursor: 'pointer',
-                border: 'none', fontFamily: 'var(--cta)', fontSize: 14, fontWeight: 700,
-                background: (!giftName.trim() || !giftAge) ? 'rgba(245,184,76,.15)' : 'linear-gradient(145deg,#7a4a08,#F5B84C 48%,#7a4a08)',
-                color: (!giftName.trim() || !giftAge) ? 'rgba(255,255,255,.25)' : '#060200',
-                transition: 'all .2s',
-                opacity: (!giftName.trim() || !giftAge) ? 0.5 : 1,
+                border: '1.5px solid rgba(246,197,111,.18)',
+                background: 'linear-gradient(135deg, rgba(246,197,111,.08), rgba(12,18,48,.92))',
+                animation: `fadeUp .4s ease both ${stagger(2)}`,
               }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(246,197,111,.4)'; e.currentTarget.style.background = 'linear-gradient(135deg, rgba(246,197,111,.14), rgba(12,18,48,.92))'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(246,197,111,.18)'; e.currentTarget.style.background = 'linear-gradient(135deg, rgba(246,197,111,.08), rgba(12,18,48,.92))'; }}
             >
-              Continue {'\u2192'}
+              <div style={{
+                width: 52, height: 52, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(246,197,111,.08)', border: '1px solid rgba(246,197,111,.12)', flexShrink: 0,
+              }}>
+                <span style={{ fontSize: 26 }}>{'\u2600\uFE0F'}</span>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: "var(--heading)", fontSize: 15, fontWeight: 700, color: '#F4EFE8', marginBottom: 2 }}>Tell me about today</div>
+                <div style={{ fontSize: 11, color: 'rgba(244,239,232,.4)', fontFamily: 'var(--body)' }}>Turn something real into tonight's story</div>
+              </div>
+            </button>
+
+            {/* Card 2: Let's go somewhere */}
+            <button
+              className="sc-entry-card"
+              onClick={() => { setMode('adventure'); setRitualEntryDone(true); }}
+              style={{
+                border: '1.5px solid rgba(154,127,212,.2)',
+                background: 'linear-gradient(135deg, rgba(154,127,212,.1), rgba(10,12,42,.92))',
+                animation: `fadeUp .4s ease both ${stagger(3)}`,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(184,161,255,.45)'; e.currentTarget.style.background = 'linear-gradient(135deg, rgba(154,127,212,.16), rgba(10,12,42,.92))'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(154,127,212,.2)'; e.currentTarget.style.background = 'linear-gradient(135deg, rgba(154,127,212,.1), rgba(10,12,42,.92))'; }}
+            >
+              <div style={{
+                width: 52, height: 52, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(154,127,212,.08)', border: '1px solid rgba(154,127,212,.12)', flexShrink: 0,
+              }}>
+                <span style={{ fontSize: 26 }}>{'\u{1F680}'}</span>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: "var(--heading)", fontSize: 15, fontWeight: 700, color: '#F4EFE8', marginBottom: 2 }}>Let's go somewhere</div>
+                <div style={{ fontSize: 11, color: 'rgba(244,239,232,.4)', fontFamily: 'var(--body)' }}>Pick a world for tonight's adventure</div>
+              </div>
+              {/* MOST FUN badge */}
+              <div style={{
+                position: 'absolute', top: 10, right: 12,
+                background: 'rgba(154,127,212,.2)', border: '1px solid rgba(184,161,255,.3)',
+                borderRadius: 8, padding: '2px 8px',
+                fontFamily: 'var(--mono)', fontSize: 7, fontWeight: 700,
+                letterSpacing: '.1em', textTransform: 'uppercase' as const,
+                color: '#B8A1FF',
+              }}>
+                MOST FUN
+              </div>
+            </button>
+
+            {/* Card 3: Make Any Story */}
+            <button
+              className="sc-entry-card"
+              onClick={() => { setMode('free'); setRitualEntryDone(true); }}
+              style={{
+                border: '1.5px solid rgba(111,231,221,.12)',
+                background: 'rgba(111,231,221,.05)',
+                animation: `fadeUp .4s ease both ${stagger(4)}`,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(111,231,221,.3)'; e.currentTarget.style.background = 'rgba(111,231,221,.09)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(111,231,221,.12)'; e.currentTarget.style.background = 'rgba(111,231,221,.05)'; }}
+            >
+              <div style={{
+                width: 52, height: 52, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(111,231,221,.06)', border: '1px solid rgba(111,231,221,.1)', flexShrink: 0,
+              }}>
+                <span style={{ fontSize: 26 }}>{'\u2728'}</span>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: "var(--heading)", fontSize: 15, fontWeight: 700, color: '#F4EFE8', marginBottom: 2 }}>Make Any Story</div>
+                <div style={{ fontSize: 11, color: 'rgba(244,239,232,.4)', fontFamily: 'var(--body)' }}>Create a story about anything with anyone you want</div>
+              </div>
             </button>
           </div>
         )}
 
-        {/* ─── SPEECH BUBBLE (ritual only, after entry selection, not during gift form) ─── */}
-        {isRitual && ritualEntryDone && (!giftMode || giftFormDone) && (
-          <div className="sc-bubble" style={{ borderColor: 'rgba(245,184,76,.2)', background: 'rgba(245,184,76,.04)', opacity: 1, animation: 'bubblePop .35s ease forwards' }}>
-            <div className="sc-bubble-text">{renderBubbleText()}</div>
-          </div>
+        {/* SPEECH BUBBLE (after entry selection) */}
+        {ritualEntryDone && (
+          <>
+            {/* Inline creature for post-entry */}
+            {!isRitual && (
+              <div className="sc-creature create-creature" style={{ animation: 'fadeUp .3s ease both' }}>
+                {loading ? (
+                  <div className="sc-egg" style={{ fontSize: 36 }}>{'\u{1F95A}'}</div>
+                ) : (
+                  <>
+                    {cImageSrc ? (
+                      <div style={{ width: 52, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, animation: 'floatCreature 3.5s ease-in-out infinite' }}>
+                        <img src={cImageSrc} alt={cName} style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(246,197,111,.3))' }} />
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 42, animation: 'floatCreature 3.5s ease-in-out infinite, glowGold 3s ease-in-out infinite', display: 'inline-block' }}>{cEmoji}</div>
+                    )}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "var(--heading)", fontSize: 15, fontWeight: 700, color: 'var(--cream)', lineHeight: 1.3 }}>
+                        What kind of story{' '}
+                        <em style={{ color: '#F6C56F', fontStyle: 'italic' }}>tonight?</em>
+                      </div>
+                      <div style={{ fontFamily: "var(--mono)", fontSize: 8, letterSpacing: '.1em', textTransform: 'uppercase' as const, color: 'rgba(246,197,111,.4)', marginTop: 3 }}>
+                        {cName} {'\u00B7'} ready to write
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            <div className="sc-bubble" style={{
+              borderColor: mode === 'free' ? 'rgba(111,231,221,.2)' : mode === 'adventure' ? 'rgba(154,127,212,.2)' : 'rgba(246,197,111,.2)',
+              background: mode === 'free' ? 'rgba(111,231,221,.04)' : mode === 'adventure' ? 'rgba(154,127,212,.04)' : 'rgba(246,197,111,.04)',
+              opacity: 1,
+              animation: 'bubblePop .35s ease forwards',
+            }}>
+              <div className="sc-bubble-text">{renderBubbleText()}</div>
+            </div>
+          </>
         )}
 
-        {/* ─── MODE TOGGLE (create only) ─── */}
+        {/* MODE TOGGLE (create only) */}
         {!isRitual && (
-          <div className="sc-mode">
+          <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
             <button
-              className={`sc-mode-btn${mode === 'today' ? ' today-on' : ''}`}
               onClick={() => switchMode('today')}
+              style={{
+                flex: 1, padding: '12px', borderRadius: 14, fontFamily: 'var(--cta)', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', transition: 'all .2s', textAlign: 'center',
+                border: mode === 'today' ? '1.5px solid rgba(246,197,111,.4)' : '1.5px solid rgba(255,255,255,.08)',
+                background: mode === 'today' ? 'rgba(246,197,111,.12)' : 'rgba(255,255,255,.04)',
+                color: mode === 'today' ? '#F6C56F' : 'var(--muted)',
+              }}
             >
               {'\u2600\uFE0F'} My Day
             </button>
             <button
-              className={`sc-mode-btn${mode === 'adventure' ? ' adv-on' : ''}`}
               onClick={() => switchMode('adventure')}
+              style={{
+                flex: 1, padding: '12px', borderRadius: 14, fontFamily: 'var(--cta)', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', transition: 'all .2s', textAlign: 'center',
+                border: mode === 'adventure' ? '1.5px solid rgba(154,127,212,.4)' : '1.5px solid rgba(255,255,255,.08)',
+                background: mode === 'adventure' ? 'rgba(154,127,212,.1)' : 'rgba(255,255,255,.04)',
+                color: mode === 'adventure' ? '#B8A1FF' : 'var(--muted)',
+              }}
             >
-              {'\u2728'} Adventure
+              {'\u{1F680}'} Adventure
+            </button>
+            <button
+              onClick={() => switchMode('free')}
+              style={{
+                flex: 1, padding: '12px', borderRadius: 14, fontFamily: 'var(--cta)', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', transition: 'all .2s', textAlign: 'center',
+                border: mode === 'free' ? '1.5px solid rgba(111,231,221,.4)' : '1.5px solid rgba(255,255,255,.08)',
+                background: mode === 'free' ? 'rgba(111,231,221,.1)' : 'rgba(255,255,255,.04)',
+                color: mode === 'free' ? '#6FE7DD' : 'var(--muted)',
+              }}
+            >
+              {'\u2728'} Anything
             </button>
           </div>
         )}
 
         {/* ═══ MY DAY INPUT ZONE ═══ */}
-        {mode === 'today' && (!isRitual || ritualEntryDone) && (
-          <div style={{ animation: 'slideUp .25s ease both' }}>
+        {mode === 'today' && ritualEntryDone && (
+          <div style={{ animation: 'fadeUp .3s ease both' }}>
             {/* Inspiration card */}
             {showInspiration && (
               <div style={{
-                background: entryMode === 'ritual'
-                  ? 'rgba(245,184,76,.05)'
-                  : 'rgba(20,216,144,.04)',
-                border: `1px solid ${entryMode === 'ritual'
-                  ? 'rgba(245,184,76,.15)'
-                  : 'rgba(20,216,144,.14)'}`,
+                background: 'rgba(246,197,111,.05)',
+                border: '1px solid rgba(246,197,111,.15)',
                 borderRadius: 14,
                 padding: '11px 13px',
                 flexShrink: 0,
-                animation: 'slideUp .3s ease-out',
+                animation: `fadeUp .3s ease-out ${stagger(1)}`,
                 marginBottom: 14,
               }}>
                 <div style={{
@@ -1105,29 +1157,24 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                   marginBottom: 8,
                 }}>
                   <div style={{
-                    fontFamily: "'DM Mono', monospace",
+                    fontFamily: "var(--mono)",
                     fontSize: 8,
                     letterSpacing: '.1em',
                     textTransform: 'uppercase' as const,
-                    color: entryMode === 'ritual'
-                      ? 'rgba(245,184,76,.45)'
-                      : 'rgba(20,216,144,.45)',
+                    color: 'rgba(246,197,111,.45)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 5,
                   }}>
-                    {entryMode === 'ritual' ? <>{cEmoji}{' '}</> : <>{'\u2728'}{' '}</>}
-                    {entryMode === 'ritual' ? `${cName} wants to know\u2026` : 'Need some inspiration?'}
+                    {cEmoji}{' '}{cName} suggests asking{'\u2026'}
                   </div>
                   <button
                     onClick={shuffleQuestion}
                     style={{
-                      fontFamily: "'Baloo 2', cursive",
+                      fontFamily: "var(--cta)",
                       fontSize: 10,
                       fontWeight: 700,
-                      color: entryMode === 'ritual'
-                        ? 'rgba(245,184,76,.4)'
-                        : 'rgba(20,216,144,.4)',
+                      color: 'rgba(246,197,111,.4)',
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
@@ -1140,7 +1187,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                 <div
                   onClick={useQuestion}
                   style={{
-                    fontFamily: "'Baloo 2', cursive",
+                    fontFamily: "var(--cta)",
                     fontSize: 13,
                     fontWeight: 700,
                     color: 'rgba(255,255,255,.75)',
@@ -1152,12 +1199,10 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                   {renderInspoQuestion(currentQuestion)}
                 </div>
                 <div style={{
-                  fontFamily: "'DM Mono', monospace",
+                  fontFamily: "var(--mono)",
                   fontSize: 8,
                   letterSpacing: '.04em',
-                  color: entryMode === 'ritual'
-                    ? 'rgba(245,184,76,.3)'
-                    : 'rgba(20,216,144,.3)',
+                  color: 'rgba(246,197,111,.3)',
                 }}>
                   {'\u2191'} tap to use {'\u00B7'} {'\u{1F500}'} to see another
                 </div>
@@ -1167,16 +1212,14 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
             {/* Voice button */}
             {hasSpeechAPI && (
               <button
-                className={`sc-voice${isListening ? ' rec' : ''}${!isRitual ? ' teal' : ''}`}
+                className={`sc-voice${isListening ? ' rec' : ''}`}
                 onClick={toggleVoice}
               >
                 <span className="sc-voice-icon">{'\u{1F399}\uFE0F'}</span>
                 <span className="sc-voice-text">
                   {isListening
                     ? 'Listening\u2026 tap to stop'
-                    : isRitual
-                      ? `Tell ${cName} out loud`
-                      : 'Tap to answer out loud'
+                    : `Tell ${cName} out loud`
                   }
                 </span>
                 <span className="sc-voice-waves">
@@ -1229,18 +1272,19 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                 {hasSpeechAPI && (
                   <div className="sc-or">
                     <div className="sc-or-line" />
-                    <span className="sc-or-text">
-                      {isRitual ? 'or write it down' : 'or type it'}
-                    </span>
+                    <span className="sc-or-text">or write it down</span>
                     <div className="sc-or-line" />
                   </div>
                 )}
                 <textarea
-                  className={`sc-textarea${!isRitual ? ' teal' : ''}`}
+                  className="sc-textarea"
                   rows={2}
                   value={brief}
                   onChange={e => { setBrief(e.target.value); setTranscript(''); }}
                   placeholder="We found a really fat frog under the plant pot..."
+                  style={{
+                    caretColor: '#F6C56F',
+                  }}
                 />
               </>
             )}
@@ -1248,28 +1292,36 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
         )}
 
         {/* ═══ ADVENTURE INPUT ZONE ═══ */}
-        {mode === 'adventure' && (!isRitual || ritualEntryDone) && (!giftMode || giftFormDone) && (
-          <div style={{ animation: 'slideUp .25s ease both' }}>
+        {mode === 'adventure' && ritualEntryDone && (
+          <div style={{ animation: 'fadeUp .3s ease both' }}>
             {!showCustomWorldInput ? (
               <>
-                <div className="sc-world-label">Where should we go tonight?</div>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'rgba(245,184,76,.5)', textAlign: 'center', marginBottom: 10, letterSpacing: '.04em' }}>pick a world and I'll write us in</div>
-                <div className="sc-world-grid">
+                <div style={{ fontFamily: 'var(--heading)', fontStyle: 'italic', fontSize: 15, color: 'rgba(255,255,255,.65)', textAlign: 'center', marginBottom: 14 }}>
+                  Where should we go tonight?
+                </div>
+                {/* Horizontal scrolling pills */}
+                <div className="sc-world-scroll">
                   {WORLDS.map(w => (
                     <div
                       key={w.key}
-                      className={`sc-world${worldChoice === w.key ? ' on' : ''}`}
+                      className={`sc-world-pill${worldChoice === w.key ? ' on' : ''}`}
                       onClick={() => selectWorld(w.key)}
                     >
-                      <span className="sc-world-emoji">{w.emoji}</span>
-                      <span className="sc-world-name">{w.label}</span>
+                      <span className="sc-world-pill-emoji">{w.emoji}</span>
+                      <span className="sc-world-pill-name">{w.label}</span>
                     </div>
                   ))}
                 </div>
               </>
             ) : (
               <>
-                <button className="sc-world-back" onClick={() => { setShowCustomWorldInput(false); setWorldChoice(''); setCustomWorld(''); }}>
+                <button
+                  onClick={() => { setShowCustomWorldInput(false); setWorldChoice(''); setCustomWorld(''); }}
+                  style={{
+                    fontSize: 11, color: 'rgba(154,127,212,.5)', background: 'none', border: 'none',
+                    cursor: 'pointer', fontFamily: 'var(--body)', fontWeight: 600, marginBottom: 10, transition: 'color .15s',
+                  }}
+                >
                   {'\u2190'} choose a world
                 </button>
                 <textarea
@@ -1283,9 +1335,9 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
               </>
             )}
 
-            {/* Wild detail — after world selected */}
+            {/* Wild detail \u2014 after world selected */}
             {worldChoice && (worldChoice !== 'custom' || customWorld.trim()) && (
-              <div className="sc-detail-section">
+              <div className="sc-detail-section" style={{ marginTop: 8 }}>
                 <div className="sc-detail-label">One weird detail that has to be in the story</div>
                 <div className="sc-detail-chips">
                   {detailChips.map(chip => (
@@ -1315,13 +1367,229 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
           </div>
         )}
 
+        {/* ═══ MAKE ANYTHING INPUT ZONE ═══ */}
+        {mode === 'free' && ritualEntryDone && (
+          <div style={{ animation: 'crossfade .3s ease both' }}>
+
+            {/* Step 1: What should the story be about? */}
+            {freeStep === 1 && (
+              <div style={{ animation: 'fadeUp .3s ease both' }}>
+                {/* Large voice button */}
+                {hasSpeechAPI && (
+                  <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                    <button
+                      className={`sc-voice-lg${freeListening ? ' rec' : ''}`}
+                      onClick={toggleFreeVoice}
+                    >
+                      {freeListening ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                          {[0, .1, .2, .15, .05].map((d, i) => (
+                            <span
+                              key={i}
+                              style={{
+                                width: 4, borderRadius: 2, background: '#FF8070',
+                                height: 4, display: 'inline-block',
+                                animation: `waveBar .6s ${d}s ease-in-out infinite`,
+                              }}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6FE7DD" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                          <line x1="12" y1="19" x2="12" y2="23"/>
+                          <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                      )}
+                    </button>
+                    <div style={{
+                      fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: '.08em',
+                      textTransform: 'uppercase' as const, color: 'rgba(111,231,221,.4)', marginTop: 8,
+                    }}>
+                      {freeListening ? 'Listening\u2026 tap to stop' : 'Tap to speak'}
+                    </div>
+                  </div>
+                )}
+
+                {/* Transcript display */}
+                {freeTranscript && (
+                  <div style={{
+                    background: 'rgba(111,231,221,.06)', border: '1px solid rgba(111,231,221,.2)',
+                    borderRadius: 14, padding: '11px 14px', marginBottom: 10, animation: 'fadeUp .25s ease both',
+                  }}>
+                    <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: '#6FE7DD', letterSpacing: '.06em', textTransform: 'uppercase' as const, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      {'\u{1F399}\uFE0F'} Heard
+                    </div>
+                    <div style={{ fontFamily: 'var(--body)', fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,.82)', lineHeight: 1.6 }}>
+                      {freeTranscript}
+                    </div>
+                  </div>
+                )}
+
+                {/* Or type instead */}
+                <div className="sc-or">
+                  <div className="sc-or-line" />
+                  <span className="sc-or-text">or type instead</span>
+                  <div className="sc-or-line" />
+                </div>
+                <textarea
+                  className="sc-textarea cyan"
+                  rows={2}
+                  value={freeBrief}
+                  onChange={e => { setFreeBrief(e.target.value); setFreeTranscript(''); }}
+                  placeholder="A dragon that's afraid of toast..."
+                  style={{ caretColor: '#6FE7DD' }}
+                />
+
+                {/* Next step button */}
+                {freeHasContent && (
+                  <button
+                    onClick={() => setFreeStep(2)}
+                    style={{
+                      width: '100%', padding: '12px', borderRadius: 12, marginTop: 10,
+                      border: '1.5px solid rgba(111,231,221,.25)', background: 'rgba(111,231,221,.08)',
+                      fontFamily: 'var(--cta)', fontSize: 13, fontWeight: 700, color: '#6FE7DD',
+                      cursor: 'pointer', transition: 'all .2s', animation: 'fadeUp .25s ease both',
+                    }}
+                  >
+                    Next: add characters {'\u2192'}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Step 2: Who should join this story? */}
+            {freeStep === 2 && (
+              <div style={{ animation: 'fadeUp .3s ease both' }}>
+                <div style={{
+                  fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '.08em',
+                  textTransform: 'uppercase' as const, color: 'rgba(111,231,221,.45)', marginBottom: 10,
+                }}>
+                  Who should join this story?
+                </div>
+
+                {/* Child pre-selected */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 12,
+                  border: '1.5px solid rgba(246,197,111,.3)', background: 'rgba(246,197,111,.08)', marginBottom: 8,
+                }}>
+                  <span style={{ fontSize: 18 }}>{primaryChar?.emoji || '\u{1F9D2}'}</span>
+                  <span style={{ fontFamily: 'var(--body)', fontSize: 12, fontWeight: 700, color: '#F6C56F' }}>
+                    {childName}
+                  </span>
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: 7, color: 'rgba(246,197,111,.4)', marginLeft: 'auto', letterSpacing: '.06em', textTransform: 'uppercase' as const }}>
+                    HERO
+                  </span>
+                </div>
+
+                {/* Add character buttons */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                  {MAKE_ANYTHING_CHARS.map(mc => {
+                    const isOn = isFreeCharSelected(mc.key);
+                    const needsInput = (mc.key === 'someone' || mc.key === 'pet');
+                    const showInput = freeCharInputKey === mc.key && !isOn;
+                    const emoji = mc.key === 'dreamkeeper' ? (cEmoji || '\u{1F31F}') : mc.emoji;
+
+                    return (
+                      <div key={mc.key}>
+                        <div
+                          className={`sc-ma-char${isOn ? ' on' : ''}`}
+                          onClick={() => {
+                            if (isOn) {
+                              addFreeChar(mc.key, '');
+                              return;
+                            }
+                            if (needsInput) {
+                              setFreeCharInputKey(mc.key);
+                              setFreeCharInput('');
+                            } else {
+                              addFreeChar(mc.key, mc.key === 'dreamkeeper' ? cName : mc.label);
+                            }
+                          }}
+                        >
+                          <span className="sc-ma-char-emoji">{emoji}</span>
+                          <span className="sc-ma-char-label">
+                            {isOn && needsInput
+                              ? freeChars.find(c => c.key === mc.key)?.name || mc.label
+                              : mc.key === 'dreamkeeper'
+                                ? cName
+                                : mc.label
+                            }
+                          </span>
+                          {isOn && (
+                            <span style={{ marginLeft: 'auto', fontSize: 10, color: '#6FE7DD' }}>{'\u2713'}</span>
+                          )}
+                        </div>
+
+                        {showInput && (
+                          <div style={{ display: 'flex', gap: 6, marginTop: 6, animation: 'fadeUp .2s ease both' }}>
+                            <input
+                              type="text"
+                              value={freeCharInput}
+                              onChange={e => setFreeCharInput(e.target.value)}
+                              placeholder={mc.key === 'someone' ? "Their name..." : "Pet's name..."}
+                              autoFocus
+                              style={{
+                                flex: 1, padding: '8px 12px', borderRadius: 10,
+                                border: '1px solid rgba(111,231,221,.2)', background: 'rgba(111,231,221,.04)',
+                                color: 'var(--cream)', fontSize: 12, fontFamily: 'var(--body)', fontWeight: 600,
+                                outline: 'none',
+                              }}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter' && freeCharInput.trim()) {
+                                  addFreeChar(mc.key, freeCharInput.trim());
+                                  setFreeCharInputKey('');
+                                  setFreeCharInput('');
+                                }
+                              }}
+                            />
+                            <button
+                              onClick={() => {
+                                if (freeCharInput.trim()) {
+                                  addFreeChar(mc.key, freeCharInput.trim());
+                                  setFreeCharInputKey('');
+                                  setFreeCharInput('');
+                                }
+                              }}
+                              style={{
+                                padding: '8px 14px', borderRadius: 10, border: 'none',
+                                background: freeCharInput.trim() ? 'rgba(111,231,221,.2)' : 'rgba(255,255,255,.06)',
+                                color: freeCharInput.trim() ? '#6FE7DD' : 'var(--muted)',
+                                fontFamily: 'var(--body)', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                              }}
+                            >
+                              Add
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Back to step 1 */}
+                <button
+                  onClick={() => setFreeStep(1)}
+                  style={{
+                    fontSize: 11, color: 'rgba(111,231,221,.4)', background: 'none', border: 'none',
+                    cursor: 'pointer', fontFamily: 'var(--body)', fontWeight: 600, marginBottom: 6,
+                  }}
+                >
+                  {'\u2190'} edit story idea
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ═══ OCCASION TAG ═══ */}
-        {showOccasionTag && (
+        {showOccasionTag && mode === 'today' && (
           <div style={{
             display: 'flex',
             flexDirection: 'column' as const,
             gap: 6,
-            animation: 'slideUp .3s ease-out',
+            animation: 'fadeUp .3s ease-out',
             flexShrink: 0,
             marginTop: 10,
             marginBottom: 4,
@@ -1332,7 +1600,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
               justifyContent: 'space-between',
             }}>
               <span style={{
-                fontFamily: "'DM Mono', monospace",
+                fontFamily: "var(--mono)",
                 fontSize: 8,
                 letterSpacing: '.08em',
                 textTransform: 'uppercase' as const,
@@ -1343,7 +1611,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
               <button
                 onClick={() => setOccasionDismissed(true)}
                 style={{
-                  fontFamily: "'DM Mono', monospace",
+                  fontFamily: "var(--mono)",
                   fontSize: 8,
                   color: 'rgba(255,255,255,.2)',
                   background: 'none',
@@ -1364,9 +1632,6 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
             }}>
               {OCCASION_OPTIONS.map(occ => {
                 const isSelected = occasionTag === occ.label;
-                const activeColor = entryMode === 'ritual'
-                  ? 'rgba(245,184,76,'
-                  : 'rgba(20,216,144,';
                 return (
                   <button
                     key={occ.label}
@@ -1377,14 +1642,12 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                       fontSize: 10,
                       cursor: 'pointer',
                       border: isSelected
-                        ? `1px solid ${activeColor}.38)`
+                        ? '1px solid rgba(246,197,111,.38)'
                         : '1px solid rgba(255,255,255,.1)',
                       background: isSelected
-                        ? `${activeColor}.1)`
+                        ? 'rgba(246,197,111,.1)'
                         : 'rgba(255,255,255,.04)',
-                      color: isSelected
-                        ? (entryMode === 'ritual' ? '#F5B84C' : '#14d890')
-                        : 'rgba(255,255,255,.42)',
+                      color: isSelected ? '#F6C56F' : 'rgba(255,255,255,.42)',
                       fontFamily: "'Nunito', sans-serif",
                       fontWeight: 700,
                       whiteSpace: 'nowrap' as const,
@@ -1400,141 +1663,136 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
           </div>
         )}
 
-        {/* ═══ CAST SECTION ═══ */}
-        {(!giftMode || giftFormDone) && <>
-        <div className="sc-cast-label">Who's in the story?</div>
-        <div className="sc-cast-row">
-          {/* Hero pill (always first, not deselectable) */}
-          {primaryChar && (
-            <div className="sc-cast-pill hero">
-              <span className="sc-cast-emoji">{primaryChar.emoji || '\u{1F9D2}'}</span>
-              <span className="sc-cast-name">{primaryChar.name}</span>
-            </div>
-          )}
-          {!primaryChar && (
-            <div className="sc-cast-pill hero">
-              <span className="sc-cast-emoji">{'\u{1F9D2}'}</span>
-              <span className="sc-cast-name">Your child</span>
-            </div>
-          )}
-
-          {/* Creature pill */}
-          {creature && (
-            <div
-              className={`sc-cast-pill${creatureSelected ? ' on' : ''}${atMax && !creatureSelected ? ' dim' : ''}`}
-              onClick={() => {
-                if (atMax && !creatureSelected) return;
-                setCreatureSelected(prev => !prev);
-              }}
-            >
-              <span className="sc-cast-emoji">{creature.creatureEmoji || '\u{1F31F}'}</span>
-              <span className="sc-cast-name">{creature.name}</span>
-            </div>
-          )}
-
-          {/* Other characters */}
-          {otherChars.map(c => (
-            <div
-              key={c.id}
-              className={`sc-cast-pill${isInCast(c.id) ? ' on' : ''}${atMax && !isInCast(c.id) ? ' dim' : ''}`}
-              onClick={() => toggleCastChar(c)}
-              title={atMax && !isInCast(c.id) ? 'max 5 characters' : undefined}
-            >
-              <span className="sc-cast-emoji">{c.emoji || '\u{1F9D2}'}</span>
-              <span className="sc-cast-name">{c.name}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* ═══ COLLAPSED OPTIONS ═══ */}
-        <div
-          className="sc-settings-trigger"
-          onClick={() => setSettingsOpen(prev => !prev)}
-          style={!isRitual ? { borderColor: 'rgba(20,216,144,.12)' } : undefined}
-        >
-          <span className="sc-settings-left">Story options</span>
-          <div className="sc-settings-right">
-            {summary && !settingsOpen && (
-              <div className="sc-settings-badges">
-                {summary.split(' \u00B7 ').map(s => (
-                  <span
-                    key={s}
-                    className="sc-settings-badge"
-                    style={!isRitual ? {
-                      background: 'rgba(20,216,144,.08)',
-                      border: '1px solid rgba(20,216,144,.2)',
-                      color: 'rgba(20,216,144,.75)',
-                    } : undefined}
-                  >{s}</span>
-                ))}
+        {/* ═══ CAST SECTION (today & adventure modes) ═══ */}
+        {mode !== 'free' && ritualEntryDone && <>
+          <div className="sc-cast-label">Who's in the story?</div>
+          <div className="sc-cast-row">
+            {/* Hero pill (always first, not deselectable) */}
+            {primaryChar && (
+              <div className="sc-cast-pill hero">
+                <span className="sc-cast-emoji">{primaryChar.emoji || '\u{1F9D2}'}</span>
+                <span className="sc-cast-name">{primaryChar.name}</span>
               </div>
             )}
-            <span className={`sc-settings-chevron${settingsOpen ? ' open' : ''}`}>
-              {'\u25BE'}
-            </span>
-          </div>
-        </div>
+            {!primaryChar && (
+              <div className="sc-cast-pill hero">
+                <span className="sc-cast-emoji">{'\u{1F9D2}'}</span>
+                <span className="sc-cast-name">Your child</span>
+              </div>
+            )}
 
-        <div
-          className="sc-settings-body"
-          style={{
-            maxHeight: settingsOpen ? 400 : 0,
-            opacity: settingsOpen ? 1 : 0,
-          }}
-        >
-          <div className="sc-settings-inner">
-            {/* Length */}
-            <div className="sc-settings-row">
-              <span className="sc-settings-row-label">Length</span>
-              <div className="sc-settings-pills">
-                {LENGTH_OPTIONS.map(o => (
-                  <button key={o.key} className={`sc-spill${length === o.key ? ' on' : ''}`} onClick={() => setLength(o.key)}>
-                    {o.label}
-                  </button>
-                ))}
+            {/* Creature pill */}
+            {creature && (
+              <div
+                className={`sc-cast-pill${creatureSelected ? ' on' : ''}${atMax && !creatureSelected ? ' dim' : ''}`}
+                onClick={() => {
+                  if (atMax && !creatureSelected) return;
+                  setCreatureSelected(prev => !prev);
+                }}
+              >
+                <span className="sc-cast-emoji">{creature.creatureEmoji || '\u{1F31F}'}</span>
+                <span className="sc-cast-name">{creature.name}</span>
               </div>
-            </div>
-            {/* Feel */}
-            <div className="sc-settings-row">
-              <span className="sc-settings-row-label">Feel</span>
-              <div className="sc-settings-pills">
-                {VIBE_OPTIONS.map(o => (
-                  <button key={o.key} className={`sc-spill${vibe === o.key ? ' on' : ''}`} onClick={() => { setVibe(o.key); setManualVibe(true); }}>
-                    {o.label}
-                  </button>
-                ))}
+            )}
+
+            {/* Other characters */}
+            {otherChars.map(c => (
+              <div
+                key={c.id}
+                className={`sc-cast-pill${isInCast(c.id) ? ' on' : ''}${atMax && !isInCast(c.id) ? ' dim' : ''}`}
+                onClick={() => toggleCastChar(c)}
+                title={atMax && !isInCast(c.id) ? 'max 5 characters' : undefined}
+              >
+                <span className="sc-cast-emoji">{c.emoji || '\u{1F9D2}'}</span>
+                <span className="sc-cast-name">{c.name}</span>
               </div>
-            </div>
-            {/* Style */}
-            <div className="sc-settings-row">
-              <span className="sc-settings-row-label">Style</span>
-              <div className="sc-settings-pills">
-                {STYLE_OPTIONS.map(o => (
-                  <button key={o.key} className={`sc-spill${style === o.key ? ' on' : ''}`} onClick={() => setStyle(o.key)}>
-                    {o.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {/* Age */}
-            <div className="sc-settings-row">
-              <span className="sc-settings-row-label">Age</span>
-              <div className="sc-settings-pills">
-                {AGE_OPTIONS.map(o => (
-                  <button key={o.key} className={`sc-spill${level === o.key ? ' on' : ''}`} onClick={() => setLevel(o.key)}>
-                    {o.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
-        </div>
         </>}
+
+        {/* ═══ COLLAPSED OPTIONS ═══ */}
+        {ritualEntryDone && (
+          <>
+            <div
+              className="sc-settings-trigger"
+              onClick={() => setSettingsOpen(prev => !prev)}
+            >
+              <span className="sc-settings-left">Story options</span>
+              <div className="sc-settings-right">
+                {summary && !settingsOpen && (
+                  <div className="sc-settings-badges">
+                    {summary.split(' \u00B7 ').map(s => (
+                      <span key={s} className="sc-settings-badge">{s}</span>
+                    ))}
+                  </div>
+                )}
+                <span className={`sc-settings-chevron${settingsOpen ? ' open' : ''}`}>
+                  {'\u25BE'}
+                </span>
+              </div>
+            </div>
+
+            <div
+              className="sc-settings-body"
+              style={{
+                maxHeight: settingsOpen ? 400 : 0,
+                opacity: settingsOpen ? 1 : 0,
+              }}
+            >
+              <div className="sc-settings-inner">
+                {/* Length */}
+                <div className="sc-settings-row">
+                  <span className="sc-settings-row-label">Length</span>
+                  <div className="sc-settings-pills">
+                    {LENGTH_OPTIONS.map(o => (
+                      <button key={o.key} className={`sc-spill${length === o.key ? ' on' : ''}`} onClick={() => setLength(o.key)}>
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Feel */}
+                <div className="sc-settings-row">
+                  <span className="sc-settings-row-label">Feel</span>
+                  <div className="sc-settings-pills">
+                    {VIBE_OPTIONS.map(o => (
+                      <button key={o.key} className={`sc-spill${vibe === o.key ? ' on' : ''}`} onClick={() => { setVibe(o.key); setManualVibe(true); }}>
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Style */}
+                <div className="sc-settings-row">
+                  <span className="sc-settings-row-label">Style</span>
+                  <div className="sc-settings-pills">
+                    {STYLE_OPTIONS.map(o => (
+                      <button key={o.key} className={`sc-spill${style === o.key ? ' on' : ''}`} onClick={() => setStyle(o.key)}>
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Age */}
+                <div className="sc-settings-row">
+                  <span className="sc-settings-row-label">Age</span>
+                  <div className="sc-settings-pills">
+                    {AGE_OPTIONS.map(o => (
+                      <button key={o.key} className={`sc-spill${level === o.key ? ' on' : ''}`} onClick={() => setLevel(o.key)}>
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
       </div>
 
-      {/* ─── CTA (hidden during ritual entry card selection and gift form) ─── */}
-      {(!isRitual || ritualEntryDone) && (!giftMode || giftFormDone) && (
+      {/* CTA (hidden during ritual entry card selection) */}
+      {ritualEntryDone && (mode !== 'free' || freeStep === 2 || freeHasContent) && (
         <div className="sc-cta-wrap">
           <button
             className={`sc-cta ${ctaColor}`}
