@@ -835,14 +835,15 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
         {starField}
         <div className="ob-inner">
           <div className="ob-screen" style={{ justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-            {/* WELCOME text */}
-            <div style={{
-              fontFamily: 'var(--serif)', fontSize: 'clamp(32px,8vw,42px)', fontWeight: 300,
-              color: 'var(--amber)', letterSpacing: '.06em',
-              opacity: welcomePhase === 'title' ? 1 : 0.3,
-              transition: 'opacity .8s',
-              marginBottom: 24,
-            }}>WELCOME</div>
+            {/* WELCOME text — hidden once stars appear to prevent overlap */}
+            {welcomePhase === 'title' && (
+              <div style={{
+                fontFamily: 'var(--serif)', fontSize: 'clamp(32px,8vw,42px)', fontWeight: 300,
+                color: 'var(--amber)', letterSpacing: '.06em',
+                marginBottom: 24,
+                animation: 'fadeUp .6s var(--ease-out)',
+              }}>WELCOME</div>
+            )}
 
             {/* Star constellation of name */}
             {(welcomePhase === 'stars' || welcomePhase === 'egg' || welcomePhase === 'text') && (() => {
@@ -851,7 +852,7 @@ export default function OnboardingFlow({ onComplete, childProfile }: OnboardingF
               const svgWidth = Math.min(340, Math.max(220, vw * 2.8));
               const vh = 60;
               return (
-                <svg viewBox={`0 0 ${vw} ${vh}`} style={{ width: svgWidth, height: svgWidth * (vh / vw), margin: '0 auto 20px' }}>
+                <svg viewBox={`0 0 ${vw} ${vh}`} style={{ width: svgWidth, height: svgWidth * (vh / vw), margin: '0 auto 32px', flexShrink: 0 }}>
                   {nameStars.map((s, i) => (
                     <g key={i}>
                       {/* Glow */}

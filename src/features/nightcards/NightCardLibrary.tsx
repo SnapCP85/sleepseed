@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getNightCards, deleteNightCard, saveNightCard } from '../../lib/storage';
 import { supabase } from '../../lib/supabase';
-import type { SavedNightCard, CardVariant } from '../../lib/types';
-import { getCardVariant, CARD_VARIANT_STYLES } from '../../lib/types';
-import NightCard, { getPinStyle } from './NightCard';
+import type { SavedNightCard } from '../../lib/types';
+import { getCardVariant } from '../../lib/types';
+import NightCard from './NightCard';
 import { generateNightCardImage, downloadBlob } from '../../lib/shareUtils';
 
 // ── Date helpers ──
@@ -19,41 +19,9 @@ function formatDate(iso: string): string {
   } catch { return iso; }
 }
 
-function formatDateLong(iso: string): string {
-  try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); }
-  catch { return iso; }
-}
-
 function monthLabel(iso: string): string {
   try { return new Date(iso).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); }
   catch { return ''; }
-}
-
-function formatCardDateShort(iso: string): string {
-  try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
-  catch { return iso; }
-}
-
-// ── Variant helpers ──
-function getKicker(nc: SavedNightCard, variant: CardVariant, isToday: boolean): { text: string; color: string; dot?: boolean } {
-  if (isToday && variant === 'standard') return { text: 'Tonight', color: 'var(--teal)', dot: true };
-  switch (variant) {
-    case 'origin': return { text: 'First Night Ever', color: 'var(--amber)' };
-    case 'journey': return { text: 'Journey Complete', color: 'var(--teal)' };
-    case 'occasion': return { text: `\uD83C\uDF89 ${nc.occasion || 'Special'}`, color: 'var(--purple)' };
-    case 'streak': return { text: `\uD83D\uDD25 ${nc.streakCount || ''} Night Streak`, color: '#F5821A' };
-    default: return { text: `Night ${nc.nightNumber || ''}\u00B7${nc.lessonTheme || nc.storyTitle || ''}`.replace(/\u00B7$/, ''), color: 'var(--cream-faint)' };
-  }
-}
-
-function getScrapbookBadge(variant: CardVariant, nc: SavedNightCard): { text: string; bg: string; border: string; color: string } | null {
-  switch (variant) {
-    case 'origin': return { text: '\u2726 Origin', bg: 'rgba(245,184,76,.2)', border: 'rgba(245,184,76,.3)', color: 'var(--amber)' };
-    case 'journey': return { text: 'Journey', bg: 'rgba(20,216,144,.15)', border: 'rgba(20,216,144,.25)', color: 'var(--teal)' };
-    case 'occasion': return { text: `\uD83C\uDF89 ${nc.occasion || 'Special'}`, bg: 'rgba(148,130,255,.15)', border: 'rgba(148,130,255,.25)', color: 'var(--purple)' };
-    case 'streak': return { text: `\uD83D\uDD25 ${nc.streakCount || ''} nights`, bg: 'rgba(245,130,20,.15)', border: 'rgba(245,130,20,.25)', color: '#F5821A' };
-    default: return null;
-  }
 }
 
 // ── Group cards by month ──
@@ -150,22 +118,20 @@ const CSS = `
 .ncl-month-count{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--cream-faint);background:rgba(244,239,232,.06);border-radius:20px;padding:3px 8px;flex-shrink:0}
 .ncl-month-divider{flex:1;height:1px;background:rgba(244,239,232,.06)}
 
-/* ── CORKBOARD ── */
-.ncl-cork{margin:0 14px;background:#171008;border:1px solid rgba(245,184,76,.1);border-radius:20px;padding:20px 8px 24px;position:relative;overflow:hidden}
-.ncl-cork-texture{position:absolute;inset:0;pointer-events:none;border-radius:20px;background:repeating-linear-gradient(45deg,rgba(245,184,76,.012) 0px,transparent 2px,transparent 8px,rgba(245,184,76,.012) 10px)}
-.ncl-cork-grid{display:flex;flex-wrap:wrap;justify-content:space-around;padding:8px 4px;position:relative;z-index:1}
-.ncl-cork-card{margin:10px 6px;position:relative;cursor:pointer;transition:transform .25s,box-shadow .25s,z-index 0s;z-index:1}
-.ncl-cork-card:hover{z-index:10!important}
-.ncl-cork-pol{background:#f5f0e8;border-radius:3px;padding:8px 8px 22px;width:128px;box-shadow:0 6px 20px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.3)}
-.ncl-cork-pol.origin-bg{background:#fdf8ee}
-.ncl-cork-pin{position:absolute;top:-9px;left:50%;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.5);z-index:2}
-.ncl-cork-new{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px rgba(20,216,144,.6);z-index:2}
-.ncl-cork-img{width:112px;height:92px;border-radius:2px;overflow:hidden;display:flex;align-items:center;justify-content:center;margin:0 auto}
-.ncl-cork-img img{width:100%;height:100%;object-fit:cover;display:block}
-.ncl-cork-hl{font-family:var(--sans);font-size:8.5px;font-weight:700;color:#3a2010;text-align:center;line-height:1.35;margin-top:6px;padding:0 2px}
-.ncl-cork-date{font-family:var(--mono);font-size:7.5px;color:rgba(60,30,10,.42);text-align:center;margin-top:3px}
-.ncl-cork-variant-label{font-family:var(--mono);font-size:7px;text-align:center;margin-top:2px;letter-spacing:.04em}
-.ncl-cork-footer{font-family:var(--serif);font-size:11px;color:rgba(245,184,76,.45);text-align:center;margin-top:14px;position:relative;z-index:1}
+/* ── JOURNAL GRID ── */
+.ncl-journal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px}
+.ncl-journal-card{background:rgba(15,21,37,.8);border:1px solid rgba(255,255,255,.06);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.ncl-journal-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.12);box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.ncl-journal-photo{width:100%;height:120px;object-fit:cover;display:block}
+.ncl-journal-sky{width:100%;height:120px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.ncl-journal-sky-emoji{font-size:36px;position:relative;z-index:1;animation:ncFloatSmall 4s ease-in-out infinite}
+.ncl-journal-sky-stars{position:absolute;inset:0;pointer-events:none}
+.ncl-journal-body{padding:10px 12px 12px}
+.ncl-journal-hl{font-family:var(--serif);font-size:13px;font-weight:700;color:var(--cream);line-height:1.3;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ncl-journal-quote{font-family:var(--serif);font-size:11px;font-style:italic;color:var(--cream-dim);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px}
+.ncl-journal-footer{display:flex;align-items:center;justify-content:space-between}
+.ncl-journal-date{font-family:var(--mono);font-size:9px;color:var(--cream-faint)}
+.ncl-journal-badge{font-family:var(--mono);font-size:7px;letter-spacing:.5px;text-transform:uppercase;padding:2px 7px;border-radius:10px;font-weight:600}
 
 /* ── TIMELINE ── */
 .ncl-timeline{padding:0 20px;display:flex;flex-direction:column;gap:10px}
@@ -231,21 +197,13 @@ const CSS = `
 .ncl-confirm-del{flex:1;padding:12px;border-radius:12px;border:none;background:rgba(200,70,60,.85);color:white;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans)}
 `;
 
-const ROTS = [-2.8, 1.5, -1, 2.4, -3.2, 0.8];
-const OFFSETS = [0, 5, -3, 7, 2, -4];
-
 interface Props { userId: string; onBack: () => void; filterCharacterId?: string; }
 
 export default function NightCardLibrary({ userId, onBack, filterCharacterId }: Props) {
   const [cards, setCards] = useState<SavedNightCard[]>([]);
   const [viewing, setViewing] = useState<SavedNightCard | null>(null);
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [editFields, setEditFields] = useState<any>({});
-  const [viewMode, setViewMode] = useState<'cork' | 'timeline' | 'scrapbook'>('cork');
   const [search, setSearch] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<SavedNightCard | null>(null);
-  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     getNightCards(userId).then(fetched => {
@@ -272,10 +230,6 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
       || (c.headline || '').toLowerCase().includes(s);
   });
 
-  const childName = cards.length > 0 ? cards.find(c => !c.isOrigin)?.heroName || cards[0]?.heroName || 'your child' : 'your child';
-  const todayStr = new Date().toISOString().split('T')[0];
-  const latestCard = displayed.find(c => !c.isOrigin) || displayed[0];
-
   // ── Stats ──
   const stats = useMemo(() => {
     let streak = 0;
@@ -298,9 +252,6 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
     return { total: cards.length, streak, rare, journeyCount };
   }, [cards]);
 
-  // ── Month grouping ──
-  const monthGroups = useMemo(() => groupByMonth(displayed), [displayed]);
-
   const handleDelete = async (nc: SavedNightCard) => {
     await deleteNightCard(userId, nc.id);
     const fetched = await getNightCards(userId);
@@ -316,7 +267,6 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
 
   // shareCard is now replaced by openShareMenu (above)
 
-  const openDetail = (nc: SavedNightCard) => { setViewing(nc); setIsFlipped(false); setEditing(false); };
   const [shareMenuCard, setShareMenuCard] = useState<SavedNightCard | null>(null);
   const [shareLink, setShareLink] = useState('');
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
@@ -393,162 +343,6 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
     window.open(`${window.location.pathname}?printCard=${nc.id}&uid=${userId}`, '_blank');
   };
 
-  // ── Render helpers ──
-  const renderMonthHeader = (label: string, count: number) => (
-    <div className="ncl-month-header">
-      <div className="ncl-month-label">{label}</div>
-      <div className="ncl-month-count">{count} card{count !== 1 ? 's' : ''}</div>
-      <div className="ncl-month-divider" />
-    </div>
-  );
-
-  const renderCorkboard = (monthCards: SavedNightCard[]) => (
-    <div className="ncl-cork">
-      <div className="ncl-cork-texture" />
-      <div className="ncl-cork-grid">
-        {monthCards.map((nc, i) => {
-          const variant = getCardVariant(nc);
-          const vs = CARD_VARIANT_STYLES[variant];
-          const rot = ROTS[i % ROTS.length];
-          const offY = OFFSETS[i % OFFSETS.length];
-          const isNew = nc.date.split('T')[0] === todayStr;
-          return (
-            <div key={nc.id} className="ncl-cork-card" style={{
-              transform: `rotate(${rot}deg) translateY(${offY}px)`,
-            }} onClick={() => openDetail(nc)}>
-              <div className="ncl-cork-pin" style={{ background: getPinStyle(variant) }} />
-              {isNew && <div className="ncl-cork-new" />}
-              <div className={`ncl-cork-pol${variant === 'origin' ? ' origin-bg' : ''}`}
-                style={{ transition: 'transform .25s, box-shadow .25s' }}
-                onMouseEnter={e => { (e.currentTarget.parentElement as HTMLElement).style.transform = 'rotate(0deg) translateY(-7px) scale(1.06)'; (e.currentTarget.parentElement as HTMLElement).style.boxShadow = '0 20px 56px rgba(0,0,0,.8)'; }}
-                onMouseLeave={e => { (e.currentTarget.parentElement as HTMLElement).style.transform = `rotate(${rot}deg) translateY(${offY}px)`; (e.currentTarget.parentElement as HTMLElement).style.boxShadow = ''; }}>
-                <div className="ncl-cork-img" style={{ background: !nc.photo ? vs.skyGradient : undefined }}>
-                  {nc.photo
-                    ? <img src={nc.photo} alt="" />
-                    : <span style={{ fontSize: 34, zIndex: 2 }}>{nc.creatureEmoji || nc.emoji || '\uD83C\uDF19'}</span>}
-                </div>
-                <div className="ncl-cork-hl">{nc.headline || nc.heroName}</div>
-                <div className="ncl-cork-date" style={{
-                  color: variant === 'origin' ? 'rgba(180,120,20,.55)' : variant === 'journey' ? 'rgba(14,160,80,.65)' : variant === 'streak' ? 'rgba(180,100,10,.7)' : variant === 'occasion' ? 'rgba(100,80,220,.65)' : undefined,
-                }}>{formatDate(nc.date)}</div>
-                {variant === 'origin' && <div className="ncl-cork-variant-label" style={{ color: 'rgba(180,120,20,.7)' }}>Origin {'\u2726'}</div>}
-                {variant === 'journey' && <div className="ncl-cork-variant-label" style={{ color: 'rgba(14,160,80,.7)' }}>Journey {'\uD83C\uDF1F'}</div>}
-                {variant === 'streak' && <div className="ncl-cork-variant-label" style={{ color: 'rgba(180,100,10,.7)' }}>Streak {'\uD83D\uDD25'}</div>}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      <div className="ncl-cork-footer">tap any card to open</div>
-    </div>
-  );
-
-  const renderTimeline = (monthCards: SavedNightCard[]) => (
-    <div className="ncl-timeline">
-      {monthCards.map(nc => {
-        const variant = getCardVariant(nc);
-        const vs = CARD_VARIANT_STYLES[variant];
-        const isNew = nc.date.split('T')[0] === todayStr;
-        const kicker = getKicker(nc, variant, isNew);
-        return (
-          <div key={nc.id} className={`ncl-tl-card${variant === 'origin' ? ' origin' : ''}`} onClick={() => openDetail(nc)}>
-            <div className="ncl-tl-photo" style={{ background: vs.skyGradient }}>
-              {nc.photo
-                ? <img src={nc.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 10 }} />
-                : <div className="ncl-tl-fallback">{nc.creatureEmoji || nc.emoji || '\uD83C\uDF19'}</div>}
-            </div>
-            <div className="ncl-tl-body">
-              <div className="ncl-tl-kicker" style={{ color: kicker.color }}>
-                {kicker.dot && <div className="ncl-tl-kicker-dot" style={{ background: kicker.color }} />}
-                {kicker.text}
-              </div>
-              <div className="ncl-tl-headline">{nc.headline || nc.storyTitle || nc.heroName}</div>
-              {nc.quote && <div className="ncl-tl-quote">{'\u201C'}{nc.quote}{'\u201D'}</div>}
-              <div className="ncl-tl-footer">
-                <div className="ncl-tl-date">{formatDateLong(nc.date)}</div>
-                {variant === 'origin'
-                  ? <div className="ncl-tl-badge">Origin {'\u2726'}</div>
-                  : <button className="ncl-tl-share" onClick={e => { e.stopPropagation(); openShareMenu(nc); }}>{'\u2197'}</button>}
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-
-  const renderScrapbook = (monthCards: SavedNightCard[]) => {
-    // Sort: origin first, then journey/streak, then standard, then occasion last
-    const priorityOrder: Record<CardVariant, number> = { origin: 0, journey: 1, streak: 1, standard: 2, occasion: 3 };
-    const sorted = [...monthCards].sort((a, b) => priorityOrder[getCardVariant(a)] - priorityOrder[getCardVariant(b)]);
-    const occasions = sorted.filter(c => getCardVariant(c) === 'occasion');
-    const nonOccasions = sorted.filter(c => getCardVariant(c) !== 'occasion');
-
-    return (
-      <div className="ncl-scrap">
-        <div className="ncl-scrap-grid">
-          {nonOccasions.map((nc, i) => {
-            const variant = getCardVariant(nc);
-            const vs = CARD_VARIANT_STYLES[variant];
-            const badge = getScrapbookBadge(variant, nc);
-            const isFull = variant === 'origin' || (variant === 'standard' && nonOccasions.length === 1) ||
-              (variant === 'standard' && i === nonOccasions.length - 1 && (nonOccasions.length - (nonOccasions.filter(c => getCardVariant(c) === 'origin').length)) % 2 === 1);
-            const emojiSize = variant === 'origin' ? 60 : (variant === 'journey' || variant === 'streak') ? 40 : 30;
-            const hlSize = variant === 'origin' ? 16 : (variant === 'journey' || variant === 'streak') ? 14 : 12;
-            const skyH = variant === 'origin' ? 140 : (variant === 'journey' || variant === 'streak') ? 120 : 82;
-
-            return (
-              <div key={nc.id} className={`ncl-scrap-card${isFull ? ' ncl-scrap-full' : ''}`}
-                style={{ minHeight: variant === 'origin' ? 220 : (variant === 'journey' || variant === 'streak') ? 200 : 140 }}
-                onClick={() => openDetail(nc)}>
-                {badge && (
-                  <div className="ncl-scrap-badge" style={{ background: badge.bg, border: `1px solid ${badge.border}`, color: badge.color }}>
-                    {badge.text}
-                  </div>
-                )}
-                <div className="ncl-scrap-sky" style={{ height: skyH, background: vs.skyGradient }}>
-                  {nc.photo
-                    ? <img src={nc.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <div className="ncl-scrap-sky-emoji" style={{ fontSize: emojiSize }}>{nc.creatureEmoji || nc.emoji || '\uD83C\uDF19'}</div>}
-                  <div className="ncl-scrap-sky-bleed" style={{ background: `linear-gradient(transparent, ${vs.paperColor})` }} />
-                </div>
-                <div className="ncl-scrap-paper" style={{ background: vs.paperColor }}>
-                  <div className="ncl-scrap-night-label" style={{ color: badge?.color || 'rgba(154,127,212,.7)' }}>
-                    Night {nc.nightNumber || ''}{nc.lessonTheme ? ` \u00B7 ${nc.lessonTheme}` : ''}
-                  </div>
-                  <div className="ncl-scrap-headline" style={{ fontSize: hlSize, color: vs.headlineColor }}>
-                    {nc.headline || nc.heroName}
-                  </div>
-                  <div className="ncl-scrap-date">{formatCardDateShort(nc.date)}</div>
-                  {variant === 'origin' && nc.quote && (
-                    <div className="ncl-scrap-quote">{'\u201C'}{nc.quote}{'\u201D'}</div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        {occasions.map(nc => {
-          const vs = CARD_VARIANT_STYLES.occasion;
-          return (
-            <div key={nc.id} className="ncl-scrap-occasion" style={{ marginTop: 10 }} onClick={() => openDetail(nc)}>
-              <div className="ncl-scrap-occasion-left" style={{ background: vs.skyGradient }}>
-                {nc.creatureEmoji || nc.emoji || '\uD83C\uDF89'}
-              </div>
-              <div className="ncl-scrap-occasion-body">
-                <div className="ncl-scrap-occasion-kicker" style={{ color: 'var(--purple)', letterSpacing: '1.5px' }}>
-                  {'\uD83C\uDF89'} {nc.occasion || 'Special Occasion'}
-                </div>
-                <div className="ncl-scrap-occasion-hl">{nc.headline || nc.heroName}</div>
-                <div className="ncl-scrap-occasion-date">{formatCardDateShort(nc.date)}</div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
   const NCL_VARIANT_RGB: Record<string,string> = {
     standard:'154,127,212', origin:'245,184,76', journey:'20,216,144', occasion:'148,130,255', streak:'245,184,76',
   };
@@ -598,48 +392,68 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
       </div>
 
       {/* ── CARD GRID ── */}
-      <div style={{padding:'0 20px'}}>
-        {displayCards.length===0 ? (
-          <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'60px 20px',textAlign:'center',gap:16}}>
-            <div style={{fontSize:56}}>🌙</div>
-            <div style={{fontSize:22,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.2}}>No cards yet</div>
-            <div style={{fontSize:13,color:'rgba(234,242,255,.36)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.6}}>Finish a story tonight and your first<br/>Night Card will appear here.</div>
-          </div>
-        ) : (
-          <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:12}}>
-            {displayCards.map((card,idx)=>{
-              const variant=getV(card);
-              const rgb=NCL_VARIANT_RGB[variant]??'154,127,212';
-              return (
-                <div key={card.id} onClick={()=>setViewing(card)} style={{cursor:'pointer',animation:`ncl-fadeUp .3s ${idx*.04}s ease both`,opacity:0,transform:idx%2===0?'rotate(-.8deg)':'rotate(.8deg)',transition:'transform .2s ease'}}>
-                  <div style={{borderRadius:16,overflow:'hidden',boxShadow:'0 8px 24px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.3)'}}>
-                    {/* Sky zone */}
-                    <div style={{height:120,background:`linear-gradient(145deg,rgba(${rgb},.15),rgba(6,9,18,.95))`,position:'relative',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
-                      <svg style={{position:'absolute',inset:0}} viewBox="0 0 160 120" width="160" height="120">
-                        {[...Array(12)].map((_,i)=><circle key={i} cx={(i*37+14)%150} cy={(i*23+8)%100} r={i%3===0?1.2:.6} fill={`rgba(255,255,255,${.2+(i%4)*.1})`}/>)}
-                      </svg>
-                      <div style={{fontSize:36,position:'relative',zIndex:1}}>{card.creatureEmoji??'🌙'}</div>
-                      <div style={{position:'absolute',top:8,left:10,zIndex:2,padding:'3px 8px',background:`rgba(${rgb},.2)`,border:`1px solid rgba(${rgb},.4)`,borderRadius:20}}>
-                        <span style={{fontSize:8,fontWeight:600,color:`rgba(${rgb},.95)`,fontFamily:"'DM Mono',monospace",letterSpacing:'.5px'}}>NIGHT {card.nightNumber??idx+1}</span>
+      {displayCards.length===0 ? (
+        <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'60px 20px',textAlign:'center',gap:16}}>
+          <div style={{fontSize:56}}>🌙</div>
+          <div style={{fontSize:22,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.2}}>No cards yet</div>
+          <div style={{fontSize:13,color:'rgba(234,242,255,.36)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.6}}>Finish a story tonight and your first<br/>Night Card will appear here.</div>
+        </div>
+      ) : (() => {
+        const groups = groupByMonth(displayCards);
+        return groups.map(group => (
+          <div key={group.label} style={{marginBottom:24}}>
+            <div className="ncl-month-header">
+              <div className="ncl-month-label">{group.label}</div>
+              <div className="ncl-month-count">{group.cards.length} card{group.cards.length !== 1 ? 's' : ''}</div>
+              <div className="ncl-month-divider" />
+            </div>
+            <div className="ncl-journal-grid">
+              {group.cards.map((card,idx)=>{
+                const variant=getV(card);
+                const rgb=NCL_VARIANT_RGB[variant]??'154,127,212';
+                const badgeMap: Record<string,{text:string;bg:string;color:string}> = {
+                  origin:{text:'Origin',bg:'rgba(245,184,76,.15)',color:'var(--amber)'},
+                  journey:{text:'Journey',bg:'rgba(20,216,144,.12)',color:'var(--teal)'},
+                  streak:{text:`${card.streakCount||''} Streak`,bg:'rgba(245,130,20,.12)',color:'#F5821A'},
+                  occasion:{text:card.occasion||'Special',bg:'rgba(148,130,255,.12)',color:'var(--purple)'},
+                };
+                const badge = badgeMap[variant] || null;
+                return (
+                  <div key={card.id} className="ncl-journal-card" onClick={()=>setViewing(card)}
+                    style={{animation:`ncl-fadeUp .3s ${idx*.04}s ease both`,opacity:0}}>
+                    {/* Photo or gradient sky */}
+                    {card.photo ? (
+                      <img className="ncl-journal-photo" src={card.photo} alt="" style={{borderRadius:'16px 16px 0 0'}} />
+                    ) : (
+                      <div className="ncl-journal-sky" style={{background:`linear-gradient(145deg,rgba(${rgb},.18),rgba(6,9,18,.92))`}}>
+                        <svg className="ncl-journal-sky-stars" viewBox="0 0 160 120" width="160" height="120">
+                          {[...Array(10)].map((_,i)=><circle key={i} cx={(i*37+14)%150} cy={(i*23+8)%110} r={i%3===0?1:.5} fill={`rgba(255,255,255,${.15+(i%4)*.08})`}/>)}
+                        </svg>
+                        <div className="ncl-journal-sky-emoji">{card.creatureEmoji??'🌙'}</div>
                       </div>
-                      <div style={{position:'absolute',inset:0,background:'linear-gradient(to bottom,transparent 40%,rgba(248,244,238,.95) 100%)'}}/>
-                    </div>
-                    {/* Paper zone */}
-                    <div style={{background:'#f8f4ee',padding:'10px 12px 12px'}}>
-                      <div style={{fontSize:11,fontWeight:700,color:'#1a1a2e',fontFamily:"'Fraunces',serif",lineHeight:1.3,letterSpacing:'-.1px',marginBottom:6}}>{card.headline??card.storyTitle}</div>
-                      {card.quote&&<div style={{fontSize:9.5,color:'rgba(26,26,46,.55)',fontFamily:"'Lora',serif",fontStyle:'italic',lineHeight:1.5,marginBottom:8}}>"{card.quote.slice(0,55)}{card.quote.length>55?'…':''}"</div>}
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                        <div style={{fontSize:8,color:'rgba(26,26,46,.4)',fontFamily:"'DM Mono',monospace"}}>{new Date(card.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
-                        <div style={{fontSize:8,color:`rgba(${rgb},.7)`,fontFamily:"'DM Mono',monospace",fontWeight:600}}>{card.heroName}</div>
+                    )}
+                    {/* Body */}
+                    <div className="ncl-journal-body">
+                      <div className="ncl-journal-hl">{card.headline??card.storyTitle??card.heroName}</div>
+                      {card.quote && (
+                        <div className="ncl-journal-quote">{'\u201C'}{card.quote}{'\u201D'}</div>
+                      )}
+                      <div className="ncl-journal-footer">
+                        <div className="ncl-journal-date">{new Date(card.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+                        {badge && (
+                          <div className="ncl-journal-badge" style={{background:badge.bg,color:badge.color}}>
+                            {badge.text}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        )}
-      </div>
+        ));
+      })()}
 
       {/* ── SELECTED CARD MODAL ── */}
       {viewing && (

@@ -969,9 +969,11 @@ function AppInner() {
   }
 
   if (view === 'dashboard') {
-    // Pending onboarding prompt — shown when setup is incomplete
+    // Auto-route new users straight to onboarding (not dashboard with a prompt)
     const needsParentSetup = user && !user.isGuest && !parentSetupDone && !onboardingDone;
     const needsChildOnboarding = user && !user.isGuest && parentSetupDone && !onboardingDone;
+    if (needsParentSetup) { setView('parent-onboarding'); return null; }
+    if (needsChildOnboarding) { setView('onboarding'); return null; }
 
     // Ritual prompt — shown when DreamKeeper is selected but 3-night ritual is in progress
     const ritualComplete = user && !user.isGuest

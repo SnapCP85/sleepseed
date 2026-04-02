@@ -434,12 +434,18 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
     if (!user?.id) { setLoading(false); return; }
     let cancelled = false;
     (async () => {
-      const [chars, creatures] = await Promise.all([
-        getCharacters(user.id),
-        primaryChar
-          ? getHatchedCreatures(user.id, primaryChar.id)
-          : getAllHatchedCreatures(user.id),
-      ]);
+      let chars: Character[] = [];
+      let creatures: any[] = [];
+      try {
+        [chars, creatures] = await Promise.all([
+          getCharacters(user.id).catch(() => []),
+          primaryChar
+            ? getHatchedCreatures(user.id, primaryChar.id).catch(() => [])
+            : getAllHatchedCreatures(user.id).catch(() => []),
+        ]);
+      } catch (e) {
+        console.error('[StoryCreator] init failed:', e);
+      }
 
       if (cancelled) return;
 

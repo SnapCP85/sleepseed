@@ -36,20 +36,7 @@ export default function ElderDreamKeeper({ scale = 1, animate = true }: { scale?
         }}
       />
 
-      {/* Subtle eye glow overlay — positioned at the Elder's eye level (~35% from top) */}
-      <div style={{
-        position: 'absolute',
-        top: `${32 * scale}%`,
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 60 * scale,
-        height: 20 * scale,
-        borderRadius: '50%',
-        background: 'radial-gradient(ellipse, rgba(246,197,111,.3) 0%, transparent 70%)',
-        animation: 'ob-eyePulse 2.8s ease-in-out infinite',
-        pointerEvents: 'none',
-        mixBlendMode: 'screen',
-      }} />
+      {/* Eye glow and ambient disk removed — were visible through Elder image */}
     </div>
   );
 }

@@ -486,7 +486,7 @@ export default function ParentOnboarding({ onComplete, onSaveLater }: Props) {
             {/* Preview */}
             <div style={{ ...fadeUp(0.55), width: '100%', marginBottom: 22 }}>
               <div style={{ padding: '11px 16px', background: 'rgba(246,197,111,.07)', border: '1px solid rgba(246,197,111,.16)', borderRadius: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ fontSize: 16 }}>\uD83C\uDF19</div>
+                <div style={{ fontSize: 16, lineHeight: 1 }}>&#10022;</div>
                 <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: 'rgba(246,197,111,.65)', letterSpacing: 0.3 }}>
                   {nameValid
                     ? `Tonight's story will be made for ${childName.trim()}`
