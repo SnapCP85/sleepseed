@@ -67,6 +67,10 @@ export function createDefaultRitualState(): RitualState {
     night3Complete: false,
     ritualComplete: false,
     eggState: 'idle',
+    childName: '',
+    creatureName: '',
+    creatureEmoji: '',
+    creatureColor: '',
   };
 }
 

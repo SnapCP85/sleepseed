@@ -829,7 +829,7 @@ function AppInner() {
           id: creatureId,
           userId: user.id,
           characterId: charId,
-          name: assigned.name,
+          name: rs?.creatureName || assigned.name,
           creatureType,
           creatureEmoji: assigned.emoji,
           color: assigned.color,
@@ -1081,9 +1081,23 @@ function AppInner() {
   // ── 3-Night Onboarding Ritual ──────────────────────────────────────────
   if (view === 'onboarding-ritual') return (
     <OnboardingRitual
-      onRitualComplete={() => {
+      onRitualComplete={async () => {
         // Ritual complete — mark it and go to dashboard (My Space)
         try { localStorage.setItem(`sleepseed_ritual_complete_${user!.id}`, '1'); } catch {}
+
+        // Update creature name if the user customized it during the naming step
+        const freshRitual = getRitualState(user!.id);
+        if (freshRitual.creatureName) {
+          try {
+            const { updateCreatureName } = await import('./lib/hatchery');
+            await updateCreatureName(user!.id, freshRitual.creatureName);
+            // Update in-memory companion creature too
+            if (companionCreature) {
+              setCompanionCreature({ ...companionCreature, name: freshRitual.creatureName });
+            }
+          } catch (e) { console.error('[ritual] updateCreatureName failed:', e); }
+        }
+
         setDashKey(k => k + 1);
         setView('dashboard');
       }}

@@ -4,7 +4,8 @@ import { getStories, getNightCards, getCharacters } from '../lib/storage';
 import { getAllHatchedCreatures } from '../lib/hatchery';
 import { getDreamKeeperById, V1_DREAMKEEPERS, type DreamKeeper } from '../lib/dreamkeepers';
 import { isRitualComplete, getRitualState } from '../lib/ritualState';
-import type { Character, HatchedCreature, SavedNightCard } from '../lib/types';
+import { journeyService } from '../lib/journey-service';
+import type { Character, HatchedCreature, SavedNightCard, StoryJourney } from '../lib/types';
 import NightCardComponent from '../features/nightcards/NightCard';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -119,7 +120,7 @@ function CreatureGreeting({ childName, creatureName, rgb }: { childName: string;
 }
 
 export default function MySpace({ onSignUp, onReadStory }: Props) {
-  const { user, setView, companionCreature, setCompanionCreature, selectedCharacter, setSelectedCharacter } = useApp();
+  const { user, setView, companionCreature, setCompanionCreature, selectedCharacter, setSelectedCharacter, setActiveJourneyId } = useApp();
 
   const [characters, setCharacters] = useState<Character[]>([]);
   const [allStories, setAllStories] = useState<any[]>([]);
@@ -133,6 +134,8 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
   const [loading, setLoading] = useState(true);
   const [showAllChildren, setShowAllChildren] = useState(false);
   const [viewingCard, setViewingCard] = useState<SavedNightCard | null>(null);
+  const [activeJourney, setActiveJourney] = useState<StoryJourney | null>(null);
+  const [journeyLoading, setJourneyLoading] = useState(false);
 
   const userId = user?.id;
 
@@ -224,6 +227,17 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
   const handleChildSwitch = (child: Character) => {
     setSelectedCharacter(child);
   };
+
+  // ── Journey loading ───────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!userId || !activeChild?.id) { setActiveJourney(null); return; }
+    let cancelled = false;
+    setJourneyLoading(true);
+    journeyService.getActiveJourney(userId, activeChild.id).then(j => {
+      if (!cancelled) { setActiveJourney(j); setJourneyLoading(false); }
+    }).catch(() => { if (!cancelled) { setActiveJourney(null); setJourneyLoading(false); } });
+    return () => { cancelled = true; };
+  }, [userId, activeChild?.id]);
 
   // ── Derived data ───────────────────────────────────────────────────────────
   const primaryChild = activeChild || characters.find(c => c.isFamily && c.type === 'human') || characters[0];
@@ -466,34 +480,194 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
           <CreatureGreeting childName={childName} creatureName={creatureName} rgb={rgb} />
         </div>
 
-        {/* ═══ 3. PRIMARY CTA ═══ */}
+        {/* ═══ 3. PRIMARY + JOURNEY CTAs ═══ */}
         <div style={{
           margin: '8px 0 28px',
           animation: 'ms-fadeUp .8s .3s ease-out both',
+          display: 'flex', flexDirection: 'column', gap: 12,
         }}>
+
+          {/* ── Active journey = primary CTA ── */}
+          {activeJourney && ritualDone && (() => {
+            const lastChapter = activeJourney.chapters?.length
+              ? activeJourney.chapters[activeJourney.chapters.length - 1]
+              : null;
+            const readNum = activeJourney.readNumber ?? 1;
+            const progressPct = Math.max(0, Math.min(100, ((readNum - 1) / 7) * 100));
+            return (
+              <button
+                onClick={() => {
+                  setActiveJourneyId(activeJourney.id);
+                  setView('nightly-checkin');
+                }}
+                style={{
+                  width: '100%', padding: '18px 20px 16px', border: 'none', borderRadius: 16,
+                  background: 'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)',
+                  color: '#080200', cursor: 'pointer',
+                  fontFamily: "'Nunito',system-ui,sans-serif",
+                  animation: 'ms-ctaPulse 3s ease-in-out infinite',
+                  transition: 'transform .15s, filter .15s',
+                  position: 'relative', overflow: 'hidden', textAlign: 'left',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.filter = 'brightness(1.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.filter = ''; }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 16 }}>{'\uD83D\uDCD6'}</span>
+                  <span style={{ fontSize: 16, fontWeight: 700 }}>Continue tonight{'\u2019'}s chapter</span>
+                </div>
+                <div style={{
+                  fontSize: 12, fontWeight: 600, opacity: .75, marginBottom: 8,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {activeJourney.workingTitle || 'Your book'}
+                </div>
+                {/* Progress bar */}
+                <div style={{
+                  height: 4, borderRadius: 2, background: 'rgba(0,0,0,.15)',
+                  marginBottom: 6, overflow: 'hidden',
+                }}>
+                  <div style={{
+                    height: '100%', borderRadius: 2,
+                    background: 'rgba(0,0,0,.35)',
+                    width: `${progressPct}%`,
+                    transition: 'width .3s ease',
+                  }} />
+                </div>
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, opacity: .6,
+                    fontFamily: "'DM Mono',monospace", letterSpacing: '.03em',
+                  }}>
+                    Night {readNum} of 7
+                  </span>
+                  {lastChapter?.teaser && (
+                    <span style={{ fontSize: 10, fontStyle: 'italic', opacity: .55, maxWidth: '60%',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {lastChapter.teaser}
+                    </span>
+                  )}
+                </div>
+                <span style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 50%,transparent 100%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'ms-shimmer 3.5s ease-in-out infinite',
+                  pointerEvents: 'none',
+                }} />
+              </button>
+            );
+          })()}
+
+          {/* ── Quick story CTA (primary when no journey, secondary when journey active) ── */}
           <button
             onClick={() => setView(ritualDone ? 'ritual-starter' : 'onboarding-ritual')}
             style={{
-              width: '100%', padding: '18px 24px', border: 'none', borderRadius: 16,
-              background: 'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)',
-              color: '#080200', fontSize: 17, fontWeight: 700, cursor: 'pointer',
-              fontFamily: "'Nunito',system-ui,sans-serif",
-              animation: 'ms-ctaPulse 3s ease-in-out infinite',
+              width: '100%', border: 'none', borderRadius: 16,
+              cursor: 'pointer', fontFamily: "'Nunito',system-ui,sans-serif",
               transition: 'transform .15s, filter .15s',
               position: 'relative', overflow: 'hidden',
+              ...(activeJourney && ritualDone
+                ? {
+                    // Secondary style when journey is primary
+                    padding: '14px 24px',
+                    background: 'rgba(245,184,76,.08)',
+                    border: '1px solid rgba(245,184,76,.18)',
+                    color: 'rgba(245,184,76,.85)', fontSize: 14, fontWeight: 600,
+                  }
+                : {
+                    // Primary gold style (default)
+                    padding: '18px 24px',
+                    background: 'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)',
+                    color: '#080200', fontSize: 17, fontWeight: 700,
+                    animation: 'ms-ctaPulse 3s ease-in-out infinite',
+                  }
+              ),
             }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.filter = 'brightness(1.1)'; }}
             onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.filter = ''; }}
           >
-            {!ritualDone ? `Start Ritual Night ${nextRitualNight}` : isFirstTime ? 'Start your first story' : 'Start tonight\u2019s story'}
-            <span style={{
-              position: 'absolute', inset: 0,
-              background: 'linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 50%,transparent 100%)',
-              backgroundSize: '200% 100%',
-              animation: 'ms-shimmer 3.5s ease-in-out infinite',
-              pointerEvents: 'none',
-            }} />
+            {!ritualDone
+              ? `Start Ritual Night ${nextRitualNight}`
+              : activeJourney
+                ? 'Or start a quick story'
+                : isFirstTime ? 'Start your first story' : 'Start tonight\u2019s story'
+            }
+            {!(activeJourney && ritualDone) && (
+              <span style={{
+                position: 'absolute', inset: 0,
+                background: 'linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 50%,transparent 100%)',
+                backgroundSize: '200% 100%',
+                animation: 'ms-shimmer 3.5s ease-in-out infinite',
+                pointerEvents: 'none',
+              }} />
+            )}
           </button>
+
+          {/* ── Journey invitation (show when no active journey) ── */}
+          {!activeJourney && !journeyLoading && (
+            <button
+              onClick={() => {
+                if (!ritualDone) {
+                  setView('onboarding-ritual');
+                } else {
+                  setActiveJourneyId(null);
+                  setView('journey-setup');
+                }
+              }}
+              style={{
+                width: '100%', padding: '16px 20px', borderRadius: 16,
+                background: 'rgba(255,255,255,.025)',
+                border: '1px solid rgba(255,255,255,.06)',
+                cursor: 'pointer', textAlign: 'left',
+                fontFamily: "'Nunito',system-ui,sans-serif",
+                transition: 'background .2s, transform .15s, border-color .2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,.12)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.025)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,.06)'; e.currentTarget.style.transform = ''; }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                <span style={{ fontSize: 18 }}>{'\uD83D\uDCD6'}</span>
+                <span style={{
+                  fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 400,
+                  color: '#F4EFE8',
+                }}>
+                  Start a 7-Night Book
+                </span>
+              </div>
+              <div style={{
+                fontSize: 12, color: 'rgba(244,239,232,.4)', lineHeight: 1.5,
+                paddingLeft: 28,
+              }}>
+                {!ritualDone
+                  ? `Complete your bedtime ritual to unlock \u2014 a personalized book that grows across 7 nights`
+                  : creatureName && creatureName !== 'Dream Egg'
+                    ? `A story that grows across 7 bedtimes \u2014 with ${creatureName} alongside ${childName}`
+                    : `A story that grows across 7 bedtimes \u2014 just for ${childName}`
+                }
+              </div>
+              <div style={{
+                display: 'flex', gap: 16, paddingLeft: 28, marginTop: 10,
+              }}>
+                {[
+                  'New chapter every night',
+                  'Remembers each session',
+                  `${creatureName || 'DreamKeeper'} grows too`,
+                ].map((item, i) => (
+                  <div key={i} style={{
+                    fontFamily: "'DM Mono',monospace", fontSize: 9,
+                    color: 'rgba(244,239,232,.25)', letterSpacing: '.02em',
+                    display: 'flex', alignItems: 'center', gap: 4,
+                  }}>
+                    <span style={{ color: `rgba(${rgb},.5)`, fontSize: 8 }}>{'\u2022'}</span>
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </button>
+          )}
         </div>
 
         {/* ═══ 4. MEMORY STRIP ═══ */}

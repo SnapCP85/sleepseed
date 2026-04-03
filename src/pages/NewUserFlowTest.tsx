@@ -223,6 +223,7 @@ export default function NewUserFlowTest() {
         {devBar}
         <RitualNight3
           ritual={ritualForNight(3)}
+          userId="test-user"
           onComplete={() => {
             setRitual(r => ({ ...r, night3Complete: true, ritualComplete: true, eggState: 'hatched' }));
             goStep('my-space');

@@ -119,15 +119,21 @@ export default function OnboardingRitual({ onRitualComplete, onExit }: Props) {
     return (
       <RitualNight3
         ritual={ritual}
+        userId={user.id}
         onComplete={() => {
-          completeNight3(user.id);
+          // Re-read ritual state to get the custom name from the naming step
+          const freshRitual = getRitualState(user.id);
+          const updated = completeNight3(user.id);
+          // Preserve the custom name through completion
+          if (freshRitual.creatureName) updated.creatureName = freshRitual.creatureName;
+          setRitual(updated);
 
           // Save Night 3 card (hatching)
           saveRitualNightCard(
             user.id, 3,
             'The Night Your DreamKeeper Was Born',
             'The Night Your DreamKeeper Was Born',
-            `After three nights of listening, ${ritual.creatureName || 'the DreamKeeper'} chose to become ${ritual.childName || 'theirs'}'s.`,
+            `After three nights of listening, ${updated.creatureName || ritual.creatureName || 'the DreamKeeper'} chose to become ${ritual.childName || 'theirs'}'s.`,
             ritual,
           );
 
