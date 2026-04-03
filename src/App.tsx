@@ -26,6 +26,7 @@ import Hatchery from './pages/Hatchery';
 import FirstNight from './pages/FirstNight';
 import DevStoryTest from './pages/DevStoryTest';
 import AdminUploadBook from './pages/AdminUploadBook';
+import AdminEditorialConsole from './pages/AdminEditorialConsole';
 import JourneyLibrary from './pages/JourneyLibrary';
 import CompletedBookReader from './pages/CompletedBookReader';
 import MemoryPortrait from './pages/MemoryPortrait';
@@ -212,6 +213,7 @@ function AppInner() {
   if (isSharedStory) return <SharedStoryViewer />;
   if (view === 'dev-story') return <DevStoryTest />;
   if (new URLSearchParams(window.location.search).get('view') === 'admin-upload') return <AdminUploadBook />;
+  if (new URLSearchParams(window.location.search).get('view') === 'editorial-console') return <AdminEditorialConsole />;
 
   // Test mode pages — render before auth so shareable links work without login
   if (testMode === 'onboarding') {

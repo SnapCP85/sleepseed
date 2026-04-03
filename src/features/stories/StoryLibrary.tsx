@@ -164,7 +164,9 @@ const CSS = `
 interface Props { userId: string; onBack: () => void; onReadStory: (bookData: any) => void; onCreateStory: () => void; }
 
 export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStory }: Props) {
-  const { isSubscribed } = useApp();
+  const { isSubscribed, user } = useApp();
+  const isAdmin = !!(user && !user.isGuest && import.meta.env.VITE_ADMIN_EMAIL && user.email === import.meta.env.VITE_ADMIN_EMAIL);
+  const canPublish = isSubscribed || isAdmin;
   const [stories, setStories] = useState<SavedStory[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [nightCards, setNightCards] = useState<SavedNightCard[]>([]);
@@ -302,7 +304,7 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
                 try { await navigator.share?.({title: s.title, text, url: 'https://sleepseed.vercel.app'}); }
                 catch(_) { navigator.clipboard?.writeText(text); }
               }}>📱 Share story</button>
-              {isSubscribed && !s.isPublic && (
+              {canPublish && !s.isPublic && (
                 <button className="sl-menu-item" onClick={async () => {
                   setMenuOpen(null);
                   try {
@@ -311,7 +313,7 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
                   } catch (e) { console.error('Submit to library:', e); }
                 }}>📚 Add to library</button>
               )}
-              {isSubscribed && s.isPublic && (
+              {canPublish && s.isPublic && (
                 <button className="sl-menu-item" onClick={async () => { setMenuOpen(null); await removeStoryFromLibrary(s.id, userId); getStories(userId).then(setStories); }}>📚 Remove from library</button>
               )}
               {friends.length > 0 && (
@@ -334,14 +336,15 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
         </div>
 
         {/* Share to Library button */}
-        {isSubscribed && !s.isPublic && (
+        {canPublish && !s.isPublic && (
           <div style={{ padding: '0 10px 10px' }}>
             <button
               onClick={async (e) => {
                 e.stopPropagation();
                 try {
                   await submitStoryToLibrary(s.id, userId, { ageGroup: s.ageGroup, vibe: s.vibe, mood: s.mood, storyStyle: s.storyStyle, storyLength: s.storyLength, lessons: s.lessons });
-                  getStories(userId).then(setStories);
+                  // Optimistic update — flip isPublic immediately so button changes
+                  setStories(prev => prev.map(st => st.id === s.id ? { ...st, isPublic: true } : st));
                 } catch (err) { console.error('Submit to library:', err); }
               }}
               style={{
@@ -358,13 +361,13 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
             </button>
           </div>
         )}
-        {s.isPublic && (
+        {canPublish && s.isPublic && (
           <div style={{ padding: '0 10px 10px' }}>
             <button
               onClick={async (e) => {
                 e.stopPropagation();
                 await removeStoryFromLibrary(s.id, userId);
-                getStories(userId).then(setStories);
+                setStories(prev => prev.map(st => st.id === s.id ? { ...st, isPublic: false } : st));
               }}
               style={{
                 width: '100%', padding: '7px 12px', borderRadius: 20,
@@ -376,7 +379,7 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(20,216,144,.15)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'rgba(20,216,144,.08)'; }}
             >
-              In Library ✓
+              In Library {'\u2713'}
             </button>
           </div>
         )}
