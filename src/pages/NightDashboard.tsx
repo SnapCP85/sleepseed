@@ -5,7 +5,7 @@ import DreamEgg from '../components/onboarding/DreamEgg';
 import StarBackground from '../components/onboarding/StarBackground';
 import OnboardingShell from '../components/onboarding/OnboardingShell';
 import '../components/onboarding/onboarding.css';
-import { getRitualState, completeNight1, completeNight2 } from '../lib/ritualState';
+import { getRitualState, saveRitualState, completeNight1, completeNight2 } from '../lib/ritualState';
 import { saveNightCard, getNightCards } from '../lib/storage';
 import type { SavedNightCard } from '../lib/types';
 
@@ -20,7 +20,7 @@ interface Props {
 }
 
 // ── Subscreen types ──────────────────────────────────────────────────────────
-type N1Screen = 'welcome' | 'lore' | 'share' | 'pre-story' | 'post-story' | 'card' | 'tuck-in';
+type N1Screen = 'welcome' | 'lore' | 'share' | 'story' | 'egg-gift' | 'egg-crack' | 'post-story' | 'card' | 'tuck-in';
 type N2Screen = 'return' | 'egg' | 'question' | 'pre-story' | 'post-story' | 'card' | 'tuck-in';
 
 // ── Helper ───────────────────────────────────────────────────────────────────
@@ -32,9 +32,11 @@ const fadeUp = (delay: number): React.CSSProperties => ({
 export default function NightDashboard({ night, initialScreen, onInitialScreenConsumed, onStartStory, onNightComplete, onCreateAnotherStory }: Props) {
   const { user } = useApp();
 
-  // Night 1 state
+  // Night 1 state — initialize smileAnswer from ritual state if returning from story builder
+  const ritualSmile = user ? getRitualState(user.id).smileAnswer || '' : '';
   const [n1Screen, setN1Screen] = useState<N1Screen>((initialScreen as N1Screen) || 'welcome');
-  const [smileAnswer, setSmileAnswer] = useState('');
+  const [smileAnswer, setSmileAnswer] = useState(ritualSmile);
+  const [storyPage, setStoryPage] = useState(0);
   const [n1PhotoAdded, setN1PhotoAdded] = useState(false);
   const [n1Photo, setN1Photo] = useState<string | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -62,14 +64,21 @@ export default function NightDashboard({ night, initialScreen, onInitialScreenCo
 
   // Get ritual state for context
   const ritual = user ? getRitualState(user.id) : null;
-  const childName = ritual?.childName || 'friend';
+  const rawName = ritual?.childName || '';
+  const childName = rawName && rawName !== 'friend' ? rawName.charAt(0).toUpperCase() + rawName.slice(1) : 'Dreamer';
 
   // ── Night 1: Handle smile selection ────────────────────────────────────
   const [dkReacted, setDkReacted] = useState(false);
   const pickSmile = useCallback((answer: string) => {
     setSmileAnswer(answer);
+    // Persist smile answer to ritual state immediately so it survives story-builder navigation
+    if (user) {
+      const rs = getRitualState(user.id);
+      rs.smileAnswer = answer;
+      saveRitualState(user.id, rs);
+    }
     setTimeout(() => setDkReacted(true), 600);
-  }, []);
+  }, [user]);
 
   // ── Night 1: Start story ───────────────────────────────────────────────
   const startN1Story = useCallback(() => {
@@ -161,12 +170,14 @@ export default function NightDashboard({ night, initialScreen, onInitialScreenCo
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 28%, rgba(50,25,110,.9), #060912 65%)' }}>
           <StarBackground />
-          <div style={{ position: 'absolute', top: 72, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 5, ...fadeUp(0.2) }}>
+          {/* CENTER: Elder */}
+          <div className="ob-scene-center" style={{ ...fadeUp(0.2) }}>
             <div style={{ animation: 'ob-elderFloat 4.4s ease-in-out infinite' }}>
               <ElderDreamKeeper animate={false} />
             </div>
           </div>
-          <div className="ob-ct bottom" style={{ paddingBottom: 44 }}>
+          {/* BOTTOM: Text + CTA */}
+          <div className="ob-scene-bottom" style={{ justifyContent: 'flex-end', paddingBottom: 44 }}>
             <div style={{ ...fadeUp(0.5), width: '100%' }}>
               <div className="ob-ey">Your first night</div>
               <div className="ob-h1" style={{ fontSize: 26, marginBottom: 8 }}>
@@ -188,23 +199,27 @@ export default function NightDashboard({ night, initialScreen, onInitialScreenCo
         <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 22%, rgba(25,14,70,.88), #060912 55%)' }}>
           <StarBackground opacity={0.65} />
           <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 220, height: 200, background: 'radial-gradient(ellipse at 50% 0%, rgba(246,197,111,.08), transparent 70%)', pointerEvents: 'none' }} />
-          <div className="ob-ct" style={{ paddingTop: 64 }}>
-            <div style={{ animation: 'ob-fadeIn .6s ease both', marginBottom: 22 }}>
-              <ElderDreamKeeper />
+          {/* CENTER: Elder at natural scale */}
+          <div className="ob-scene-center" style={{ top: '12%', height: '32%' }}>
+            <div style={{ animation: 'ob-fadeIn .6s ease both' }}>
+              <ElderDreamKeeper scale={0.85} />
             </div>
+          </div>
+          {/* BOTTOM: Speech + CTA */}
+          <div className="ob-scene-bottom" style={{ height: '50%', paddingTop: 8 }}>
             <div style={{
               background: 'rgba(184,161,255,.1)', border: '1px solid rgba(184,161,255,.25)',
-              borderRadius: '20px 20px 20px 5px', padding: '18px 20px', marginBottom: 20,
+              borderRadius: '20px 20px 20px 5px', padding: '14px 18px', marginBottom: 12,
               textAlign: 'left', ...fadeUp(0.15), width: '100%',
             }}>
-              <div style={{ fontSize: 8.5, color: 'rgba(184,161,255,.6)', fontFamily: "'DM Mono', monospace", letterSpacing: 0.7, marginBottom: 8 }}>THE ELDER DREAMKEEPER</div>
-              <div style={{ fontFamily: "'Fraunces', serif", fontSize: 15, fontWeight: 700, color: '#F4EFE8', lineHeight: 1.52, letterSpacing: -0.1 }}>
+              <div style={{ fontSize: 8.5, color: 'rgba(184,161,255,.6)', fontFamily: "'DM Mono', monospace", letterSpacing: 0.7, marginBottom: 6 }}>THE ELDER DREAMKEEPER</div>
+              <div style={{ fontFamily: "'Fraunces', serif", fontSize: 15, fontWeight: 700, color: '#F4EFE8', lineHeight: 1.5, letterSpacing: -0.1 }}>
                 "There are beings called DreamKeepers.<br /><br />
                 They don't belong to everyone.<br /><br />
                 Each one chooses a single child&hellip; to watch over, learn from, and grow beside."
               </div>
             </div>
-            <div style={{ fontFamily: "'Fraunces', serif", fontSize: 14, fontStyle: 'italic', color: 'rgba(234,242,255,.36)', marginBottom: 24, lineHeight: 1.65, ...fadeUp(0.25) }}>
+            <div style={{ fontFamily: "'Fraunces', serif", fontSize: 14, fontStyle: 'italic', color: 'rgba(234,242,255,.36)', marginBottom: 16, lineHeight: 1.5, ...fadeUp(0.25) }}>
               "Tonight, your journey begins."
             </div>
             <button className="ob-cta" style={fadeUp(0.35)} onClick={() => setN1Screen('share')}>Tell me more</button>
@@ -220,31 +235,32 @@ export default function NightDashboard({ night, initialScreen, onInitialScreenCo
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
           <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 18%, rgba(246,197,111,.07), #060912 54%)' }}>
             <StarBackground opacity={0.55} />
-            <div className="ob-ct" style={{ paddingTop: 52, gap: 0 }}>
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10, animation: 'ob-fadeIn .5s ease both' }}>
-                <div style={{ transform: 'scale(.72)', transformOrigin: 'bottom center' }}>
-                  <ElderDreamKeeper />
-                </div>
+            {/* CENTER: Elder */}
+            <div className="ob-scene-center" style={{ top: '8%', height: '30%' }}>
+              <div style={{ animation: 'ob-fadeIn .5s ease both' }}>
+                <ElderDreamKeeper scale={0.8} />
               </div>
+            </div>
+            {/* BOTTOM: Speech + Chips + CTA */}
+            <div className="ob-scene-bottom" style={{ height: '56%', paddingTop: 4 }}>
               {/* DreamKeeper speech */}
               <div style={{
                 background: 'rgba(246,197,111,.08)', border: '1px solid rgba(246,197,111,.2)',
-                borderRadius: '20px 20px 20px 5px', padding: '15px 17px', marginBottom: 10,
+                borderRadius: '20px 20px 20px 5px', padding: '14px 17px', marginBottom: 8,
                 textAlign: 'left', width: '100%', ...fadeUp(0.1),
                 transition: 'opacity .35s ease',
               }}>
-                <div style={{ fontSize: 8, color: 'rgba(246,197,111,.55)', fontFamily: "'DM Mono', monospace", letterSpacing: 0.7, marginBottom: 6 }}>THE DREAMKEEPER</div>
+                <div style={{ fontSize: 8, color: 'rgba(246,197,111,.55)', fontFamily: "'DM Mono', monospace", letterSpacing: 0.7, marginBottom: 5 }}>THE DREAMKEEPER</div>
                 <div style={{ fontFamily: "'Fraunces', serif", fontSize: 15, fontWeight: 700, color: '#F4EFE8', lineHeight: 1.5, letterSpacing: -0.1 }}>
                   {dkReacted
                     ? '"Hmm\u2026\n\nI think I know where this begins."'
-                    : `"Hello, ${childName}.\n\nTell me something — what made you smile today?"`}
+                    : `"Hello, ${childName}.\n\nTell me something \u2014 what made you smile today?"`}
                 </div>
               </div>
               {/* Egg listening label */}
-              <div style={{ fontSize: 9, color: 'rgba(246,197,111,.35)', fontFamily: "'DM Mono', monospace", letterSpacing: 0.5, marginBottom: 4, ...fadeUp(0.6) }}>
+              <div style={{ fontSize: 9, color: 'rgba(246,197,111,.35)', fontFamily: "'DM Mono', monospace", letterSpacing: 0.5, marginBottom: 8, ...fadeUp(0.6) }}>
                 THE EGG IS LISTENING TOO
               </div>
-              <div style={{ height: 18, marginBottom: 8 }} />
               {/* Chips */}
               <div className="ob-chips" style={fadeUp(0.7)}>
                 {smileOpts.map(o => (
@@ -260,7 +276,7 @@ export default function NightDashboard({ night, initialScreen, onInitialScreenCo
                 opacity: dkReacted ? 1 : 0, pointerEvents: dkReacted ? 'auto' : 'none',
                 transition: 'opacity .5s ease', width: '100%',
               }}>
-                <button className="ob-cta" onClick={startN1Story}>Start tonight's story &rarr;</button>
+                <button className="ob-cta" onClick={() => { setStoryPage(0); setN1Screen('story'); }}>Start tonight's story &rarr;</button>
               </div>
             </div>
           </div>
@@ -268,7 +284,238 @@ export default function NightDashboard({ night, initialScreen, onInitialScreenCo
       );
     }
 
-    // ── C7: Post-story close ("That was your first story together") ──
+    // ── C4: Story — "The Night You Were Chosen" (built-in lore) ──
+    if (n1Screen === 'story') {
+      type StoryScene = 'stars' | 'elder' | 'glow' | 'egg';
+      const LORE_STORY: { scene: StoryScene; text: string }[] = [
+        { scene: 'stars', text: `Long after the lamps were dim and the world had grown quiet, ${childName} noticed a soft golden light drifting through the dark \u2014 like it knew exactly where to go.` },
+        { scene: 'elder', text: `The light floated past the window, through the trees, and into a sky full of listening stars. And waiting there, wrapped in moon-glow and feathers of night, stood the Elder DreamKeeper.` },
+        { scene: 'elder', text: `\u201cHello, ${childName},\u201d said the Elder in a voice as warm as a blanket. \u201cDreamKeepers watch over children while they sleep. We protect their wonder, keep their memories close, and help brave hearts rest.\u201d` },
+        { scene: 'elder', text: `\u201cEvery DreamKeeper belongs to one special child,\u201d the Elder said. \u201cBut first, they must learn who that child is. They listen to stories. They listen to the little truths that make a person who they are.\u201d` },
+        { scene: 'elder', text: `The Elder looked closely at ${childName} and smiled softly. \u201cTonight, I heard that something made you smile: ${smileAnswer || 'something beautiful'}. That light belongs to you.\u201d` },
+        { scene: 'egg', text: `Then the Elder lifted something glowing from the folds of the night. It was a Dream Egg \u2014 warm, bright, and humming softly, as if a tiny heart inside was already listening.` },
+        { scene: 'egg', text: `\u201cInside this egg is a baby DreamKeeper,\u201d the Elder whispered. \u201cRead with it. Tell it about your days. Let it learn your heart. And when it knows who you are, it will hatch and know that it belongs to you.\u201d` },
+      ];
+      const page = LORE_STORY[storyPage];
+      const isLast = storyPage === LORE_STORY.length - 1;
+
+      // Scene backgrounds
+      const sceneGradients: Record<StoryScene, string> = {
+        stars: 'radial-gradient(ellipse at 50% 30%, rgba(50,25,110,.85), #060912 65%)',
+        elder: 'radial-gradient(ellipse at 50% 35%, rgba(20,10,60,.8), #060912 62%)',
+        glow: 'radial-gradient(ellipse at 50% 30%, rgba(60,30,120,.7), #060912 65%)',
+        egg: 'radial-gradient(ellipse at 50% 35%, rgba(40,20,100,.7), #060912 62%)',
+      };
+
+      return (
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#060912' }}>
+            {/* Top half: scene visual */}
+            <div style={{ height: '50%', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+              <div style={{ position: 'absolute', inset: 0, background: sceneGradients[page.scene], transition: 'background .5s ease' }}>
+                <StarBackground opacity={0.6} />
+                {/* Scene-specific visual */}
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {page.scene === 'elder' && (
+                    <div style={{ transform: 'scale(.55) translateY(-20px)', transformOrigin: 'center' }}>
+                      <ElderDreamKeeper animate={false} />
+                    </div>
+                  )}
+                  {page.scene === 'egg' && (
+                    <div style={{ position: 'relative', paddingTop: 20 }}>
+                      {/* Golden glow behind egg */}
+                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(246,197,111,.18), rgba(184,161,255,.08) 50%, transparent 72%)', filter: 'blur(20px)', animation: 'ob-glowPulse 2.5s ease-in-out infinite' }} />
+                      <DreamEgg state="gifted" size="sm" />
+                    </div>
+                  )}
+                  {page.scene === 'stars' && (
+                    <div style={{ position: 'relative' }}>
+                      {/* Outer golden halo */}
+                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(246,197,111,.18), transparent 70%)', filter: 'blur(20px)', animation: 'ob-glowPulse 5s ease-in-out infinite' }} />
+                      {/* Inner orb with golden warmth */}
+                      <div style={{ width: 90, height: 90, borderRadius: '50%', background: 'radial-gradient(circle, rgba(246,197,111,.35), rgba(200,210,235,.15) 60%, transparent)', filter: 'blur(12px)', animation: 'ob-glowPulse 3s ease-in-out infinite', position: 'relative', zIndex: 1 }} />
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* Bottom fade */}
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 88, background: 'linear-gradient(to bottom, transparent, #060912)', zIndex: 10 }} />
+            </div>
+            {/* Bottom half: text + navigation */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '0 26px', background: '#060912', position: 'relative' }}>
+              {/* Progress dots */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 7, padding: '8px 0 10px' }}>
+                {LORE_STORY.map((_, i) => (
+                  <div key={i} style={{
+                    width: i === storyPage ? 16 : 7, height: 7, borderRadius: 4,
+                    background: i < storyPage ? 'rgba(200,210,235,.55)' : i === storyPage ? '#C8D4E8' : 'rgba(234,242,255,.1)',
+                    transition: 'all .3s',
+                    ...(i === storyPage ? { animation: 'ob-glowPulse 2.5s ease-in-out infinite' } : {}),
+                  }} />
+                ))}
+              </div>
+              {/* Story text */}
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                <div key={storyPage} style={{
+                  fontFamily: "'Lora', serif", fontStyle: 'italic', fontSize: 16.5,
+                  color: 'rgba(244,239,232,.96)', lineHeight: 1.75, letterSpacing: '.01em',
+                  animation: 'ob-fadeUp .35s ease both',
+                }}>
+                  {page.text}
+                </div>
+              </div>
+              {/* CTA */}
+              <div style={{ padding: '0 0 26px' }}>
+                {isLast ? (
+                  <button className="ob-cta" onClick={() => setN1Screen('egg-gift')}>Receive your Dream Egg &rarr;</button>
+                ) : (
+                  <button className="ob-cta" onClick={() => setStoryPage(p => p + 1)}>Next &rarr;</button>
+                )}
+              </div>
+            </div>
+            {/* Top bar overlay */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              padding: '20px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: 'linear-gradient(to bottom, rgba(6,9,18,.78), transparent)',
+              zIndex: 30, pointerEvents: 'none',
+            }}>
+              <div
+                onClick={() => { if (storyPage > 0) setStoryPage(0); else setN1Screen('share'); }}
+                style={{
+                  width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,.35)',
+                  border: '1px solid rgba(255,255,255,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  pointerEvents: 'all', cursor: 'pointer',
+                }}
+              >
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="rgba(234,242,255,.65)" strokeWidth="2.2" strokeLinecap="round"><path d="m15 18-6-6 6-6" /></svg>
+              </div>
+              <div style={{ fontFamily: "'Fraunces', serif", fontSize: 10, fontStyle: 'italic', color: 'rgba(244,239,232,.4)' }}>
+                The Night You Were Chosen
+              </div>
+              <div style={{ width: 34 }} />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── C5: Egg Gift — Elder presents the Dream Egg ──
+    if (n1Screen === 'egg-gift') return (
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+        <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 35%, rgba(40,20,100,.78), #060912 62%)' }}>
+          <StarBackground opacity={0.8} />
+          {/* TOP: Elder clipped */}
+          <div className="ob-scene-top" style={{ height: '18%', justifyContent: 'center' }}>
+            <div style={{ width: 210, height: 100, position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%) scale(.46)', transformOrigin: 'bottom center' }}>
+                <ElderDreamKeeper animate={false} />
+              </div>
+            </div>
+          </div>
+          {/* CENTER: Egg — tappable to advance */}
+          <div className="ob-scene-center" style={{ top: '18%', height: '24%' }}>
+            <div
+              onClick={() => setN1Screen('egg-crack')}
+              style={{ animation: 'ob-fadeUp .8s .1s ease both', opacity: 0, cursor: 'pointer', position: 'relative' }}
+            >
+              {/* Golden glow behind egg */}
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(246,197,111,.15), transparent 70%)', filter: 'blur(18px)', animation: 'ob-glowPulse 2.5s ease-in-out infinite', pointerEvents: 'none' }} />
+              <DreamEgg state="gifted" size="sm" />
+            </div>
+          </div>
+          {/* BOTTOM: Speech + echo + tap hint */}
+          <div className="ob-scene-bottom" style={{ height: '52%', paddingTop: 4 }}>
+            <div style={{
+              background: 'rgba(184,161,255,.09)', border: '1px solid rgba(184,161,255,.24)',
+              borderRadius: '20px 20px 20px 5px', padding: '12px 16px', marginBottom: 8,
+              textAlign: 'left', width: '100%', ...fadeUp(0.2),
+            }}>
+              <div style={{ fontSize: 8, color: 'rgba(184,161,255,.6)', fontFamily: "'DM Mono', monospace", letterSpacing: 0.7, marginBottom: 5 }}>THE ELDER DREAMKEEPER</div>
+              <div style={{ fontFamily: "'Fraunces', serif", fontSize: 13, fontWeight: 700, color: '#F4EFE8', lineHeight: 1.48 }}>
+                "This egg will become your DreamKeeper. It listens to what you share &mdash; that's how it knows who it belongs to."
+              </div>
+            </div>
+            <div style={{
+              padding: '10px 14px', background: 'rgba(184,161,255,.07)', border: '1px solid rgba(184,161,255,.18)',
+              borderRadius: 14, marginBottom: 12, textAlign: 'left', width: '100%', ...fadeUp(0.3),
+            }}>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: 'rgba(184,161,255,.55)', letterSpacing: 0.7, marginBottom: 4 }}>THE EGG HEARD YOU</div>
+              <div style={{ fontFamily: "'Fraunces', serif", fontSize: 12, fontStyle: 'italic', color: 'rgba(234,242,255,.65)', lineHeight: 1.5 }}>
+                "You shared that <em style={{ color: '#C8D4E8' }}>{smileAnswer || 'something special'}</em> made you smile. It's holding onto that."
+              </div>
+            </div>
+            {/* Gold text hint instead of button */}
+            <div style={{ ...fadeUp(0.5), textAlign: 'center' }}
+              onClick={() => setN1Screen('egg-crack')}
+            >
+              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: 'rgba(246,197,111,.7)', letterSpacing: 1.8, textTransform: 'uppercase' as const, cursor: 'pointer' }}>
+                Tap the egg &uarr;
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+    // ── C5: Egg Crack — the egg cracks in response ──
+    if (n1Screen === 'egg-crack') return (
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+        <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 20%, rgba(80,40,180,.26), #060912 58%)' }}>
+          <StarBackground opacity={0.75} />
+          {/* Elder clipped small at top */}
+          <div style={{ position: 'absolute', top: '6%', left: '50%', transform: 'translateX(-50%)', zIndex: 8, width: 210, height: 110, overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%) scale(.46)', transformOrigin: 'bottom center' }}>
+              <ElderDreamKeeper animate={false} />
+            </div>
+          </div>
+          {/* Speech bubble below elder */}
+          <div style={{
+            position: 'absolute', top: 'calc(6% + 118px)', left: 28, right: 28, zIndex: 8,
+            background: 'rgba(184,161,255,.1)', border: '1px solid rgba(184,161,255,.25)',
+            borderRadius: '20px 20px 20px 5px', padding: '12px 16px', textAlign: 'left',
+            animation: 'ob-fadeUp .8s .6s ease both', opacity: 0,
+          }}>
+            <div style={{ fontSize: 8, color: 'rgba(184,161,255,.6)', fontFamily: "'DM Mono', monospace", letterSpacing: 0.7, marginBottom: 5 }}>THE DREAMKEEPER</div>
+            <div style={{ fontFamily: "'Fraunces', serif", fontSize: 13, fontWeight: 700, color: '#F4EFE8', lineHeight: 1.48 }}>
+              "That crack appeared because you were here tonight. The egg heard about <em style={{ color: '#C8D4E8' }}>{smileAnswer || 'what you shared'}</em>. It's holding onto that."
+            </div>
+          </div>
+          {/* Egg — cracked state, centered */}
+          <div style={{ position: 'absolute', top: '56%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10 }}>
+            <DreamEgg state="cracked" size="sm" />
+          </div>
+          {/* Progress bar */}
+          <div style={{
+            position: 'absolute', bottom: 96, left: 28, right: 28, zIndex: 8,
+            padding: '10px 14px', background: 'rgba(200,210,235,.06)', border: '1px solid rgba(200,210,235,.15)',
+            borderRadius: 12, animation: 'ob-fadeUp .8s 1.2s ease both', opacity: 0,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: 'rgba(200,210,235,.55)', letterSpacing: 0.4 }}>DREAM EGG &middot; NIGHT 1 OF 3</div>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: 'rgba(234,242,255,.25)' }}>Come back tomorrow</div>
+            </div>
+            <div style={{ height: 3, background: 'rgba(255,255,255,.07)', borderRadius: 2, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: '28%', background: 'linear-gradient(90deg, rgba(200,210,235,.5), #C8D4E8)', borderRadius: 2 }} />
+            </div>
+          </div>
+          {/* Tap hint */}
+          <div style={{
+            position: 'absolute', bottom: 62, left: 0, right: 0, zIndex: 8, textAlign: 'center',
+            animation: 'ob-fadeUp .8s 1.4s ease both', opacity: 0,
+          }}>
+            <button
+              onClick={() => setN1Screen('post-story')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'DM Mono', monospace", fontSize: 10, color: 'rgba(200,210,235,.65)', letterSpacing: 1.8, textTransform: 'uppercase' as const }}
+            >
+              Continue &rarr;
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+
+    // ── C6: Post-story close ("That was your first story together") ──
     if (n1Screen === 'post-story') return (
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 44%, rgba(20,8,55,.98), #030408 70%)' }}>
@@ -374,33 +621,49 @@ export default function NightDashboard({ night, initialScreen, onInitialScreenCo
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 38%, rgba(20,60,50,.35), #060912 62%)' }}>
           <StarBackground opacity={0.88} />
-          <div className="ob-ct">
-            <div style={{ animation: 'ob-nestSettle .8s ease both', marginBottom: 8 }}>
-              <div style={{ animation: 'ob-heartbeat 3.5s ease-in-out infinite' }}>
+          {/* TOP: Egg breathing — pushed to top 20% */}
+          <div className="ob-scene-top" style={{ height: '30%', justifyContent: 'center' }}>
+            <div style={{ animation: 'ob-nestSettle .8s ease both' }}>
+              <div style={{ animation: 'ob-heartbeat 3.5s ease-in-out infinite', transform: 'scale(.8)' }}>
                 <DreamEgg state="cracked" size="sm" />
               </div>
             </div>
+          </div>
+          {/* BOTTOM: Message + CTA */}
+          <div className="ob-scene-bottom" style={{ height: '65%', justifyContent: 'flex-start', paddingTop: 8 }}>
             <div style={{ ...fadeUp(0.3), width: '100%' }}>
-              <div className="ob-ey" style={{ marginBottom: 14 }}>Night 1 · Complete</div>
-              <div className="ob-h1" style={{ fontSize: 26, marginBottom: 10 }}>
+              <div className="ob-ey" style={{ marginBottom: 10 }}>Night 1 · Complete</div>
+              <div className="ob-h1" style={{ fontSize: 24, marginBottom: 8 }}>
                 "Come back tomorrow.<br /><em>It will be different.</em>"
               </div>
               <div className="ob-sub" style={{ fontSize: 13, marginBottom: 6 }}>Every story helps it grow.</div>
               <div style={{
-                padding: '12px 16px', background: 'rgba(184,161,255,.07)',
+                padding: '11px 14px', background: 'rgba(184,161,255,.07)',
                 border: '1px solid rgba(184,161,255,.16)', borderRadius: 14,
-                marginBottom: 22, textAlign: 'left',
+                marginBottom: 16, textAlign: 'left',
               }}>
-                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8.5, color: 'rgba(184,161,255,.55)', letterSpacing: 0.5, marginBottom: 5 }}>THE ELDER</div>
-                <div style={{ fontFamily: "'Lora', serif", fontStyle: 'italic', fontSize: 13, color: 'rgba(234,242,255,.6)', lineHeight: 1.55 }}>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8.5, color: 'rgba(184,161,255,.55)', letterSpacing: 0.5, marginBottom: 4 }}>THE ELDER</div>
+                <div style={{ fontFamily: "'Lora', serif", fontStyle: 'italic', fontSize: 12, color: 'rgba(234,242,255,.6)', lineHeight: 1.5 }}>
                   "It heard everything tonight. Rest well, {childName}. When the stars return — it will be waiting."
                 </div>
               </div>
               <button className="ob-cta" onClick={completeN1}>Say goodnight</button>
-              <div style={{ height: 8 }} />
-              {onCreateAnotherStory && (
-                <button className="ob-ghost" onClick={onCreateAnotherStory}>Want more? Create a story.</button>
-              )}
+              <div style={{ height: 6 }} />
+              <button className="ob-ghost" onClick={() => {
+                // Complete the night (save state + card) without navigating to dashboard
+                if (user) {
+                  completeNight1(user.id, smileAnswer);
+                  // Card save is fire-and-forget
+                  const today = new Date().toISOString().split('T')[0];
+                  getNightCards(user.id).then(existing => {
+                    if (!existing.some(c => c.date === today && c.nightNumber === 1)) {
+                      saveNightCard({ id: crypto.randomUUID?.() || `nc_${Date.now()}`, userId: user.id, heroName: childName, storyTitle: 'The Night Your Dream Egg First Listened', characterIds: [], headline: 'The Night Your Dream Egg First Listened', quote: `Tonight, ${childName} shared that ${smileAnswer} made them smile.`, emoji: ritual?.creatureEmoji || '\uD83E\uDD5A', date: today, isOrigin: true, nightNumber: 1, creatureEmoji: ritual?.creatureEmoji, creatureColor: ritual?.creatureColor });
+                    }
+                  }).catch(() => {});
+                }
+                // Go directly to story creation
+                onStartStory(`${childName} just had their first night with their Dream Egg. Create a new bedtime story for them.`);
+              }}>Want more? Create a story.</button>
             </div>
           </div>
         </div>

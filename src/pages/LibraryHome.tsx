@@ -35,7 +35,8 @@ const CSS = `
 @keyframes dShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
 .dsc{min-height:100dvh;background:linear-gradient(180deg,#060912 0%,#0a0e24 50%,#0f0a20 100%);font-family:var(--sans);color:var(--cream);position:relative;overflow-x:hidden}
-.dsc-inner{max-width:430px;margin:0 auto;padding:0 20px 32px;position:relative;z-index:5}
+.dsc-inner{max-width:960px;margin:0 auto;padding:0 20px 32px;position:relative;z-index:5}
+@media(min-width:768px){.dsc-inner{padding:0 40px 32px}}
 .dsc-star{position:fixed;border-radius:50%;background:#EEE8FF;pointer-events:none;z-index:0}
 
 /* header */

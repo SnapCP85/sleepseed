@@ -208,7 +208,7 @@ export default function CinematicTransition({ childName, onComplete }: Props) {
           text1Ref.current.style.color = `rgba(244,239,232,${(tOp * 0.82).toFixed(3)})`;
         }
         if (text2Ref.current && tOp > 0.5) {
-          text2Ref.current.textContent = 'We have been waiting to meet them.';
+          text2Ref.current.textContent = 'We have been waiting for you.';
           text2Ref.current.style.color = `rgba(246,197,111,${((tOp - 0.5) * 1.2 * 0.65).toFixed(3)})`;
         }
       }
@@ -242,17 +242,17 @@ export default function CinematicTransition({ childName, onComplete }: Props) {
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }}
       />
       <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, bottom: 280,
+        position: 'absolute', top: '6%', left: 0, right: 0, height: '22%',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', zIndex: 5, padding: '0 32px',
       }}>
         <div ref={text1Ref} style={{
-          fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 400, fontStyle: 'italic',
+          fontFamily: "'Fraunces', serif", fontSize: 21, fontWeight: 400, fontStyle: 'italic',
           color: 'rgba(244,239,232,0)', letterSpacing: -0.3, textAlign: 'center',
-          lineHeight: 1.4, transition: 'color 1.6s ease', marginBottom: 10,
+          lineHeight: 1.35, transition: 'color 1.6s ease', marginBottom: 8,
         }} />
         <div ref={text2Ref} style={{
-          fontFamily: "'Fraunces', serif", fontSize: 17, fontWeight: 300, fontStyle: 'italic',
+          fontFamily: "'Fraunces', serif", fontSize: 15, fontWeight: 300, fontStyle: 'italic',
           color: 'rgba(246,197,111,0)', transition: 'color 1.6s .5s ease', textAlign: 'center',
           lineHeight: 1.4, letterSpacing: 0.2,
         }} />

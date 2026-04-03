@@ -222,6 +222,7 @@ body{background:var(--night)}
 
 @media(max-width:800px){.s2-grid{grid-template-columns:1fr;gap:36px}.s4-cards{grid-template-columns:1fr}.s5-pricing{flex-direction:column}}
 @media(max-width:640px){.s1,.s2,.s3,.s4,.s5,.hw{padding-left:5%;padding-right:5%}.hp-footer{flex-direction:column;text-align:center}.hp-footer-links{justify-content:center}.s3-book{padding:22px 18px}}
+@media(min-width:1200px){.s2-grid{max-width:1200px}.s4-inner{max-width:1200px}.hw-inner{max-width:960px}.s3-inner{max-width:960px}.s5-pricing{max-width:640px}}
 `;
 
 interface Props {

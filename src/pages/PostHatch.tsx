@@ -13,9 +13,9 @@ const fadeUp = (delay: number): React.CSSProperties => ({
   animation: `ob-fadeUp 0.6s ${delay}s ease both`, opacity: 0,
 });
 
-/** Post-hatch flow: First Contact → Photo Card → Born Card */
+/** Post-hatch flow: First Contact → Photo Card → Born Card → Soft Landing */
 export default function PostHatch({ childName, creatureEmoji, creatureName, onComplete }: Props) {
-  const [screen, setScreen] = useState<'contact' | 'photo-card' | 'born-card'>('contact');
+  const [screen, setScreen] = useState<'contact' | 'photo-card' | 'born-card' | 'landing'>('contact');
 
   // ── First Contact ──
   if (screen === 'contact') return (
@@ -105,8 +105,8 @@ export default function PostHatch({ childName, creatureEmoji, creatureName, onCo
     </div>
   );
 
-  // ── Born Card (final screen) ──
-  return (
+  // ── Born Card ──
+  if (screen === 'born-card') return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
       <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 26%, rgba(60,10,80,.35), #060912 58%)' }}>
         <StarBackground opacity={0.75} />
@@ -145,10 +145,51 @@ export default function PostHatch({ childName, creatureEmoji, creatureName, onCo
             <div style={{ fontFamily: "'Lora', serif", fontStyle: 'italic', fontSize: 12, color: 'rgba(234,242,255,.32)', marginBottom: 18, lineHeight: 1.65 }}>
               "This is yours to keep. A reminder of the night it all began."
             </div>
-            <button className="ob-cta" onClick={onComplete}>Begin your journey &rarr;</button>
+            <button className="ob-cta" onClick={() => setScreen('landing')}>Begin your journey &rarr;</button>
           </div>
         </div>
       </div>
     </div>
   );
+
+  // ── Soft Landing — brief emotional settling before arriving home ──
+  if (screen === 'landing') return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+      <div className="ob-slide" style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(30,15,60,.6), #060912 60%)' }}>
+        <StarBackground opacity={0.6} />
+        <div style={{
+          position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', padding: '0 40px', textAlign: 'center',
+        }}>
+          <div style={{
+            fontSize: 72, lineHeight: 1, marginBottom: 20,
+            animation: 'ob-floatY 4s ease-in-out infinite',
+            filter: 'drop-shadow(0 0 24px rgba(246,197,111,.5))',
+          }}>
+            {creatureEmoji}
+          </div>
+          <div style={{
+            fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 300,
+            fontStyle: 'italic', color: 'rgba(244,239,232,.7)',
+            lineHeight: 1.35, letterSpacing: '-0.3px', marginBottom: 8,
+            animation: 'ob-fadeUp 0.6s 0.3s ease both', opacity: 0,
+          }}>
+            This is your place now.
+          </div>
+          <div style={{
+            fontFamily: "'DM Mono', monospace", fontSize: 9,
+            color: 'rgba(244,239,232,.25)', letterSpacing: '.5px',
+            animation: 'ob-fadeUp 0.6s 0.6s ease both', opacity: 0,
+          }}>
+            {creatureName.toUpperCase()} &middot; YOUR DREAMKEEPER
+          </div>
+          <div style={{ animation: 'ob-fadeUp 0.6s 2.0s ease both', opacity: 0, marginTop: 32 }}>
+            <button className="ob-cta" onClick={onComplete}>Enter &rarr;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return null;
 }

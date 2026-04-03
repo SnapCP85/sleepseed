@@ -136,19 +136,37 @@ export default function UserProfile() {
               const cr = childCreatureMap[c.id];
               const crDef = cr ? getCreature(cr.creatureType) : null;
               return (
-                <div key={c.id} className="pf-kid" onClick={() => { setEditingCharacter(c); setView('characters'); }}>
-                  <div className="pf-kid-av" style={{ background: c.color ? `linear-gradient(145deg,${c.color}30,rgba(12,24,64,.6))` : 'rgba(255,255,255,.06)', borderColor: c.color ? c.color + '50' : 'rgba(245,184,76,.3)' }}>
-                    {c.photo ? <img src={c.photo} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (c.emoji || c.name?.charAt(0))}
-                  </div>
-                  <div className="pf-kid-info">
-                    <div className="pf-kid-name">{c.name}</div>
-                    <div className="pf-kid-meta">
-                      {c.ageDescription ? `Age ${c.ageDescription}` : ''}
-                      {cr ? ` · ${cr.name}` : ''}
-                      {crDef ? ` · ${crDef.name}` : ''}
+                <div key={c.id} style={{ marginBottom: 8 }}>
+                  <div className="pf-kid" onClick={() => { setEditingCharacter(c); setView('characters'); }}>
+                    <div className="pf-kid-av" style={{ background: c.color ? `linear-gradient(145deg,${c.color}30,rgba(12,24,64,.6))` : 'rgba(255,255,255,.06)', borderColor: c.color ? c.color + '50' : 'rgba(245,184,76,.3)' }}>
+                      {c.photo ? <img src={c.photo} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (c.emoji || c.name?.charAt(0))}
                     </div>
+                    <div className="pf-kid-info">
+                      <div className="pf-kid-name">{c.name}</div>
+                      <div className="pf-kid-meta">
+                        {c.ageDescription ? `Age ${c.ageDescription}` : ''}
+                        {cr ? ` \u00B7 ${cr.name}` : ''}
+                        {crDef ? ` \u00B7 ${crDef.name}` : ''}
+                      </div>
+                    </div>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(234,242,255,.24)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
                   </div>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(234,242,255,.24)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setEditingCharacter(c); setView('memory-portrait' as any); }}
+                    style={{
+                      width: '100%', padding: '9px 16px', marginTop: -2,
+                      borderRadius: '0 0 14px 14px',
+                      border: '1px solid rgba(154,127,212,.12)', borderTop: 'none',
+                      background: 'rgba(154,127,212,.04)', cursor: 'pointer',
+                      fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '.4px',
+                      color: 'rgba(154,127,212,.55)', textAlign: 'center',
+                      transition: 'all .15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(154,127,212,.08)'; e.currentTarget.style.color = 'rgba(154,127,212,.75)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(154,127,212,.04)'; e.currentTarget.style.color = 'rgba(154,127,212,.55)'; }}
+                  >
+                    Memory Portrait
+                  </button>
                 </div>
               );
             })

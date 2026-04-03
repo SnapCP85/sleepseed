@@ -59,7 +59,8 @@ const CSS = `
 .ncl-nav-btn{width:34px;height:34px;border-radius:50%;background:rgba(244,239,232,.06);border:none;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;color:var(--cream-faint);transition:all .18s}
 .ncl-nav-btn:hover{background:rgba(244,239,232,.1)}
 
-.ncl-inner{max-width:600px;margin:0 auto;padding:0}
+.ncl-inner{max-width:960px;margin:0 auto;padding:0 20px}
+@media(min-width:768px){.ncl-inner{padding:0 40px}}
 
 /* ── HERO SECTION ── */
 .ncl-hero{position:relative;overflow:hidden}
@@ -458,9 +459,11 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
       {/* ── SELECTED CARD MODAL ── */}
       {viewing && (
         <>
-          <div onClick={()=>setViewing(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,.75)',zIndex:200,animation:'ncl-fadeUp .2s ease both'}}/>
+          <div onClick={()=>setViewing(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,.82)',zIndex:200,animation:'ncl-fadeUp .25s ease both'}}/>
           <div style={{position:'fixed',inset:0,zIndex:201,display:'flex',alignItems:'center',justifyContent:'center',padding:20,pointerEvents:'none'}}>
-            <div style={{pointerEvents:'all',width:'100%',maxWidth:300,animation:'ncl-cardIn .3s cubic-bezier(.2,.8,.3,1) both'}}>
+            {/* Soft glow behind card */}
+            <div style={{position:'absolute',top:'40%',left:'50%',transform:'translate(-50%,-50%)',width:320,height:320,borderRadius:'50%',background:'radial-gradient(circle,rgba(154,127,212,.12) 0%,transparent 70%)',pointerEvents:'none',animation:'ncl-fadeUp .4s ease both'}}/>
+            <div style={{pointerEvents:'all',width:'100%',maxWidth:300,animation:'ncl-cardIn .35s cubic-bezier(.2,.8,.3,1) both',position:'relative',zIndex:1}}>
               <NightCard card={viewing} size="full" />
               <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginTop:16}}>
                 <button onClick={()=>setViewing(null)} style={{padding:'11px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.06)',color:'rgba(234,242,255,.6)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>Close</button>

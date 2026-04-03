@@ -158,8 +158,10 @@ export default function ParentOnboarding({ onComplete, onSaveLater }: Props) {
 
   const handleComplete = useCallback(() => {
     if (!nameValid) return;
+    const trimmed = childName.trim();
+    const capitalized = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
     onComplete({
-      childName: childName.trim(),
+      childName: capitalized,
       childAge: childAge || '',
       childPronouns: childPronouns || 'they/them',
     });
@@ -365,7 +367,7 @@ export default function ParentOnboarding({ onComplete, onSaveLater }: Props) {
               </div>
             </div>
             <div style={fadeUp(1)}>
-              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: 'rgba(234,242,255,.2)', letterSpacing: 0.5, marginBottom: 18 }}>3 minutes a night.</div>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 13, color: 'rgba(246,197,111,.55)', letterSpacing: 0.8, marginBottom: 18, fontWeight: 500 }}>3 minutes a night.</div>
               <button className="ob-cta" onClick={() => setStep(4)}>We'll try 3 nights</button>
             </div>
           </div>
@@ -413,17 +415,8 @@ export default function ParentOnboarding({ onComplete, onSaveLater }: Props) {
               </div>
             </div>
 
-            {/* Name input with corner brackets */}
-            <div style={{ ...fadeUp(0.3), width: '100%', marginBottom: 16, position: 'relative' }}>
-              {/* Corner brackets */}
-              {[
-                { top: -5, left: -5, borderTop: '1.5px solid rgba(246,197,111,.28)', borderLeft: '1.5px solid rgba(246,197,111,.28)', borderRadius: '3px 0 0 0' },
-                { top: -5, right: -5, borderTop: '1.5px solid rgba(246,197,111,.28)', borderRight: '1.5px solid rgba(246,197,111,.28)', borderRadius: '0 3px 0 0' },
-                { bottom: -5, left: -5, borderBottom: '1.5px solid rgba(246,197,111,.28)', borderLeft: '1.5px solid rgba(246,197,111,.28)', borderRadius: '0 0 0 3px' },
-                { bottom: -5, right: -5, borderBottom: '1.5px solid rgba(246,197,111,.28)', borderRight: '1.5px solid rgba(246,197,111,.28)', borderRadius: '0 0 3px 0' },
-              ].map((s, i) => (
-                <div key={i} style={{ position: 'absolute', width: 12, height: 12, ...s } as React.CSSProperties} />
-              ))}
+            {/* Name input — gold outlined */}
+            <div style={{ ...fadeUp(0.3), maxWidth: 300, width: '100%', margin: '0 auto 16px' }}>
               <input
                 className="ob-p-input"
                 placeholder="Their name..."
@@ -485,9 +478,9 @@ export default function ParentOnboarding({ onComplete, onSaveLater }: Props) {
 
             {/* Preview */}
             <div style={{ ...fadeUp(0.55), width: '100%', marginBottom: 22 }}>
-              <div style={{ padding: '11px 16px', background: 'rgba(246,197,111,.07)', border: '1px solid rgba(246,197,111,.16)', borderRadius: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ fontSize: 16, lineHeight: 1 }}>&#10022;</div>
-                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: 'rgba(246,197,111,.65)', letterSpacing: 0.3 }}>
+              <div style={{ padding: '11px 16px', background: 'rgba(246,197,111,.07)', border: '1px solid rgba(246,197,111,.16)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <div style={{ fontSize: 14, lineHeight: 1 }}>&#10022;</div>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: 'rgba(246,197,111,.65)', letterSpacing: 0.3, textAlign: 'center' }}>
                   {nameValid
                     ? `Tonight's story will be made for ${childName.trim()}`
                     : "Enter their name to begin"}

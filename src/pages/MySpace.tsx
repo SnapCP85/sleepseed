@@ -3,7 +3,9 @@ import { useApp } from '../AppContext';
 import { getStories, getNightCards, getCharacters } from '../lib/storage';
 import { getAllHatchedCreatures } from '../lib/hatchery';
 import { getDreamKeeperById, V1_DREAMKEEPERS, type DreamKeeper } from '../lib/dreamkeepers';
-import type { Character, HatchedCreature } from '../lib/types';
+import { isRitualComplete } from '../lib/ritualState';
+import type { Character, HatchedCreature, SavedNightCard } from '../lib/types';
+import NightCardComponent from '../features/nightcards/NightCard';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MySpace — The child's calm, magical home screen
@@ -19,7 +21,8 @@ interface Props {
 
 const CSS = `
 .ms{min-height:100vh;min-height:100dvh;background:linear-gradient(180deg,#060912 0%,#0a0e24 40%,#0f0a20 100%);font-family:'Nunito',system-ui,sans-serif;color:#F4EFE8;-webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden}
-.ms-inner{max-width:430px;margin:0 auto;padding:0 24px 32px;position:relative;z-index:5}
+.ms-inner{max-width:960px;margin:0 auto;padding:0 24px 32px;position:relative;z-index:5}
+@media(min-width:768px){.ms-inner{padding:0 40px 32px}}
 .ms-scroll-strip{scrollbar-width:none;-webkit-overflow-scrolling:touch}.ms-scroll-strip::-webkit-scrollbar{display:none}
 
 @keyframes ms-creatureIdle{0%,100%{transform:scale(1) translateY(0)}25%{transform:scale(1.015) translateY(-3px)}50%{transform:scale(1.02) translateY(-5px)}75%{transform:scale(1.015) translateY(-3px)}}
@@ -86,6 +89,35 @@ function calcStreak(cards: { date: string }[]): number {
   return streak;
 }
 
+/** Brief speech bubble that appears on load and fades after 4s */
+function CreatureGreeting({ childName, creatureName, rgb }: { childName: string; creatureName: string; rgb: string }) {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(false), 4000);
+    return () => clearTimeout(t);
+  }, []);
+  if (!visible) return null;
+  const name = childName && childName !== 'friend' ? childName : null;
+  return (
+    <div style={{
+      marginTop: 8, padding: '10px 16px',
+      background: `rgba(${rgb},.08)`, border: `1px solid rgba(${rgb},.2)`,
+      borderRadius: '16px 16px 16px 4px', maxWidth: 260, textAlign: 'left',
+      animation: 'ms-fadeUp .5s ease-out, ms-greetFade 4s ease-in-out forwards',
+    }}>
+      <div style={{
+        fontFamily: "'Fraunces',Georgia,serif", fontSize: 13, fontWeight: 400,
+        fontStyle: 'italic', color: 'rgba(244,239,232,.7)', lineHeight: 1.5,
+      }}>
+        {name
+          ? `"Hi ${name}, I\u2019m here whenever you\u2019re ready."`
+          : `"I\u2019m here whenever you\u2019re ready."`}
+      </div>
+      <style>{`@keyframes ms-greetFade{0%,70%{opacity:1}100%{opacity:0}}`}</style>
+    </div>
+  );
+}
+
 export default function MySpace({ onSignUp, onReadStory }: Props) {
   const { user, setView, companionCreature, setCompanionCreature, selectedCharacter, setSelectedCharacter } = useApp();
 
@@ -99,6 +131,8 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
   const [cardCount, setCardCount] = useState(0);
   const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [showAllChildren, setShowAllChildren] = useState(false);
+  const [viewingCard, setViewingCard] = useState<SavedNightCard | null>(null);
 
   const userId = user?.id;
 
@@ -198,12 +232,15 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
   // First-time detection
   const isFirstTime = storyCount === 0 && cardCount === 0;
 
-  // DreamKeeper image lookup — resolves by ID, emoji, or falls back to default
-  const dk = resolveDreamKeeper(companionCreature);
+  // DreamKeeper image lookup — but NOT during the 3-night ritual (before hatch)
+  // Show the egg until the ritual is complete, regardless of what companionCreature says
+  const ritualDone = userId ? isRitualComplete(userId) : true;
+  const isPreHatchEgg = !ritualDone || companionCreature?.creatureType === 'spirit' || companionCreature?.creatureEmoji === '\uD83E\uDD5A';
+  const dk = isPreHatchEgg ? null : resolveDreamKeeper(companionCreature);
   const creatureImageSrc = dk?.imageSrc;
-  const creatureName = companionCreature?.name || dk?.name || '';
+  const creatureName = isPreHatchEgg ? (companionCreature?.name || 'Dream Egg') : (companionCreature?.name || dk?.name || '');
   const creatureColor = companionCreature?.color || dk?.color || '#F5B84C';
-  const creatureEmoji = companionCreature?.creatureEmoji || dk?.emoji || '🌙';
+  const creatureEmoji = companionCreature?.creatureEmoji || dk?.emoji || '\uD83C\uDF19';
   const rgb = hexToRgb(creatureColor);
 
   // Time-aware greeting
@@ -272,11 +309,35 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
 
       <div className="ms-inner">
 
-        {/* ═══ 0. PROFILE BUTTON ═══ */}
+        {/* ═══ 0. TOP BAR: Child Toggle + Profile ═══ */}
         <div style={{
-          position: 'absolute', top: 18, right: 0, zIndex: 10,
+          position: 'absolute', top: 18, left: 0, right: 0, zIndex: 10,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           animation: 'ms-fadeUp .5s ease-out',
         }}>
+          {/* Child toggle — cycles through children on tap */}
+          {hasMultipleChildren ? (
+            <button
+              onClick={() => {
+                const idx = familyChildren.findIndex(c => c.id === activeChild?.id);
+                const next = familyChildren[(idx + 1) % familyChildren.length];
+                handleChildSwitch(next);
+              }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '6px 14px 6px 8px', borderRadius: 24,
+                background: 'rgba(245,184,76,.06)', border: '1px solid rgba(245,184,76,.15)',
+                cursor: 'pointer', transition: 'all .15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(245,184,76,.12)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245,184,76,.06)'; }}
+            >
+              <span style={{ fontSize: 16 }}>{activeChild?.emoji || '\uD83C\uDF19'}</span>
+              <span style={{ fontFamily: "'Nunito',system-ui,sans-serif", fontSize: 12, fontWeight: 600, color: 'rgba(245,184,76,.8)' }}>{activeChild?.name}</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(245,184,76,.5)" strokeWidth="2.5" strokeLinecap="round"><path d="m8 10 4 4 4-4"/></svg>
+            </button>
+          ) : <div />}
+          {/* Profile button */}
           <button
             onClick={() => setView('user-profile')}
             style={{
@@ -285,7 +346,7 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
               border: '1px solid rgba(255,255,255,.08)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', transition: 'background .15s, border-color .15s',
-              padding: 0,
+              padding: 0, flexShrink: 0,
             }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,.15)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,.08)'; }}
@@ -320,21 +381,7 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
           </div>
         </div>
 
-        {/* ═══ 1a. CHILD TOGGLE (multi-child) ═══ */}
-        {hasMultipleChildren && (
-          <div className="ms-child-toggle" style={{ paddingTop: 4, marginBottom: 6 }}>
-            {familyChildren.map(child => (
-              <div
-                key={child.id}
-                className={`ms-child-pill${activeChild?.id === child.id ? ' ms-active' : ''}`}
-                onClick={() => handleChildSwitch(child)}
-              >
-                <span className="ms-pill-emoji">{child.emoji || '🌙'}</span>
-                <span>{child.name}</span>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Child pills removed — replaced by top-bar toggle */}
 
         {/* ═══ 1b. STREAK PILL ═══ */}
         {streak > 0 && (
@@ -410,6 +457,9 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
               {creatureName}
             </div>
           )}
+
+          {/* Greeting speech bubble — appears briefly on load */}
+          <CreatureGreeting childName={childName} creatureName={creatureName} rgb={rgb} />
         </div>
 
         {/* ═══ 3. PRIMARY CTA ═══ */}
@@ -526,7 +576,7 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
               {recentCards.map((card: any, i: number) => (
                 <div
                   key={card.id || i}
-                  onClick={() => setView('nightcard-library')}
+                  onClick={() => setViewingCard(card)}
                   style={{
                     flexShrink: 0, width: 150, borderRadius: 14, overflow: 'hidden',
                     cursor: 'pointer', transition: 'transform .15s',
@@ -625,51 +675,54 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
               </div>
             </>
           ) : (
-            <>
-              <div style={{
-                fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 300,
-                color: 'rgba(244,239,232,.6)', marginBottom: 6,
-              }}>
-                {creatureName ? `${creatureName} is growing` : 'Your DreamKeeper is growing'}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
-                <div>
-                  <div style={{
-                    fontFamily: "'Fraunces',Georgia,serif", fontSize: 24, fontWeight: 400,
-                    color: creatureColor,
-                  }}>
-                    {storyCount}
-                  </div>
-                  <div style={{
-                    fontFamily: "'DM Mono',monospace", fontSize: 9,
-                    color: 'rgba(244,239,232,.25)', letterSpacing: '.04em',
-                    textTransform: 'uppercase',
-                  }}>
-                    {storyCount === 1 ? 'Night' : 'Nights'}
-                  </div>
-                </div>
-                <div style={{ width: 1, background: 'rgba(255,255,255,.06)' }} />
-                <div>
-                  <div style={{
-                    fontFamily: "'Fraunces',Georgia,serif", fontSize: 24, fontWeight: 400,
-                    color: creatureColor,
-                  }}>
-                    {cardCount}
-                  </div>
-                  <div style={{
-                    fontFamily: "'DM Mono',monospace", fontSize: 9,
-                    color: 'rgba(244,239,232,.25)', letterSpacing: '.04em',
-                    textTransform: 'uppercase',
-                  }}>
-                    {cardCount === 1 ? 'Memory' : 'Memories'}
-                  </div>
-                </div>
-              </div>
-            </>
+            <div style={{
+              fontFamily: "'Fraunces',Georgia,serif", fontSize: 14, fontWeight: 300,
+              fontStyle: 'italic', color: 'rgba(244,239,232,.45)', lineHeight: 1.65,
+            }}>
+              {creatureName || 'Your DreamKeeper'} has been with {childName} for {storyCount} {storyCount === 1 ? 'night' : 'nights'}
+              {cardCount > 0 ? ` and remembers ${cardCount} ${cardCount === 1 ? 'moment' : 'moments'}` : ''}.
+            </div>
           )}
         </div>
 
       </div>
+
+      {/* Night Card detail overlay */}
+      {viewingCard && (
+        <>
+          <div onClick={() => setViewingCard(null)} style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,.82)',
+            zIndex: 200, animation: 'ms-fadeUp .2s ease both',
+          }} />
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 201,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 20, pointerEvents: 'none',
+          }}>
+            <div style={{
+              position: 'absolute', top: '40%', left: '50%',
+              transform: 'translate(-50%,-50%)', width: 320, height: 320,
+              borderRadius: '50%', pointerEvents: 'none',
+              background: 'radial-gradient(circle,rgba(154,127,212,.12) 0%,transparent 70%)',
+            }} />
+            <div style={{
+              pointerEvents: 'all', width: '100%', maxWidth: 300,
+              animation: 'ms-fadeUp .3s ease both', position: 'relative', zIndex: 1,
+            }}>
+              <NightCardComponent card={viewingCard} size="full" />
+              <button
+                onClick={() => setViewingCard(null)}
+                style={{
+                  width: '100%', marginTop: 14, padding: '11px 8px',
+                  borderRadius: 14, border: '1px solid rgba(255,255,255,.12)',
+                  background: 'rgba(255,255,255,.06)', color: 'rgba(234,242,255,.6)',
+                  fontSize: 11, fontFamily: "'DM Mono',monospace", cursor: 'pointer',
+                }}
+              >Close</button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

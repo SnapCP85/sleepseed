@@ -28,6 +28,7 @@ import DevStoryTest from './pages/DevStoryTest';
 import AdminUploadBook from './pages/AdminUploadBook';
 import JourneyLibrary from './pages/JourneyLibrary';
 import CompletedBookReader from './pages/CompletedBookReader';
+import MemoryPortrait from './pages/MemoryPortrait';
 import { JourneySetup, NightlyCheckIn, ChapterHandoff, BookComplete, MemoryReel, SeriesCreator } from './components/journey';
 import { chapterToBookData } from './components/journey/ChapterHandoff';
 
@@ -56,6 +57,7 @@ import { assignCreature } from './lib/creatureAssignment';
 import { V1_DREAMKEEPERS } from './lib/dreamkeepers';
 import OnboardingV9Preview from './pages/OnboardingV9Preview';
 import OnboardingShell from './components/onboarding/OnboardingShell';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Old BottomNav removed — replaced by src/components/BottomNavigation.tsx via AppLayout
 
@@ -64,25 +66,22 @@ function AppInner() {
   if (new URLSearchParams(window.location.search).get('nc')) return <SharedNightCard />;
   // Print night card
   if (new URLSearchParams(window.location.search).get('printCard')) return <PrintNightCard />;
-  // DEV: instant route — no flash, no auth
-  if (new URLSearchParams(window.location.search).get('view') === 'dev-story') return <DevStoryTest />;
-  // DEV: v9 onboarding preview — all screens with forward/back nav, no auth
-  if (new URLSearchParams(window.location.search).get('view') === 'v9-preview') return <OnboardingV9Preview />;
-  // DEV: DreamKeeper onboarding preview — TEMPORARY, remove before production
-  if (new URLSearchParams(window.location.search).get('view') === 'dk-test') return (
-    <DreamKeeperOnboarding
-      childName="Test Child"
-      childAge="6"
-      childPronouns="they/them"
-      onComplete={(result) => { console.log('[dk-test] DreamKeeper selected:', result); alert(`Selected: ${result.dreamKeeper.name} (${result.dreamKeeper.virtue})\nFeeling: ${result.feeling}`); }}
-      onBack={() => { window.location.href = window.location.pathname; }}
-    />
-  );
-  // DEV: Full new-user flow test — TEMPORARY, remove before production
-  // Simulates: ParentSetup → DreamKeeper → MySpace (first-time)
-  // Usage: /?view=new-user-test
-  if (new URLSearchParams(window.location.search).get('view') === 'new-user-test') {
-    return <NewUserFlowTest />;
+  // DEV-only routes — gated behind dev mode to prevent accidental access during demos
+  if (import.meta.env.DEV) {
+    if (new URLSearchParams(window.location.search).get('view') === 'dev-story') return <DevStoryTest />;
+    if (new URLSearchParams(window.location.search).get('view') === 'v9-preview') return <OnboardingV9Preview />;
+    if (new URLSearchParams(window.location.search).get('view') === 'dk-test') return (
+      <DreamKeeperOnboarding
+        childName="Test Child"
+        childAge="6"
+        childPronouns="they/them"
+        onComplete={(result) => { console.log('[dk-test] DreamKeeper selected:', result); alert(`Selected: ${result.dreamKeeper.name} (${result.dreamKeeper.virtue})\nFeeling: ${result.feeling}`); }}
+        onBack={() => { window.location.href = window.location.pathname; }}
+      />
+    );
+    if (new URLSearchParams(window.location.search).get('view') === 'new-user-test') {
+      return <NewUserFlowTest />;
+    }
   }
 
   const {
@@ -111,7 +110,17 @@ function AppInner() {
   });
   const [nightCardFilter,    setNightCardFilter]    = useState<string | undefined>(undefined);
   // v9 onboarding: track which night sub-screen to show after story-builder returns
-  const [nightReturnTo, setNightReturnTo] = useState<{ night: 1 | 2 | 3; screen: string } | null>(null);
+  // Persisted to sessionStorage so a page refresh during generation doesn't lose the return path
+  const [nightReturnTo, _setNightReturnTo] = useState<{ night: 1 | 2 | 3; screen: string } | null>(() => {
+    try { const s = sessionStorage.getItem('sleepseed_nightReturnTo'); return s ? JSON.parse(s) : null; } catch { return null; }
+  });
+  const setNightReturnTo = (val: { night: 1 | 2 | 3; screen: string } | null) => {
+    _setNightReturnTo(val);
+    try {
+      if (val) sessionStorage.setItem('sleepseed_nightReturnTo', JSON.stringify(val));
+      else sessionStorage.removeItem('sleepseed_nightReturnTo');
+    } catch {}
+  };
   const [viewingCharacter,   setViewingCharacter]   = useState<Character | null>(null);
   // Multi-child: name entry for additional children before DreamKeeper onboarding
   const [addChildName, setAddChildName] = useState<string | null>(null);
@@ -186,6 +195,18 @@ function AppInner() {
     }
   }, [view]);
 
+  // Story builder handoff state — brief transition before generation starts
+  const [storyHandoffDone, setStoryHandoffDone] = useState(true);
+  useEffect(() => {
+    if (view === 'story-builder' && wizardChoices && !preloadedBook && !activeChapterOutput) {
+      setStoryHandoffDone(false);
+      const t = setTimeout(() => setStoryHandoffDone(true), 800);
+      return () => clearTimeout(t);
+    } else {
+      setStoryHandoffDone(true);
+    }
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── All hooks above this line ─────────────────────────────────────────────
 
   if (isSharedStory) return <SharedStoryViewer />;
@@ -223,6 +244,41 @@ function AppInner() {
       <style>{`@keyframes ssLoadIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
     </div>
   );
+
+  // ── Reliable child profile resolver (avoids "friend" fallback) ───────────
+  const capitalize = (s: string) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+  const resolveChildProfile = (): { childName: string; childAge: string; childPronouns: string } => {
+    let result: { childName: string; childAge: string; childPronouns: string } | null = null;
+    // 1. React state (freshest if parent just completed onboarding)
+    if (parentSetupData?.childName) result = parentSetupData as any;
+    // 2. localStorage (survives refresh)
+    if (!result && user) {
+      try {
+        const stored = localStorage.getItem(`sleepseed_child_profile_${user.id}`);
+        if (stored) { const p = JSON.parse(stored); if (p?.childName) result = p; }
+      } catch {}
+    }
+    // 3. Ritual state (has childName from initRitualState)
+    if (!result && user) {
+      const rs = getRitualState(user.id);
+      if (rs.childName && rs.childName !== 'friend') result = { childName: rs.childName, childAge: '', childPronouns: 'they/them' };
+    }
+    // 4. Selected character
+    if (!result && selectedCharacter?.name) result = { childName: selectedCharacter.name, childAge: selectedCharacter.ageDescription || '', childPronouns: (selectedCharacter.pronouns || 'they/them') as string };
+    // 5. Any family character from characters list in context
+    if (!result && selectedCharacters?.length > 0 && selectedCharacters[0]?.name) result = { childName: selectedCharacters[0].name, childAge: selectedCharacters[0].ageDescription || '', childPronouns: (selectedCharacters[0].pronouns || 'they/them') as string };
+    // 6. Characters cached in localStorage (covers returning users who skip onboarding)
+    if (!result && user) {
+      try {
+        const cachedChars = JSON.parse(localStorage.getItem(`ss2_chars_${user.id}`) || '[]');
+        const familyChar = cachedChars.find((c: any) => c.isFamily && c.type === 'human' && c.name);
+        if (familyChar) result = { childName: familyChar.name, childAge: familyChar.ageDescription || '', childPronouns: (familyChar.pronouns || 'they/them') as string };
+      } catch {}
+    }
+    // Always capitalize the name
+    if (result) { result.childName = capitalize(result.childName.trim()); return result; }
+    return { childName: 'Dreamer', childAge: '', childPronouns: 'they/them' };
+  };
 
   const goAuth        = () => setView('auth');
   // Clean library URL params when leaving library views
@@ -634,11 +690,7 @@ function AppInner() {
 
   // ── Cinematic Transition (Elder → name constellation → Night 1) ────────
   if (view === 'cinematic-transition') {
-    let profile = parentSetupData;
-    if (!profile && user) {
-      try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); if (s) profile = JSON.parse(s); } catch {}
-    }
-    return <OnboardingShell><CinematicTransition childName={profile?.childName || 'friend'} onComplete={() => setView('night-1')} /></OnboardingShell>;
+    return <OnboardingShell><CinematicTransition childName={resolveChildProfile().childName} onComplete={() => setView('night-1')} /></OnboardingShell>;
   }
 
   // ── Night 1 Dashboard ────────────────────────────────────────────────
@@ -648,19 +700,14 @@ function AppInner() {
       initialScreen={nightReturnTo?.night === 1 ? nightReturnTo.screen : undefined}
       onInitialScreenConsumed={() => setNightReturnTo(null)}
       onStartStory={(ritualSeed) => {
-        // Build choices for SleepSeedCore ritual mode
-        let profile = parentSetupData;
-        if (!profile && user) {
-          try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); if (s) profile = JSON.parse(s); } catch {}
-        }
-        const heroName = profile?.childName || 'friend';
-        const heroGender = profile?.childPronouns === 'he/him' ? 'boy' : profile?.childPronouns === 'she/her' ? 'girl' : '';
+        const cp = resolveChildProfile();
+        const heroGender = cp.childPronouns === 'he/him' ? 'boy' : cp.childPronouns === 'she/her' ? 'girl' : '';
         setWizardChoices({
           path: 'ritual',
-          heroName,
+          heroName: cp.childName,
           heroGender,
           vibe: 'calm-cosy',
-          level: profile?.childAge ? (parseInt(profile.childAge) <= 5 ? 'age3' : parseInt(profile.childAge) <= 8 ? 'age5' : 'age7') : 'age5',
+          level: cp.childAge ? (parseInt(cp.childAge) <= 5 ? 'age3' : parseInt(cp.childAge) <= 8 ? 'age5' : 'age7') : 'age5',
           length: 'standard',
           brief: ritualSeed,
           chars: [],
@@ -670,7 +717,7 @@ function AppInner() {
           style: 'standard',
           pace: 'sleepy',
         });
-        setNightReturnTo({ night: 1, screen: 'post-story' });
+        setNightReturnTo({ night: 1, screen: 'egg-gift' });
         setPreloadedBook(null);
         setView('story-builder');
       }}
@@ -694,18 +741,14 @@ function AppInner() {
       initialScreen={nightReturnTo?.night === 2 ? nightReturnTo.screen : undefined}
       onInitialScreenConsumed={() => setNightReturnTo(null)}
       onStartStory={(ritualSeed) => {
-        let profile = parentSetupData;
-        if (!profile && user) {
-          try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); if (s) profile = JSON.parse(s); } catch {}
-        }
-        const heroName = profile?.childName || 'friend';
-        const heroGender = profile?.childPronouns === 'he/him' ? 'boy' : profile?.childPronouns === 'she/her' ? 'girl' : '';
+        const cp = resolveChildProfile();
+        const heroGender = cp.childPronouns === 'he/him' ? 'boy' : cp.childPronouns === 'she/her' ? 'girl' : '';
         setWizardChoices({
           path: 'ritual',
-          heroName,
+          heroName: cp.childName,
           heroGender,
           vibe: 'calm-cosy',
-          level: profile?.childAge ? (parseInt(profile.childAge) <= 5 ? 'age3' : parseInt(profile.childAge) <= 8 ? 'age5' : 'age7') : 'age5',
+          level: cp.childAge ? (parseInt(cp.childAge) <= 5 ? 'age3' : parseInt(cp.childAge) <= 8 ? 'age5' : 'age7') : 'age5',
           length: 'standard',
           brief: ritualSeed,
           chars: [],
@@ -740,25 +783,18 @@ function AppInner() {
 
   // ── Night 3 Story (hardcoded "The Choosing") ─────────────────────────
   if ((view as string) === 'night-3-story') {
-    let profile = parentSetupData;
-    if (!profile && user) {
-      try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); if (s) profile = JSON.parse(s); } catch {}
-    }
-    return <OnboardingShell><Night3Story childName={profile?.childName || 'friend'} onComplete={() => setView('hatch-ceremony')} /></OnboardingShell>;
+    return <OnboardingShell><Night3Story childName={resolveChildProfile().childName} onComplete={() => setView('hatch-ceremony')} /></OnboardingShell>;
   }
 
   // ── Hatch Ceremony ───────────────────────────────────────────────────
   if (view === 'hatch-ceremony') {
-    let profile = parentSetupData;
-    if (!profile && user) {
-      try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); if (s) profile = JSON.parse(s); } catch {}
-    }
+    const profile = resolveChildProfile();
     // Determine creature from 3 nights of answers
     const rs = user ? getRitualState(user.id) : null;
     const assigned = assignCreature(rs?.smileAnswer || '', rs?.talentAnswer || '');
 
     return <OnboardingShell><HatchCeremony
-      childName={profile?.childName || 'friend'}
+      childName={profile.childName}
       creatureEmoji={assigned.emoji}
       onComplete={async () => {
         if (!user) { setView('dashboard'); return; }
@@ -810,7 +846,7 @@ function AppInner() {
         const nc: SavedNightCard = {
           id: crypto.randomUUID?.() || `nc_${Date.now()}`,
           userId: user.id,
-          heroName: profile?.childName || 'friend',
+          heroName: profile.childName,
           storyTitle: 'The Night Your DreamKeeper Was Born',
           characterIds: charId ? [charId] : [],
           headline: 'The Night Your DreamKeeper Was Born',
@@ -832,14 +868,11 @@ function AppInner() {
 
   // ── Post-Hatch (first contact → photo card → born card) ──────────────
   if ((view as string) === 'post-hatch') {
-    let profile = parentSetupData;
-    if (!profile && user) {
-      try { const s = localStorage.getItem(`sleepseed_child_profile_${user.id}`); if (s) profile = JSON.parse(s); } catch {}
-    }
+    const profile = resolveChildProfile();
     const rs = user ? getRitualState(user.id) : null;
     const assigned = assignCreature(rs?.smileAnswer || '', rs?.talentAnswer || '');
     return <OnboardingShell><PostHatch
-      childName={profile?.childName || 'friend'}
+      childName={profile.childName}
       creatureEmoji={assigned.emoji}
       creatureName={assigned.name}
       onComplete={() => {
@@ -1020,7 +1053,8 @@ function AppInner() {
         {needsRitual && (() => {
           const rs = user ? getRitualState(user.id) : null;
           const nightView = rs?.currentNight === 3 ? 'night-3' : rs?.currentNight === 2 ? 'night-2' : 'night-1';
-          const nightLabel = rs?.currentNight === 3 ? 'Night 3 — the hatching' : rs?.currentNight === 2 ? 'Night 2 — it remembers' : 'Night 1 — the egg arrives';
+          const nightLabel = rs?.currentNight === 3 ? 'Night 3 \u2014 the hatching' : rs?.currentNight === 2 ? 'Night 2 \u2014 it remembers' : 'Night 1 \u2014 the egg arrives';
+
           return (
             <div style={{
               margin: '16px 16px 0', padding: '20px 20px', borderRadius: 16,
@@ -1189,6 +1223,22 @@ function AppInner() {
     </AppLayout>
   );
 
+  if ((view as string) === 'memory-portrait') {
+    // Use selectedCharacter, editingCharacter, or first family character as the portrait subject
+    const portraitChild = selectedCharacter || editingCharacter || null;
+    if (portraitChild) return (
+      <AppLayout currentTab="my-space" onNav={handleNav}>
+        <MemoryPortrait
+          child={portraitChild}
+          onBack={() => setView('user-profile')}
+        />
+      </AppLayout>
+    );
+    // Fallback if no child selected
+    setView('user-profile');
+    return null;
+  }
+
   if ((view as string) === 'character-detail' && viewingCharacter) return (
     <AppLayout currentTab="user-profile" onNav={handleNav}>
       <CharacterDetail
@@ -1217,6 +1267,32 @@ function AppInner() {
       if (isChapterData) return chapterToBookData(activeChapterOutput as Record<string, unknown>);
       return preloadedBook;
     })();
+
+    // Brief handoff transition — DreamKeeper receiving the story seed
+    if (!storyHandoffDone) {
+      return (
+        <div style={{
+          minHeight: '100vh', background: '#060912',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: 16, animation: 'fadeIn .3s ease both',
+        }}>
+          <div style={{ fontSize: 64, animation: 'floatY 3s ease-in-out infinite' }}>
+            {companionCreature?.creatureEmoji || '\uD83E\uDD5A'}
+          </div>
+          <div style={{
+            fontFamily: "'Fraunces',Georgia,serif", fontSize: 18, fontWeight: 300,
+            fontStyle: 'italic', color: 'rgba(244,239,232,.6)', letterSpacing: '-0.2px',
+            animation: 'fadeIn .5s .2s ease both', opacity: 0,
+          }}>
+            {companionCreature?.name || 'Your DreamKeeper'} is listening...
+          </div>
+          <style>{`
+            @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+            @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+          `}</style>
+        </div>
+      );
+    }
 
     return (
       <div style={{ position: 'relative' }}>
@@ -1248,7 +1324,15 @@ function AppInner() {
             companionCreature={companionCreature}
             onCharacterSavePrompt={() => {}}
             onStoryReady={() => {}}
-            onGenerateError={() => setView('story-wizard')}
+            onGenerateError={() => {
+              // If in ritual flow, return to current night instead of generic story-wizard
+              if (nightReturnTo) {
+                const { night } = nightReturnTo;
+                setView(night === 1 ? 'night-1' : night === 2 ? 'night-2' : 'night-3');
+                return;
+              }
+              setView('story-wizard');
+            }}
             onHome={() => {
               const bookObj = effectivePreloadedBook as any;
               // Completed book reader — go back to memory reel or dashboard
@@ -1287,8 +1371,10 @@ function AppInner() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <AppInner />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <AppInner />
+      </AppProvider>
+    </ErrorBoundary>
   );
 }

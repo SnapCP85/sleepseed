@@ -158,12 +158,10 @@
   max-width: 430px;
   height: 100%;
   max-height: 932px;       /* iPhone 15 Pro Max height */
-  overflow: hidden;
+  overflow: hidden;         /* no scrolling — onboarding is a fixed cinematic stage */
   background: #060912;
-  /* Creates a new stacking context so children with position:fixed
-     are visually clipped. We use CSS containment. */
   contain: layout style paint;
-  transform: translateZ(0); /* Force GPU layer = new containing block for fixed children */
+  transform: translateZ(0);
 }
 
 /* On desktop, add phone-like frame */
@@ -188,6 +186,62 @@
   }
 }
 
+/* ── Scene Layout System ─────────────────────────────────────────────────── */
+/* Fixed-zone layout for onboarding screens.                                  */
+/* Each zone is absolutely positioned within .ob-slide.                       */
+/* Screens opt in by using these classes instead of .ob-ct.                   */
+/*                                                                            */
+/*   .ob-scene-top    — header text, eyebrow, titles                         */
+/*   .ob-scene-center — main visual (Elder, egg, constellation)              */
+/*   .ob-scene-bottom — speech, chips, CTA, interactive elements             */
+/* ──────────────────────────────────────────────────────────────────────────── */
+
+.ob-scene-top {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 28%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 28px 12px;
+  text-align: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.ob-scene-center {
+  position: absolute;
+  top: 22%; left: 0; right: 0;
+  height: 36%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.ob-scene-bottom {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 46%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 28px 24px;
+  text-align: center;
+  z-index: 10;
+  overflow: hidden;
+}
+
+/* Allow pointer events on interactive children inside scenes */
+.ob-scene-bottom > *,
+.ob-scene-center > * {
+  pointer-events: auto;
+}
+
 /* ── Shared Component Styles ──────────────────────────────────────────────── */
 
 .ob-slide {
@@ -207,11 +261,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 56px 28px 24px;
+  padding: 44px 28px 24px;
   text-align: center;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;         /* no scrolling — scenes must fit */
+  min-height: 0;            /* allow flex shrinking */
 }
 
 .ob-ct.bottom {
@@ -344,7 +397,7 @@
   width: 100%;
   padding: 18px 20px;
   border-radius: 18px;
-  border: 1.5px solid rgba(255,255,255,.12);
+  border: 1.5px solid rgba(246,197,111,.35);
   background: rgba(255,255,255,.06);
   color: #F4EFE8;
   font-size: 26px;
@@ -353,12 +406,12 @@
   outline: none;
   text-align: center;
   letter-spacing: 0.5px;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s, box-shadow 0.25s;
 }
 
 .ob-p-input:focus {
-  border-color: rgba(246,197,111,.5);
-  box-shadow: 0 0 0 3px rgba(246,197,111,.08);
+  border-color: rgba(246,197,111,.6);
+  box-shadow: 0 0 0 4px rgba(246,197,111,.1);
 }
 
 .ob-p-input::placeholder {

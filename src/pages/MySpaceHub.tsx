@@ -11,7 +11,8 @@ import type { HatchedCreature, SavedNightCard } from '../lib/types';
 
 const CSS = `
 .msh{min-height:100vh;min-height:100dvh;background:#060912;font-family:'Nunito',system-ui,sans-serif;color:#F4EFE8;-webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden}
-.msh-inner{max-width:430px;margin:0 auto;padding:0 20px 120px;position:relative;z-index:5}
+.msh-inner{max-width:960px;margin:0 auto;padding:0 20px 120px;position:relative;z-index:5}
+@media(min-width:768px){.msh-inner{padding:0 40px 120px}}
 .msh-scroll{scrollbar-width:none;-webkit-overflow-scrolling:touch}.msh-scroll::-webkit-scrollbar{display:none}
 
 @keyframes msh-idle{0%,100%{transform:scale(1) translateY(0)}25%{transform:scale(1.01) translateY(-2px)}50%{transform:scale(1.02) translateY(-4px)}75%{transform:scale(1.01) translateY(-2px)}}

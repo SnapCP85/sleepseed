@@ -251,7 +251,8 @@ const CSS = `
 .sc-close:hover{color:var(--cream)}
 
 /* inner */
-.sc-inner{flex:1;width:100%;max-width:540px;margin:0 auto;padding:0 5% 180px;overflow-x:hidden;position:relative;z-index:5}
+.sc-inner{flex:1;width:100%;max-width:720px;margin:0 auto;padding:0 5% 180px;overflow-x:hidden;position:relative;z-index:5}
+@media(min-width:768px){.sc-inner{padding:0 40px 180px}}
 
 /* creature zone */
 .sc-creature{display:flex;flex-direction:column;align-items:center;padding:20px 0 4px;animation:slideUp .4s ease both;position:relative}

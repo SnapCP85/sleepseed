@@ -6,8 +6,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CSS = `
-.ss-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:100;padding:0 12px env(safe-area-inset-bottom,0px) 12px;background:linear-gradient(to top,#060912 60%,rgba(6,9,18,.95) 80%,transparent 100%);padding-top:20px}
-.ss-nav-bar{display:flex;align-items:center;justify-content:space-around;height:64px;border-radius:20px;background:rgba(8,12,28,1);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 -4px 24px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.04) inset;margin-bottom:6px}
+.ss-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:0 12px env(safe-area-inset-bottom,0px) 12px;background:linear-gradient(to top,#060912 60%,rgba(6,9,18,.95) 80%,transparent 100%);padding-top:20px}
+@media(min-width:768px){.ss-nav{padding:0 24px env(safe-area-inset-bottom,0px) 24px;padding-top:20px}}
+.ss-nav-bar{display:flex;align-items:center;justify-content:space-around;height:64px;border-radius:20px;background:rgba(8,12,28,1);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 -4px 24px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.04) inset;margin-bottom:6px;max-width:600px;margin-left:auto;margin-right:auto}
 .ss-nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative;padding:6px 0}
 .ss-nav-ico{width:40px;height:32px;border-radius:12px;display:flex;align-items:center;justify-content:center;transition:all .25s cubic-bezier(.16,1,.3,1)}
 .ss-nav-tab.on .ss-nav-ico{background:rgba(245,184,76,.1)}
@@ -32,19 +33,19 @@ interface Props {
 export default function BottomNavigation({ current, onNav }: Props) {
   const tabs: { id: string; label: string; className?: string; icon: React.ReactNode }[] = [
     {
+      id: 'dashboard', label: 'Today',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
+        </svg>
+      ),
+    },
+    {
       id: 'library', label: 'Discover',
       icon: (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
           <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
           <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-        </svg>
-      ),
-    },
-    {
-      id: 'dashboard', label: 'Today',
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
         </svg>
       ),
     },
