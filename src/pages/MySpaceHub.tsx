@@ -6,14 +6,13 @@ import { getDreamKeeperById, V1_DREAMKEEPERS, type DreamKeeper } from '../lib/dr
 import type { HatchedCreature, SavedNightCard } from '../lib/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MySpaceHub — Personal hub: creature, memory orbit, night cards, stories
+// MySpaceHub — Memory center: creature orbit, last night, memories + stories
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CSS = `
 .msh{min-height:100vh;min-height:100dvh;background:#060912;font-family:'Nunito',system-ui,sans-serif;color:#F4EFE8;-webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden}
 .msh-inner{max-width:960px;margin:0 auto;padding:0 20px 120px;position:relative;z-index:5}
 @media(min-width:768px){.msh-inner{padding:0 40px 120px}}
-.msh-scroll{scrollbar-width:none;-webkit-overflow-scrolling:touch}.msh-scroll::-webkit-scrollbar{display:none}
 
 @keyframes msh-idle{0%,100%{transform:scale(1) translateY(0)}25%{transform:scale(1.01) translateY(-2px)}50%{transform:scale(1.02) translateY(-4px)}75%{transform:scale(1.01) translateY(-2px)}}
 @keyframes msh-fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
@@ -21,9 +20,26 @@ const CSS = `
 @keyframes msh-orbit{from{transform:rotate(0deg) translateX(var(--orbit-r)) rotate(0deg)}to{transform:rotate(360deg) translateX(var(--orbit-r)) rotate(-360deg)}}
 @keyframes msh-twinkle{0%,100%{opacity:.05}50%{opacity:.2}}
 @keyframes msh-modalIn{from{opacity:0;transform:scale(.92) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes msh-shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+/* nav cards */
+.msh-nav{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.msh-nav-card{border-radius:16px;padding:16px;cursor:pointer;transition:all .22s;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;position:relative;overflow:hidden;border:1px solid transparent}
+.msh-nav-card:hover{transform:translateY(-2px)}
+.msh-nav-card::before{content:'';position:absolute;inset:0;border-radius:16px;opacity:0;transition:opacity .22s}
+.msh-nav-card:hover::before{opacity:1}
+
+/* last night card */
+.msh-lastnight{border-radius:16px;padding:18px 20px;position:relative;overflow:hidden;cursor:pointer;transition:transform .2s}
+.msh-lastnight:hover{transform:translateY(-1px)}
+
+/* memory peek */
+.msh-peek{display:flex;flex-direction:column;gap:0}
+.msh-peek-item{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.03);display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s;margin:0 -4px;padding-left:4px;padding-right:4px;border-radius:8px}
+.msh-peek-item:hover{background:rgba(255,255,255,.03)}
+.msh-peek-item:last-child{border-bottom:none}
 `;
 
-// Resolve HatchedCreature → DreamKeeper image
 function resolveDreamKeeper(creature: HatchedCreature | null): DreamKeeper | null {
   if (!creature) return null;
   const byId = getDreamKeeperById(creature.creatureType);
@@ -42,10 +58,19 @@ function hexToRgb(hex: string): string {
   return `${r},${g},${b}`;
 }
 
-// Orbit dot colors — soft magical palette
-const ORBIT_COLORS = [
-  '#9A7FD4', '#F5B84C', '#14d890', '#ff82b8', '#82b4ff', '#FFD275', '#C4A7FF',
-];
+const ORBIT_COLORS = ['#9A7FD4', '#F5B84C', '#14d890', '#ff82b8', '#82b4ff', '#FFD275', '#C4A7FF'];
+
+function formatCardDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - d.getTime()) / 86400000);
+    if (diff === 0) return 'Tonight';
+    if (diff === 1) return 'Last night';
+    if (diff < 7) return `${diff} nights ago`;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch { return ''; }
+}
 
 interface Props {
   onSignUp: () => void;
@@ -57,7 +82,6 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
 
   const [creatures, setCreatures] = useState<HatchedCreature[]>([]);
   const [recentStories, setRecentStories] = useState<any[]>([]);
-  const [recentCards, setRecentCards] = useState<SavedNightCard[]>([]);
   const [allCards, setAllCards] = useState<SavedNightCard[]>([]);
   const [storyCount, setStoryCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -72,34 +96,28 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
     const load = async () => {
       try {
         const [stories, cards, hatched] = await Promise.all([
-          getStories(userId),
-          getNightCards(userId),
-          getAllHatchedCreatures(userId),
+          getStories(userId), getNightCards(userId), getAllHatchedCreatures(userId),
         ]);
         if (cancelled) return;
         setRecentStories(stories.slice(0, 6));
         setStoryCount(stories.length);
-        setRecentCards(cards.slice(0, 8));
         setAllCards(cards);
         setCreatures(hatched);
       } catch {}
       if (!cancelled) setLoading(false);
     };
 
-    // Phase 1: instant from localStorage
     try {
       const stories: any[] = JSON.parse(localStorage.getItem(`ss2_stories_${userId}`) || '[]');
       const cards: SavedNightCard[] = JSON.parse(localStorage.getItem(`ss2_nightcards_${userId}`) || '[]');
       if (stories.length || cards.length) {
         setRecentStories(stories.slice(0, 6));
         setStoryCount(stories.length);
-        setRecentCards(cards.slice(0, 8));
         setAllCards(cards);
         setLoading(false);
       }
     } catch {}
 
-    // Phase 2: Supabase
     load();
     return () => { cancelled = true; };
   }, [userId]);
@@ -112,16 +130,15 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
   const creatureColor = primaryCreature?.color || dk?.color || '#F5B84C';
   const rgb = hexToRgb(creatureColor);
 
-  // Growth stage
   const storyN = primaryCreature
     ? allCards.filter(c => c.characterIds?.includes(primaryCreature.characterId)).length
     : storyCount;
   const growthStage = storyN < 3 ? 'Seedling' : storyN < 7 ? 'Sprout' : storyN < 14 ? 'Blooming' : 'Radiant';
 
-  // Orbit cards — up to 7 most recent night cards
   const orbitCards = useMemo(() => allCards.slice(0, 7), [allCards]);
+  const lastNightCard = allCards[0] || null;
+  const recentPeek = allCards.slice(1, 4); // next 3 after the featured one
 
-  // Ambient stars
   const stars = useMemo(() => {
     const arr: { x: number; y: number; s: number; d: number; dl: number }[] = [];
     for (let i = 0; i < 40; i++) arr.push({
@@ -137,25 +154,19 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
       <div className="msh">
         <style>{CSS}</style>
         <div className="msh-inner" style={{ paddingTop: 80, textAlign: 'center' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>&#x2728;</div>
-          <div style={{
-            fontFamily: "'Fraunces',Georgia,serif", fontSize: 24, fontWeight: 300,
-            marginBottom: 12,
-          }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>{'\u2728'}</div>
+          <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 24, fontWeight: 300, marginBottom: 12 }}>
             Your space is waiting
           </div>
           <div style={{ fontSize: 14, color: 'rgba(244,239,232,.45)', lineHeight: 1.6, marginBottom: 32 }}>
             Sign up to meet your DreamKeeper and start collecting memories.
           </div>
-          <button
-            onClick={onSignUp}
-            style={{
-              padding: '16px 40px', border: 'none', borderRadius: 14,
-              background: 'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)',
-              color: '#080200', fontSize: 16, fontWeight: 700, cursor: 'pointer',
-              fontFamily: "'Nunito',system-ui,sans-serif",
-            }}
-          >
+          <button onClick={onSignUp} style={{
+            padding: '16px 40px', border: 'none', borderRadius: 14,
+            background: 'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)',
+            color: '#080200', fontSize: 16, fontWeight: 700, cursor: 'pointer',
+            fontFamily: "'Nunito',system-ui,sans-serif",
+          }}>
             Get started
           </button>
         </div>
@@ -185,10 +196,7 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
           paddingTop: 52, marginBottom: 24,
           animation: 'msh-fadeUp .5s ease-out',
         }}>
-          <div style={{
-            fontFamily: "'Fraunces',Georgia,serif", fontWeight: 300,
-            fontSize: 'clamp(22px,5.5vw,28px)', lineHeight: 1.3,
-          }}>
+          <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 300, fontSize: 'clamp(22px,5.5vw,28px)', lineHeight: 1.3 }}>
             My Space
           </div>
           <button
@@ -210,7 +218,7 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
           </button>
         </div>
 
-        {/* ═══ HATCHERY — DREAMKEEPER SCENE ═══ */}
+        {/* ═══ DREAMKEEPER SCENE ═══ */}
         <div style={{
           position: 'relative',
           display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -236,7 +244,6 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
               pointerEvents: 'none',
             }}>
               {orbitCards.map((card, i) => {
-                const angle = (360 / orbitCards.length) * i;
                 const duration = 40 + i * 5;
                 const color = ORBIT_COLORS[i % ORBIT_COLORS.length];
                 const hasPhoto = !!card.photo;
@@ -255,17 +262,13 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
                       '--orbit-r': '130px',
                       animation: `msh-orbit ${duration}s linear infinite`,
                       animationDelay: `${-(duration / orbitCards.length) * i}s`,
-                      cursor: 'pointer',
-                      pointerEvents: 'auto',
-                      zIndex: 3,
+                      cursor: 'pointer', pointerEvents: 'auto', zIndex: 3,
                       border: card.photo ? `1.5px solid ${color}88` : 'none',
                     } as React.CSSProperties}
                     title={card.headline || card.storyTitle || 'Memory'}
                   >
                     {card.photo && (
-                      <img src={card.photo} alt="" style={{
-                        width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%',
-                      }} />
+                      <img src={card.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
                     )}
                   </div>
                 );
@@ -281,19 +284,12 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
             position: 'relative', zIndex: 4,
           }}>
             {creatureImageSrc ? (
-              <img
-                src={creatureImageSrc}
-                alt={creatureName}
-                style={{
-                  width: '100%', height: '100%', objectFit: 'contain',
-                  filter: `drop-shadow(0 0 28px rgba(${rgb},.35))`,
-                }}
-              />
+              <img src={creatureImageSrc} alt={creatureName} style={{
+                width: '100%', height: '100%', objectFit: 'contain',
+                filter: `drop-shadow(0 0 28px rgba(${rgb},.35))`,
+              }} />
             ) : (
-              <div style={{
-                fontSize: 72, lineHeight: 1,
-                filter: `drop-shadow(0 0 20px rgba(${rgb},.4))`,
-              }}>
+              <div style={{ fontSize: 72, lineHeight: 1, filter: `drop-shadow(0 0 20px rgba(${rgb},.4))` }}>
                 {primaryCreature?.creatureEmoji || dk?.emoji || '\uD83C\uDF19'}
               </div>
             )}
@@ -302,10 +298,7 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
           {/* Name + stage */}
           {creatureName && (
             <div style={{ textAlign: 'center', marginTop: 4, position: 'relative', zIndex: 4 }}>
-              <div style={{
-                fontFamily: "'Fraunces',Georgia,serif", fontSize: 18, fontWeight: 400,
-                color: '#F4EFE8',
-              }}>
+              <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 18, fontWeight: 400, color: '#F4EFE8' }}>
                 {creatureName}
               </div>
               <div style={{
@@ -318,7 +311,6 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
             </div>
           )}
 
-          {/* Orbit instruction */}
           {orbitCards.length > 0 && (
             <div style={{
               textAlign: 'center', marginTop: 10, position: 'relative', zIndex: 4,
@@ -330,86 +322,84 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
           )}
         </div>
 
-        {/* ═══ BIG NAV BUTTONS ═══ */}
-        <div style={{
-          animation: 'msh-fadeUp .7s .3s ease-out both',
-          marginTop: 28, marginBottom: 24,
-          display: 'flex', flexDirection: 'column', gap: 10,
-        }}>
-          {/* Memories button */}
-          <button
+        {/* ═══ JOURNEY COUNTER ═══ */}
+        {storyN > 0 && (
+          <div style={{
+            animation: 'msh-fadeUp .7s .25s ease-out both',
+            textAlign: 'center', margin: '20px 0 6px',
+          }}>
+            <div style={{
+              fontFamily: "'Fraunces',Georgia,serif", fontSize: 14, fontWeight: 300,
+              color: 'rgba(245,184,76,.5)', letterSpacing: '.01em',
+            }}>
+              {storyN} {storyN === 1 ? 'night' : 'nights'} of stories together
+            </div>
+            {/* Journey line */}
+            <div style={{
+              margin: '10px auto 0', width: '60%', maxWidth: 200, height: 2,
+              borderRadius: 1, background: 'rgba(245,184,76,.1)', overflow: 'hidden',
+            }}>
+              <div style={{
+                height: '100%', borderRadius: 1,
+                width: `${Math.min(100, (storyN / 30) * 100)}%`,
+                background: 'linear-gradient(90deg, rgba(245,184,76,.35), rgba(245,184,76,.7))',
+                transition: 'width .8s ease',
+              }} />
+            </div>
+          </div>
+        )}
+
+        {/* ═══ NAV CARDS — side by side ═══ */}
+        <div className="msh-nav" style={{ animation: 'msh-fadeUp .7s .3s ease-out both', margin: '20px 0' }}>
+          {/* Memories */}
+          <div
+            className="msh-nav-card"
             onClick={() => setView('nightcard-library')}
             style={{
-              width: '100%', height: 60, borderRadius: 18,
-              background: 'rgba(154,127,212,.08)',
-              border: '1px solid rgba(154,127,212,.2)',
-              display: 'flex', alignItems: 'center', gap: 14,
-              padding: '0 20px', cursor: 'pointer',
-              transition: 'background .2s, border-color .2s',
-              fontFamily: "'Nunito',system-ui,sans-serif",
+              background: `linear-gradient(160deg, rgba(${rgb},.06), rgba(154,127,212,.04))`,
+              borderColor: 'rgba(154,127,212,.15)',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(154,127,212,.14)'; e.currentTarget.style.borderColor = 'rgba(154,127,212,.35)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(154,127,212,.08)'; e.currentTarget.style.borderColor = 'rgba(154,127,212,.2)'; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(154,127,212,.3)'; e.currentTarget.style.background = `linear-gradient(160deg, rgba(${rgb},.1), rgba(154,127,212,.08))`; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(154,127,212,.15)'; e.currentTarget.style.background = `linear-gradient(160deg, rgba(${rgb},.06), rgba(154,127,212,.04))`; }}
           >
-            <span style={{ fontSize: 22 }}>{'\uD83C\uDF19\u2728'}</span>
-            <div style={{ flex: 1, textAlign: 'left' }}>
-              <div style={{
-                fontFamily: "'Fraunces',Georgia,serif", fontSize: 16, fontWeight: 500,
-                color: '#F4EFE8',
-              }}>
-                Memories
-              </div>
-              <div style={{
-                fontFamily: "'DM Mono',monospace", fontSize: 9,
-                color: 'rgba(154,127,212,.6)', letterSpacing: '.04em',
-              }}>
-                {allCards.length} night card{allCards.length !== 1 ? 's' : ''}
-              </div>
+            <div style={{ fontSize: 28, marginBottom: 2, filter: 'drop-shadow(0 0 8px rgba(154,127,212,.4))' }}>{'\uD83C\uDF19'}</div>
+            <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 500, color: '#F4EFE8' }}>
+              Memories
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(154,127,212,.5)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: 'rgba(154,127,212,.55)', letterSpacing: '.04em' }}>
+              {allCards.length} night card{allCards.length !== 1 ? 's' : ''}
+            </div>
+          </div>
 
-          {/* My Stories button */}
-          <button
+          {/* Stories */}
+          <div
+            className="msh-nav-card"
             onClick={() => setView('story-library')}
             style={{
-              width: '100%', height: 60, borderRadius: 18,
-              background: 'rgba(245,184,76,.06)',
-              border: '1px solid rgba(245,184,76,.18)',
-              display: 'flex', alignItems: 'center', gap: 14,
-              padding: '0 20px', cursor: 'pointer',
-              transition: 'background .2s, border-color .2s',
-              fontFamily: "'Nunito',system-ui,sans-serif",
+              background: 'linear-gradient(160deg, rgba(245,184,76,.04), rgba(255,210,117,.03))',
+              borderColor: 'rgba(245,184,76,.12)',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(245,184,76,.12)'; e.currentTarget.style.borderColor = 'rgba(245,184,76,.32)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245,184,76,.06)'; e.currentTarget.style.borderColor = 'rgba(245,184,76,.18)'; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.28)'; e.currentTarget.style.background = 'linear-gradient(160deg, rgba(245,184,76,.08), rgba(255,210,117,.06))'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.12)'; e.currentTarget.style.background = 'linear-gradient(160deg, rgba(245,184,76,.04), rgba(255,210,117,.03))'; }}
           >
-            <span style={{ fontSize: 22 }}>{'\uD83D\uDCD6'}</span>
-            <div style={{ flex: 1, textAlign: 'left' }}>
-              <div style={{
-                fontFamily: "'Fraunces',Georgia,serif", fontSize: 16, fontWeight: 500,
-                color: '#F4EFE8',
-              }}>
-                My Stories
-              </div>
-              <div style={{
-                fontFamily: "'DM Mono',monospace", fontSize: 9,
-                color: 'rgba(245,184,76,.5)', letterSpacing: '.04em',
-              }}>
-                {storyCount} stor{storyCount !== 1 ? 'ies' : 'y'}
-              </div>
+            <div style={{ fontSize: 28, marginBottom: 2, filter: 'drop-shadow(0 0 8px rgba(245,184,76,.4))' }}>{'\uD83D\uDCD6'}</div>
+            <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 500, color: '#F4EFE8' }}>
+              Stories
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(245,184,76,.45)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: 'rgba(245,184,76,.5)', letterSpacing: '.04em' }}>
+              {storyCount} stor{storyCount !== 1 ? 'ies' : 'y'}
+            </div>
+          </div>
         </div>
 
+
         {/* ═══ EMPTY STATE ═══ */}
-        {!loading && recentCards.length === 0 && recentStories.length === 0 && (
+        {!loading && allCards.length === 0 && recentStories.length === 0 && (
           <div style={{
             animation: 'msh-fadeUp .7s .3s ease-out both',
             background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.05)',
             borderRadius: 16, padding: '28px 20px', textAlign: 'center',
-            marginTop: 20,
+            marginTop: 8,
           }}>
             <div style={{ fontSize: 32, marginBottom: 10 }}>{'\u2728'}</div>
             <div style={{
@@ -437,8 +427,7 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
             position: 'fixed', inset: 0, zIndex: 60,
             background: 'rgba(0,0,0,.85)', backdropFilter: 'blur(12px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 20,
-            animation: 'msh-fadeUp .15s ease',
+            padding: 20, animation: 'msh-fadeUp .15s ease',
           }}
         >
           <div
@@ -453,7 +442,6 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
               animation: 'msh-modalIn .25s ease',
             }}
           >
-            {/* Close */}
             <button
               onClick={() => setSelectedCard(null)}
               style={{
@@ -467,12 +455,10 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
               &times;
             </button>
 
-            {/* Emoji */}
             <div style={{ textAlign: 'center', fontSize: 36, marginBottom: 12 }}>
               {selectedCard.creatureEmoji || selectedCard.emoji || dk?.emoji || '\uD83C\uDF19'}
             </div>
 
-            {/* Headline */}
             <div style={{
               fontFamily: "'Fraunces',Georgia,serif", fontSize: 18, fontWeight: 400,
               textAlign: 'center', lineHeight: 1.4, marginBottom: 10,
@@ -480,7 +466,6 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
               {selectedCard.headline || selectedCard.storyTitle}
             </div>
 
-            {/* Quote */}
             {selectedCard.quote && (
               <div style={{
                 fontFamily: "'Lora','Fraunces',Georgia,serif", fontStyle: 'italic',
@@ -491,7 +476,6 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
               </div>
             )}
 
-            {/* Memory line */}
             {selectedCard.memory_line && (
               <div style={{
                 fontSize: 12, color: 'rgba(244,239,232,.35)', textAlign: 'center',
@@ -501,7 +485,6 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
               </div>
             )}
 
-            {/* Meta */}
             <div style={{
               fontFamily: "'DM Mono',monospace", fontSize: 9,
               color: 'rgba(244,239,232,.2)', textAlign: 'center', marginTop: 8,

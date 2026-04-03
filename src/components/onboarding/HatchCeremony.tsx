@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import '../onboarding/onboarding.css';
+import DreamEgg from './DreamEgg';
+import './onboarding.css';
 
 interface Props {
   childName: string;
@@ -15,14 +16,14 @@ export default function HatchCeremony({ childName, creatureEmoji, onComplete }: 
   const line1Ref = useRef<HTMLDivElement>(null);
   const line2Ref = useRef<HTMLDivElement>(null);
   const [ctaVisible, setCtaVisible] = useState(false);
+  const [eggVisible, setEggVisible] = useState(true);
+  const [creatureVisible, setCreatureVisible] = useState(false);
 
   useEffect(() => {
     const timers: number[] = [];
     const egg = eggRef.current;
-    const canvas = canvasRef.current;
 
-    // Phase 1 (0-2s): heartbeat
-    if (egg) egg.style.animation = 'ob-hatchHeartbeat 1.6s ease-in-out infinite';
+    // Phase 1 (0-2s): heartbeat — DreamEgg handles this via hatching state
 
     // Phase 2 (2s): glow intensifies
     timers.push(window.setTimeout(() => {
@@ -39,10 +40,10 @@ export default function HatchCeremony({ childName, creatureEmoji, onComplete }: 
       const bloom = bloomRef.current;
       if (bloom) bloom.style.background = 'radial-gradient(circle at 50% 40%, rgba(255,248,220,.85), rgba(255,240,200,.3) 40%, transparent 70%)';
 
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
+      if (canvasRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
         if (ctx) {
-          const W = canvas.width, H = canvas.height;
+          const W = canvasRef.current.width, H = canvasRef.current.height;
           const cx = W / 2, cy = H * 0.5;
           const particles = Array.from({ length: 40 }, () => ({
             x: cx, y: cy,
@@ -79,9 +80,8 @@ export default function HatchCeremony({ childName, creatureEmoji, onComplete }: 
     timers.push(window.setTimeout(() => {
       const bloom = bloomRef.current;
       if (bloom) bloom.style.background = 'radial-gradient(circle at 50% 40%, rgba(255,248,220,.08), transparent 70%)';
-      if (egg) egg.style.opacity = '0';
-      const creature = creatureRef.current;
-      if (creature) creature.style.opacity = '1';
+      setEggVisible(false);
+      setCreatureVisible(true);
     }, 6800));
 
     // Phase 6 (9s): creature starts revealing
@@ -142,13 +142,15 @@ export default function HatchCeremony({ childName, creatureEmoji, onComplete }: 
           />
         ))}
       </svg>
-      {/* Egg */}
-      <div ref={eggRef} style={{
-        position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-        zIndex: 5, transition: 'filter 1.5s ease, opacity 1.5s ease', fontSize: 80, textAlign: 'center',
-      }}>
-        🥚
-      </div>
+      {/* Egg — rendered DreamEgg in hatching state */}
+      {eggVisible && (
+        <div ref={eggRef} style={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+          zIndex: 5, transition: 'filter 1.5s ease, opacity 1.5s ease',
+        }}>
+          <DreamEgg state="hatching" size="full" />
+        </div>
+      )}
       {/* Bloom overlay */}
       <div ref={bloomRef} style={{
         position: 'absolute', inset: 0, zIndex: 8,
@@ -156,15 +158,18 @@ export default function HatchCeremony({ childName, creatureEmoji, onComplete }: 
         pointerEvents: 'none', transition: 'background 1s ease',
       }} />
       {/* Creature */}
-      <div ref={creatureRef} style={{
-        position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%,-50%)',
-        zIndex: 9, fontSize: 108, opacity: 0,
-        transition: 'opacity 2s ease, filter 2.5s ease',
-        filter: 'brightness(.04) blur(4px) drop-shadow(0 0 40px rgba(246,197,111,1))',
-        pointerEvents: 'none',
-      }}>
-        {creatureEmoji}
-      </div>
+      {creatureVisible && (
+        <div ref={creatureRef} style={{
+          position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%,-50%)',
+          zIndex: 9, fontSize: 108, opacity: 0,
+          transition: 'opacity 2s ease, filter 2.5s ease',
+          filter: 'brightness(.04) blur(4px) drop-shadow(0 0 40px rgba(246,197,111,1))',
+          pointerEvents: 'none',
+          animation: 'ob-fadeIn 2s ease forwards',
+        }}>
+          {creatureEmoji}
+        </div>
+      )}
       {/* Text */}
       <div style={{ position: 'absolute', bottom: 110, left: 0, right: 0, zIndex: 10, textAlign: 'center', padding: '0 32px' }}>
         <div ref={line1Ref} style={{
@@ -178,13 +183,8 @@ export default function HatchCeremony({ childName, creatureEmoji, onComplete }: 
         <div style={{ opacity: ctaVisible ? 1 : 0, transition: 'opacity 1s ease', marginTop: 22 }}>
           <button
             onClick={onComplete}
-            style={{
-              padding: '14px 32px', borderRadius: 18, border: 'none',
-              background: 'linear-gradient(135deg, #F6C56F, #FFDFA3)',
-              color: '#16110A', fontSize: 14, fontWeight: 700,
-              fontFamily: "'Fraunces', serif", cursor: 'pointer',
-              boxShadow: '0 8px 28px rgba(246,197,111,.35)',
-            }}
+            className="ob-cta"
+            style={{ maxWidth: 300 }}
           >
             Hello, {childName}'s DreamKeeper &rarr;
           </button>

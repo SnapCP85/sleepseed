@@ -5,6 +5,9 @@ import {
   EggDisplay, RitualCTA, SpeechBubble, MiniNightCard, hexToRgba,
 } from './RitualShared';
 import RitualStoryViewer, { type StoryPage } from './RitualStoryViewer';
+import ElderDreamKeeper from '../onboarding/ElderDreamKeeper';
+import CreatureImage from '../onboarding/CreatureImage';
+import { V1_DREAMKEEPERS } from '../../lib/dreamkeepers';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // RitualNight3 — The Hatching
@@ -37,28 +40,40 @@ const HATCH_CSS = `
 function makeStoryPages(childName: string): StoryPage[] {
   return [
     {
-      text: `Every DreamKeeper watches over one child. They don't choose by accident. They listen, for as long as it takes, until they hear the one voice that was meant for them.`,
-      scene: 'stars',
-    },
-    {
-      text: `"What I saw in you — I've never stopped seeing it. From the very first night, I knew."`,
+      text: `"${childName}," the Elder DreamKeeper said quietly. Not like a beginning. Like a continuation. "I need to tell you something true before tonight ends."`,
       scene: 'elder',
     },
     {
-      text: `A DreamKeeper carries your memories. It grows alongside you. It will know who you are becoming before you know it yourself.`,
+      text: `"In all the world, there are very few DreamKeepers. They do not choose just anyone. They watch. They listen. They wait until they find a child whose heart is worth growing beside — for the rest of their life."`,
+      scene: 'stars',
+    },
+    {
+      text: `"What makes a DreamKeeper choose someone?" The Elder smiled. "Not how brave they are. Not how loud. It chooses someone whose inner world is worth living inside. Someone whose stories matter." The Elder looked at ${childName}. "That is why it chose you."`,
+      scene: 'elder',
+    },
+    {
+      text: `"A DreamKeeper does not just protect your sleep. It carries your memories. It grows alongside you. It will know who you are becoming before you know it yourself. This bond — once made — cannot be undone."`,
       scene: 'glow',
     },
     {
-      text: `This bond — once made — cannot be undone. One day, ${childName}, you will look at it and see pieces of your whole childhood looking back at you.`,
-      scene: 'egg',
+      text: `"Every night you come back, it learns something more. Every story you share becomes part of it. One day — many years from now — you will look at it and see pieces of your whole childhood looking back at you."`,
+      scene: 'stars',
+    },
+    {
+      text: `The Elder reached out and held the egg very gently. The cracks glowed — warm, impatient, almost there. "Tonight, it hatches. And the moment it does — you will have a DreamKeeper. One that is entirely, permanently yours."`,
+      scene: 'elder',
+    },
+    {
+      text: `"Are you ready, ${childName}?" The egg shook softly in the Elder's hands. Something inside pushed at the shell. A tiny heartbeat. Then a sound — the faintest sound — like a creature taking its very first breath.`,
+      scene: 'glow',
     },
   ];
 }
 
 // ── Hatch Sequence Component ────────────────────────────────────────────────
 
-function HatchSequence({ emoji, color, childName, onComplete }: {
-  emoji: string; color: string; childName: string; onComplete: () => void;
+function HatchSequence({ emoji, color, childName, creatureImageSrc, onComplete }: {
+  emoji: string; color: string; childName: string; creatureImageSrc: string; onComplete: () => void;
 }) {
   const [phase, setPhase] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -189,24 +204,21 @@ function HatchSequence({ emoji, color, childName, onComplete }: {
         </div>
       )}
 
-      {/* Creature (visible from phase 4) */}
+      {/* Creature PNG (visible from phase 4) */}
       {phase >= 4 && (
         <div style={{
           position: 'relative', zIndex: 15,
-          fontSize: 100, lineHeight: 1,
           animation: phase === 4
             ? 'hatch-creatureIn 1.5s ease-out forwards'
             : phase === 5
               ? 'hatch-lookAround 3.5s ease-in-out'
-              : 'or-float 4s ease-in-out infinite',
+              : 'ob-floatY 4s ease-in-out infinite',
           filter: phase === 4
             ? `brightness(0.5) drop-shadow(0 0 20px ${hexToRgba(color, .3)})`
             : `brightness(1) drop-shadow(0 0 24px ${hexToRgba(color, .4)})`,
           transition: 'filter 2s ease-out',
         }}>
-          <div style={{ animation: phase >= 6 ? 'hatch-blink 4s 2s ease-in-out infinite' : undefined }}>
-            {emoji}
-          </div>
+          <CreatureImage src={creatureImageSrc} size={120} color={color} animate={false} glowIntensity={phase >= 5 ? 0.6 : 0.3} />
         </div>
       )}
 
@@ -263,13 +275,17 @@ export default function RitualNight3({ ritual, onComplete }: Props) {
   const smileAnswer = ritual.smileAnswer || 'something special';
   const talentAnswer = ritual.talentAnswer || 'something wonderful';
 
+  // Resolve creature PNG image from emoji
+  const creatureMatch = V1_DREAMKEEPERS.find(dk => dk.emoji === emoji);
+  const creatureImageSrc = creatureMatch?.imageSrc || '/dreamkeepers/transparent/bunny.png';
+
   // ── Step 0: Tonight Is Different ───────────────────────────────────────────
   if (step === 0) return (
-    <div className="or">
+    <div className="ob-ritual">
       <style>{RITUAL_CSS}</style>
       <StarField />
-      <div className="or-inner">
-        <div className="or-screen">
+      <div className="ob-ritual-inner">
+        <div className="ob-ritual-screen">
           <MoonProgress current={2} total={3} />
           <NightLabel night={3} color="rgba(255,130,184,.5)" />
           <Thread text="Your DreamKeeper is trying to reach you…" />
@@ -317,7 +333,9 @@ export default function RitualNight3({ ritual, onComplete }: Props) {
   if (step === 1) return (
     <RitualStoryViewer
       pages={makeStoryPages(childName)}
-      title="The Bond"
+      title="The Choosing"
+      nightLabel="The Choosing"
+      nightNumber={3}
       emoji={emoji}
       color={color}
       onComplete={() => setStep(2)}
@@ -330,52 +348,49 @@ export default function RitualNight3({ ritual, onComplete }: Props) {
       emoji={emoji}
       color={color}
       childName={childName}
+      creatureImageSrc={creatureImageSrc}
       onComplete={() => setStep(3)}
     />
   );
 
-  // ── Step 3: First Contact ──────────────────────────────────────────────────
+  // ── Step 3: First Contact — "Hi, [name]" with creature image ────────────
   if (step === 3) return (
-    <div className="or">
+    <div className="ob-ritual">
       <style>{RITUAL_CSS}</style>
       <StarField />
-      <div className="or-inner">
-        <div className="or-screen" style={{ animation: 'or-fadeUp .8s ease-out' }}>
-          {/* Creature */}
-          <div style={{
-            fontSize: 100, lineHeight: 1, marginBottom: 12,
-            animation: 'or-float 4s ease-in-out infinite',
-            filter: `drop-shadow(0 0 30px ${hexToRgba(color, .35)})`,
-          }}>{emoji}</div>
+      <div className="ob-ritual-inner">
+        <div className="ob-ritual-screen" style={{ animation: 'ob-fadeUp .8s ease-out' }}>
+          {/* Creature image — DreamKeeper PNG */}
+          <CreatureImage src={creatureImageSrc} size={120} color={color} animate={true} glowIntensity={0.6} />
 
           <div style={{
             fontFamily: "'DM Mono',monospace", fontSize: 10,
             color: hexToRgba(color, .6), letterSpacing: '.1em',
-            textTransform: 'uppercase', marginBottom: 6,
+            textTransform: 'uppercase', marginBottom: 6, marginTop: 8,
           }}>{creatureName}</div>
 
           <div style={{
-            fontFamily: "'Fraunces',Georgia,serif", fontWeight: 300,
-            fontSize: 'clamp(22px,5.5vw,28px)', lineHeight: 1.3, marginBottom: 20,
+            fontFamily: "'Fraunces', serif", fontWeight: 900,
+            fontSize: 'clamp(22px,5.5vw,27px)', lineHeight: 1.12, letterSpacing: '-0.5px', marginBottom: 20,
           }}>
-            You brought your DreamKeeper to <span style={{ color }}>life</span>
+            You brought your DreamKeeper to <em style={{ color: '#F6C56F', fontStyle: 'italic' }}>life</em>
           </div>
 
           <SpeechBubble
-            speaker={creatureName}
-            text={`I chose you, ${childName}. I will be your DreamKeeper and always be by your side.`}
+            speaker="YOUR DREAMKEEPER"
+            text={`"I remember you… ${childName}. I chose you, and I will be your DreamKeeper and always be by your side."`}
             color={hexToRgba(color, .5)}
           />
 
           <div style={{
             fontFamily: "'Lora','Fraunces',Georgia,serif", fontStyle: 'italic',
-            fontSize: 13, color: 'rgba(244,239,232,.4)', lineHeight: 1.6,
-            maxWidth: 280, margin: '8px auto 12px',
+            fontSize: 12.5, color: 'rgba(234,242,255,.32)', lineHeight: 1.6,
+            maxWidth: 240, margin: '8px auto 12px',
           }}>
-            "You told me about {smileAnswer} that made you smile… and that you're good at {talentAnswer}. I held onto all of it."
+            "You told me about {smileAnswer} that made you smile together… I held onto that."
           </div>
 
-          <div style={{ marginTop: 16 }}>
+          <div style={{ marginTop: 12 }}>
             <RitualCTA label="Continue" onClick={() => setStep(4)} />
           </div>
         </div>
@@ -385,11 +400,11 @@ export default function RitualNight3({ ritual, onComplete }: Props) {
 
   // ── Step 4: Born Card + Completion ─────────────────────────────────────────
   return (
-    <div className="or">
+    <div className="ob-ritual">
       <style>{RITUAL_CSS}</style>
       <StarField />
-      <div className="or-inner">
-        <div className="or-screen">
+      <div className="ob-ritual-inner">
+        <div className="ob-ritual-screen">
           <MoonProgress current={3} total={3} />
 
           {/* Badge */}
@@ -405,6 +420,9 @@ export default function RitualNight3({ ritual, onComplete }: Props) {
             }}>Night 3 complete</span>
           </div>
 
+          {/* Creature image on the card */}
+          <CreatureImage src={creatureImageSrc} size={80} color={color} animate={true} glowIntensity={0.4} />
+
           <MiniNightCard
             title="The Night Your DreamKeeper Was Born"
             quote={`After three nights of listening, ${creatureName} chose to become ${childName}'s.`}
@@ -416,14 +434,14 @@ export default function RitualNight3({ ritual, onComplete }: Props) {
           <div style={{
             fontFamily: "'Lora','Fraunces',Georgia,serif", fontStyle: 'italic',
             fontSize: 12, color: 'rgba(244,239,232,.35)', lineHeight: 1.6,
-            maxWidth: 260, margin: '16px auto 4px',
+            maxWidth: 260, margin: '8px auto 4px',
           }}>
             "Your DreamKeeper chose you both."
           </div>
 
           <div style={{
             fontFamily: "'DM Mono',monospace", fontSize: 10,
-            color: 'rgba(244,239,232,.2)', marginBottom: 28, letterSpacing: '.03em',
+            color: 'rgba(244,239,232,.2)', marginBottom: 20, letterSpacing: '.03em',
           }}>
             Three nights. One creature. Yours forever.
           </div>

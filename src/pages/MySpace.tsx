@@ -3,7 +3,7 @@ import { useApp } from '../AppContext';
 import { getStories, getNightCards, getCharacters } from '../lib/storage';
 import { getAllHatchedCreatures } from '../lib/hatchery';
 import { getDreamKeeperById, V1_DREAMKEEPERS, type DreamKeeper } from '../lib/dreamkeepers';
-import { isRitualComplete } from '../lib/ritualState';
+import { isRitualComplete, getRitualState } from '../lib/ritualState';
 import type { Character, HatchedCreature, SavedNightCard } from '../lib/types';
 import NightCardComponent from '../features/nightcards/NightCard';
 
@@ -28,7 +28,7 @@ const CSS = `
 @keyframes ms-creatureIdle{0%,100%{transform:scale(1) translateY(0)}25%{transform:scale(1.015) translateY(-3px)}50%{transform:scale(1.02) translateY(-5px)}75%{transform:scale(1.015) translateY(-3px)}}
 @keyframes ms-fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes ms-glowPulse{0%,100%{opacity:.35}50%{opacity:.6}}
-@keyframes ms-twinkle{0%,100%{opacity:.05}50%{opacity:.22}}
+@keyframes ms-twinkle{0%,100%{opacity:.12}50%{opacity:.45}}
 @keyframes ms-shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 @keyframes ms-ctaPulse{0%,100%{box-shadow:0 6px 28px rgba(200,130,20,.25)}50%{box-shadow:0 8px 36px rgba(200,130,20,.42)}}
 @keyframes ms-streakGlow{0%,100%{box-shadow:0 0 6px rgba(245,184,76,.25)}50%{box-shadow:0 0 14px rgba(245,184,76,.5)}}
@@ -235,6 +235,8 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
   // DreamKeeper image lookup — but NOT during the 3-night ritual (before hatch)
   // Show the egg until the ritual is complete, regardless of what companionCreature says
   const ritualDone = userId ? isRitualComplete(userId) : true;
+  const ritualState = userId && !ritualDone ? getRitualState(userId) : null;
+  const nextRitualNight = ritualState?.currentNight || 1;
   const isPreHatchEgg = !ritualDone || companionCreature?.creatureType === 'spirit' || companionCreature?.creatureEmoji === '\uD83E\uDD5A';
   const dk = isPreHatchEgg ? null : resolveDreamKeeper(companionCreature);
   const creatureImageSrc = dk?.imageSrc;
@@ -294,18 +296,20 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
   }
 
   return (
-    <div className="ms">
-      <style>{CSS}</style>
-
-      {/* Ambient stars */}
+    <>
+    {/* Ambient stars — rendered outside .ms to avoid stacking context */}
+    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 9999 }}>
       {stars.map((s, i) => (
         <div key={i} style={{
           position: 'absolute', left: `${s.x}%`, top: `${s.y}%`,
-          width: s.s, height: s.s, borderRadius: '50%', background: '#EEE8FF',
-          pointerEvents: 'none', zIndex: 0,
+          width: s.s + 0.5, height: s.s + 0.5, borderRadius: '50%',
+          background: 'white', opacity: 0.25,
           animation: `ms-twinkle ${s.d}s ${s.dl}s ease-in-out infinite`,
         }} />
       ))}
+    </div>
+    <div className="ms">
+      <style>{CSS}</style>
 
       <div className="ms-inner">
 
@@ -468,7 +472,7 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
           animation: 'ms-fadeUp .8s .3s ease-out both',
         }}>
           <button
-            onClick={() => setView('ritual-starter')}
+            onClick={() => setView(ritualDone ? 'ritual-starter' : 'onboarding-ritual')}
             style={{
               width: '100%', padding: '18px 24px', border: 'none', borderRadius: 16,
               background: 'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)',
@@ -481,7 +485,7 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.filter = 'brightness(1.1)'; }}
             onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.filter = ''; }}
           >
-            {isFirstTime ? 'Start your first story' : 'Start tonight\u2019s story'}
+            {!ritualDone ? `Start Ritual Night ${nextRitualNight}` : isFirstTime ? 'Start your first story' : 'Start tonight\u2019s story'}
             <span style={{
               position: 'absolute', inset: 0,
               background: 'linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 50%,transparent 100%)',
@@ -724,5 +728,6 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
         </>
       )}
     </div>
+    </>
   );
 }

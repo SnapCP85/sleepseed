@@ -690,9 +690,9 @@ function AppInner() {
     />
   );
 
-  // ── Cinematic Transition (Elder → name constellation → Night 1) ────────
+  // ── Cinematic Transition (Elder → name constellation → Night 1 ritual) ──
   if (view === 'cinematic-transition') {
-    return <OnboardingShell><CinematicTransition childName={resolveChildProfile().childName} onComplete={() => setView('night-1')} /></OnboardingShell>;
+    return <OnboardingShell><CinematicTransition childName={resolveChildProfile().childName} onComplete={() => setView('onboarding-ritual')} /></OnboardingShell>;
   }
 
   // ── Night 1 Dashboard ────────────────────────────────────────────────
@@ -1051,43 +1051,7 @@ function AppInner() {
           </div>
         )}
 
-        {/* Ritual in progress — route to correct night dashboard */}
-        {needsRitual && (() => {
-          const rs = user ? getRitualState(user.id) : null;
-          const nightView = rs?.currentNight === 3 ? 'night-3' : rs?.currentNight === 2 ? 'night-2' : 'night-1';
-          const nightLabel = rs?.currentNight === 3 ? 'Night 3 \u2014 the hatching' : rs?.currentNight === 2 ? 'Night 2 \u2014 it remembers' : 'Night 1 \u2014 the egg arrives';
-
-          return (
-            <div style={{
-              margin: '16px 16px 0', padding: '20px 20px', borderRadius: 16,
-              background: 'rgba(245,184,76,.06)', border: '1px solid rgba(245,184,76,.18)',
-              display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer',
-              transition: 'background .2s',
-              animation: 'fadeUp .4s ease-out',
-            }}
-              onClick={() => setView(nightView)}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,184,76,.1)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(245,184,76,.06)')}
-            >
-              <div style={{ fontSize: 28, flexShrink: 0 }}>{companionCreature?.creatureEmoji || '\uD83E\uDD5A'}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{
-                  fontFamily: "'Fraunces',Georgia,serif", fontWeight: 400, fontSize: 15,
-                  color: '#F4EFE8', marginBottom: 3,
-                }}>
-                  Continue tonight's ritual
-                </div>
-                <div style={{
-                  fontFamily: "'DM Mono',monospace", fontSize: 11,
-                  color: 'rgba(244,239,232,.35)',
-                }}>
-                  {nightLabel}
-                </div>
-              </div>
-              <div style={{ color: '#F5B84C', fontSize: 16, flexShrink: 0 }}>&rarr;</div>
-            </div>
-          );
-        })()}
+        {/* Ritual banner removed — MySpace CTA handles ritual routing directly */}
 
         <MySpace onSignUp={goAuth} onReadStory={openSavedStory} />
       </AppLayout>
