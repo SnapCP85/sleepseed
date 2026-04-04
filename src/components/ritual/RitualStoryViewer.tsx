@@ -83,7 +83,7 @@ function SceneVisual({ scene, emoji, color }: { scene: string; emoji: string; co
     <div style={{ ...base, background: 'radial-gradient(ellipse at 50% 35%, rgba(40,20,100,.7), #060912 62%)' }}>
       <svg style={{ position: 'absolute', inset: 0 }} viewBox="0 0 345 388" width="100%" height="100%">{stars(26, 240)}</svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 20 }}>
-        <DreamEgg state="gifted" size="sm" />
+        <DreamEgg state="gifted" size={80} />
       </div>
     </div>
   );
@@ -92,7 +92,7 @@ function SceneVisual({ scene, emoji, color }: { scene: string; emoji: string; co
     <div style={{ ...base, background: 'radial-gradient(ellipse at 50% 38%, rgba(40,20,100,.6), #060912 65%)' }}>
       <svg style={{ position: 'absolute', inset: 0 }} viewBox="0 0 345 388" width="100%" height="100%">{stars(22, 245)}</svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 10 }}>
-        <DreamEgg state="cracked" size="sm" />
+        <DreamEgg state="cracked" size={80} />
       </div>
       {/* Extra glow for crack scene */}
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 10, pointerEvents: 'none' }}>
@@ -210,17 +210,11 @@ export default function RitualStoryViewer({ pages, title, emoji, color = '#F5B84
           </div>
         </div>
 
-        {/* CTA */}
+        {/* CTA — always gold */}
         <div style={{ padding: '0 0 26px' }}>
           <button
             className="ob-cta"
             onClick={() => isLast ? onComplete() : setPage(p => p + 1)}
-            style={isLast ? {} : {
-              background: 'rgba(255,255,255,.06)',
-              color: 'rgba(234,242,255,.5)',
-              boxShadow: 'none',
-              fontWeight: 500,
-            }}
           >
             {isLast ? 'Continue →' : 'Next →'}
           </button>

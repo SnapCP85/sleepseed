@@ -59,6 +59,7 @@ export default function CreatureImage({
       <img
         src={src}
         alt="DreamKeeper"
+        onError={(e) => { (e.target as HTMLImageElement).src = '/dreamkeepers/transparent/bunny.png'; }}
         style={{
           width: size,
           height: size,

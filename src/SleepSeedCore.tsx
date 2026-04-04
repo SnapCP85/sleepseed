@@ -1825,9 +1825,14 @@ export default function SleepSeed({
 
 
   // ── Web Speech narration ───────────────────────────────────────────────
+  // Cache the picked voice so it stays consistent across all pages
+  const cachedVoiceRef = useRef<SpeechSynthesisVoice|null>(null);
+
   const speakText = useCallback((text, pageProgress=0.5) => {
     if(!("speechSynthesis" in window)||!text) return;
     window.speechSynthesis.cancel();
+    // Also stop any ElevenLabs audio to prevent overlap
+    if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current = null; }
 
     const CALMING_VOICES = [
       "Samantha","Ava","Allison","Victoria","Karen","Moira","Tessa","Fiona",
@@ -1835,9 +1840,13 @@ export default function SleepSeed({
       "Google UK English Female","Google US English",
     ];
     const pickVoice = () => {
+      // Return cached voice if we already picked one
+      if(cachedVoiceRef.current) return cachedVoiceRef.current;
       const vs = window.speechSynthesis.getVoices();
-      for(const n of CALMING_VOICES){ const v=vs.find(v=>v.name.includes(n)); if(v) return v; }
-      return vs.find(v=>v.lang.startsWith("en")&&/female|woman|girl/i.test(v.name))||vs.find(v=>v.lang.startsWith("en"))||null;
+      for(const n of CALMING_VOICES){ const v=vs.find(v=>v.name.includes(n)); if(v){ cachedVoiceRef.current=v; return v; } }
+      const fallback = vs.find(v=>v.lang.startsWith("en")&&/female|woman|girl/i.test(v.name))||vs.find(v=>v.lang.startsWith("en"))||null;
+      if(fallback) cachedVoiceRef.current = fallback;
+      return fallback;
     };
 
     const speak = () => {
@@ -1869,6 +1878,8 @@ export default function SleepSeed({
   // ── ElevenLabs narration ───────────────────────────────────────────────
   const speakTextEL = useCallback(async (text, pageProgress=0.5) => {
     if(!text) return;
+    // Cancel ALL audio before starting new ElevenLabs playback
+    if("speechSynthesis" in window) window.speechSynthesis.cancel();
     if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current = null; }
     // Brief pause so rapid page turns don't fire overlapping EL requests
     await new Promise(r => setTimeout(r, 80));
@@ -1894,8 +1905,9 @@ export default function SleepSeed({
       await audio.play();
     } catch(err) {
       console.error("EL TTS error, falling back to browser speech:", err);
-      // Fall back to browser speech so the user still hears something
-      speakText(text, pageProgress);
+      // Only fall back if still in auto-read mode (user didn't cancel during fetch)
+      if(autoReadRef.current) speakText(text, pageProgress);
+      else setIsReading(false);
     }
   }, [voiceId, selectedVoiceId, pageIdx, speakText]);
 
@@ -2835,8 +2847,14 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
         || (resolvedStyle === "mystery" ? "mystery" : null)
         || "cosy";
 
+      // ── Build situation from brief (mode-aware, no mangling) ─────────────
+      const isFreePath = builderChoices?.path === 'free';
       const situationParts = [
-        brief1Safe ? `${name} is ${brief1Safe}` : "",
+        brief1Safe
+          ? (isFreePath
+              ? `STORY DIRECTIVE: "${brief1Safe}"`
+              : `${name} is ${brief1Safe}`)
+          : "",
         realCtxSafe ? `Context: ${realCtxSafe}` : "",
         contextSafe || "",
         lesArr.length ? `Theme: ${lesArr.map(l=>l.split("—")[0].trim()).join(", ")}` : "",
@@ -2855,11 +2873,23 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
         protagonistName: name,
         protagonistAge: ageCfg.label.replace("Age ","").split("–")[0],
         weirdDetail: resolvedTraits.length ? `${name} is ${resolvedTraits.join(", ")}` : undefined,
-        want: brief1Safe ? `${name} is ${brief1Safe}` : undefined,
+        want: brief1Safe
+          ? (isFreePath ? brief1Safe : `${name} is ${brief1Safe}`)
+          : undefined,
         supportingName: supportChar?.name || (supportChar ? capitalize(supportChar.type) : undefined),
         supportingDetail: supportChar?.classify ? classifyVoice[supportChar.classify] : undefined,
-        targetFeeling: "safe and sleepy — carried gently into sleep",
-        finalLineApproach: "sensation",
+        targetFeeling: ({
+          'comedy': 'warm, delighted, and settling into a grin — giggling fading to sleep',
+          'adventure': 'brave, steady, and resting after the journey — safe at last',
+          'wonder': 'wonderstruck and quietly drifting — one beautiful question still sparkling',
+          'cosy': 'safe, held, and exactly where they belong — drifting gently',
+          'therapeutic': 'deeply seen, gently held, and not alone — feeling is survivable',
+          'mystery': 'curious but calm, one gentle wonder remaining — settling into quiet',
+        } as Record<string, string>)[genreFromMood] || 'safe and sleepy — carried gently into sleep',
+        finalLineApproach: ({
+          'comedy': 'moment', 'adventure': 'image', 'wonder': 'image',
+          'cosy': 'sensation', 'therapeutic': 'sensation', 'mystery': 'image',
+        } as Record<string, string>)[genreFromMood] || 'sensation',
         asChunks: false,
       };
 

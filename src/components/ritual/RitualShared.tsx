@@ -73,11 +73,11 @@ export function NightLabel({ night, color }: { night: number; color?: string }) 
 
 // ── Thread (italic narrative text) ──────────────────────────────────────────
 
-export function Thread({ text }: { text: string }) {
+export function Thread({ text, color }: { text: string; color?: string }) {
   return (
     <div style={{
       fontFamily: "'Lora','Fraunces',Georgia,serif", fontStyle: 'italic',
-      fontSize: 14, color: 'rgba(244,239,232,.45)', lineHeight: 1.7,
+      fontSize: 14, color: color || 'rgba(244,239,232,.45)', lineHeight: 1.7,
       maxWidth: 280, marginBottom: 24,
     }}>
       "{text}"
@@ -92,6 +92,7 @@ export function EggDisplay({ state, size = 120 }: {
 }) {
   const eggState: EggState = state === 'hatched' ? 'idle' : state as EggState;
   return <DreamEgg state={eggState} size={size} />;
+  // Note: DreamEgg uses fixed gold palette from v9 blueprint — color prop intentionally not passed
 }
 
 // ── Stars field ─────────────────────────────────────────────────────────────
@@ -258,8 +259,8 @@ export function ChipGrid({ options, selected, onSelect, color = '#F5B84C' }: {
 
 // ── Mini night card (shown at end of each night) ────────────────────────────
 
-export function MiniNightCard({ title, quote, emoji, nightNumber, color }: {
-  title: string; quote: string; emoji: string; nightNumber: number; color?: string;
+export function MiniNightCard({ title, quote, emoji, nightNumber, color, creatureImageSrc }: {
+  title: string; quote: string; emoji: string; nightNumber: number; color?: string; creatureImageSrc?: string;
 }) {
   return (
     <div style={{
@@ -282,12 +283,19 @@ export function MiniNightCard({ title, quote, emoji, nightNumber, color }: {
             animation: `ob-starTwinkle ${2 + i * 0.3}s ${i * 0.2}s ease-in-out infinite`,
           }} />
         ))}
-        {/* Egg centered */}
+        {/* Centered visual — creature image if provided, otherwise egg */}
         <div style={{
           position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
           animation: 'ob-floatY 4s ease-in-out infinite',
         }}>
-          <DreamEgg state={nightNumber >= 3 ? 'hatching' : nightNumber >= 2 ? 'cracked' : 'idle'} size={48} />
+          {creatureImageSrc ? (
+            <img src={creatureImageSrc} alt="DreamKeeper" style={{
+              width: 68, height: 68, objectFit: 'contain',
+              filter: 'drop-shadow(0 0 16px rgba(246,197,111,.6)) brightness(1.1)',
+            }} />
+          ) : (
+            <DreamEgg state={nightNumber >= 2 ? 'cracked' : 'idle'} size={48} />
+          )}
         </div>
         {/* Ambient glow */}
         <div style={{

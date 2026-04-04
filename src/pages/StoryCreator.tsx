@@ -500,6 +500,8 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   const [freeCharInput, setFreeCharInput] = useState('');
   const [freeCharInputKey, setFreeCharInputKey] = useState('');
   const [freeListening, setFreeListening] = useState(false);
+  const [dreamkeeperInStory, setDreamkeeperInStory] = useState(true);
+  const [childIsHero, setChildIsHero] = useState(true);
 
   // Settings state
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -703,16 +705,11 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
     // free mode
     if (mode === 'free') {
       const hasFreeContent = freeTranscript.trim() || freeBrief.trim();
-      if (freeStep === 1 && !hasFreeContent) return (
-        <>What should our story be about {gold('tonight')}? Tell me anything. {'\u2728'}</>
+      if (!hasFreeContent) return (
+        <>Tell me {gold('anything')} {'\u2014'} I'll make it into tonight's story. {'\u2728'}</>
       );
-      if (freeStep === 1 && hasFreeContent) {
-        const words = (freeTranscript || freeBrief).trim().split(/\s+/).slice(0, 4).join(' ');
-        return <>Love it! {gold(words + '\u2026')} Who should be in this story? {'\u{1F31F}'}</>
-      }
-      if (freeStep === 2) return (
-        <>Great cast! Ready to {gold('make this story')}? {'\u2728'}</>
-      );
+      const words = (freeTranscript || freeBrief).trim().split(/\s+/).slice(0, 4).join(' ');
+      return <>Love it! {gold(words + '\u2026')} Ready when you are. {'\u2728'}</>;
     }
 
     return null;
@@ -784,26 +781,15 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
       });
     }
 
-    // For free mode, add freeChars
-    if (mode === 'free') {
-      for (const fc of freeChars) {
-        if (fc.key === 'dreamkeeper' && creature) {
-          // already added above if creatureSelected
-          if (!creatureSelected) {
-            castChars.push({
-              type: 'creature',
-              name: creature.name,
-              note: creature.dreamAnswer
-                ? `${creature.name} dreams about ${creature.dreamAnswer}`
-                : `${creature.name} is the child's magical companion`,
-            });
-          }
-        } else if (fc.key === 'silly') {
-          castChars.push({ type: 'other', name: 'Something Silly', note: 'A silly, unexpected character' });
-        } else {
-          castChars.push({ type: 'human', name: fc.name, note: '' });
-        }
-      }
+    // For free mode, add DreamKeeper if toggle is on
+    if (mode === 'free' && dreamkeeperInStory && creature && !creatureSelected) {
+      castChars.push({
+        type: 'creature',
+        name: creature.name,
+        note: creature.dreamAnswer
+          ? `${creature.name} dreams about ${creature.dreamAnswer}`
+          : `${creature.name} is the child's magical companion`,
+      });
     }
 
     // Build brief
@@ -1374,12 +1360,12 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
           </div>
         )}
 
-        {/* ═══ MAKE ANYTHING INPUT ZONE ═══ */}
+        {/* ═══ MAKE ANY STORY — Single Screen ═══ */}
         {mode === 'free' && ritualEntryDone && (
           <div style={{ animation: 'crossfade .3s ease both' }}>
 
-            {/* Step 1: What should the story be about? */}
-            {freeStep === 1 && (
+            {/* Voice / Text Input */}
+            {true && (
               <div style={{ animation: 'fadeUp .3s ease both' }}>
                 {/* Large voice button */}
                 {hasSpeechAPI && (
@@ -1449,142 +1435,114 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                   style={{ caretColor: '#6FE7DD' }}
                 />
 
-                {/* Next step button */}
-                {freeHasContent && (
-                  <button
-                    onClick={() => setFreeStep(2)}
-                    style={{
-                      width: '100%', padding: '12px', borderRadius: 12, marginTop: 10,
-                      border: '1.5px solid rgba(111,231,221,.25)', background: 'rgba(111,231,221,.08)',
-                      fontFamily: 'var(--cta)', fontSize: 13, fontWeight: 700, color: '#6FE7DD',
-                      cursor: 'pointer', transition: 'all .2s', animation: 'fadeUp .25s ease both',
-                    }}
-                  >
-                    Next: add characters {'\u2192'}
-                  </button>
+                {/* Helper text */}
+                {!freeHasContent && (
+                  <div style={{
+                    fontFamily: 'var(--body)', fontSize: 11, color: 'rgba(244,239,232,.3)',
+                    textAlign: 'center', marginTop: 8, lineHeight: 1.5,
+                  }}>
+                    Mention anyone you want in the story {'\u2014'} {childName} is always the hero.
+                  </div>
                 )}
               </div>
             )}
 
-            {/* Step 2: Who should join this story? */}
-            {freeStep === 2 && (
-              <div style={{ animation: 'fadeUp .3s ease both' }}>
+            {/* Child is Hero Toggle */}
+            {freeHasContent && (
+              <div
+                onClick={() => setChildIsHero(prev => !prev)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 16px', borderRadius: 14, marginTop: 12, cursor: 'pointer',
+                  border: `1.5px solid ${childIsHero ? 'rgba(246,197,111,.25)' : 'rgba(255,255,255,.06)'}`,
+                  background: childIsHero ? 'rgba(246,197,111,.06)' : 'rgba(255,255,255,.02)',
+                  transition: 'all .2s',
+                  animation: 'fadeUp .3s .05s ease both',
+                }}
+              >
+                <span style={{ fontSize: 20 }}>{primaryChar?.emoji || '\u{1F9D2}'}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontFamily: 'var(--body)', fontSize: 13, fontWeight: 700,
+                    color: childIsHero ? '#F6C56F' : 'rgba(244,239,232,.4)',
+                    transition: 'color .2s',
+                  }}>
+                    {childName} is the hero
+                  </div>
+                  <div style={{
+                    fontFamily: 'var(--body)', fontSize: 10,
+                    color: childIsHero ? 'rgba(246,197,111,.4)' : 'rgba(244,239,232,.25)',
+                    marginTop: 2,
+                  }}>
+                    {childIsHero
+                      ? 'Main character of tonight\u2019s story'
+                      : 'Story follows whoever you describe'
+                    }
+                  </div>
+                </div>
                 <div style={{
-                  fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '.08em',
-                  textTransform: 'uppercase' as const, color: 'rgba(111,231,221,.45)', marginBottom: 10,
+                  width: 40, height: 22, borderRadius: 11, padding: 2,
+                  background: childIsHero ? 'rgba(246,197,111,.3)' : 'rgba(255,255,255,.08)',
+                  transition: 'background .2s',
+                  display: 'flex', alignItems: 'center',
                 }}>
-                  Who should join this story?
+                  <div style={{
+                    width: 18, height: 18, borderRadius: '50%',
+                    background: childIsHero ? '#F6C56F' : 'rgba(255,255,255,.2)',
+                    transition: 'all .2s',
+                    transform: childIsHero ? 'translateX(18px)' : 'translateX(0)',
+                  }} />
                 </div>
+              </div>
+            )}
 
-                {/* Child pre-selected */}
+            {/* DreamKeeper Toggle */}
+            {creature && freeHasContent && (
+              <div
+                onClick={() => setDreamkeeperInStory(prev => !prev)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 16px', borderRadius: 14, marginTop: 12, cursor: 'pointer',
+                  border: `1.5px solid ${dreamkeeperInStory ? 'rgba(111,231,221,.25)' : 'rgba(255,255,255,.06)'}`,
+                  background: dreamkeeperInStory ? 'rgba(111,231,221,.06)' : 'rgba(255,255,255,.02)',
+                  transition: 'all .2s',
+                  animation: 'fadeUp .3s .1s ease both',
+                }}
+              >
+                <span style={{ fontSize: 22 }}>{cEmoji || '\u{1F31F}'}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontFamily: 'var(--body)', fontSize: 13, fontWeight: 700,
+                    color: dreamkeeperInStory ? '#6FE7DD' : 'rgba(244,239,232,.4)',
+                    transition: 'color .2s',
+                  }}>
+                    {cName} in this story?
+                  </div>
+                  {dreamkeeperInStory && (
+                    <div style={{
+                      fontFamily: 'var(--body)', fontSize: 10, fontStyle: 'italic',
+                      color: 'rgba(111,231,221,.4)', marginTop: 2,
+                    }}>
+                      {creature.dreamAnswer
+                        ? `"I dream about ${creature.dreamAnswer}"`
+                        : `"I'll be right there with ${childName}."`
+                      }
+                    </div>
+                  )}
+                </div>
                 <div style={{
-                  display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 12,
-                  border: '1.5px solid rgba(246,197,111,.3)', background: 'rgba(246,197,111,.08)', marginBottom: 8,
+                  width: 40, height: 22, borderRadius: 11, padding: 2,
+                  background: dreamkeeperInStory ? 'rgba(111,231,221,.3)' : 'rgba(255,255,255,.08)',
+                  transition: 'background .2s',
+                  display: 'flex', alignItems: 'center',
                 }}>
-                  <span style={{ fontSize: 18 }}>{primaryChar?.emoji || '\u{1F9D2}'}</span>
-                  <span style={{ fontFamily: 'var(--body)', fontSize: 12, fontWeight: 700, color: '#F6C56F' }}>
-                    {childName}
-                  </span>
-                  <span style={{ fontFamily: 'var(--mono)', fontSize: 7, color: 'rgba(246,197,111,.4)', marginLeft: 'auto', letterSpacing: '.06em', textTransform: 'uppercase' as const }}>
-                    HERO
-                  </span>
+                  <div style={{
+                    width: 18, height: 18, borderRadius: '50%',
+                    background: dreamkeeperInStory ? '#6FE7DD' : 'rgba(255,255,255,.2)',
+                    transition: 'all .2s',
+                    transform: dreamkeeperInStory ? 'translateX(18px)' : 'translateX(0)',
+                  }} />
                 </div>
-
-                {/* Add character buttons */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
-                  {MAKE_ANYTHING_CHARS.map(mc => {
-                    const isOn = isFreeCharSelected(mc.key);
-                    const needsInput = (mc.key === 'someone' || mc.key === 'pet');
-                    const showInput = freeCharInputKey === mc.key && !isOn;
-                    const emoji = mc.key === 'dreamkeeper' ? (cEmoji || '\u{1F31F}') : mc.emoji;
-
-                    return (
-                      <div key={mc.key}>
-                        <div
-                          className={`sc-ma-char${isOn ? ' on' : ''}`}
-                          onClick={() => {
-                            if (isOn) {
-                              addFreeChar(mc.key, '');
-                              return;
-                            }
-                            if (needsInput) {
-                              setFreeCharInputKey(mc.key);
-                              setFreeCharInput('');
-                            } else {
-                              addFreeChar(mc.key, mc.key === 'dreamkeeper' ? cName : mc.label);
-                            }
-                          }}
-                        >
-                          <span className="sc-ma-char-emoji">{emoji}</span>
-                          <span className="sc-ma-char-label">
-                            {isOn && needsInput
-                              ? freeChars.find(c => c.key === mc.key)?.name || mc.label
-                              : mc.key === 'dreamkeeper'
-                                ? cName
-                                : mc.label
-                            }
-                          </span>
-                          {isOn && (
-                            <span style={{ marginLeft: 'auto', fontSize: 10, color: '#6FE7DD' }}>{'\u2713'}</span>
-                          )}
-                        </div>
-
-                        {showInput && (
-                          <div style={{ display: 'flex', gap: 6, marginTop: 6, animation: 'fadeUp .2s ease both' }}>
-                            <input
-                              type="text"
-                              value={freeCharInput}
-                              onChange={e => setFreeCharInput(e.target.value)}
-                              placeholder={mc.key === 'someone' ? "Their name..." : "Pet's name..."}
-                              autoFocus
-                              style={{
-                                flex: 1, padding: '8px 12px', borderRadius: 10,
-                                border: '1px solid rgba(111,231,221,.2)', background: 'rgba(111,231,221,.04)',
-                                color: 'var(--cream)', fontSize: 12, fontFamily: 'var(--body)', fontWeight: 600,
-                                outline: 'none',
-                              }}
-                              onKeyDown={e => {
-                                if (e.key === 'Enter' && freeCharInput.trim()) {
-                                  addFreeChar(mc.key, freeCharInput.trim());
-                                  setFreeCharInputKey('');
-                                  setFreeCharInput('');
-                                }
-                              }}
-                            />
-                            <button
-                              onClick={() => {
-                                if (freeCharInput.trim()) {
-                                  addFreeChar(mc.key, freeCharInput.trim());
-                                  setFreeCharInputKey('');
-                                  setFreeCharInput('');
-                                }
-                              }}
-                              style={{
-                                padding: '8px 14px', borderRadius: 10, border: 'none',
-                                background: freeCharInput.trim() ? 'rgba(111,231,221,.2)' : 'rgba(255,255,255,.06)',
-                                color: freeCharInput.trim() ? '#6FE7DD' : 'var(--muted)',
-                                fontFamily: 'var(--body)', fontSize: 11, fontWeight: 700, cursor: 'pointer',
-                              }}
-                            >
-                              Add
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Back to step 1 */}
-                <button
-                  onClick={() => setFreeStep(1)}
-                  style={{
-                    fontSize: 11, color: 'rgba(111,231,221,.4)', background: 'none', border: 'none',
-                    cursor: 'pointer', fontFamily: 'var(--body)', fontWeight: 600, marginBottom: 6,
-                  }}
-                >
-                  {'\u2190'} edit story idea
-                </button>
               </div>
             )}
           </div>
@@ -1799,7 +1757,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
       </div>
 
       {/* CTA (hidden during ritual entry card selection) */}
-      {ritualEntryDone && (mode !== 'free' || freeStep === 2 || freeHasContent) && (
+      {ritualEntryDone && (mode !== 'free' || freeHasContent) && (
         <div className="sc-cta-wrap">
           <button
             className={`sc-cta ${ctaColor}`}

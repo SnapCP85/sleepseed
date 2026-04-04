@@ -77,7 +77,15 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
 
-  const childName = ritual.childName || 'friend';
+  // Resolve child name — check ritual state first, then localStorage profile
+  const childName = ritual.childName || (() => {
+    try {
+      const keys = Object.keys(localStorage);
+      const profileKey = keys.find(k => k.startsWith('sleepseed_child_profile_'));
+      if (profileKey) { const p = JSON.parse(localStorage.getItem(profileKey)!); return p?.childName; }
+    } catch {}
+    return 'Dreamer';
+  })();
   const emoji = ritual.creatureEmoji || '🌙';
   const color = ritual.creatureColor || '#F5B84C';
   const creatureName = ritual.creatureName || 'your DreamKeeper';
@@ -366,7 +374,7 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
 
           <MiniNightCard
             title="The Night You Were Chosen"
-            quote={`${childName} said "${answer}" — and the egg began to glow.`}
+            quote={`${childName} said "${answer || 'something special'}" — and the egg began to glow.`}
             emoji={emoji}
             nightNumber={1}
             color={color}
