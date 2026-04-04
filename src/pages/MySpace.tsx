@@ -5,8 +5,10 @@ import { getAllHatchedCreatures } from '../lib/hatchery';
 import { getDreamKeeperById, V1_DREAMKEEPERS, type DreamKeeper } from '../lib/dreamkeepers';
 import { isRitualComplete, getRitualState } from '../lib/ritualState';
 import { journeyService } from '../lib/journey-service';
-import type { Character, HatchedCreature, SavedNightCard, StoryJourney } from '../lib/types';
+import type { Character, HatchedCreature, SavedNightCard, StoryJourney, TimeCapsule } from '../lib/types';
 import NightCardComponent from '../features/nightcards/NightCard';
+import DreamEgg from '../components/onboarding/DreamEgg';
+import type { EggState } from '../components/onboarding/DreamEgg';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MySpace — The child's calm, magical home screen
@@ -134,6 +136,10 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
   const [journeyLoading, setJourneyLoading] = useState(false);
   const [morningThought, setMorningThought] = useState('');
   const [morningThoughtSaved, setMorningThoughtSaved] = useState(false);
+  const [capsules, setCapsules] = useState<TimeCapsule[]>([]);
+  const [showCapsuleCreate, setShowCapsuleCreate] = useState(false);
+  const [capsuleTitle, setCapsuleTitle] = useState('');
+  const [capsuleDate, setCapsuleDate] = useState('');
 
   const userId = user?.id;
 
@@ -158,6 +164,12 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
         setStreak(calcStreak(cards));
         setLoading(false);
       }
+    } catch {}
+
+    // Load time capsules from localStorage
+    try {
+      const stored = JSON.parse(localStorage.getItem(`ss2_capsules_${userId}`) || '[]');
+      if (stored.length) setCapsules(stored);
     } catch {}
 
     // Phase 2: refresh from Supabase
@@ -251,37 +263,63 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
     return null;
   }, [allCards]);
 
-  // ── Resurfacing: pick one old card to show ──
+  // ── Resurfacing: pick one old card to show (with dedup tracking) ──
   const resurfacedCard = useMemo(() => {
-    if (allCards.length < 3) return null; // Need some history
+    if (allCards.length < 3) return null;
     const today = new Date();
     const todayStr = today.toISOString().slice(5, 10); // MM-DD
+    const todayFull = today.toISOString().slice(0, 10); // YYYY-MM-DD
     const sorted = [...allCards].sort((a, b) => a.date.localeCompare(b.date));
 
-    // Priority 1: Exactly 1 year ago (same month-day)
+    // Read last-surfaced tracking
+    let lastSurfacedId = '';
+    let lastSurfacedDate = '';
+    try {
+      const stored = JSON.parse(localStorage.getItem(`ss2_resurface_${userId}`) || '{}');
+      lastSurfacedId = stored.cardId || '';
+      lastSurfacedDate = stored.date || '';
+    } catch {}
+
+    // If we already picked one today, show the same one for consistency
+    if (lastSurfacedDate === todayFull && lastSurfacedId) {
+      const cached = allCards.find(c => c.id === lastSurfacedId);
+      if (cached) {
+        const daysAgo = Math.round((Date.now() - new Date(cached.date).getTime()) / 86400000);
+        return { card: cached, label: daysAgo > 360 ? 'One year ago tonight' : daysAgo > 25 ? 'About a month ago' : `${daysAgo} nights ago` };
+      }
+    }
+
+    const pick = (card: any, label: string) => {
+      try { localStorage.setItem(`ss2_resurface_${userId}`, JSON.stringify({ cardId: card.id, date: todayFull })); } catch {}
+      return { card, label };
+    };
+
+    // Priority 1: Exactly 1 year ago
     const oneYearAgo = sorted.find(c => {
       const cDate = c.date.slice(5, 10);
       const cYear = parseInt(c.date.slice(0, 4));
       return cDate === todayStr && cYear < today.getFullYear();
     });
-    if (oneYearAgo) return { card: oneYearAgo, label: 'One year ago tonight' };
+    if (oneYearAgo) return pick(oneYearAgo, 'One year ago tonight');
 
-    // Priority 2: ~30 days ago (28-32 day window)
+    // Priority 2: ~30 days ago
     const thirtyDaysAgo = Date.now() - 30 * 86400000;
     const monthAgo = sorted.find(c => {
       const diff = Math.abs(new Date(c.date).getTime() - thirtyDaysAgo);
-      return diff < 2 * 86400000; // within 2-day window
+      return diff < 2 * 86400000 && c.id !== lastSurfacedId;
     });
-    if (monthAgo) return { card: monthAgo, label: 'About a month ago' };
+    if (monthAgo) return pick(monthAgo, 'About a month ago');
 
-    // Priority 3: Any card older than 7 days (random, seeded by date)
-    const oldCards = sorted.filter(c => Date.now() - new Date(c.date).getTime() > 7 * 86400000);
+    // Priority 3: Random old card (avoid last shown)
+    const oldCards = sorted.filter(c => Date.now() - new Date(c.date).getTime() > 7 * 86400000 && c.id !== lastSurfacedId);
     if (oldCards.length > 0) {
       const idx = today.getDate() % oldCards.length;
-      return { card: oldCards[idx], label: `${Math.round((Date.now() - new Date(oldCards[idx].date).getTime()) / 86400000)} nights ago` };
+      const card = oldCards[idx];
+      const daysAgo = Math.round((Date.now() - new Date(card.date).getTime()) / 86400000);
+      return pick(card, `${daysAgo} nights ago`);
     }
     return null;
-  }, [allCards]);
+  }, [allCards, userId]);
 
   const saveMorningThought = useCallback(async () => {
     if (!lastNightCard || !morningThought.trim() || !userId) return;
@@ -310,7 +348,7 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
   const creatureImageSrc = dk?.imageSrc;
   const creatureName = isPreHatchEgg ? (companionCreature?.name || 'Dream Egg') : (companionCreature?.name || dk?.name || '');
   const creatureColor = companionCreature?.color || dk?.color || '#F5B84C';
-  const creatureEmoji = companionCreature?.creatureEmoji || dk?.emoji || '\uD83C\uDF19';
+  const creatureEmoji = isPreHatchEgg ? '\uD83E\uDD5A' : (companionCreature?.creatureEmoji || dk?.emoji || '\uD83C\uDF19');
   const rgb = hexToRgb(creatureColor);
 
   // ── Collection patterns (emotional analytics) ──
@@ -357,6 +395,9 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
     if (h < 17) return 'Good afternoon';
     return 'Good evening';
   }, []);
+
+  // Evening mode: 5pm+ → ritual-focused. Morning mode: before 5pm → reflection-focused.
+  const isEvening = new Date().getHours() >= 17;
 
   // ── Stars ──────────────────────────────────────────────────────────────────
   const stars = useMemo(() => {
@@ -468,7 +509,7 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
           </button>
         </div>
 
-        {/* ═══ 1. HEADER ═══ */}
+        {/* ═══ 1. HEADER (streak integrated) ═══ */}
         <div style={{
           paddingTop: 52, marginBottom: 8, textAlign: 'center',
           animation: 'ms-fadeUp .6s ease-out',
@@ -482,40 +523,27 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
           <div style={{
             fontFamily: "'DM Mono',monospace", fontSize: 11,
             color: 'rgba(244,239,232,.3)', marginTop: 6, letterSpacing: '.03em',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}>
-            {storyCount > 0
-              ? `${storyCount} ${storyCount === 1 ? 'story' : 'stories'} so far`
-              : 'This is where your stories will live'
-            }
+            <span>
+              {cardCount > 0
+                ? isEvening ? `Night ${cardCount + 1}` : `${cardCount} ${cardCount === 1 ? 'night' : 'nights'} preserved`
+                : 'This is where your memories will live'
+              }
+            </span>
+            {streak > 1 && (
+              <span style={{
+                color: 'rgba(245,184,76,.6)',
+                ...(streak >= 7 ? { animation: 'ms-streakGlow 3s ease-in-out infinite' } : {}),
+              }}>
+                {'\uD83D\uDD25'} {streak}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Child pills removed — replaced by top-bar toggle */}
-
-        {/* ═══ 1b. STREAK PILL ═══ */}
-        {streak > 0 && (
-          <div style={{
-            display: 'flex', justifyContent: 'center',
-            marginBottom: 4, marginTop: 2,
-            animation: 'ms-fadeUp .7s .1s ease-out both',
-          }}>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 4,
-              padding: '3px 10px', borderRadius: 20,
-              background: 'rgba(245,184,76,.08)',
-              border: '1px solid rgba(245,184,76,.15)',
-              fontFamily: "'DM Mono',monospace", fontSize: 10,
-              color: 'rgba(245,184,76,.7)', letterSpacing: '.03em',
-              ...(streak >= 7 ? { animation: 'ms-streakGlow 3s ease-in-out infinite' } : {}),
-            }}>
-              <span style={{ fontSize: 11, lineHeight: 1 }}>{'\uD83D\uDD25'}</span>
-              <span>{streak} night streak</span>
-            </div>
-          </div>
-        )}
-
-        {/* ═══ 1c. BIRTHDAY NUDGE ═══ */}
-        {activeChild && activeChild.type === 'human' && !activeChild.birthDate && cardCount > 0 && (
+        {/* ═══ 1c. BIRTHDAY NUDGE (morning only) ═══ */}
+        {!isEvening && activeChild && activeChild.type === 'human' && !activeChild.birthDate && cardCount > 0 && (
           <div
             onClick={() => setView('character-builder')}
             style={{
@@ -565,14 +593,19 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
             pointerEvents: 'none',
           }} />
 
-          {/* Creature image or emoji fallback */}
+          {/* Creature image, DreamEgg, or emoji fallback */}
           <div style={{
             width: 200, height: 240,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            animation: 'ms-creatureIdle 7s ease-in-out infinite',
+            ...(!isPreHatchEgg ? { animation: 'ms-creatureIdle 7s ease-in-out infinite' } : {}),
             position: 'relative', zIndex: 2,
           }}>
-            {creatureImageSrc ? (
+            {isPreHatchEgg ? (
+              <DreamEgg
+                state={(ritualState?.eggState as EggState) || 'idle'}
+                size={160}
+              />
+            ) : creatureImageSrc ? (
               <img
                 src={creatureImageSrc}
                 alt={creatureName}
@@ -602,126 +635,130 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
             </div>
           )}
 
-          {/* Greeting speech bubble — appears briefly on load */}
-          <CreatureGreeting childName={childName} creatureName={creatureName} rgb={rgb} />
+          {/* Greeting / Morning Thought — creature's speech bubble */}
+          {lastNightCard && !morningThoughtSaved && !lastNightCard.parentReflection ? (
+            // Morning thought prompt replaces greeting
+            <div style={{
+              marginTop: 8, padding: '12px 16px',
+              background: `rgba(${rgb},.06)`, border: `1px solid rgba(${rgb},.18)`,
+              borderRadius: '16px 16px 16px 4px', maxWidth: 280, textAlign: 'left',
+              animation: 'ms-fadeUp .5s ease-out',
+            }}>
+              <div style={{
+                fontFamily: "'Fraunces',Georgia,serif", fontSize: 13, fontWeight: 400,
+                fontStyle: 'italic', color: 'rgba(244,239,232,.6)', lineHeight: 1.5,
+                marginBottom: 8,
+              }}>
+                {creatureName ? `"${creatureName} remembers last night. Anything you want to add?"` : `"Anything from last night you want to remember?"`}
+              </div>
+              <div style={{
+                fontSize: 10, color: 'rgba(244,239,232,.25)', marginBottom: 8,
+                fontFamily: "'Nunito',sans-serif",
+              }}>
+                About: <span style={{ color: `rgba(${rgb},.5)` }}>{lastNightCard.headline}</span>
+              </div>
+              <textarea
+                value={morningThought}
+                onChange={e => setMorningThought(e.target.value)}
+                placeholder="She asked about the story first thing this morning..."
+                style={{
+                  width: '100%', minHeight: 50, padding: '10px 12px',
+                  borderRadius: 10, border: `1px solid rgba(${rgb},.12)`,
+                  background: `rgba(${rgb},.04)`, color: 'rgba(234,242,255,.8)',
+                  fontSize: 12, fontFamily: "'Nunito',sans-serif",
+                  resize: 'none', outline: 'none', lineHeight: 1.5,
+                }}
+                maxLength={280}
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 6 }}>
+                <button
+                  onClick={saveMorningThought}
+                  disabled={!morningThought.trim()}
+                  style={{
+                    padding: '6px 14px', borderRadius: 8, border: 'none',
+                    background: morningThought.trim() ? `rgba(${rgb},.18)` : 'rgba(255,255,255,.04)',
+                    color: morningThought.trim() ? `rgba(${rgb},.85)` : 'rgba(244,239,232,.2)',
+                    fontSize: 11, fontWeight: 600, cursor: morningThought.trim() ? 'pointer' : 'default',
+                    fontFamily: "'Nunito',sans-serif", transition: 'all .2s',
+                  }}
+                >Save</button>
+              </div>
+            </div>
+          ) : morningThoughtSaved ? (
+            <div style={{
+              marginTop: 8, padding: '10px 16px',
+              background: `rgba(${rgb},.06)`, border: `1px solid rgba(${rgb},.15)`,
+              borderRadius: '16px 16px 16px 4px', maxWidth: 260,
+              animation: 'ms-fadeUp .5s ease-out',
+            }}>
+              <div style={{
+                fontFamily: "'Fraunces',Georgia,serif", fontSize: 13, fontWeight: 400,
+                fontStyle: 'italic', color: 'rgba(244,239,232,.5)', lineHeight: 1.5,
+              }}>
+                {'\u2713'} Saved to last night{'\u2019'}s memory
+              </div>
+            </div>
+          ) : (
+            <CreatureGreeting childName={childName} creatureName={creatureName} rgb={rgb} />
+          )}
         </div>
 
-        {/* ═══ 3. PRIMARY + JOURNEY CTAs ═══ */}
+        {/* ═══ 3. CTAs — Evening: ONE smart CTA · Morning: full layout ═══ */}
         <div style={{
           margin: '8px 0 28px',
           animation: 'ms-fadeUp .8s .3s ease-out both',
           display: 'flex', flexDirection: 'column', gap: 12,
         }}>
 
-          {/* ── Active journey = primary CTA ── */}
-          {activeJourney && ritualDone && (() => {
-            const lastChapter = activeJourney.chapters?.length
-              ? activeJourney.chapters[activeJourney.chapters.length - 1]
-              : null;
-            const readNum = activeJourney.readNumber ?? 1;
-            const progressPct = Math.max(0, Math.min(100, ((readNum - 1) / 7) * 100));
-            return (
-              <button
-                onClick={() => {
-                  setActiveJourneyId(activeJourney.id);
-                  setView('nightly-checkin');
-                }}
-                style={{
-                  width: '100%', padding: '18px 20px 16px', border: 'none', borderRadius: 16,
-                  background: 'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)',
-                  color: '#080200', cursor: 'pointer',
-                  fontFamily: "'Nunito',system-ui,sans-serif",
-                  animation: 'ms-ctaPulse 3s ease-in-out infinite',
-                  transition: 'transform .15s, filter .15s',
-                  position: 'relative', overflow: 'hidden', textAlign: 'left',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.filter = 'brightness(1.1)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.filter = ''; }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 16 }}>{'\uD83D\uDCD6'}</span>
-                  <span style={{ fontSize: 16, fontWeight: 700 }}>Continue tonight{'\u2019'}s chapter</span>
-                </div>
-                <div style={{
-                  fontSize: 12, fontWeight: 600, opacity: .75, marginBottom: 8,
-                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                }}>
-                  {activeJourney.workingTitle || 'Your book'}
-                </div>
-                {/* Progress bar */}
-                <div style={{
-                  height: 4, borderRadius: 2, background: 'rgba(0,0,0,.15)',
-                  marginBottom: 6, overflow: 'hidden',
-                }}>
-                  <div style={{
-                    height: '100%', borderRadius: 2,
-                    background: 'rgba(0,0,0,.35)',
-                    width: `${progressPct}%`,
-                    transition: 'width .3s ease',
-                  }} />
-                </div>
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                }}>
-                  <span style={{ fontSize: 10, fontWeight: 600, opacity: .6,
-                    fontFamily: "'DM Mono',monospace", letterSpacing: '.03em',
-                  }}>
-                    Night {readNum} of 7
-                  </span>
-                  {lastChapter?.teaser && (
-                    <span style={{ fontSize: 10, fontStyle: 'italic', opacity: .55, maxWidth: '60%',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}>
-                      {lastChapter.teaser}
-                    </span>
+          {isEvening ? (
+            /* ── EVENING: Single smart CTA (journey > ritual > story) ── */
+            <button
+              onClick={() => {
+                if (!ritualDone) { setView('onboarding-ritual'); return; }
+                if (activeJourney) { setActiveJourneyId(activeJourney.id); setView('nightly-checkin'); return; }
+                setView('ritual-starter');
+              }}
+              style={{
+                width: '100%', padding: '20px 24px 18px', border: 'none', borderRadius: 16,
+                background: 'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)',
+                color: '#080200', cursor: 'pointer',
+                fontFamily: "'Nunito',system-ui,sans-serif",
+                animation: 'ms-ctaPulse 3s ease-in-out infinite',
+                transition: 'transform .15s, filter .15s',
+                position: 'relative', overflow: 'hidden', textAlign: 'left',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.filter = 'brightness(1.1)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.filter = ''; }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 18 }}>
+                  {!ritualDone ? '\u2728' : activeJourney ? '\uD83D\uDCD6' : '\uD83C\uDF19'}
+                </span>
+                <div>
+                  <div style={{ fontSize: 17, fontWeight: 700, lineHeight: 1.3 }}>
+                    {!ritualDone
+                      ? `Begin Ritual Night ${nextRitualNight}`
+                      : activeJourney
+                        ? `Continue tonight\u2019s chapter`
+                        : isFirstTime ? 'Start your first story' : 'Start tonight\u2019s story'
+                    }
+                  </div>
+                  {activeJourney && ritualDone && (
+                    <div style={{ fontSize: 11, fontWeight: 600, opacity: .65, marginTop: 2 }}>
+                      {activeJourney.workingTitle || 'Your book'} — Night {activeJourney.readNumber ?? 1} of 7
+                    </div>
                   )}
                 </div>
-                <span style={{
-                  position: 'absolute', inset: 0,
-                  background: 'linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 50%,transparent 100%)',
-                  backgroundSize: '200% 100%',
-                  animation: 'ms-shimmer 3.5s ease-in-out infinite',
-                  pointerEvents: 'none',
-                }} />
-              </button>
-            );
-          })()}
-
-          {/* ── Quick story CTA (primary when no journey, secondary when journey active) ── */}
-          <button
-            onClick={() => setView(ritualDone ? 'ritual-starter' : 'onboarding-ritual')}
-            style={{
-              width: '100%', border: 'none', borderRadius: 16,
-              cursor: 'pointer', fontFamily: "'Nunito',system-ui,sans-serif",
-              transition: 'transform .15s, filter .15s',
-              position: 'relative', overflow: 'hidden',
-              ...(activeJourney && ritualDone
-                ? {
-                    // Secondary style when journey is primary
-                    padding: '14px 24px',
-                    background: 'rgba(245,184,76,.08)',
-                    border: '1px solid rgba(245,184,76,.18)',
-                    color: 'rgba(245,184,76,.85)', fontSize: 14, fontWeight: 600,
-                  }
-                : {
-                    // Primary gold style (default)
-                    padding: '18px 24px',
-                    background: 'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)',
-                    color: '#080200', fontSize: 17, fontWeight: 700,
-                    animation: 'ms-ctaPulse 3s ease-in-out infinite',
-                  }
-              ),
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.filter = 'brightness(1.1)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.filter = ''; }}
-          >
-            {!ritualDone
-              ? `Start Ritual Night ${nextRitualNight}`
-              : activeJourney
-                ? 'Or start a quick story'
-                : isFirstTime ? 'Start your first story' : 'Start tonight\u2019s story'
-            }
-            {!(activeJourney && ritualDone) && (
+              </div>
+              {/* Progress bar for journey */}
+              {activeJourney && ritualDone && (() => {
+                const progressPct = Math.max(0, Math.min(100, (((activeJourney.readNumber ?? 1) - 1) / 7) * 100));
+                return (
+                  <div style={{ height: 4, borderRadius: 2, background: 'rgba(0,0,0,.15)', marginTop: 10, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', borderRadius: 2, background: 'rgba(0,0,0,.35)', width: `${progressPct}%`, transition: 'width .3s ease' }} />
+                  </div>
+                );
+              })()}
               <span style={{
                 position: 'absolute', inset: 0,
                 background: 'linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 50%,transparent 100%)',
@@ -729,70 +766,114 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
                 animation: 'ms-shimmer 3.5s ease-in-out infinite',
                 pointerEvents: 'none',
               }} />
-            )}
-          </button>
-
-          {/* ── Journey invitation (show when no active journey) ── */}
-          {!activeJourney && !journeyLoading && (
-            <button
-              onClick={() => {
-                if (!ritualDone) {
-                  setView('onboarding-ritual');
-                } else {
-                  setActiveJourneyId(null);
-                  setView('journey-setup');
-                }
-              }}
-              style={{
-                width: '100%', padding: '16px 20px', borderRadius: 16,
-                background: 'rgba(255,255,255,.025)',
-                border: '1px solid rgba(255,255,255,.06)',
-                cursor: 'pointer', textAlign: 'left',
-                fontFamily: "'Nunito',system-ui,sans-serif",
-                transition: 'background .2s, transform .15s, border-color .2s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,.12)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.025)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,.06)'; e.currentTarget.style.transform = ''; }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                <span style={{ fontSize: 18 }}>{'\uD83D\uDCD6'}</span>
-                <span style={{
-                  fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 400,
-                  color: '#F4EFE8',
-                }}>
-                  Start a 7-Night Book
-                </span>
-              </div>
-              <div style={{
-                fontSize: 12, color: 'rgba(244,239,232,.4)', lineHeight: 1.5,
-                paddingLeft: 28,
-              }}>
-                {!ritualDone
-                  ? `Complete your bedtime ritual to unlock \u2014 a personalized book that grows across 7 nights`
-                  : creatureName && creatureName !== 'Dream Egg'
-                    ? `A story that grows across 7 bedtimes \u2014 with ${creatureName} alongside ${childName}`
-                    : `A story that grows across 7 bedtimes \u2014 just for ${childName}`
-                }
-              </div>
-              <div style={{
-                display: 'flex', gap: 16, paddingLeft: 28, marginTop: 10,
-              }}>
-                {[
-                  'New chapter every night',
-                  'Remembers each session',
-                  `${creatureName || 'DreamKeeper'} grows too`,
-                ].map((item, i) => (
-                  <div key={i} style={{
-                    fontFamily: "'DM Mono',monospace", fontSize: 9,
-                    color: 'rgba(244,239,232,.25)', letterSpacing: '.02em',
-                    display: 'flex', alignItems: 'center', gap: 4,
-                  }}>
-                    <span style={{ color: `rgba(${rgb},.5)`, fontSize: 8 }}>{'\u2022'}</span>
-                    {item}
-                  </div>
-                ))}
-              </div>
             </button>
+          ) : (
+            /* ── MORNING: Full CTA layout (subtle styling) ── */
+            <>
+              {/* Active journey CTA */}
+              {activeJourney && ritualDone && (() => {
+                const lastChapter = activeJourney.chapters?.length
+                  ? activeJourney.chapters[activeJourney.chapters.length - 1]
+                  : null;
+                const readNum = activeJourney.readNumber ?? 1;
+                const progressPct = Math.max(0, Math.min(100, ((readNum - 1) / 7) * 100));
+                return (
+                  <button
+                    onClick={() => {
+                      setActiveJourneyId(activeJourney.id);
+                      setView('nightly-checkin');
+                    }}
+                    style={{
+                      width: '100%', padding: '14px 18px 12px', border: '1px solid rgba(245,184,76,.15)', borderRadius: 16,
+                      background: 'rgba(245,184,76,.06)',
+                      color: 'rgba(245,184,76,.85)', cursor: 'pointer',
+                      fontFamily: "'Nunito',system-ui,sans-serif",
+                      transition: 'transform .15s, background .15s',
+                      position: 'relative', overflow: 'hidden', textAlign: 'left',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.background = 'rgba(245,184,76,.1)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.background = 'rgba(245,184,76,.06)'; }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      <span style={{ fontSize: 14 }}>{'\uD83D\uDCD6'}</span>
+                      <span style={{ fontSize: 14, fontWeight: 600 }}>Continue your book tonight</span>
+                    </div>
+                    <div style={{
+                      fontSize: 11, fontWeight: 600, opacity: .6, marginBottom: 6,
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {activeJourney.workingTitle || 'Your book'}
+                    </div>
+                    <div style={{ height: 3, borderRadius: 2, background: 'rgba(245,184,76,.1)', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', borderRadius: 2, background: 'rgba(245,184,76,.4)', width: `${progressPct}%`, transition: 'width .3s ease' }} />
+                    </div>
+                    <div style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4,
+                    }}>
+                      <span style={{ fontSize: 9, fontWeight: 600, opacity: .5, fontFamily: "'DM Mono',monospace", letterSpacing: '.03em' }}>
+                        Night {readNum} of 7
+                      </span>
+                      {lastChapter?.teaser && (
+                        <span style={{ fontSize: 9, fontStyle: 'italic', opacity: .4, maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {lastChapter.teaser}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })()}
+
+              {/* Quick story — subtle in morning */}
+              <button
+                onClick={() => setView(ritualDone ? 'ritual-starter' : 'onboarding-ritual')}
+                style={{
+                  width: '100%', padding: '12px 20px', border: '1px solid rgba(255,255,255,.08)', borderRadius: 14,
+                  background: 'rgba(255,255,255,.03)',
+                  color: 'rgba(244,239,232,.5)', fontSize: 13, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: "'Nunito',system-ui,sans-serif",
+                  transition: 'transform .15s, background .15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.background = 'rgba(255,255,255,.06)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.background = 'rgba(255,255,255,.03)'; }}
+              >
+                {!ritualDone
+                  ? `Start Ritual Night ${nextRitualNight}`
+                  : activeJourney
+                    ? 'Or start a quick story tonight'
+                    : isFirstTime ? 'Start your first story tonight' : 'Start a story tonight'
+                }
+              </button>
+
+              {/* Journey invitation (morning only, when no active journey) */}
+              {!activeJourney && !journeyLoading && ritualDone && (
+                <button
+                  onClick={() => { setActiveJourneyId(null); setView('journey-setup'); }}
+                  style={{
+                    width: '100%', padding: '14px 18px', borderRadius: 14,
+                    background: 'rgba(255,255,255,.02)',
+                    border: '1px solid rgba(255,255,255,.06)',
+                    cursor: 'pointer', textAlign: 'left',
+                    fontFamily: "'Nunito',system-ui,sans-serif",
+                    transition: 'background .2s, transform .15s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.05)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.02)'; e.currentTarget.style.transform = ''; }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                    <span style={{ fontSize: 16 }}>{'\uD83D\uDCD6'}</span>
+                    <span style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 14, fontWeight: 400, color: 'rgba(244,239,232,.6)' }}>
+                      Start a 7-Night Book
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 11, color: 'rgba(244,239,232,.3)', lineHeight: 1.5, paddingLeft: 28 }}>
+                    {creatureName && creatureName !== 'Dream Egg'
+                      ? `A story that grows across 7 bedtimes \u2014 with ${creatureName} alongside ${childName}`
+                      : `A story that grows across 7 bedtimes \u2014 just for ${childName}`
+                    }
+                  </div>
+                </button>
+              )}
+            </>
           )}
         </div>
 
@@ -857,78 +938,7 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
           return null;
         })()}
 
-        {/* ═══ 3b. MORNING THOUGHT ═══ */}
-        {lastNightCard && !morningThoughtSaved && (
-          <div style={{
-            animation: 'ms-fadeUp .8s .35s ease-out both', marginBottom: 20,
-            background: 'rgba(20,216,144,.04)',
-            border: '1px solid rgba(20,216,144,.12)',
-            borderRadius: 16, padding: '16px 18px',
-          }}>
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10,
-            }}>
-              <span style={{ fontSize: 14 }}>{'\uD83D\uDCAD'}</span>
-              <span style={{
-                fontFamily: "'DM Mono',monospace", fontSize: 10,
-                color: 'rgba(20,216,144,.55)', letterSpacing: '.04em',
-                textTransform: 'uppercase' as const,
-              }}>Morning thought</span>
-            </div>
-            <div style={{
-              fontFamily: "'Fraunces',Georgia,serif", fontSize: 14, fontWeight: 300,
-              fontStyle: 'italic', color: 'rgba(244,239,232,.55)', lineHeight: 1.5,
-              marginBottom: 12,
-            }}>
-              Anything from last night you want to remember?
-            </div>
-            <div style={{
-              fontSize: 11, color: 'rgba(244,239,232,.25)', marginBottom: 10,
-              fontFamily: "'Nunito',sans-serif",
-            }}>
-              About: <span style={{ color: 'rgba(245,184,76,.5)' }}>{lastNightCard.headline}</span>
-            </div>
-            <textarea
-              value={morningThought}
-              onChange={e => setMorningThought(e.target.value)}
-              placeholder="She asked about the story first thing this morning..."
-              style={{
-                width: '100%', minHeight: 60, padding: '12px 14px',
-                borderRadius: 12, border: '1px solid rgba(20,216,144,.15)',
-                background: 'rgba(20,216,144,.05)', color: 'rgba(234,242,255,.8)',
-                fontSize: 13, fontFamily: "'Nunito',sans-serif",
-                resize: 'none', outline: 'none', lineHeight: 1.5,
-              }}
-              maxLength={280}
-            />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-              <button
-                onClick={saveMorningThought}
-                disabled={!morningThought.trim()}
-                style={{
-                  padding: '8px 18px', borderRadius: 10, border: 'none',
-                  background: morningThought.trim() ? 'rgba(20,216,144,.2)' : 'rgba(255,255,255,.04)',
-                  color: morningThought.trim() ? 'rgba(20,216,144,.85)' : 'rgba(244,239,232,.2)',
-                  fontSize: 12, fontWeight: 600, cursor: morningThought.trim() ? 'pointer' : 'default',
-                  fontFamily: "'Nunito',sans-serif", transition: 'all .2s',
-                }}
-              >
-                Save to last night{'\u2019'}s card
-              </button>
-            </div>
-          </div>
-        )}
-        {morningThoughtSaved && (
-          <div style={{
-            animation: 'ms-fadeUp .5s ease-out both', marginBottom: 20,
-            background: 'rgba(20,216,144,.06)', border: '1px solid rgba(20,216,144,.15)',
-            borderRadius: 16, padding: '14px 18px', textAlign: 'center',
-          }}>
-            <span style={{ fontSize: 13, color: 'rgba(20,216,144,.65)', fontFamily: "'Nunito',sans-serif" }}>
-              {'\u2713'} Saved to last night{'\u2019'}s memory
-            </span>
-          </div>
-        )}
+        {/* Morning Thought moved to creature speech bubble above */}
 
         {/* ═══ 3c. RESURFACED MEMORY ═══ */}
         {resurfacedCard && (
@@ -985,8 +995,8 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
           </div>
         )}
 
-        {/* ═══ 4. MEMORY STRIP ═══ */}
-        {recentStories.length > 0 && (
+        {/* ═══ 4. MEMORY STRIP (morning only) ═══ */}
+        {!isEvening && recentStories.length > 0 && (
           <div style={{ animation: 'ms-fadeUp .8s .45s ease-out both', marginBottom: 28 }}>
             <div style={{
               fontFamily: "'DM Mono',monospace", fontSize: 10,
@@ -1141,8 +1151,69 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
           </div>
         ) : null}
 
-        {/* ═══ 4c. MONTHLY DIGEST ═══ */}
-        {patterns?.lastMonth && (
+        {/* ═══ 4b2. GROWTH STRIP ═══ */}
+        {allCards.length >= 5 && (
+          <div style={{
+            animation: 'ms-fadeUp .8s .52s ease-out both', marginBottom: 20,
+          }}>
+            <div style={{
+              fontFamily: "'DM Mono',monospace", fontSize: 10,
+              color: 'rgba(244,239,232,.25)', letterSpacing: '.06em',
+              textTransform: 'uppercase' as const, marginBottom: 8,
+            }}>
+              {childName}{'\u2019'}s journey
+            </div>
+            <div className="ms-scroll-strip" style={{
+              display: 'flex', alignItems: 'flex-end', gap: 3, height: 48,
+              padding: '4px 0',
+            }}>
+              {(() => {
+                // Sort cards chronologically and render as vertical marks
+                const sorted = [...allCards].sort((a, b) => a.date.localeCompare(b.date));
+                return sorted.map((card: any, i: number) => {
+                  const isMilestone = card.milestone || card.isOrigin;
+                  const isToday = card.date?.startsWith(new Date().toISOString().slice(0, 10));
+                  const hasPhoto = !!card.photo;
+                  const h = isMilestone ? 36 : hasPhoto ? 28 : 16 + Math.random() * 12;
+                  const bg = card.isOrigin
+                    ? 'rgba(245,184,76,.6)'
+                    : card.milestone
+                    ? 'rgba(200,140,255,.5)'
+                    : isToday
+                    ? 'rgba(20,216,144,.5)'
+                    : card.childMood
+                    ? 'rgba(154,127,212,.3)'
+                    : 'rgba(244,239,232,.12)';
+                  return (
+                    <div
+                      key={card.id || i}
+                      onClick={() => setViewingCard(card)}
+                      title={card.headline}
+                      style={{
+                        width: Math.max(4, Math.min(8, 200 / sorted.length)),
+                        height: h, borderRadius: 2,
+                        background: bg, cursor: 'pointer',
+                        transition: 'height .2s, background .2s',
+                        flexShrink: 0,
+                      }}
+                    />
+                  );
+                });
+              })()}
+            </div>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between',
+              fontFamily: "'DM Mono',monospace", fontSize: 8,
+              color: 'rgba(244,239,232,.15)', marginTop: 4,
+            }}>
+              <span>{(() => { try { return new Date(allCards[allCards.length - 1]?.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }); } catch { return ''; } })()}</span>
+              <span>today</span>
+            </div>
+          </div>
+        )}
+
+        {/* ═══ 4c. MONTHLY DIGEST (morning only) ═══ */}
+        {!isEvening && patterns?.lastMonth && (
           <div style={{
             animation: 'ms-fadeUp .8s .55s ease-out both', marginBottom: 20,
             background: 'rgba(154,127,212,.04)', border: '1px solid rgba(154,127,212,.1)',
@@ -1186,8 +1257,8 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
           </div>
         )}
 
-        {/* ═══ 4d. PATTERNS ═══ */}
-        {patterns && (
+        {/* ═══ 4d. PATTERNS (morning only) ═══ */}
+        {!isEvening && patterns && (
           <div style={{
             animation: 'ms-fadeUp .8s .6s ease-out both', marginBottom: 20,
             background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.05)',
@@ -1262,6 +1333,159 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
           </div>
         )}
 
+        {/* ═══ 4e. TIME CAPSULES (morning only) ═══ */}
+        {!isEvening && cardCount >= 5 && (
+          <div style={{ animation: 'ms-fadeUp .8s .65s ease-out both', marginBottom: 20 }}>
+            {/* Existing capsules */}
+            {capsules.map(cap => {
+              const isReady = new Date(cap.openDate) <= new Date();
+              const isOpened = cap.opened;
+              return (
+                <div key={cap.id} style={{
+                  background: isOpened ? 'rgba(20,216,144,.04)' : isReady ? 'rgba(245,184,76,.06)' : 'rgba(154,127,212,.04)',
+                  border: `1px solid ${isOpened ? 'rgba(20,216,144,.12)' : isReady ? 'rgba(245,184,76,.2)' : 'rgba(154,127,212,.1)'}`,
+                  borderRadius: 16, padding: '14px 18px', marginBottom: 10,
+                  cursor: isReady && !isOpened ? 'pointer' : 'default',
+                }}
+                  onClick={() => {
+                    if (isReady && !isOpened) {
+                      const updated = capsules.map(c => c.id === cap.id ? { ...c, opened: true, openedAt: new Date().toISOString() } : c);
+                      setCapsules(updated);
+                      try { localStorage.setItem(`ss2_capsules_${userId}`, JSON.stringify(updated)); } catch {}
+                    }
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <span style={{ fontSize: 16 }}>{isOpened ? '\u2728' : isReady ? '\uD83D\uDD13' : '\uD83D\uDD12'}</span>
+                    <span style={{
+                      fontFamily: "'Fraunces',Georgia,serif", fontSize: 14, fontWeight: 400,
+                      color: '#F4EFE8',
+                    }}>{cap.title}</span>
+                  </div>
+                  <div style={{
+                    fontFamily: "'DM Mono',monospace", fontSize: 9,
+                    color: 'rgba(244,239,232,.3)', letterSpacing: '.02em',
+                  }}>
+                    {cap.cardIds.length} memories sealed
+                    {isOpened ? ' \u00B7 Opened!' : isReady ? ' \u00B7 Ready to open!' : ` \u00B7 Opens ${new Date(cap.openDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Create new capsule */}
+            {!showCapsuleCreate ? (
+              <div
+                onClick={() => setShowCapsuleCreate(true)}
+                style={{
+                  background: 'rgba(255,255,255,.02)', border: '1px dashed rgba(255,255,255,.08)',
+                  borderRadius: 16, padding: '14px 18px', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  transition: 'background .2s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.02)'; }}
+              >
+                <span style={{ fontSize: 16 }}>{'\u23F3'}</span>
+                <div>
+                  <div style={{
+                    fontFamily: "'Nunito',sans-serif", fontSize: 12, fontWeight: 600,
+                    color: 'rgba(244,239,232,.45)',
+                  }}>Create a Time Capsule</div>
+                  <div style={{
+                    fontFamily: "'DM Mono',monospace", fontSize: 9,
+                    color: 'rgba(244,239,232,.2)', marginTop: 2,
+                  }}>Seal tonight{'\u2019'}s memories for a future date</div>
+                </div>
+              </div>
+            ) : (
+              <div style={{
+                background: 'rgba(154,127,212,.04)', border: '1px solid rgba(154,127,212,.12)',
+                borderRadius: 16, padding: '16px 18px',
+              }}>
+                <div style={{
+                  fontFamily: "'DM Mono',monospace", fontSize: 10,
+                  color: 'rgba(154,127,212,.55)', letterSpacing: '.04em',
+                  textTransform: 'uppercase' as const, marginBottom: 12,
+                }}>{'\u23F3'} New Time Capsule</div>
+                <input
+                  value={capsuleTitle}
+                  onChange={e => setCapsuleTitle(e.target.value)}
+                  placeholder={`${childName}'s First Year`}
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: 10,
+                    border: '1px solid rgba(154,127,212,.15)', background: 'rgba(154,127,212,.05)',
+                    color: 'rgba(234,242,255,.8)', fontSize: 13,
+                    fontFamily: "'Nunito',sans-serif", outline: 'none', marginBottom: 10,
+                  }}
+                  maxLength={60}
+                />
+                <div style={{
+                  fontSize: 11, color: 'rgba(244,239,232,.35)', marginBottom: 6,
+                  fontFamily: "'Nunito',sans-serif",
+                }}>Open date:</div>
+                <input
+                  type="date"
+                  value={capsuleDate}
+                  onChange={e => setCapsuleDate(e.target.value)}
+                  min={new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]}
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: 10,
+                    border: '1px solid rgba(154,127,212,.15)', background: 'rgba(154,127,212,.05)',
+                    color: 'rgba(234,242,255,.8)', fontSize: 13,
+                    fontFamily: "'Nunito',sans-serif", outline: 'none', colorScheme: 'dark',
+                    marginBottom: 12,
+                  }}
+                />
+                <div style={{
+                  fontSize: 10, color: 'rgba(244,239,232,.2)', marginBottom: 12,
+                  fontFamily: "'DM Mono',monospace",
+                }}>
+                  All {cardCount} current memories will be sealed
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={() => { setShowCapsuleCreate(false); setCapsuleTitle(''); setCapsuleDate(''); }}
+                    style={{
+                      flex: 1, padding: '10px', borderRadius: 10,
+                      border: '1px solid rgba(255,255,255,.08)', background: 'transparent',
+                      color: 'rgba(244,239,232,.35)', fontSize: 12, cursor: 'pointer',
+                      fontFamily: "'Nunito',sans-serif",
+                    }}
+                  >Cancel</button>
+                  <button
+                    disabled={!capsuleTitle.trim() || !capsuleDate}
+                    onClick={() => {
+                      const newCapsule: TimeCapsule = {
+                        id: `cap_${Date.now()}`,
+                        userId: userId || '',
+                        childName,
+                        cardIds: allCards.map(c => c.id),
+                        sealedAt: new Date().toISOString(),
+                        openDate: capsuleDate,
+                        title: capsuleTitle.trim(),
+                      };
+                      const updated = [...capsules, newCapsule];
+                      setCapsules(updated);
+                      try { localStorage.setItem(`ss2_capsules_${userId}`, JSON.stringify(updated)); } catch {}
+                      setShowCapsuleCreate(false);
+                      setCapsuleTitle('');
+                      setCapsuleDate('');
+                    }}
+                    style={{
+                      flex: 2, padding: '10px', borderRadius: 10, border: 'none',
+                      background: capsuleTitle.trim() && capsuleDate ? 'rgba(154,127,212,.2)' : 'rgba(255,255,255,.04)',
+                      color: capsuleTitle.trim() && capsuleDate ? 'rgba(154,127,212,.85)' : 'rgba(244,239,232,.2)',
+                      fontSize: 12, fontWeight: 600, cursor: capsuleTitle.trim() && capsuleDate ? 'pointer' : 'default',
+                      fontFamily: "'Nunito',sans-serif",
+                    }}
+                  >Seal {'\uD83D\uDD12'}</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ═══ 5. GROWTH SECTION ═══ */}
         <div style={{
           animation: 'ms-fadeUp .8s .6s ease-out both',
@@ -1289,15 +1513,55 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
               </div>
             </>
           ) : (
-            <div style={{
-              fontFamily: "'Fraunces',Georgia,serif", fontSize: 14, fontWeight: 300,
-              fontStyle: 'italic', color: 'rgba(244,239,232,.45)', lineHeight: 1.65,
-            }}>
-              {creatureName || 'Your DreamKeeper'} has been with {childName} for {storyCount} {storyCount === 1 ? 'night' : 'nights'}
-              {cardCount > 0 ? ` and remembers ${cardCount} ${cardCount === 1 ? 'moment' : 'moments'}` : ''}.
-            </div>
+            <>
+              <div style={{
+                fontFamily: "'Fraunces',Georgia,serif", fontSize: 14, fontWeight: 300,
+                fontStyle: 'italic', color: 'rgba(244,239,232,.45)', lineHeight: 1.65,
+                marginBottom: cardCount >= 3 ? 10 : 0,
+              }}>
+                {creatureName || 'Your DreamKeeper'} remembers {cardCount > 0 ? cardCount : storyCount} {cardCount > 0 ? (cardCount === 1 ? 'night' : 'nights') : (storyCount === 1 ? 'night' : 'nights')} with {childName}.
+              </div>
+              {cardCount >= 3 && (() => {
+                // Pick a highlight card — prefer one with a bonding answer or strong headline
+                const withContent = allCards.filter((c: any) => c.bondingAnswer || c.memory_line);
+                const highlight = withContent.length > 0
+                  ? withContent[Math.floor(Date.now() / 86400000) % withContent.length]
+                  : allCards[0];
+                if (!highlight) return null;
+                const verb = highlight.childMood === '😆' ? 'The silliest' : highlight.childMood === '😌' ? 'The calmest' : highlight.childMood === '🥰' ? 'The most loving' : highlight.isOrigin ? 'The very first' : 'A favorite';
+                return (
+                  <div style={{
+                    fontFamily: "'Nunito',sans-serif", fontSize: 12,
+                    color: `rgba(${rgb},.45)`, fontStyle: 'italic', lineHeight: 1.5,
+                  }}>
+                    {verb} was: "{highlight.headline}"
+                  </div>
+                );
+              })()}
+            </>
           )}
         </div>
+
+        {/* ═══ 6. EVENING: "See all memories" link ═══ */}
+        {isEvening && cardCount > 0 && (
+          <div
+            onClick={() => setView('nightcard-library')}
+            style={{
+              animation: 'ms-fadeUp .8s .7s ease-out both',
+              textAlign: 'center', marginBottom: 20, cursor: 'pointer',
+              padding: '12px 0',
+            }}
+          >
+            <span style={{
+              fontFamily: "'DM Mono',monospace", fontSize: 11,
+              color: 'rgba(245,184,76,.4)', letterSpacing: '.04em',
+              borderBottom: '1px solid rgba(245,184,76,.15)',
+              paddingBottom: 2,
+            }}>
+              {childName}{'\u2019'}s Memory Vault — {cardCount} {cardCount === 1 ? 'night' : 'nights'} {'\u2192'}
+            </span>
+          </div>
+        )}
 
       </div>
 

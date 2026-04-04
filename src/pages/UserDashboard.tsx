@@ -450,7 +450,7 @@ export default function UserDashboard({onSignUp,onReadStory}:{onSignUp:()=>void;
   );
 
   // ── Derived values for shared components ───────────────────────────────────
-  const creatureEmoji = hatchedCreature?.creatureEmoji || '📖';
+  const creatureEmoji = hatchedCreature?.creatureEmoji || (activeEgg ? '\uD83E\uDD5A' : '\uD83D\uDCD6');
   const creatureName = creatureDef?.name ?? 'Companion';
   const lastChapter = activeJourney?.chapters[activeJourney.chapters.length - 1];
   const whisperLine = lastChapter?.teaser || creatureSpeech || "Tonight's chapter awaits";

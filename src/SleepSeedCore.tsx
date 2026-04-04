@@ -3,8 +3,10 @@ import SleepSeedLibrary from "./sleepseed-library";
 import { buildStoryPrompt } from "./sleepseed-prompts";
 import { StoryFeedback, RereadCheck } from "./StoryFeedback";
 import NightCardComponent from "./features/nightcards/NightCard";
+import NightCardShareSheet from "./components/NightCardShareSheet";
 import { saveStory as dbSaveStory, saveNightCard as dbSaveNightCard, submitStoryToLibrary, ensureRefCode } from "./lib/storage";
 import { BASE_URL } from "./lib/config";
+import { supabase } from "./lib/supabase";
 import { getSceneByVibe } from "./lib/storyScenes";
 import type { HatchedCreature } from "./lib/types";
 import { getDreamKeeperById, V1_DREAMKEEPERS } from "./lib/dreamkeepers";
@@ -1580,12 +1582,21 @@ export default function SleepSeed({
   const ncSrRef        = useRef<any>(null);                          // speech recognition instance
   const [ncListening,    setNcListening]    = useState(false);       // mic active for Night Card
   const [ncChildMood,    setNcChildMood]    = useState("");          // emoji mood picked by child
+  const [ncAudioBlob,    setNcAudioBlob]    = useState<Blob|null>(null); // voice recording blob
+  const [ncAudioUrl,     setNcAudioUrl]     = useState<string|null>(null); // voice playback URL
+  const [ncRecording,    setNcRecording]    = useState(false);       // currently recording voice
+  const [ncDrawing,      setNcDrawing]      = useState<string|null>(null); // child drawing data URL
+  const [ncDrawingOpen,  setNcDrawingOpen]  = useState(false);       // drawing canvas open
+  const ncDrawCanvasRef  = useRef<HTMLCanvasElement>(null);
+  const ncDrawingRef     = useRef(false);                             // is finger/mouse down
+  const ncMediaRecRef    = useRef<MediaRecorder|null>(null);
   const [ncGenerating,   setNcGenerating]   = useState(false);      // Claude generating
   const [ncResult,       setNcResult]       = useState<any>(null);  // final Night Card
   const [ncRevealed,     setNcRevealed]     = useState(false);      // polaroid reveal done
   const [ncBondingSaved, setNcBondingSaved] = useState(false);      // bonding answer submitted during loading
   const [viewingNightCard, setViewingNightCard] = useState<any>(null); // Night Card detail view
   const [ncDetailFlipped,  setNcDetailFlipped]  = useState(false);     // flip state for detail modal
+  const [ncShareSheetOpen, setNcShareSheetOpen] = useState(false);     // premium share sheet
   const [styleDna,         setStyleDna]         = useState<any>(null); // Style DNA for feedback
   const [showFeedback,     setShowFeedback]     = useState(false);     // StoryFeedback sheet visible
   const [libSubmitState,   setLibSubmitState]   = useState<'idle'|'confirming'|'submitting'|'done'>('idle');
@@ -2621,6 +2632,8 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
         tags: entry.tags || undefined,
         milestone: entry.milestone || undefined,
         whisper: entry.whisper || undefined,
+        audioClip: entry.audioClip || undefined,
+        childDrawing: entry.childDrawing || undefined,
       };
       localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
     } catch(e) { console.error('SleepSeedCore v2 localStorage save failed:', e); }
@@ -2661,6 +2674,8 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
           bedtimeActual: entry.bedtimeActual || undefined,
           tags: entry.tags || undefined,
           milestone: entry.milestone || undefined,
+          audioClip: entry.audioClip || undefined,
+          childDrawing: entry.childDrawing || undefined,
         });
       } catch(e) { console.error('SleepSeedCore dbSaveNightCard:', e); }
     }
@@ -2680,7 +2695,7 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
     } catch {
       // Camera unavailable — fall back to file picker
       const input = document.createElement('input');
-      input.type = 'file'; input.accept = 'image/*'; input.setAttribute('capture', 'environment');
+      input.type = 'file'; input.accept = 'image/*';
       input.onchange = (e: any) => { const file = e.target.files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => setNcPhoto(ev.target?.result as string); reader.readAsDataURL(file); };
       input.click();
     }
@@ -3765,6 +3780,8 @@ Rules:
     setNcPhoto(null);setNcCountdown(0);setNcGenerating(false);
     setNcResult(null);setNcRevealed(false);setNcPhotoMode('idle');
     setNcChildMood("");setNcGenPct(0);setNcGenTextIdx(0);
+    setNcAudioBlob(null);setNcAudioUrl(null);setNcRecording(false);
+    setNcDrawing(null);setNcDrawingOpen(false);
     setNcGenTextIdx(0);setNcGenPct(0);ncSrRef.current?.stop();setNcListening(false);
     window.speechSynthesis?.cancel();
     if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}
@@ -4423,9 +4440,18 @@ Rules:
                     <div style={{fontSize:24,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.2,letterSpacing:'-.4px',marginBottom:10,animation:'nc-fadeUp .35s .05s ease both',opacity:0}}>A note to your<br/>future self.</div>
                     <div style={{fontSize:13,color:'rgba(234,242,255,.36)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.65,marginBottom:28,animation:'nc-fadeUp .35s .1s ease both',opacity:0}}>Something only you would notice tonight.<br/>You'll thank yourself for writing this down.</div>
                     <div style={{padding:'14px 16px',background:'rgba(154,127,212,.07)',border:'1px solid rgba(154,127,212,.15)',borderRadius:14,marginBottom:20,animation:'nc-fadeUp .35s .15s ease both',opacity:0}}>
-                      <div style={{fontSize:9,color:'rgba(154,127,212,.5)',fontFamily:"'DM Mono',monospace",letterSpacing:'.5px',marginBottom:8}}>PARENT PROMPTS</div>
-                      {['How they seemed tonight','Something they said I want to remember','What I\'m feeling about them right now'].map((p,i)=>(
-                        <div key={p} onClick={()=>setNcExtra(p)} style={{fontSize:12,color:'rgba(234,242,255,.38)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',padding:'4px 0',borderBottom:i<2?'1px solid rgba(255,255,255,.05)':'none',cursor:'pointer'}}>{p}</div>
+                      <div style={{fontSize:9,color:'rgba(154,127,212,.5)',fontFamily:"'DM Mono',monospace",letterSpacing:'.5px',marginBottom:8}}>TAP TO START WITH</div>
+                      {[
+                        ncBondingA.trim() ? `I don't want to forget when ${book?.heroName||heroName} said "${ncBondingA.trim().slice(0,40)}${ncBondingA.trim().length>40?'...':''}"` : null,
+                        ncGratitude.trim() ? `Tonight's best moment: ${ncGratitude.trim().slice(0,40)}${ncGratitude.trim().length>40?'...':''}` : null,
+                        ncChildMood ? `${book?.heroName||heroName} was feeling ${ncChildMood==='😊'?'so happy':ncChildMood==='😴'?'beautifully sleepy':ncChildMood==='🤗'?'so cozy':ncChildMood==='😌'?'perfectly calm':ncChildMood==='🥰'?'full of love':ncChildMood==='😆'?'wonderfully silly':'content'} tonight` : null,
+                        'How they seemed tonight',
+                        'What I\'m feeling about them right now',
+                      ].filter(Boolean).slice(0,3).map((p,i,arr)=>(
+                        <div key={i} onClick={()=>setNcExtra(p!)} style={{fontSize:12,color:'rgba(234,242,255,.38)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',padding:'5px 0',borderBottom:i<arr.length-1?'1px solid rgba(255,255,255,.05)':'none',cursor:'pointer',transition:'color .15s'}}
+                          onMouseEnter={e=>{e.currentTarget.style.color='rgba(234,242,255,.6)';}}
+                          onMouseLeave={e=>{e.currentTarget.style.color='rgba(234,242,255,.38)';}}
+                        >{p}</div>
                       ))}
                     </div>
                     <div style={{animation:'nc-fadeUp .35s .2s ease both',opacity:0}}>
@@ -4488,7 +4514,7 @@ Rules:
                         <div
                           onClick={()=>{
                             const input=document.createElement('input');
-                            input.type='file';input.accept='image/*';input.setAttribute('capture','environment');
+                            input.type='file';input.accept='image/*';
                             input.onchange=(e:any)=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=(ev)=>setNcPhoto(ev.target?.result as string);reader.readAsDataURL(file);};
                             input.click();
                           }}
@@ -4500,8 +4526,8 @@ Rules:
                         >
                           <span style={{fontSize:16}}>📷</span>
                           <div>
-                            <div style={{fontSize:12,fontWeight:700,color:'rgba(246,197,111,.8)',fontFamily:"'Nunito',sans-serif"}}>Add a photo — optional</div>
-                            <div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.3)',letterSpacing:'.3px',marginTop:1}}>Capture this moment</div>
+                            <div style={{fontSize:12,fontWeight:700,color:'rgba(246,197,111,.8)',fontFamily:"'Nunito',sans-serif"}}>Add a photo from tonight</div>
+                            <div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.3)',letterSpacing:'.3px',marginTop:1}}>Take one now or choose from your camera roll</div>
                           </div>
                         </div>
                       </div>
@@ -4511,6 +4537,135 @@ Rules:
                         <img src={ncPhoto} alt="Tonight" style={{width:'100%',height:120,objectFit:'cover',display:'block'}}/>
                       </div>
                     )}
+                    {/* Voice recording option */}
+                    {!ncAudioUrl && (
+                      <div style={{width:'100%',marginBottom:12,animation:'nc-fadeUp .4s .5s ease both',opacity:0}}>
+                        <div
+                          onClick={async()=>{
+                            if(ncRecording){
+                              // Stop recording
+                              ncMediaRecRef.current?.stop();
+                              setNcRecording(false);
+                              return;
+                            }
+                            // Start recording
+                            try{
+                              const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+                              const recorder=new MediaRecorder(stream,{mimeType:MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/mp4'});
+                              const chunks:Blob[]=[];
+                              recorder.ondataavailable=(e)=>{if(e.data.size>0)chunks.push(e.data);};
+                              recorder.onstop=()=>{
+                                stream.getTracks().forEach(t=>t.stop());
+                                const blob=new Blob(chunks,{type:recorder.mimeType});
+                                setNcAudioBlob(blob);
+                                setNcAudioUrl(URL.createObjectURL(blob));
+                              };
+                              ncMediaRecRef.current=recorder;
+                              recorder.start();
+                              setNcRecording(true);
+                              // Auto-stop after 10 seconds
+                              setTimeout(()=>{if(recorder.state==='recording'){recorder.stop();setNcRecording(false);}},10000);
+                            }catch(e){console.error('[NC] Voice recording failed:',e);}
+                          }}
+                          style={{
+                            width:'100%',padding:'11px 14px',
+                            background:ncRecording?'rgba(255,80,80,.08)':'rgba(154,127,212,.06)',
+                            border:`1.5px dashed ${ncRecording?'rgba(255,80,80,.3)':'rgba(154,127,212,.24)'}`,
+                            borderRadius:14,display:'flex',alignItems:'center',gap:10,cursor:'pointer',
+                            transition:'all .2s',
+                          }}
+                        >
+                          <span style={{fontSize:16}}>{ncRecording?'⏹':'🎙'}</span>
+                          <div>
+                            <div style={{fontSize:12,fontWeight:700,color:ncRecording?'rgba(255,120,120,.8)':'rgba(154,127,212,.8)',fontFamily:"'Nunito',sans-serif"}}>
+                              {ncRecording?'Recording... tap to stop':'Record a goodnight — optional'}
+                            </div>
+                            <div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.3)',letterSpacing:'.3px',marginTop:1}}>
+                              {ncRecording?'Up to 10 seconds':`Say goodnight to ${companionCreature?.name||'your DreamKeeper'}`}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {ncAudioUrl && (
+                      <div style={{width:'100%',marginBottom:12,animation:'nc-fadeUp .3s ease both'}}>
+                        <div style={{padding:'10px 14px',background:'rgba(154,127,212,.06)',border:'1px solid rgba(154,127,212,.2)',borderRadius:14,display:'flex',alignItems:'center',gap:10}}>
+                          <span style={{fontSize:16}}>🎙</span>
+                          <audio src={ncAudioUrl} controls style={{flex:1,height:32,opacity:.8}} />
+                          <button onClick={()=>{setNcAudioBlob(null);setNcAudioUrl(null);}} style={{background:'none',border:'none',color:'rgba(255,140,130,.5)',fontSize:12,cursor:'pointer',padding:4}}>✕</button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Drawing capture */}
+                    {!ncDrawing && !ncDrawingOpen && (
+                      <div style={{width:'100%',marginBottom:12,animation:'nc-fadeUp .4s .55s ease both',opacity:0}}>
+                        <div onClick={()=>setNcDrawingOpen(true)} style={{
+                          width:'100%',padding:'11px 14px',
+                          background:'rgba(20,216,144,.06)',border:'1.5px dashed rgba(20,216,144,.2)',
+                          borderRadius:14,display:'flex',alignItems:'center',gap:10,cursor:'pointer',
+                        }}>
+                          <span style={{fontSize:16}}>{'\u270F\uFE0F'}</span>
+                          <div>
+                            <div style={{fontSize:12,fontWeight:700,color:'rgba(20,216,144,.8)',fontFamily:"'Nunito',sans-serif"}}>Add a drawing — optional</div>
+                            <div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.3)',letterSpacing:'.3px',marginTop:1}}>Let {book?.heroName||heroName} draw something tonight</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {ncDrawingOpen && !ncDrawing && (
+                      <div style={{width:'100%',marginBottom:12,animation:'nc-fadeUp .3s ease both'}}>
+                        <div style={{background:'rgba(20,216,144,.04)',border:'1px solid rgba(20,216,144,.15)',borderRadius:14,padding:'12px',textAlign:'center'}}>
+                          <div style={{fontSize:10,color:'rgba(20,216,144,.5)',fontFamily:"'DM Mono',monospace",marginBottom:8}}>DRAW SOMETHING {'\u2728'}</div>
+                          <canvas ref={ncDrawCanvasRef} width={260} height={180} style={{
+                            width:'100%',maxWidth:260,height:180,borderRadius:10,
+                            background:'rgba(255,255,255,.95)',cursor:'crosshair',touchAction:'none',
+                          }}
+                            onPointerDown={e=>{
+                              ncDrawingRef.current=true;
+                              const c=ncDrawCanvasRef.current;if(!c)return;
+                              const ctx=c.getContext('2d');if(!ctx)return;
+                              const r=c.getBoundingClientRect();
+                              ctx.strokeStyle='#2a1a0e';ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';
+                              ctx.beginPath();ctx.moveTo((e.clientX-r.left)*(c.width/r.width),(e.clientY-r.top)*(c.height/r.height));
+                            }}
+                            onPointerMove={e=>{
+                              if(!ncDrawingRef.current)return;
+                              const c=ncDrawCanvasRef.current;if(!c)return;
+                              const ctx=c.getContext('2d');if(!ctx)return;
+                              const r=c.getBoundingClientRect();
+                              ctx.lineTo((e.clientX-r.left)*(c.width/r.width),(e.clientY-r.top)*(c.height/r.height));
+                              ctx.stroke();
+                            }}
+                            onPointerUp={()=>{ncDrawingRef.current=false;}}
+                            onPointerLeave={()=>{ncDrawingRef.current=false;}}
+                          />
+                          <div style={{display:'flex',gap:8,marginTop:8,justifyContent:'center'}}>
+                            <button onClick={()=>{
+                              const c=ncDrawCanvasRef.current;if(!c)return;
+                              const ctx=c.getContext('2d');if(!ctx)return;
+                              ctx.clearRect(0,0,c.width,c.height);
+                            }} style={{padding:'6px 14px',borderRadius:8,border:'1px solid rgba(20,216,144,.15)',background:'transparent',color:'rgba(20,216,144,.6)',fontSize:10,cursor:'pointer',fontFamily:"'Nunito',sans-serif"}}>Clear</button>
+                            <button onClick={()=>{
+                              const c=ncDrawCanvasRef.current;if(!c)return;
+                              setNcDrawing(c.toDataURL('image/png'));
+                              setNcDrawingOpen(false);
+                            }} style={{padding:'6px 14px',borderRadius:8,border:'none',background:'rgba(20,216,144,.2)',color:'rgba(20,216,144,.85)',fontSize:10,fontWeight:600,cursor:'pointer',fontFamily:"'Nunito',sans-serif"}}>Save drawing</button>
+                            <button onClick={()=>setNcDrawingOpen(false)} style={{padding:'6px 14px',borderRadius:8,border:'1px solid rgba(255,255,255,.08)',background:'transparent',color:'rgba(234,242,255,.3)',fontSize:10,cursor:'pointer',fontFamily:"'Nunito',sans-serif"}}>Cancel</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {ncDrawing && (
+                      <div style={{width:'100%',marginBottom:12,animation:'nc-fadeUp .3s ease both'}}>
+                        <div style={{padding:'10px',background:'rgba(20,216,144,.04)',border:'1px solid rgba(20,216,144,.12)',borderRadius:14,textAlign:'center'}}>
+                          <div style={{fontSize:9,color:'rgba(20,216,144,.4)',fontFamily:"'DM Mono',monospace",marginBottom:6}}>{book?.heroName||heroName}{'\u2019'}S DRAWING</div>
+                          <img src={ncDrawing} alt="Drawing" style={{width:'100%',maxWidth:200,borderRadius:8,border:'1px solid rgba(20,216,144,.1)'}}/>
+                          <button onClick={()=>{setNcDrawing(null);setNcDrawingOpen(true);}} style={{marginTop:6,padding:'4px 12px',borderRadius:6,border:'none',background:'transparent',color:'rgba(255,140,130,.4)',fontSize:9,cursor:'pointer'}}>Redo</button>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Save + actions */}
                     <div style={{width:'100%',display:'flex',flexDirection:'column',gap:8,animation:'nc-fadeUp .4s .6s ease both',opacity:0}}>
                       <button onClick={async()=>{
@@ -4528,6 +4683,16 @@ Rules:
                           return adjMonths > 0 ? `${adjYears} years, ${adjMonths} months` : `${adjYears} years`;
                         })();
                         const bedtime = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+                        // Upload audio clip if recorded
+                        let audioClipUrl: string|undefined;
+                        if(ncAudioBlob && userId){
+                          try{
+                            const ext=ncAudioBlob.type.includes('webm')?'webm':'m4a';
+                            const path=`${userId}/voice_${ncId}.${ext}`;
+                            const{error:upErr}=await supabase.storage.from('photos').upload(path,ncAudioBlob,{contentType:ncAudioBlob.type,upsert:true});
+                            if(!upErr){const{data:urlData}=supabase.storage.from('photos').getPublicUrl(path);audioClipUrl=urlData?.publicUrl;}
+                          }catch(e){console.error('[NC] Audio upload failed:',e);}
+                        }
                         const ncData={id:ncId,userId:userId||'',heroName:book.heroName,storyTitle:book.title,refrain:book.refrain||"",
                           characterIds:preloadedCharacter?[preloadedCharacter.id]:[],
                           bondingQuestion:ncBondingQ,bondingAnswer:ncBondingA,gratitude:ncGratitude,
@@ -4536,6 +4701,8 @@ Rules:
                           creatureEmoji:companionCreature?.creatureEmoji,creatureColor:companionCreature?.color,
                           childMood:ncChildMood||undefined,childAge:childAgeStr,
                           bedtimeActual:bedtime,tags:ncResult?.tags||undefined,
+                          audioClip:audioClipUrl||undefined,
+                          childDrawing:ncDrawing||undefined,
                           ...ncResult};
                         lastSavedStoryIdRef.current = ncId;
                         try{await saveNightCard(ncData);}catch(err){console.error('[NC] saveNightCard failed:',err);}
@@ -4547,13 +4714,34 @@ Rules:
                         <div style={{position:'absolute',inset:0,background:'linear-gradient(108deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%)',animation:'nc-shimmer 5.5s infinite',pointerEvents:'none'}}/>
                         <span style={{position:'relative',zIndex:1}}>Save &amp; go home</span>
                       </button>
-                      <button onClick={()=>shareNightCard(false)} style={{width:'100%',padding:'11px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.04)',color:'rgba(234,242,255,.55)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.2px',textAlign:'center'}}>Share this card</button>
+                      <button onClick={()=>setNcShareSheetOpen(true)} style={{width:'100%',padding:'11px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.04)',color:'rgba(234,242,255,.55)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.2px',textAlign:'center'}}>Share this card</button>
                     </div>
                   </div>
                 </div>
               </div>
             )}
           </>
+        )}
+
+        {/* ── Night Card Share Sheet ── */}
+        {ncShareSheetOpen && ncResult && book && (
+          <NightCardShareSheet
+            card={{
+              childName: book.heroName || heroName,
+              dreamKeeperName: companionCreature?.name || 'DreamKeeper',
+              dreamKeeperEmoji: companionCreature?.creatureEmoji || '🌙',
+              dreamKeeperColor: companionCreature?.color || '#9A7FD4',
+              nightNumber: undefined, // will be computed by saveNightCard
+              date: new Date().toISOString(),
+              storyLine: ncResult.headline || '',
+              quote: ncResult.quote || '',
+              isOrigin: false,
+              storyTitle: book.title,
+              heroName: book.heroName,
+            }}
+            onClose={() => setNcShareSheetOpen(false)}
+            onViewLibrary={() => { setNcShareSheetOpen(false); onHome ? onHome() : setStage('home'); }}
+          />
         )}
 
         {/* Old nightcard flow removed — see git history if needed */}

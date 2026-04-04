@@ -261,6 +261,8 @@ const dbToCard = (row: any): SavedNightCard => {
           bedtimeActual: p.bedtimeActual || undefined,
           lessonTheme: p.lessonTheme || undefined,
           milestone: p.milestone || undefined,
+          audioClip: p.audioClip || undefined,
+          childDrawing: p.childDrawing || undefined,
         };
       } catch { return {}; }
     })(),
@@ -308,6 +310,8 @@ export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
         if (nc.bedtimeActual) packed.bedtimeActual = nc.bedtimeActual;
         if (nc.lessonTheme) packed.lessonTheme = nc.lessonTheme;
         if (nc.milestone) packed.milestone = nc.milestone;
+        if (nc.audioClip) packed.audioClip = nc.audioClip;
+        if (nc.childDrawing) packed.childDrawing = nc.childDrawing;
         if (nc.extra)    packed.note     = nc.extra;
         extraField = JSON.stringify(packed);
       } catch(_) {}

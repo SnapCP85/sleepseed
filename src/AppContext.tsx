@@ -56,7 +56,9 @@ const toAppUser = (sbUser: any): User => ({
 });
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [user,                  setUser]                  = useState<User | null>(null);
+  const [user,                  setUserRaw]               = useState<User | null>(null);
+  const userRef = useRef<User | null>(null);
+  const setUser = (u: User | null) => { userRef.current = u; setUserRaw(u); };
   const [authLoading,           setAuthLoading]           = useState(true);
   const [view,                  setViewRaw]               = useState<AppView>('public');
   const viewRef = useRef<AppView>('public');
@@ -160,12 +162,29 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     // ── FULL CHECK: Verify with Supabase (refreshes token if needed) ──
     supabase.auth.getSession().then(({ data: { session } }) => {
-      handleSession(session, true);
+      // Only process if we got a definitive answer — don't log out on network errors
+      // If there's no session but we had a cached one, Supabase may be refreshing the token
+      if (session) {
+        handleSession(session, true);
+      } else if (!userRef.current) {
+        // Only set to logged-out if we don't already have a cached user
+        handleSession(null, true);
+      }
+    }).catch(() => {
+      // Network error — keep existing state, don't log out
     });
 
     // Listen for changes (sign in, sign out, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (_event === 'INITIAL_SESSION') return;
+      // Don't log out on SIGNED_OUT if it might be a token refresh race
+      if (_event === 'SIGNED_OUT' && userRef.current) {
+        // Verify: re-check session before logging out
+        supabase.auth.getSession().then(({ data: { session: freshSession } }) => {
+          if (!freshSession) handleSession(null, false);
+        }).catch(() => {});
+        return;
+      }
       handleSession(session, false);
     });
 

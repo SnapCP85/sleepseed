@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase';
 import type { SavedNightCard } from '../../lib/types';
 import { getCardVariant } from '../../lib/types';
 import NightCard from './NightCard';
-import { generateNightCardImage, downloadBlob } from '../../lib/shareUtils';
+import { generateNightCardImage, downloadBlob, generateNightCardBook } from '../../lib/shareUtils';
 
 // ── Date helpers ──
 function formatDate(iso: string): string {
@@ -411,6 +411,64 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
           ))}
         </div>
       </div>
+
+      {/* ── BOOK EXPORT + FAMILY SHARE ── */}
+      {displayCards.length >= 3 && (
+        <div style={{padding:'0 20px',marginBottom:16,display:'flex',gap:8}}>
+          <button
+            onClick={async()=>{
+              const childName = displayCards[0]?.heroName || 'Child';
+              const blob = await generateNightCardBook(childName, displayCards);
+              downloadBlob(blob, `${childName}s-Memory-Book.pdf`);
+            }}
+            style={{
+              width:'100%',padding:'12px 16px',borderRadius:14,
+              background:'rgba(154,127,212,.06)',border:'1px solid rgba(154,127,212,.15)',
+              color:'rgba(154,127,212,.7)',fontSize:12,fontWeight:600,
+              fontFamily:"'Nunito',sans-serif",cursor:'pointer',
+              display:'flex',alignItems:'center',justifyContent:'center',gap:8,
+              transition:'all .2s',
+            }}
+            onMouseEnter={e=>{e.currentTarget.style.background='rgba(154,127,212,.12)';e.currentTarget.style.borderColor='rgba(154,127,212,.25)';}}
+            onMouseLeave={e=>{e.currentTarget.style.background='rgba(154,127,212,.06)';e.currentTarget.style.borderColor='rgba(154,127,212,.15)';}}
+          >
+            <span style={{fontSize:14}}>{'\uD83D\uDCD6'}</span>
+            {'\uD83D\uDCD6'} Memory Book
+          </button>
+          <button
+            onClick={async()=>{
+              try{
+                const token=crypto.randomUUID?.() || `fam_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+                const childName=displayCards[0]?.heroName||'Child';
+                // Store all card IDs for this family share
+                const cardIds=displayCards.map(c=>c.id);
+                await supabase.from('family_shares').upsert({
+                  share_token:token,user_id:userId,child_name:childName,
+                  card_ids:cardIds,created_at:new Date().toISOString(),
+                });
+                const url=`${window.location.origin}/family/${token}`;
+                if(navigator.share){
+                  try{await navigator.share({title:`${childName}'s Night Cards`,text:`See ${childName}'s bedtime memories`,url});return;}catch{}
+                }
+                await navigator.clipboard.writeText(url).catch(()=>{});
+                alert(`Link copied!\n\n${url}\n\nShare this with family to give them read-only access to ${childName}'s Night Cards.`);
+              }catch(e){console.error('[NCL] family share failed:',e);alert('Could not create share link.');}
+            }}
+            style={{
+              flex:1,padding:'12px 16px',borderRadius:14,
+              background:'rgba(20,216,144,.06)',border:'1px solid rgba(20,216,144,.15)',
+              color:'rgba(20,216,144,.7)',fontSize:12,fontWeight:600,
+              fontFamily:"'Nunito',sans-serif",cursor:'pointer',
+              display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+              transition:'all .2s',
+            }}
+            onMouseEnter={e=>{e.currentTarget.style.background='rgba(20,216,144,.12)';}}
+            onMouseLeave={e=>{e.currentTarget.style.background='rgba(20,216,144,.06)';}}
+          >
+            {'\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67'} Share with Family
+          </button>
+        </div>
+      )}
 
       {/* ── SEARCH + MOOD FILTER ── */}
       <div style={{padding:'0 20px',marginBottom:16}}>

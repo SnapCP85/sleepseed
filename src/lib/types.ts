@@ -187,6 +187,8 @@ export interface SavedNightCard {
   tags?: string[];          // auto-generated emotional themes
   bedtimeActual?: string;   // time the story was read (HH:MM)
   milestone?: number;       // milestone number (10, 25, 50, 100, etc.) — set when this card IS the milestone
+  audioClip?: string;       // URL to voice recording (Supabase storage)
+  childDrawing?: string;    // data URL of child's drawing/scribble
 }
 
 // ── Night Card variant system ────────────────────────────────────────────────
@@ -277,6 +279,19 @@ export interface HatcheryEgg {
   weekNumber: number;
   startedAt: string;
   createdAt: string;
+}
+
+// ── Time Capsule ─────────────────────────────────────────────────────────────
+export interface TimeCapsule {
+  id: string;
+  userId: string;
+  childName: string;
+  cardIds: string[];          // IDs of sealed Night Cards
+  sealedAt: string;           // ISO date
+  openDate: string;           // ISO date — when capsule can be opened
+  title: string;              // e.g. "Sofia's First Year"
+  opened?: boolean;           // true after parent opens it
+  openedAt?: string;          // ISO date when opened
 }
 
 // ── Builder choices (passed from StoryBuilderPage → SleepSeedCore) ───────────

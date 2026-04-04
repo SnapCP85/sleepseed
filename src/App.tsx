@@ -18,6 +18,7 @@ import StoryLibrary from './features/stories/StoryLibrary';
 import NightCardLibrary from './features/nightcards/NightCardLibrary';
 import SharedStoryViewer from './pages/SharedStoryViewer';
 import SharedNightCard from './pages/SharedNightCard';
+import FamilyView from './pages/FamilyView';
 import PrintNightCard from './pages/PrintNightCard';
 import LibraryHome from './pages/LibraryHome';
 import StoryCover from './pages/StoryCover';
@@ -65,6 +66,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 function AppInner() {
   // Shared night card — public, no auth required
   if (new URLSearchParams(window.location.search).get('nc')) return <SharedNightCard />;
+  // Family collection view — public, no auth required
+  if (window.location.pathname.startsWith('/family/')) return <FamilyView />;
   // Print night card
   if (new URLSearchParams(window.location.search).get('printCard')) return <PrintNightCard />;
   // DEV-only routes — gated behind dev mode to prevent accidental access during demos
@@ -989,17 +992,25 @@ function AppInner() {
     // Use addChildName for returning parents, or profile for first-time
     const childNameForOnboarding = addChildName || profile?.childName || '';
 
-    return <DreamKeeperOnboarding
-      childName={childNameForOnboarding}
-      childAge={addChildName ? undefined : profile?.childAge}
-      childPronouns={addChildName ? undefined : profile?.childPronouns}
+    // Returning parents adding another child → DreamKeeper selection directly
+    if (isReturningParent) {
+      return <DreamKeeperOnboarding
+        childName={childNameForOnboarding}
+        onComplete={(result) => {
+          setAddChildName(null);
+          setAddChildNameInput('');
+          handleDreamKeeperComplete(result);
+        }}
+        onBack={() => { setAddChildName(null); setAddChildNameInput(''); setView('dashboard'); }}
+      />;
+    }
+
+    // First-time users → full OnboardingFlow (child intro slides first)
+    return <OnboardingFlow
+      childProfile={profile || { childName: childNameForOnboarding, childAge: '', childPronouns: '', parentRole: '' }}
       onComplete={(result) => {
-        // Reset addChild state after completion
-        setAddChildName(null);
-        setAddChildNameInput('');
-        handleDreamKeeperComplete(result);
+        handleOnboardingComplete(result);
       }}
-      onBack={() => { setAddChildName(null); setAddChildNameInput(''); setView('dashboard'); }}
     />;
   }
 
@@ -1053,7 +1064,7 @@ function AppInner() {
 
         {/* Ritual banner removed — MySpace CTA handles ritual routing directly */}
 
-        <MySpace onSignUp={goAuth} onReadStory={openSavedStory} />
+        <MySpace key={dashKey} onSignUp={goAuth} onReadStory={openSavedStory} />
       </AppLayout>
     );
   }

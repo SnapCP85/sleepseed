@@ -331,6 +331,36 @@ export default function NightCard({ card, size, onTap, flipped, onFlip, isPremiu
               </div>
             ) : null}
 
+            {/* Child drawing */}
+            {card.childDrawing && (
+              <div style={{
+                textAlign: 'center', marginTop: 6,
+                background: 'rgba(20,216,144,.04)', border: '1px solid rgba(20,216,144,.1)',
+                borderRadius: 10, padding: '6px 8px',
+              }}>
+                <div style={{
+                  fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: '1.5px',
+                  textTransform: 'uppercase' as const, color: 'rgba(20,216,144,.35)', marginBottom: 4,
+                }}>{card.heroName}{'\u2019'}s drawing</div>
+                <img src={card.childDrawing} alt="Drawing" style={{
+                  width: '100%', maxWidth: 120, borderRadius: 6,
+                  border: '1px solid rgba(20,216,144,.08)',
+                }} />
+              </div>
+            )}
+
+            {/* Voice clip */}
+            {card.audioClip && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                background: 'rgba(154,127,212,.06)', border: '1px solid rgba(154,127,212,.12)',
+                borderRadius: 10, padding: '6px 10px', marginTop: 6,
+              }}>
+                <span style={{ fontSize: 12 }}>{'\uD83C\uDFA4'}</span>
+                <audio src={card.audioClip} controls style={{ flex: 1, height: 28, opacity: 0.7 }} />
+              </div>
+            )}
+
             {/* Morning reflection */}
             {card.parentReflection && (
               <div style={{
