@@ -137,6 +137,7 @@ export default function CharacterBuilder({ onSaved, onCancel, initialCharacter, 
   const [parentRole, setParentRole] = useState<ParentRole | undefined>(initialCharacter?.parentRole);
   const [isFamily,   setIsFamily]   = useState<boolean>(initialCharacter?.isFamily ?? (initialCharacter?.type === 'human' ? false : false));
   const [ageDesc,    setAgeDesc]    = useState(initialCharacter?.ageDescription || '');
+  const [birthDate,  setBirthDate]  = useState(initialCharacter?.birthDate || '');
   const [pronouns,   setPronouns]   = useState<Pronoun>(initialCharacter?.pronouns || 'she/her');
   const [tags,       setTags]       = useState<PersonalityTag[]>(initialCharacter?.personalityTags || []);
   const [weirdDetail,setWeirdDetail]= useState(initialCharacter?.weirdDetail || '');
@@ -174,6 +175,7 @@ export default function CharacterBuilder({ onSaved, onCancel, initialCharacter, 
       updatedAt: new Date().toISOString(),
       isFamily: isFamily || undefined,
       parentRole: type === 'parent' ? parentRole : undefined,
+      birthDate: birthDate || undefined,
     });
     if (initialCharacter) { onSaved(); return; }
     setSaved(true);
@@ -313,6 +315,19 @@ export default function CharacterBuilder({ onSaved, onCancel, initialCharacter, 
             placeholder={type === 'human' ? '5 years old' : type === 'parent' ? 'e.g. Emma\'s grandma, loves to bake' : type === 'animal' ? 'a fluffy orange cat, about 3' : type === 'stuffy' ? 'a well-loved bear, very old' : 'ancient and wise, very tall'}
             value={ageDesc} onChange={e => setAgeDesc(e.target.value)} maxLength={80} />
         </div>
+
+        {/* Birthday — only for human/family characters */}
+        {(type === 'human') && (
+          <div className="cb-sec">
+            <div className="cb-label"><div className="cb-label-dot" />Birthday<span className="cb-opt">optional</span></div>
+            <input className="cb-input" type="date"
+              value={birthDate} onChange={e => setBirthDate(e.target.value)}
+              max={new Date().toISOString().split('T')[0]}
+              style={{ colorScheme: 'dark' }}
+            />
+            <div className="cb-hint">Used to show your child's exact age on Night Cards. Makes memories more precious over time.</div>
+          </div>
+        )}
 
         {/* Pronouns */}
         <div className="cb-sec">

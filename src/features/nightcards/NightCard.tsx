@@ -128,6 +128,7 @@ function getBadgeLabel(card: SavedNightCard, variant: CardVariant): { text: stri
     case 'journey': return { text: `\uD83C\uDF1F Journey Complete \u00B7 ${card.nightNumber || 7}/7`, color: 'rgba(14,160,80,0.8)' };
     case 'occasion': return { text: `\uD83C\uDF89 ${card.occasion || 'Special'}`, color: 'rgba(100,80,220,0.7)' };
     case 'streak': return { text: `\uD83D\uDD25 ${card.streakCount || ''} Night Streak \u00B7 Milestone`, color: 'rgba(180,100,10,0.8)' };
+    case 'milestone': return { text: `\u2728 ${card.milestone || ''} Nights \u00B7 Milestone`, color: 'rgba(200,140,255,0.8)' };
     default: return { text: `Night ${card.nightNumber || ''} \u00B7 ${card.storyTitle || ''}`, color: `${card.creatureColor || '#9A7FD4'}a6` };
   }
 }
@@ -138,6 +139,7 @@ function getMiniBadge(variant: CardVariant): { emoji: string; bg: string } | nul
     case 'journey': return { emoji: '\uD83C\uDF1F', bg: 'rgba(20,216,144,0.8)' };
     case 'occasion': return { emoji: '\uD83C\uDF89', bg: 'rgba(148,130,255,0.8)' };
     case 'streak': return { emoji: '\uD83D\uDD25', bg: 'rgba(245,130,20,0.85)' };
+    case 'milestone': return { emoji: '\u2728', bg: 'rgba(200,140,255,0.85)' };
     default: return null;
   }
 }
@@ -182,7 +184,10 @@ export default function NightCard({ card, size, onTap, flipped, onFlip, isPremiu
           </div>
           <div className="nc-mini-paper" style={{ height: '45%', background: vs.paperColor, padding: '6px 8px' }}>
             <div className="nc-mini-headline">{card.headline || card.heroName}</div>
-            <div className="nc-mini-date">{formatCardDate(card.date)}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 2 }}>
+              {card.childMood && <span style={{ fontSize: 9 }}>{card.childMood}</span>}
+              <div className="nc-mini-date">{formatCardDate(card.date)}</div>
+            </div>
           </div>
         </div>
       </>
@@ -246,6 +251,18 @@ export default function NightCard({ card, size, onTap, flipped, onFlip, isPremiu
                 <div className="nc-child-name">{card.heroName}'s card</div>
                 <div className="nc-headline" style={{ color: vs.headlineColor }}>{card.headline}</div>
                 {card.memory_line && <div className="nc-memory">{card.memory_line}</div>}
+                {/* Mood + time badge */}
+                {(card.childMood || card.bedtimeActual) && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 6, marginTop: 6,
+                    fontFamily: "'DM Mono',monospace", fontSize: 8, color: 'rgba(60,40,20,.35)',
+                    letterSpacing: '.02em',
+                  }}>
+                    {card.childMood && <span style={{ fontSize: 12 }}>{card.childMood}</span>}
+                    {card.childMood && card.bedtimeActual && <span>{'\u00B7'}</span>}
+                    {card.bedtimeActual && <span>{card.bedtimeActual.toLowerCase()}</span>}
+                  </div>
+                )}
                 <div className="nc-footer">
                   <div className="nc-footer-left">
                     <span style={{ fontSize: 14 }}>{creatureEmoji}</span>
@@ -285,7 +302,7 @@ export default function NightCard({ card, size, onTap, flipped, onFlip, isPremiu
             <div className="nc-back-quote-wrap">
               <div className="nc-back-bigquote">{'\u201C'}</div>
               <div className="nc-back-quote-text">{card.quote}</div>
-              <div className="nc-back-attribution">{'\u2014'} {card.heroName}{childAge ? `, age ${childAge}` : ''}</div>
+              <div className="nc-back-attribution">{'\u2014'} {card.heroName}{(childAge || card.childAge) ? `, age ${childAge || card.childAge}` : ''}</div>
             </div>
 
             <div className="nc-back-divider">
@@ -294,20 +311,45 @@ export default function NightCard({ card, size, onTap, flipped, onFlip, isPremiu
 
             {card.memory_line && <div className="nc-back-memory">{card.memory_line}</div>}
 
+            {/* Story context strip */}
+            {(card.storyTitle || card.bedtimeActual || card.childAge) && (
+              <div style={{
+                display: 'flex', flexWrap: 'wrap', gap: '4px 8px', justifyContent: 'center',
+                margin: '8px 0 4px', fontFamily: "'DM Mono',monospace", fontSize: 8,
+                color: 'rgba(60,40,20,.32)', letterSpacing: '.02em',
+              }}>
+                {card.storyTitle && <span>{'\uD83D\uDCD6'} {card.storyTitle}</span>}
+                {card.bedtimeActual && <span>{'\uD83D\uDD70'} {card.bedtimeActual.toLowerCase()}</span>}
+                {card.childAge && <span>{card.heroName}, age {card.childAge}</span>}
+              </div>
+            )}
+
             {card.whisper ? (
               <div className="nc-back-whisper">
                 <span className="nc-back-whisper-label">{'\uD83E\uDD2B'} Parent's Whisper</span>
                 <span className="nc-back-whisper-text">{card.whisper}</span>
               </div>
-            ) : !isPremium ? (
-              <div className="nc-back-whisper nc-back-whisper-locked" onClick={e => { e.stopPropagation(); onWhisperTap?.(); }}>
-                <span className="nc-back-whisper-label">{'\uD83D\uDD12'} Add a private whisper</span>
-                <span className="nc-back-whisper-text">Unlock with premium</span>
-              </div>
             ) : null}
 
+            {/* Morning reflection */}
+            {card.parentReflection && (
+              <div style={{
+                background: 'rgba(20,216,144,.06)', border: '1px dashed rgba(20,216,144,.15)',
+                borderRadius: 10, padding: '7px 12px', textAlign: 'center', marginTop: 6,
+              }}>
+                <span style={{
+                  fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: '2px',
+                  textTransform: 'uppercase' as const, color: 'rgba(20,216,144,.4)', display: 'block', marginBottom: 3,
+                }}>{'\uD83D\uDCAD'} Morning thought</span>
+                <span style={{
+                  fontFamily: "'Fraunces',serif", fontSize: 10, fontWeight: 300,
+                  fontStyle: 'italic', color: 'rgba(60,40,20,.5)', lineHeight: 1.45,
+                }}>{card.parentReflection}</span>
+              </div>
+            )}
+
             <div className="nc-back-footer">
-              <span className="nc-back-footer-story">{card.storyTitle}</span>
+              <span className="nc-back-footer-story">{card.childMood ? `${card.childMood} ${card.heroName}` : card.storyTitle}</span>
               <span className="nc-back-footer-night">Night {card.nightNumber || '1'}</span>
             </div>
           </div>

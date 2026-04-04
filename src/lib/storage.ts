@@ -104,6 +104,7 @@ const dbToChar = (row: any): Character => ({
   storyIds: row.story_ids ?? [], createdAt: row.created_at, updatedAt: row.updated_at,
   isFamily: row.is_family ?? undefined,
   parentRole: row.parent_role ?? undefined,
+  birthDate: row.birth_date ?? undefined,
 });
 
 export const getCharacters = async (userId: string): Promise<Character[]> => {
@@ -137,6 +138,7 @@ export const saveCharacter = async (c: Character): Promise<void> => {
       color: c.color, emoji: c.emoji, story_ids: c.storyIds,
       is_family: c.isFamily ?? null,
       parent_role: c.parentRole ?? null,
+      birth_date: c.birthDate ?? null,
       updated_at: new Date().toISOString(),
     });
   } catch(e) { console.error('[storage] saveCharacter Supabase error:', e); }
@@ -246,6 +248,22 @@ const dbToCard = (row: any): SavedNightCard => {
     gratitude: row.gratitude, extra, photo: row.photo_url,
     emoji: row.emoji, date: row.date, isOrigin, whisper,
     occasion, streakCount, nightNumber, creatureEmoji, creatureColor,
+    // Phase 1 enrichment — unpacked from extra JSON
+    ...(extra && extra.startsWith?.('{') ? {} : {}), // already parsed above
+    ...(() => {
+      try {
+        const p = typeof row.extra === 'string' && row.extra.startsWith('{') ? JSON.parse(row.extra) : {};
+        return {
+          childMood: p.childMood || undefined,
+          childAge: p.childAge || undefined,
+          parentReflection: p.parentReflection || undefined,
+          tags: p.tags || undefined,
+          bedtimeActual: p.bedtimeActual || undefined,
+          lessonTheme: p.lessonTheme || undefined,
+          milestone: p.milestone || undefined,
+        };
+      } catch { return {}; }
+    })(),
   };
 };
 
@@ -273,7 +291,7 @@ export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
     let photoUrl = nc.photo ?? null;
     if (photoUrl && photoUrl.startsWith('data:')) photoUrl = await uploadPhoto(nc.userId, photoUrl, `nc_${nc.id}`);
     let extraField = nc.extra ?? null;
-    if (nc.isOrigin || nc.whisper || nc.occasion || nc.streakCount != null || nc.nightNumber != null || nc.creatureEmoji || nc.creatureColor) {
+    if (nc.isOrigin || nc.whisper || nc.occasion || nc.streakCount != null || nc.nightNumber != null || nc.creatureEmoji || nc.creatureColor || nc.childMood || nc.childAge || nc.parentReflection || nc.tags || nc.bedtimeActual || nc.lessonTheme) {
       try {
         const packed: any = {};
         if (nc.isOrigin) packed.isOrigin = true;
@@ -283,6 +301,13 @@ export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
         if (nc.nightNumber != null) packed.nightNumber = nc.nightNumber;
         if (nc.creatureEmoji) packed.creatureEmoji = nc.creatureEmoji;
         if (nc.creatureColor) packed.creatureColor = nc.creatureColor;
+        if (nc.childMood) packed.childMood = nc.childMood;
+        if (nc.childAge)  packed.childAge  = nc.childAge;
+        if (nc.parentReflection) packed.parentReflection = nc.parentReflection;
+        if (nc.tags?.length) packed.tags = nc.tags;
+        if (nc.bedtimeActual) packed.bedtimeActual = nc.bedtimeActual;
+        if (nc.lessonTheme) packed.lessonTheme = nc.lessonTheme;
+        if (nc.milestone) packed.milestone = nc.milestone;
         if (nc.extra)    packed.note     = nc.extra;
         extraField = JSON.stringify(packed);
       } catch(_) {}

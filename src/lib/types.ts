@@ -38,6 +38,7 @@ export interface Character {
   updatedAt: string;
   isFamily?: boolean;      // true = parent's child, appears in ritual dashboard
   parentRole?: ParentRole; // only set when type === 'parent'
+  birthDate?: string;      // ISO date string (YYYY-MM-DD) for age calculation on Night Cards
 }
 
 // ── Story (saved) ─────────────────────────────────────────────────────────────
@@ -171,18 +172,28 @@ export interface SavedNightCard {
   photo?: string;
   emoji?: string;
   date: string;
-  isOrigin?: boolean;   // the Night 0 / "where it began" card
-  whisper?: string;     // the closing whisper line
+  isOrigin?: boolean;       // the Night 0 / "where it began" card
+  whisper?: string;         // the closing whisper line
   occasion?: string;        // birthday, christmas, halloween, etc.
   streakCount?: number;     // current streak at time of creation
   nightNumber?: number;     // DreamKeeper night (1–7)
   creatureEmoji?: string;   // creature emoji for card display
   creatureColor?: string;   // creature color for card display
   lessonTheme?: string;     // e.g. "Courage", "Kindness" — from DreamKeeper arc
+  // ── Phase 1 enrichment fields ──
+  childMood?: string;       // emoji mood at bedtime (😊😴🤗😌🥰😆)
+  childAge?: string;        // age at time of card creation (e.g. "4 years, 3 months")
+  parentReflection?: string; // morning-after thought added by parent
+  tags?: string[];          // auto-generated emotional themes
+  bedtimeActual?: string;   // time the story was read (HH:MM)
+  milestone?: number;       // milestone number (10, 25, 50, 100, etc.) — set when this card IS the milestone
 }
 
 // ── Night Card variant system ────────────────────────────────────────────────
-export type CardVariant = 'standard' | 'origin' | 'journey' | 'occasion' | 'streak';
+export type CardVariant = 'standard' | 'origin' | 'journey' | 'occasion' | 'streak' | 'milestone';
+
+// Milestone thresholds for total Night Card count
+export const MILESTONE_THRESHOLDS = [10, 25, 50, 100, 200, 365] as const;
 
 export function getCardVariant(card: SavedNightCard): CardVariant {
   if (card.isOrigin === true) return 'origin';
@@ -190,6 +201,7 @@ export function getCardVariant(card: SavedNightCard): CardVariant {
   if (card.occasion && card.occasion !== '') return 'occasion';
   if (card.streakCount === 7 || card.streakCount === 14 ||
       card.streakCount === 30 || card.streakCount === 100) return 'streak';
+  if (card.milestone) return 'milestone';
   return 'standard';
 }
 
@@ -197,7 +209,7 @@ export const CARD_VARIANT_STYLES: Record<CardVariant, {
   skyGradient: string; glowColor: string; paperColor: string;
   borderColor: string; headlineColor: string;
   shadow: string;
-}> = {
+}> & Record<string, any> = {
   standard: {
     skyGradient: 'linear-gradient(to bottom, #0d1428, #1a1040)',
     glowColor: '#9A7FD4', paperColor: '#faf6ee',
@@ -227,6 +239,12 @@ export const CARD_VARIANT_STYLES: Record<CardVariant, {
     glowColor: '#F5B84C', paperColor: '#fef8f0',
     borderColor: 'rgba(245,130,20,0.4)', headlineColor: '#1a0f08',
     shadow: '0 30px 60px rgba(0,0,0,0.6), 0 0 50px rgba(245,130,20,0.22)',
+  },
+  milestone: {
+    skyGradient: 'linear-gradient(to bottom, #0a0520, #1a0840)',
+    glowColor: '#E0A0FF', paperColor: '#faf6ff',
+    borderColor: 'rgba(200,140,255,0.35)', headlineColor: '#150830',
+    shadow: '0 30px 60px rgba(0,0,0,0.6), 0 0 50px rgba(200,140,255,0.25)',
   },
 };
 

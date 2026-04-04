@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useApp } from '../AppContext';
-import { getStories, getNightCards, getCharacters } from '../lib/storage';
+import { getStories, getNightCards, getCharacters, saveNightCard as dbSaveNightCard } from '../lib/storage';
 import { getAllHatchedCreatures } from '../lib/hatchery';
 import { getDreamKeeperById, V1_DREAMKEEPERS, type DreamKeeper } from '../lib/dreamkeepers';
 import { isRitualComplete, getRitualState } from '../lib/ritualState';
@@ -127,8 +127,13 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
   const [loading, setLoading] = useState(true);
   const [showAllChildren, setShowAllChildren] = useState(false);
   const [viewingCard, setViewingCard] = useState<SavedNightCard | null>(null);
+  const [cardFlipped, setCardFlipped] = useState(false);
+  const [cardReflection, setCardReflection] = useState('');
+  const [cardReflectionSaved, setCardReflectionSaved] = useState(false);
   const [activeJourney, setActiveJourney] = useState<StoryJourney | null>(null);
   const [journeyLoading, setJourneyLoading] = useState(false);
+  const [morningThought, setMorningThought] = useState('');
+  const [morningThoughtSaved, setMorningThoughtSaved] = useState(false);
 
   const userId = user?.id;
 
@@ -232,6 +237,62 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
     return () => { cancelled = true; };
   }, [userId, activeChild?.id]);
 
+  // ── Morning Thought: find last night's card (created <24h ago, no reflection yet) ──
+  const lastNightCard = useMemo(() => {
+    if (!allCards.length) return null;
+    const now = Date.now();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+    // Find most recent card created within the last 24 hours that has no reflection
+    const sorted = [...allCards].sort((a, b) => b.date.localeCompare(a.date));
+    for (const card of sorted) {
+      const cardTime = new Date(card.date).getTime();
+      if (now - cardTime < twentyFourHours && !card.parentReflection) return card;
+    }
+    return null;
+  }, [allCards]);
+
+  // ── Resurfacing: pick one old card to show ──
+  const resurfacedCard = useMemo(() => {
+    if (allCards.length < 3) return null; // Need some history
+    const today = new Date();
+    const todayStr = today.toISOString().slice(5, 10); // MM-DD
+    const sorted = [...allCards].sort((a, b) => a.date.localeCompare(b.date));
+
+    // Priority 1: Exactly 1 year ago (same month-day)
+    const oneYearAgo = sorted.find(c => {
+      const cDate = c.date.slice(5, 10);
+      const cYear = parseInt(c.date.slice(0, 4));
+      return cDate === todayStr && cYear < today.getFullYear();
+    });
+    if (oneYearAgo) return { card: oneYearAgo, label: 'One year ago tonight' };
+
+    // Priority 2: ~30 days ago (28-32 day window)
+    const thirtyDaysAgo = Date.now() - 30 * 86400000;
+    const monthAgo = sorted.find(c => {
+      const diff = Math.abs(new Date(c.date).getTime() - thirtyDaysAgo);
+      return diff < 2 * 86400000; // within 2-day window
+    });
+    if (monthAgo) return { card: monthAgo, label: 'About a month ago' };
+
+    // Priority 3: Any card older than 7 days (random, seeded by date)
+    const oldCards = sorted.filter(c => Date.now() - new Date(c.date).getTime() > 7 * 86400000);
+    if (oldCards.length > 0) {
+      const idx = today.getDate() % oldCards.length;
+      return { card: oldCards[idx], label: `${Math.round((Date.now() - new Date(oldCards[idx].date).getTime()) / 86400000)} nights ago` };
+    }
+    return null;
+  }, [allCards]);
+
+  const saveMorningThought = useCallback(async () => {
+    if (!lastNightCard || !morningThought.trim() || !userId) return;
+    const updated = { ...lastNightCard, parentReflection: morningThought.trim() };
+    // Update local state
+    setAllCards(prev => prev.map(c => c.id === updated.id ? updated : c));
+    setMorningThoughtSaved(true);
+    // Persist to Supabase
+    try { await dbSaveNightCard(updated); } catch (e) { console.error('[MySpace] saveMorningThought failed:', e); }
+  }, [lastNightCard, morningThought, userId]);
+
   // ── Derived data ───────────────────────────────────────────────────────────
   const primaryChild = activeChild || characters.find(c => c.isFamily && c.type === 'human') || characters[0];
   const childName = primaryChild?.name || user?.displayName || 'friend';
@@ -251,6 +312,43 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
   const creatureColor = companionCreature?.color || dk?.color || '#F5B84C';
   const creatureEmoji = companionCreature?.creatureEmoji || dk?.emoji || '\uD83C\uDF19';
   const rgb = hexToRgb(creatureColor);
+
+  // ── Collection patterns (emotional analytics) ──
+  const patterns = useMemo(() => {
+    if (allCards.length < 3) return null;
+    // Most common mood
+    const moodCounts: Record<string, number> = {};
+    allCards.forEach(c => { if (c.childMood) moodCounts[c.childMood] = (moodCounts[c.childMood] || 0) + 1; });
+    const topMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0];
+
+    // Tag frequency
+    const tagCounts: Record<string, number> = {};
+    allCards.forEach(c => { c.tags?.forEach((t: string) => { tagCounts[t] = (tagCounts[t] || 0) + 1; }); });
+    const topTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([t]) => t);
+
+    // Longest streak
+    const dates = [...new Set(allCards.map(c => c.date?.slice(0, 10)).filter(Boolean))].sort();
+    let longest = 1, cur = 1;
+    for (let i = 1; i < dates.length; i++) {
+      const diff = Math.round((new Date(dates[i]).getTime() - new Date(dates[i - 1]).getTime()) / 86400000);
+      if (diff === 1) { cur++; longest = Math.max(longest, cur); } else { cur = 1; }
+    }
+
+    // Monthly digest for last completed month
+    const now = new Date();
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthStr = lastMonth.toISOString().slice(0, 7); // YYYY-MM
+    const lastMonthCards = allCards.filter(c => c.date?.startsWith(lastMonthStr));
+    const lastMonthLabel = lastMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    return {
+      totalMemories: allCards.length,
+      topMood: topMood ? { emoji: topMood[0], count: topMood[1] } : null,
+      topTags,
+      longestStreak: longest,
+      lastMonth: lastMonthCards.length > 0 ? { label: lastMonthLabel, count: lastMonthCards.length, cards: lastMonthCards } : null,
+    };
+  }, [allCards]);
 
   // Time-aware greeting
   const greeting = useMemo(() => {
@@ -413,6 +511,41 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
               <span style={{ fontSize: 11, lineHeight: 1 }}>{'\uD83D\uDD25'}</span>
               <span>{streak} night streak</span>
             </div>
+          </div>
+        )}
+
+        {/* ═══ 1c. BIRTHDAY NUDGE ═══ */}
+        {activeChild && activeChild.type === 'human' && !activeChild.birthDate && cardCount > 0 && (
+          <div
+            onClick={() => setView('character-builder')}
+            style={{
+              animation: 'ms-fadeUp .7s .15s ease-out both',
+              margin: '4px 0 8px', padding: '10px 16px',
+              background: 'rgba(245,184,76,.04)',
+              border: '1px solid rgba(245,184,76,.12)',
+              borderRadius: 14, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 10,
+              transition: 'background .2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(245,184,76,.08)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245,184,76,.04)'; }}
+          >
+            <span style={{ fontSize: 16 }}>{'\uD83C\uDF82'}</span>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontFamily: "'Nunito',sans-serif", fontSize: 12, fontWeight: 600,
+                color: 'rgba(245,184,76,.7)',
+              }}>
+                Add {childName}{'\u2019'}s birthday
+              </div>
+              <div style={{
+                fontFamily: "'DM Mono',monospace", fontSize: 9,
+                color: 'rgba(244,239,232,.25)', letterSpacing: '.02em', marginTop: 2,
+              }}>
+                Night Cards will show their exact age — priceless in a few years
+              </div>
+            </div>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="rgba(245,184,76,.4)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
           </div>
         )}
 
@@ -663,6 +796,195 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
           )}
         </div>
 
+        {/* ═══ 3a. TONIGHT'S CARD ═══ */}
+        {(() => {
+          const today = new Date().toISOString().slice(0, 10);
+          const tonightCard = allCards.find(c => c.date?.startsWith(today));
+          if (tonightCard) {
+            return (
+              <div style={{
+                animation: 'ms-fadeUp .8s .35s ease-out both', marginBottom: 20,
+              }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10,
+                }}>
+                  <span style={{ fontSize: 13 }}>{'\u2728'}</span>
+                  <span style={{
+                    fontFamily: "'DM Mono',monospace", fontSize: 10,
+                    color: 'rgba(20,216,144,.55)', letterSpacing: '.06em',
+                    textTransform: 'uppercase' as const,
+                  }}>Tonight{'\u2019'}s memory</span>
+                </div>
+                <div
+                  onClick={() => setViewingCard(tonightCard)}
+                  style={{
+                    background: 'rgba(20,216,144,.03)', border: '1px solid rgba(20,216,144,.1)',
+                    borderRadius: 16, padding: '16px 18px', cursor: 'pointer',
+                    transition: 'background .2s, transform .15s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(20,216,144,.06)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(20,216,144,.03)'; e.currentTarget.style.transform = ''; }}
+                >
+                  <div style={{
+                    fontFamily: "'Fraunces',Georgia,serif", fontSize: 18, fontWeight: 500,
+                    color: '#F4EFE8', lineHeight: 1.3, marginBottom: 6,
+                  }}>
+                    {tonightCard.headline}
+                  </div>
+                  {tonightCard.memory_line && (
+                    <div style={{
+                      fontFamily: "'Nunito',sans-serif", fontSize: 13,
+                      fontStyle: 'italic', color: 'rgba(244,239,232,.45)',
+                      lineHeight: 1.5, marginBottom: 8,
+                    }}>
+                      {tonightCard.memory_line}
+                    </div>
+                  )}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    fontFamily: "'DM Mono',monospace", fontSize: 9,
+                    color: 'rgba(244,239,232,.22)',
+                  }}>
+                    {tonightCard.childMood && <span style={{ fontSize: 13 }}>{tonightCard.childMood}</span>}
+                    {tonightCard.bedtimeActual && <span>{tonightCard.bedtimeActual.toLowerCase()}</span>}
+                    <span>{tonightCard.creatureEmoji || creatureEmoji}</span>
+                    <span>{tonightCard.heroName}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
+        {/* ═══ 3b. MORNING THOUGHT ═══ */}
+        {lastNightCard && !morningThoughtSaved && (
+          <div style={{
+            animation: 'ms-fadeUp .8s .35s ease-out both', marginBottom: 20,
+            background: 'rgba(20,216,144,.04)',
+            border: '1px solid rgba(20,216,144,.12)',
+            borderRadius: 16, padding: '16px 18px',
+          }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10,
+            }}>
+              <span style={{ fontSize: 14 }}>{'\uD83D\uDCAD'}</span>
+              <span style={{
+                fontFamily: "'DM Mono',monospace", fontSize: 10,
+                color: 'rgba(20,216,144,.55)', letterSpacing: '.04em',
+                textTransform: 'uppercase' as const,
+              }}>Morning thought</span>
+            </div>
+            <div style={{
+              fontFamily: "'Fraunces',Georgia,serif", fontSize: 14, fontWeight: 300,
+              fontStyle: 'italic', color: 'rgba(244,239,232,.55)', lineHeight: 1.5,
+              marginBottom: 12,
+            }}>
+              Anything from last night you want to remember?
+            </div>
+            <div style={{
+              fontSize: 11, color: 'rgba(244,239,232,.25)', marginBottom: 10,
+              fontFamily: "'Nunito',sans-serif",
+            }}>
+              About: <span style={{ color: 'rgba(245,184,76,.5)' }}>{lastNightCard.headline}</span>
+            </div>
+            <textarea
+              value={morningThought}
+              onChange={e => setMorningThought(e.target.value)}
+              placeholder="She asked about the story first thing this morning..."
+              style={{
+                width: '100%', minHeight: 60, padding: '12px 14px',
+                borderRadius: 12, border: '1px solid rgba(20,216,144,.15)',
+                background: 'rgba(20,216,144,.05)', color: 'rgba(234,242,255,.8)',
+                fontSize: 13, fontFamily: "'Nunito',sans-serif",
+                resize: 'none', outline: 'none', lineHeight: 1.5,
+              }}
+              maxLength={280}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+              <button
+                onClick={saveMorningThought}
+                disabled={!morningThought.trim()}
+                style={{
+                  padding: '8px 18px', borderRadius: 10, border: 'none',
+                  background: morningThought.trim() ? 'rgba(20,216,144,.2)' : 'rgba(255,255,255,.04)',
+                  color: morningThought.trim() ? 'rgba(20,216,144,.85)' : 'rgba(244,239,232,.2)',
+                  fontSize: 12, fontWeight: 600, cursor: morningThought.trim() ? 'pointer' : 'default',
+                  fontFamily: "'Nunito',sans-serif", transition: 'all .2s',
+                }}
+              >
+                Save to last night{'\u2019'}s card
+              </button>
+            </div>
+          </div>
+        )}
+        {morningThoughtSaved && (
+          <div style={{
+            animation: 'ms-fadeUp .5s ease-out both', marginBottom: 20,
+            background: 'rgba(20,216,144,.06)', border: '1px solid rgba(20,216,144,.15)',
+            borderRadius: 16, padding: '14px 18px', textAlign: 'center',
+          }}>
+            <span style={{ fontSize: 13, color: 'rgba(20,216,144,.65)', fontFamily: "'Nunito',sans-serif" }}>
+              {'\u2713'} Saved to last night{'\u2019'}s memory
+            </span>
+          </div>
+        )}
+
+        {/* ═══ 3c. RESURFACED MEMORY ═══ */}
+        {resurfacedCard && (
+          <div style={{
+            animation: 'ms-fadeUp .8s .4s ease-out both', marginBottom: 24,
+          }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10,
+            }}>
+              <span style={{ fontSize: 13 }}>{'\uD83D\uDD70'}</span>
+              <span style={{
+                fontFamily: "'DM Mono',monospace", fontSize: 10,
+                color: 'rgba(244,239,232,.3)', letterSpacing: '.06em',
+                textTransform: 'uppercase' as const,
+              }}>{resurfacedCard.label}</span>
+            </div>
+            <div
+              onClick={() => setViewingCard(resurfacedCard.card)}
+              style={{
+                background: 'rgba(255,255,255,.025)', border: '1px solid rgba(255,255,255,.07)',
+                borderRadius: 16, padding: '16px 18px', cursor: 'pointer',
+                transition: 'background .2s, transform .15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.05)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.025)'; e.currentTarget.style.transform = ''; }}
+            >
+              <div style={{
+                fontFamily: "'Fraunces',Georgia,serif", fontSize: 16, fontWeight: 400,
+                color: '#F4EFE8', lineHeight: 1.35, marginBottom: 6,
+              }}>
+                {resurfacedCard.card.headline}
+              </div>
+              {resurfacedCard.card.memory_line && (
+                <div style={{
+                  fontFamily: "'Nunito',sans-serif", fontSize: 12,
+                  fontStyle: 'italic', color: 'rgba(244,239,232,.4)',
+                  lineHeight: 1.5, marginBottom: 8,
+                }}>
+                  {resurfacedCard.card.memory_line}
+                </div>
+              )}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                fontFamily: "'DM Mono',monospace", fontSize: 9,
+                color: 'rgba(244,239,232,.2)',
+              }}>
+                <span>{resurfacedCard.card.creatureEmoji || creatureEmoji}</span>
+                <span>{resurfacedCard.card.heroName}</span>
+                <span>{'\u00B7'}</span>
+                <span>{new Date(resurfacedCard.card.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                {resurfacedCard.card.childMood && <span>{resurfacedCard.card.childMood}</span>}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ═══ 4. MEMORY STRIP ═══ */}
         {recentStories.length > 0 && (
           <div style={{ animation: 'ms-fadeUp .8s .45s ease-out both', marginBottom: 28 }}>
@@ -819,6 +1141,127 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
           </div>
         ) : null}
 
+        {/* ═══ 4c. MONTHLY DIGEST ═══ */}
+        {patterns?.lastMonth && (
+          <div style={{
+            animation: 'ms-fadeUp .8s .55s ease-out both', marginBottom: 20,
+            background: 'rgba(154,127,212,.04)', border: '1px solid rgba(154,127,212,.1)',
+            borderRadius: 16, padding: '16px 18px',
+          }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10,
+            }}>
+              <span style={{ fontSize: 13 }}>{'\uD83D\uDCC5'}</span>
+              <span style={{
+                fontFamily: "'DM Mono',monospace", fontSize: 10,
+                color: 'rgba(154,127,212,.55)', letterSpacing: '.04em',
+                textTransform: 'uppercase' as const,
+              }}>{patterns.lastMonth.label}</span>
+            </div>
+            <div style={{
+              fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 400,
+              color: 'rgba(244,239,232,.6)', lineHeight: 1.4, marginBottom: 8,
+            }}>
+              {patterns.lastMonth.count} {patterns.lastMonth.count === 1 ? 'night' : 'nights'} of stories
+            </div>
+            {(() => {
+              const mc = patterns.lastMonth!.cards;
+              const moods: Record<string, number> = {};
+              mc.forEach((c: any) => { if (c.childMood) moods[c.childMood] = (moods[c.childMood] || 0) + 1; });
+              const topMood = Object.entries(moods).sort((a, b) => b[1] - a[1])[0];
+              const tags: Record<string, number> = {};
+              mc.forEach((c: any) => { c.tags?.forEach((t: string) => { tags[t] = (tags[t] || 0) + 1; }); });
+              const topTags = Object.entries(tags).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([t]) => t);
+              return (
+                <div style={{
+                  display: 'flex', flexWrap: 'wrap', gap: '4px 12px',
+                  fontFamily: "'DM Mono',monospace", fontSize: 9,
+                  color: 'rgba(244,239,232,.3)',
+                }}>
+                  {topMood && <span>Most felt: {topMood[0]} ({topMood[1]}x)</span>}
+                  {topTags.length > 0 && <span>Themes: {topTags.join(', ')}</span>}
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* ═══ 4d. PATTERNS ═══ */}
+        {patterns && (
+          <div style={{
+            animation: 'ms-fadeUp .8s .6s ease-out both', marginBottom: 20,
+            background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.05)',
+            borderRadius: 16, padding: '16px 18px',
+          }}>
+            <div style={{
+              fontFamily: "'DM Mono',monospace", fontSize: 10,
+              color: 'rgba(244,239,232,.3)', letterSpacing: '.06em',
+              textTransform: 'uppercase' as const, marginBottom: 12,
+            }}>
+              {childName}{'\u2019'}s patterns
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {/* Total memories */}
+              <div style={{
+                background: 'rgba(245,184,76,.04)', border: '1px solid rgba(245,184,76,.1)',
+                borderRadius: 12, padding: '10px 12px',
+              }}>
+                <div style={{
+                  fontFamily: "'Fraunces',Georgia,serif", fontSize: 22, fontWeight: 600,
+                  color: 'rgba(245,184,76,.75)', lineHeight: 1,
+                }}>{patterns.totalMemories}</div>
+                <div style={{
+                  fontFamily: "'DM Mono',monospace", fontSize: 8,
+                  color: 'rgba(244,239,232,.25)', marginTop: 3, letterSpacing: '.04em',
+                }}>memories</div>
+              </div>
+              {/* Longest streak */}
+              <div style={{
+                background: 'rgba(245,130,20,.04)', border: '1px solid rgba(245,130,20,.1)',
+                borderRadius: 12, padding: '10px 12px',
+              }}>
+                <div style={{
+                  fontFamily: "'Fraunces',Georgia,serif", fontSize: 22, fontWeight: 600,
+                  color: 'rgba(245,130,20,.75)', lineHeight: 1,
+                }}>{patterns.longestStreak}</div>
+                <div style={{
+                  fontFamily: "'DM Mono',monospace", fontSize: 8,
+                  color: 'rgba(244,239,232,.25)', marginTop: 3, letterSpacing: '.04em',
+                }}>longest streak</div>
+              </div>
+              {/* Most common mood */}
+              {patterns.topMood && (
+                <div style={{
+                  background: 'rgba(154,127,212,.04)', border: '1px solid rgba(154,127,212,.1)',
+                  borderRadius: 12, padding: '10px 12px',
+                }}>
+                  <div style={{ fontSize: 22, lineHeight: 1 }}>{patterns.topMood.emoji}</div>
+                  <div style={{
+                    fontFamily: "'DM Mono',monospace", fontSize: 8,
+                    color: 'rgba(244,239,232,.25)', marginTop: 3, letterSpacing: '.04em',
+                  }}>most common mood</div>
+                </div>
+              )}
+              {/* Top themes */}
+              {patterns.topTags.length > 0 && (
+                <div style={{
+                  background: 'rgba(20,216,144,.04)', border: '1px solid rgba(20,216,144,.1)',
+                  borderRadius: 12, padding: '10px 12px',
+                }}>
+                  <div style={{
+                    fontFamily: "'Fraunces',Georgia,serif", fontSize: 13, fontWeight: 400,
+                    color: 'rgba(20,216,144,.65)', lineHeight: 1.3,
+                  }}>{patterns.topTags.join(', ')}</div>
+                  <div style={{
+                    fontFamily: "'DM Mono',monospace", fontSize: 8,
+                    color: 'rgba(244,239,232,.25)', marginTop: 3, letterSpacing: '.04em',
+                  }}>favorite themes</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ═══ 5. GROWTH SECTION ═══ */}
         <div style={{
           animation: 'ms-fadeUp .8s .6s ease-out both',
@@ -861,17 +1304,17 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
       {/* Night Card detail overlay */}
       {viewingCard && (
         <>
-          <div onClick={() => setViewingCard(null)} style={{
+          <div onClick={() => { setViewingCard(null); setCardFlipped(false); setCardReflection(''); setCardReflectionSaved(false); }} style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,.82)',
             zIndex: 200, animation: 'ms-fadeUp .2s ease both',
           }} />
           <div style={{
             position: 'fixed', inset: 0, zIndex: 201,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 20, pointerEvents: 'none',
+            padding: 20, pointerEvents: 'none', flexDirection: 'column',
           }}>
             <div style={{
-              position: 'absolute', top: '40%', left: '50%',
+              position: 'absolute', top: '35%', left: '50%',
               transform: 'translate(-50%,-50%)', width: 320, height: 320,
               borderRadius: '50%', pointerEvents: 'none',
               background: 'radial-gradient(circle,rgba(154,127,212,.12) 0%,transparent 70%)',
@@ -879,12 +1322,58 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
             <div style={{
               pointerEvents: 'all', width: '100%', maxWidth: 300,
               animation: 'ms-fadeUp .3s ease both', position: 'relative', zIndex: 1,
+              maxHeight: '85vh', overflowY: 'auto', scrollbarWidth: 'none' as any,
             }}>
-              <NightCardComponent card={viewingCard} size="full" />
+              <NightCardComponent card={viewingCard} size="full" flipped={cardFlipped} onFlip={() => setCardFlipped(!cardFlipped)} />
+
+              {/* Context strip */}
+              {(viewingCard.storyTitle || viewingCard.childAge || viewingCard.bedtimeActual) && (
+                <div style={{
+                  marginTop: 10, padding: '8px 12px', borderRadius: 10,
+                  background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)',
+                  display: 'flex', flexWrap: 'wrap', gap: '3px 8px', justifyContent: 'center',
+                  fontFamily: "'DM Mono',monospace", fontSize: 9, color: 'rgba(234,242,255,.28)',
+                }}>
+                  {viewingCard.storyTitle && <span>{'\uD83D\uDCD6'} {viewingCard.storyTitle}</span>}
+                  {viewingCard.bedtimeActual && <span>{'\uD83D\uDD70'} {viewingCard.bedtimeActual.toLowerCase()}</span>}
+                  {viewingCard.childAge && <span>{viewingCard.heroName}, age {viewingCard.childAge}</span>}
+                </div>
+              )}
+
+              {/* Flip hint */}
+              <div style={{ textAlign: 'center', marginTop: 6, fontSize: 9, color: 'rgba(234,242,255,.18)', fontFamily: "'DM Mono',monospace" }}>
+                {cardFlipped ? 'tap card to see front' : 'tap card to flip'}
+              </div>
+
+              {/* Reflection */}
+              {!viewingCard.parentReflection && !cardReflectionSaved && (
+                <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 12, background: 'rgba(20,216,144,.04)', border: '1px solid rgba(20,216,144,.12)' }}>
+                  <div style={{ fontSize: 9, color: 'rgba(20,216,144,.5)', fontFamily: "'DM Mono',monospace", letterSpacing: '.4px', marginBottom: 6 }}>{'\uD83D\uDCAD'} ADD A REFLECTION</div>
+                  <textarea value={cardReflection} onChange={e => setCardReflection(e.target.value)} placeholder="Anything you remember about this night..." style={{ width: '100%', minHeight: 50, padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(20,216,144,.12)', background: 'rgba(20,216,144,.04)', color: 'rgba(234,242,255,.8)', fontSize: 12, fontFamily: "'Nunito',sans-serif", resize: 'none', outline: 'none', lineHeight: 1.5 }} maxLength={280} />
+                  <button disabled={!cardReflection.trim()} onClick={async () => {
+                    if (!viewingCard || !cardReflection.trim()) return;
+                    const updated = { ...viewingCard, parentReflection: cardReflection.trim() };
+                    setAllCards(prev => prev.map(c => c.id === updated.id ? updated : c));
+                    setViewingCard(updated);
+                    setCardReflectionSaved(true);
+                    try { await dbSaveNightCard(updated); } catch (e) { console.error('[MySpace] saveReflection:', e); }
+                  }} style={{ marginTop: 6, padding: '7px 14px', borderRadius: 8, border: 'none', background: cardReflection.trim() ? 'rgba(20,216,144,.2)' : 'rgba(255,255,255,.04)', color: cardReflection.trim() ? 'rgba(20,216,144,.85)' : 'rgba(234,242,255,.2)', fontSize: 11, fontWeight: 600, cursor: cardReflection.trim() ? 'pointer' : 'default', fontFamily: "'Nunito',sans-serif" }}>Save reflection</button>
+                </div>
+              )}
+              {cardReflectionSaved && (
+                <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11, color: 'rgba(20,216,144,.6)', fontFamily: "'Nunito',sans-serif" }}>{'\u2713'} Reflection saved</div>
+              )}
+              {viewingCard.parentReflection && !cardReflectionSaved && (
+                <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 12, background: 'rgba(20,216,144,.04)', border: '1px solid rgba(20,216,144,.08)' }}>
+                  <div style={{ fontSize: 9, color: 'rgba(20,216,144,.4)', fontFamily: "'DM Mono',monospace", letterSpacing: '.4px', marginBottom: 4 }}>{'\uD83D\uDCAD'} REFLECTION</div>
+                  <div style={{ fontSize: 12, fontStyle: 'italic', color: 'rgba(234,242,255,.5)', fontFamily: "'Nunito',sans-serif", lineHeight: 1.5 }}>{viewingCard.parentReflection}</div>
+                </div>
+              )}
+
               <button
-                onClick={() => setViewingCard(null)}
+                onClick={() => { setViewingCard(null); setCardFlipped(false); setCardReflection(''); setCardReflectionSaved(false); }}
                 style={{
-                  width: '100%', marginTop: 14, padding: '11px 8px',
+                  width: '100%', marginTop: 12, padding: '11px 8px',
                   borderRadius: 14, border: '1px solid rgba(255,255,255,.12)',
                   background: 'rgba(255,255,255,.06)', color: 'rgba(234,242,255,.6)',
                   fontSize: 11, fontFamily: "'DM Mono',monospace", cursor: 'pointer',

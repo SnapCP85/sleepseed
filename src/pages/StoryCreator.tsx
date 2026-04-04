@@ -514,7 +514,8 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   const [freeCharInputKey, setFreeCharInputKey] = useState('');
   const [freeListening, setFreeListening] = useState(false);
   const [dreamkeeperInStory, setDreamkeeperInStory] = useState(true);
-  const [childIsHero, setChildIsHero] = useState(true);
+  const [storyForName, setStoryForName] = useState('');  // empty = child (default), custom = gift story
+  const [storyForEditing, setStoryForEditing] = useState(false);
   const [freePlaceholderIdx] = useState(() => Math.floor(Math.random() * FREE_PLACEHOLDERS.length));
 
   // Settings state
@@ -603,6 +604,8 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
     setFreeChars([]);
     setFreeCharInput('');
     setFreeCharInputKey('');
+    setStoryForName('');
+    setStoryForEditing(false);
     setWorldReaction('');
     if (isListening) { srRef.current?.stop(); setIsListening(false); }
     if (freeListening) { freeSrRef.current?.stop(); setFreeListening(false); }
@@ -784,19 +787,9 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
         note: c.weirdDetail || c.currentSituation || '',
       }));
 
-    // Add creature to chars if selected
-    if (creatureSelected && creature) {
-      castChars.push({
-        type: 'creature',
-        name: creature.name,
-        note: creature.dreamAnswer
-          ? `${creature.name} dreams about ${creature.dreamAnswer}`
-          : `${creature.name} is the child's magical companion`,
-      });
-    }
-
-    // For free mode, add DreamKeeper if toggle is on
-    if (mode === 'free' && dreamkeeperInStory && creature && !creatureSelected) {
+    // Add creature to chars — free mode uses dreamkeeperInStory toggle, other modes use creatureSelected
+    const shouldIncludeCreature = mode === 'free' ? dreamkeeperInStory : creatureSelected;
+    if (shouldIncludeCreature && creature) {
       castChars.push({
         type: 'creature',
         name: creature.name,
@@ -818,11 +811,16 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
 
     const finalVibe = vibe || inferVibe(finalBrief);
 
+    // "Story for" logic: custom name = gift story (child not forced as hero)
+    const hasCustomStoryFor = mode === 'free' && storyForName.trim().length > 0;
+    const resolvedHeroName = hasCustomStoryFor ? storyForName.trim() : (heroChar?.name || '');
+    const resolvedChildIsHero = mode === 'free' ? !hasCustomStoryFor : true;
+
     const choices: BuilderChoices = {
       path: mode === 'today' ? 'ritual' : 'free',
-      heroName: heroChar?.name || '',
-      heroGender: heroChar?.pronouns === 'he/him' ? 'boy'
-        : heroChar?.pronouns === 'she/her' ? 'girl' : '',
+      heroName: resolvedHeroName,
+      heroGender: hasCustomStoryFor ? '' : (heroChar?.pronouns === 'he/him' ? 'boy'
+        : heroChar?.pronouns === 'she/her' ? 'girl' : ''),
       vibe: finalVibe,
       level,
       length,
@@ -833,7 +831,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
       occasionCustom: '',
       style,
       pace: 'normal',
-      childIsHero: mode === 'free' ? childIsHero : true,
+      childIsHero: resolvedChildIsHero,
     };
 
     setSelectedCharacter(heroChar || null);
@@ -1475,57 +1473,77 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                     fontFamily: 'var(--body)', fontSize: 11, color: 'rgba(244,239,232,.3)',
                     textAlign: 'center', marginTop: 8, lineHeight: 1.5,
                   }}>
-                    Mention anyone you want in the story {'\u2014'} {childName} is always the hero.
+                    Say anything {'\u2014'} mention anyone you want in the story.
                   </div>
                 )}
               </div>
             )}
 
-            {/* Child is Hero Toggle */}
+            {/* Who's this story for? */}
             {freeHasContent && (
-              <div
-                onClick={() => setChildIsHero(prev => !prev)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 16px', borderRadius: 14, marginTop: 12, cursor: 'pointer',
-                  border: `1.5px solid ${childIsHero ? 'rgba(246,197,111,.25)' : 'rgba(255,255,255,.06)'}`,
-                  background: childIsHero ? 'rgba(246,197,111,.06)' : 'rgba(255,255,255,.02)',
-                  transition: 'all .2s',
-                  animation: 'fadeUp .3s .05s ease both',
-                }}
-              >
-                <span style={{ fontSize: 20 }}>{primaryChar?.emoji || '\u{1F9D2}'}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{
-                    fontFamily: 'var(--body)', fontSize: 13, fontWeight: 700,
-                    color: childIsHero ? '#F6C56F' : 'rgba(244,239,232,.4)',
-                    transition: 'color .2s',
-                  }}>
-                    {childName} is the hero
-                  </div>
-                  <div style={{
-                    fontFamily: 'var(--body)', fontSize: 10,
-                    color: childIsHero ? 'rgba(246,197,111,.4)' : 'rgba(244,239,232,.25)',
-                    marginTop: 2,
-                  }}>
-                    {childIsHero
-                      ? 'Main character of tonight\u2019s story'
-                      : 'Story follows whoever you describe'
-                    }
-                  </div>
-                </div>
-                <div style={{
-                  width: 40, height: 22, borderRadius: 11, padding: 2,
-                  background: childIsHero ? 'rgba(246,197,111,.3)' : 'rgba(255,255,255,.08)',
-                  transition: 'background .2s',
-                  display: 'flex', alignItems: 'center',
-                }}>
-                  <div style={{
-                    width: 18, height: 18, borderRadius: '50%',
-                    background: childIsHero ? '#F6C56F' : 'rgba(255,255,255,.2)',
+              <div style={{
+                marginTop: 12, animation: 'fadeUp .3s .05s ease both',
+              }}>
+                <div
+                  onClick={() => { if (!storyForEditing) setStoryForEditing(true); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '12px 16px', borderRadius: 14, cursor: 'pointer',
+                    border: '1.5px solid rgba(246,197,111,.2)',
+                    background: 'rgba(246,197,111,.04)',
                     transition: 'all .2s',
-                    transform: childIsHero ? 'translateX(18px)' : 'translateX(0)',
-                  }} />
+                  }}
+                >
+                  <span style={{ fontSize: 18 }}>{storyForName ? '\u{1F381}' : (primaryChar?.emoji || '\u{1F9D2}')}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{
+                      fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '.06em',
+                      textTransform: 'uppercase' as const,
+                      color: 'rgba(246,197,111,.4)', marginBottom: 3,
+                    }}>
+                      Who's this story for?
+                    </div>
+                    {storyForEditing ? (
+                      <input
+                        type="text"
+                        value={storyForName}
+                        onChange={e => setStoryForName(e.target.value)}
+                        onBlur={() => setStoryForEditing(false)}
+                        onKeyDown={e => { if (e.key === 'Enter') setStoryForEditing(false); }}
+                        placeholder={childName}
+                        autoFocus
+                        style={{
+                          width: '100%', padding: '4px 0', border: 'none',
+                          borderBottom: '1.5px solid rgba(246,197,111,.3)',
+                          background: 'transparent', outline: 'none',
+                          color: '#F6C56F', fontSize: 14, fontWeight: 700,
+                          fontFamily: 'var(--body)',
+                        }}
+                      />
+                    ) : (
+                      <div style={{
+                        fontFamily: 'var(--body)', fontSize: 14, fontWeight: 700,
+                        color: '#F6C56F',
+                      }}>
+                        {storyForName || childName}
+                        <span style={{
+                          fontFamily: 'var(--mono)', fontSize: 8, color: 'rgba(246,197,111,.35)',
+                          marginLeft: 8, letterSpacing: '.04em',
+                        }}>
+                          {storyForName ? '' : '(tap to change)'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  {storyForName && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setStoryForName(''); setStoryForEditing(false); }}
+                      style={{
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        color: 'rgba(244,239,232,.25)', fontSize: 14, padding: '2px 4px',
+                      }}
+                    >{'\u2715'}</button>
+                  )}
                 </div>
               </div>
             )}

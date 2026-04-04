@@ -203,8 +203,11 @@ interface Props { userId: string; onBack: () => void; filterCharacterId?: string
 export default function NightCardLibrary({ userId, onBack, filterCharacterId }: Props) {
   const [cards, setCards] = useState<SavedNightCard[]>([]);
   const [viewing, setViewing] = useState<SavedNightCard | null>(null);
+  const [flipped, setFlipped] = useState(false);
   const [search, setSearch] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<SavedNightCard | null>(null);
+  const [reflectionInput, setReflectionInput] = useState('');
+  const [reflectionSaved, setReflectionSaved] = useState(false);
 
   useEffect(() => {
     getNightCards(userId).then(fetched => {
@@ -217,10 +220,13 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
     });
   }, [userId]);
 
+  const [moodFilter, setMoodFilter] = useState('');
+
   const displayed = (filterCharacterId
     ? cards.filter(c => c.characterIds?.includes(filterCharacterId))
     : cards
   ).filter(c => {
+    if (moodFilter && c.childMood !== moodFilter) return false;
     if (!search) return true;
     const s = search.toLowerCase();
     return (c.heroName || '').toLowerCase().includes(s)
@@ -352,6 +358,7 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
     if ((card.nightNumber??0)===7) return 'journey';
     if (card.occasion) return 'occasion';
     if ([7,14,30,100].includes(card.streakCount??0)) return 'streak';
+    if (card.milestone) return 'milestone';
     return 'standard';
   };
 
@@ -364,31 +371,79 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
       <style>{CSS}</style>
 
       {/* ── HEADER ── */}
-      <div style={{padding:'20px 20px 0',display:'flex',alignItems:'center',gap:14,marginBottom:20}}>
+      <div style={{padding:'20px 20px 0',display:'flex',alignItems:'center',gap:14,marginBottom:16}}>
         <button onClick={onBack} style={{width:36,height:36,borderRadius:'50%',border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.04)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0,transition:'background .2s'}}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.1)'; }}
           onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.04)'; }}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(234,242,255,.55)" strokeWidth="2" strokeLinecap="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <div>
-          <div style={{fontSize:9,color:'rgba(245,184,76,.5)',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:4}}>MEMORIES</div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:9,color:'rgba(245,184,76,.5)',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:4}}>MEMORY VAULT</div>
           <div style={{fontSize:24,fontWeight:700,color:'#F4EFE8',fontFamily:"'Fraunces',Georgia,serif",letterSpacing:'-.5px'}}>Night Cards</div>
         </div>
       </div>
 
+      {/* ── VAULT SUMMARY ── */}
+      {displayCards.length > 0 && (
+        <div style={{padding:'0 20px',marginBottom:16}}>
+          <div style={{
+            fontFamily:"'Fraunces',Georgia,serif",fontSize:14,fontWeight:300,fontStyle:'italic',
+            color:'rgba(244,239,232,.45)',lineHeight:1.6,
+          }}>
+            {displayCards.length} {displayCards.length===1?'memory':'memories'} preserved
+            {stats.streak > 1 ? ` · ${stats.streak} night streak 🔥` : ''}
+          </div>
+        </div>
+      )}
+
       {/* ── STATS STRIP ── */}
-      <div style={{padding:'0 20px',marginBottom:20}}>
+      <div style={{padding:'0 20px',marginBottom:16}}>
         <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
           {[
             [String(displayCards.length),'CARDS'],
             [String(new Set(displayCards.map(c=>c.date?.slice(0,7))).size),'MONTHS'],
-            [String(displayCards.filter(c=>c.isOrigin).length),'ORIGIN'],
+            [stats.streak > 0 ? String(stats.streak) : '0','STREAK'],
           ].map(([val,label])=>(
             <div key={label} style={{background:'rgba(154,127,212,.07)',border:'1px solid rgba(154,127,212,.15)',borderRadius:14,padding:'10px 8px',textAlign:'center'}}>
               <div style={{fontSize:22,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1}}>{val}</div>
               <div style={{fontSize:7,color:'rgba(154,127,212,.5)',fontFamily:"'DM Mono',monospace",letterSpacing:'.7px',marginTop:2}}>{label}</div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* ── SEARCH + MOOD FILTER ── */}
+      <div style={{padding:'0 20px',marginBottom:16}}>
+        <input
+          className="ncl-search"
+          placeholder="Search memories..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{marginBottom:10}}
+        />
+        {/* Mood filter chips */}
+        <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+          {[
+            {emoji:'😊',label:'happy'},{emoji:'😴',label:'sleepy'},{emoji:'🤗',label:'cozy'},
+            {emoji:'😌',label:'calm'},{emoji:'🥰',label:'loved'},{emoji:'😆',label:'silly'},
+          ].map(m=>(
+            <div key={m.emoji} onClick={()=>setMoodFilter(moodFilter===m.emoji?'':m.emoji)} style={{
+              display:'flex',alignItems:'center',gap:4,
+              padding:'5px 10px',borderRadius:16,cursor:'pointer',transition:'all .2s',
+              background:moodFilter===m.emoji?'rgba(245,184,76,.12)':'rgba(255,255,255,.04)',
+              border:`1px solid ${moodFilter===m.emoji?'rgba(245,184,76,.35)':'rgba(255,255,255,.08)'}`,
+            }}>
+              <span style={{fontSize:14}}>{m.emoji}</span>
+              <span style={{fontSize:9,color:moodFilter===m.emoji?'rgba(245,184,76,.8)':'rgba(234,242,255,.3)',fontFamily:"'DM Mono',monospace"}}>{m.label}</span>
+            </div>
+          ))}
+          {moodFilter && (
+            <div onClick={()=>setMoodFilter('')} style={{
+              display:'flex',alignItems:'center',padding:'5px 10px',borderRadius:16,cursor:'pointer',
+              background:'rgba(200,80,80,.08)',border:'1px solid rgba(200,80,80,.2)',
+              fontSize:9,color:'rgba(255,140,130,.6)',fontFamily:"'DM Mono',monospace",
+            }}>✕ clear</div>
+          )}
         </div>
       </div>
 
@@ -417,6 +472,7 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
                   journey:{text:'Journey',bg:'rgba(20,216,144,.12)',color:'var(--teal)'},
                   streak:{text:`${card.streakCount||''} Streak`,bg:'rgba(245,130,20,.12)',color:'#F5821A'},
                   occasion:{text:card.occasion||'Special',bg:'rgba(148,130,255,.12)',color:'var(--purple)'},
+                  milestone:{text:`${card.milestone||''} Nights`,bg:'rgba(200,140,255,.12)',color:'#C88CFF'},
                 };
                 const badge = badgeMap[variant] || null;
                 return (
@@ -440,7 +496,10 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
                         <div className="ncl-journal-quote">{'\u201C'}{card.quote}{'\u201D'}</div>
                       )}
                       <div className="ncl-journal-footer">
-                        <div className="ncl-journal-date">{new Date(card.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+                        <div style={{display:'flex',alignItems:'center',gap:4}}>
+                          {card.childMood && <span style={{fontSize:11}}>{card.childMood}</span>}
+                          <div className="ncl-journal-date">{new Date(card.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+                        </div>
                         {badge && (
                           <div className="ncl-journal-badge" style={{background:badge.bg,color:badge.color}}>
                             {badge.text}
@@ -459,14 +518,80 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
       {/* ── SELECTED CARD MODAL ── */}
       {viewing && (
         <>
-          <div onClick={()=>setViewing(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,.82)',zIndex:200,animation:'ncl-fadeUp .25s ease both'}}/>
-          <div style={{position:'fixed',inset:0,zIndex:201,display:'flex',alignItems:'center',justifyContent:'center',padding:20,pointerEvents:'none'}}>
+          <div onClick={()=>{setViewing(null);setFlipped(false);}} style={{position:'fixed',inset:0,background:'rgba(0,0,0,.82)',zIndex:200,animation:'ncl-fadeUp .25s ease both'}}/>
+          <div style={{position:'fixed',inset:0,zIndex:201,display:'flex',alignItems:'center',justifyContent:'center',padding:20,pointerEvents:'none',flexDirection:'column'}}>
             {/* Soft glow behind card */}
-            <div style={{position:'absolute',top:'40%',left:'50%',transform:'translate(-50%,-50%)',width:320,height:320,borderRadius:'50%',background:'radial-gradient(circle,rgba(154,127,212,.12) 0%,transparent 70%)',pointerEvents:'none',animation:'ncl-fadeUp .4s ease both'}}/>
+            <div style={{position:'absolute',top:'35%',left:'50%',transform:'translate(-50%,-50%)',width:320,height:320,borderRadius:'50%',background:'radial-gradient(circle,rgba(154,127,212,.12) 0%,transparent 70%)',pointerEvents:'none',animation:'ncl-fadeUp .4s ease both'}}/>
             <div style={{pointerEvents:'all',width:'100%',maxWidth:300,animation:'ncl-cardIn .35s cubic-bezier(.2,.8,.3,1) both',position:'relative',zIndex:1}}>
-              <NightCard card={viewing} size="full" />
-              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginTop:16}}>
-                <button onClick={()=>setViewing(null)} style={{padding:'11px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.06)',color:'rgba(234,242,255,.6)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>Close</button>
+              <NightCard card={viewing} size="full" flipped={flipped} onFlip={()=>setFlipped(!flipped)} />
+
+              {/* Context strip below card */}
+              {(viewing.storyTitle || viewing.childAge || viewing.bedtimeActual) && (
+                <div style={{
+                  marginTop:12,padding:'10px 14px',borderRadius:12,
+                  background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.06)',
+                  display:'flex',flexWrap:'wrap',gap:'4px 10px',justifyContent:'center',
+                  fontFamily:"'DM Mono',monospace",fontSize:9,color:'rgba(234,242,255,.3)',
+                }}>
+                  {viewing.storyTitle && <span>📖 {viewing.storyTitle}</span>}
+                  {viewing.bedtimeActual && <span>🕐 {viewing.bedtimeActual.toLowerCase()}</span>}
+                  {viewing.childAge && <span>{viewing.heroName}, age {viewing.childAge}</span>}
+                </div>
+              )}
+
+              {/* Flip hint */}
+              <div style={{textAlign:'center',marginTop:8,fontSize:9,color:'rgba(234,242,255,.2)',fontFamily:"'DM Mono',monospace"}}>
+                {flipped ? 'Tap card to see front' : 'Tap card to flip'}
+              </div>
+
+              {/* Thread navigation — prev/next in sequence */}
+              {viewing && (() => {
+                const idx = displayCards.findIndex(c => c.id === viewing.id);
+                const prev = idx < displayCards.length - 1 ? displayCards[idx + 1] : null; // older
+                const next = idx > 0 ? displayCards[idx - 1] : null; // newer
+                if (!prev && !next) return null;
+                return (
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:10,gap:8}}>
+                    <button disabled={!prev} onClick={()=>{if(prev){setViewing(prev);setFlipped(false);setReflectionInput('');setReflectionSaved(false);}}} style={{flex:1,padding:'8px 10px',borderRadius:10,border:'1px solid rgba(255,255,255,.08)',background:prev?'rgba(255,255,255,.04)':'transparent',color:prev?'rgba(234,242,255,.5)':'rgba(234,242,255,.12)',fontSize:10,fontFamily:"'DM Mono',monospace",cursor:prev?'pointer':'default',textAlign:'left'}}>
+                      {prev ? `← ${prev.headline?.slice(0,20)||'older'}` : ''}
+                    </button>
+                    <div style={{fontSize:9,color:'rgba(234,242,255,.2)',fontFamily:"'DM Mono',monospace",flexShrink:0}}>
+                      {displayCards.length - idx} of {displayCards.length}
+                    </div>
+                    <button disabled={!next} onClick={()=>{if(next){setViewing(next);setFlipped(false);setReflectionInput('');setReflectionSaved(false);}}} style={{flex:1,padding:'8px 10px',borderRadius:10,border:'1px solid rgba(255,255,255,.08)',background:next?'rgba(255,255,255,.04)':'transparent',color:next?'rgba(234,242,255,.5)':'rgba(234,242,255,.12)',fontSize:10,fontFamily:"'DM Mono',monospace",cursor:next?'pointer':'default',textAlign:'right'}}>
+                      {next ? `${next.headline?.slice(0,20)||'newer'} →` : ''}
+                    </button>
+                  </div>
+                );
+              })()}
+
+              {/* Add reflection */}
+              {viewing && !viewing.parentReflection && !reflectionSaved && (
+                <div style={{marginTop:10,padding:'10px 14px',borderRadius:12,background:'rgba(20,216,144,.04)',border:'1px solid rgba(20,216,144,.12)'}}>
+                  <div style={{fontSize:9,color:'rgba(20,216,144,.5)',fontFamily:"'DM Mono',monospace",letterSpacing:'.4px',marginBottom:6}}>{'\uD83D\uDCAD'} ADD A REFLECTION</div>
+                  <textarea value={reflectionInput} onChange={e=>setReflectionInput(e.target.value)} placeholder="Anything you remember about this night..." style={{width:'100%',minHeight:50,padding:'10px 12px',borderRadius:10,border:'1px solid rgba(20,216,144,.12)',background:'rgba(20,216,144,.04)',color:'rgba(234,242,255,.8)',fontSize:12,fontFamily:"'Nunito',sans-serif",resize:'none',outline:'none',lineHeight:1.5}} maxLength={280}/>
+                  <button disabled={!reflectionInput.trim()} onClick={async()=>{
+                    if(!viewing||!reflectionInput.trim())return;
+                    const updated={...viewing,parentReflection:reflectionInput.trim()};
+                    setCards(prev=>prev.map(c=>c.id===updated.id?updated:c));
+                    setViewing(updated);
+                    setReflectionSaved(true);
+                    try{await saveNightCard(updated);}catch(e){console.error('[NCL] saveReflection:',e);}
+                  }} style={{marginTop:6,padding:'7px 14px',borderRadius:8,border:'none',background:reflectionInput.trim()?'rgba(20,216,144,.2)':'rgba(255,255,255,.04)',color:reflectionInput.trim()?'rgba(20,216,144,.85)':'rgba(234,242,255,.2)',fontSize:11,fontWeight:600,cursor:reflectionInput.trim()?'pointer':'default',fontFamily:"'Nunito',sans-serif"}}>Save reflection</button>
+                </div>
+              )}
+              {reflectionSaved && (
+                <div style={{marginTop:10,textAlign:'center',fontSize:11,color:'rgba(20,216,144,.6)',fontFamily:"'Nunito',sans-serif"}}>{'\u2713'} Reflection saved</div>
+              )}
+              {viewing?.parentReflection && !reflectionSaved && (
+                <div style={{marginTop:10,padding:'10px 14px',borderRadius:12,background:'rgba(20,216,144,.04)',border:'1px solid rgba(20,216,144,.08)'}}>
+                  <div style={{fontSize:9,color:'rgba(20,216,144,.4)',fontFamily:"'DM Mono',monospace",letterSpacing:'.4px',marginBottom:4}}>{'\uD83D\uDCAD'} REFLECTION</div>
+                  <div style={{fontSize:12,fontStyle:'italic',color:'rgba(234,242,255,.5)',fontFamily:"'Nunito',sans-serif",lineHeight:1.5}}>{viewing.parentReflection}</div>
+                </div>
+              )}
+
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginTop:12}}>
+                <button onClick={()=>{setViewing(null);setFlipped(false);setReflectionInput('');setReflectionSaved(false);}} style={{padding:'11px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.06)',color:'rgba(234,242,255,.6)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>Close</button>
                 <button onClick={()=>{if(viewing)openShareMenu(viewing);}} style={{padding:'11px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.06)',color:'rgba(234,242,255,.6)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>Share</button>
                 <button onClick={()=>{if(viewing)openPrintView(viewing);}} style={{padding:'11px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.06)',color:'rgba(234,242,255,.6)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>Print</button>
               </div>
