@@ -90,21 +90,15 @@ function calcStreak(cards: { date: string }[]): number {
   return streak;
 }
 
-/** Brief speech bubble that appears on load and fades after 4s */
+/** Speech bubble from creature — stays visible */
 function CreatureGreeting({ childName, creatureName, rgb }: { childName: string; creatureName: string; rgb: string }) {
-  const [visible, setVisible] = useState(true);
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(false), 4000);
-    return () => clearTimeout(t);
-  }, []);
-  if (!visible) return null;
-  const name = childName && childName !== 'friend' ? childName : null;
+  const name = childName && childName !== 'friend' && childName !== 'Dreamer' ? childName : null;
   return (
     <div style={{
       marginTop: 8, padding: '10px 16px',
       background: `rgba(${rgb},.08)`, border: `1px solid rgba(${rgb},.2)`,
       borderRadius: '16px 16px 16px 4px', maxWidth: 260, textAlign: 'left',
-      animation: 'ms-fadeUp .5s ease-out, ms-greetFade 4s ease-in-out forwards',
+      animation: 'ms-fadeUp .5s ease-out',
     }}>
       <div style={{
         fontFamily: "'Fraunces',Georgia,serif", fontSize: 13, fontWeight: 400,
@@ -114,7 +108,6 @@ function CreatureGreeting({ childName, creatureName, rgb }: { childName: string;
           ? `"Hi ${name}, I\u2019m here whenever you\u2019re ready."`
           : `"I\u2019m here whenever you\u2019re ready."`}
       </div>
-      <style>{`@keyframes ms-greetFade{0%,70%{opacity:1}100%{opacity:0}}`}</style>
     </div>
   );
 }

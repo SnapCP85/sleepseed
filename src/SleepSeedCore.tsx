@@ -1544,6 +1544,7 @@ export default function SleepSeed({
   const lastSavedStoryIdRef = useRef<string>('');
   const [pageIdx,        setPageIdx]        = useState(0);
   const [chosenPath,     setChosenPath]     = useState(null);
+  const [storyFeedback,  setStoryFeedback]  = useState<'loved'|'good'|'retry'|null>(null);
   const [fromCache,      setFromCache]      = useState(false);
   const [gen,            setGen]            = useState({stepIdx:0,progress:0,label:"",dots:[]});
   const [isReading,      setIsReading]      = useState(false);
@@ -1788,8 +1789,8 @@ export default function SleepSeed({
       storyLen:       bc.length   || 'standard',
       storyBrief1:    brief1,
       storyBrief2:    feel,
-      storyContext:   storyCtx,
-      storyGuidance:  '',
+      storyContext:   storyCtx || storyContext,
+      storyGuidance:  storyGuidance,
       realLifeCtx:    '',
       lessonContext:  '',
       storyMood:      bc.vibe || '',
@@ -1800,7 +1801,7 @@ export default function SleepSeed({
       lessons:        bc.lessons || [],
       occasion:       bc.occasion || '',
       occasionCustom: bc.occasionCustom || '',
-      heroTraits:     [],
+      heroTraits:     preloadedCharacter?.personalityTags || [],
       heroNameOverride: heroNameOverride,
     });
   };
@@ -2771,7 +2772,9 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
         wolf:"howls at good news not just the moon; fluffiest tail; fiercely loyal to friends",
       };
 
-      const charCtx = allChars.map(c => {
+      const noChildHeroEarly = builderChoices?.path === 'free' && builderChoices?.childIsHero === false;
+      const charsForCtx = noChildHeroEarly ? allChars.filter(c => c.type !== 'hero') : allChars;
+      const charCtx = charsForCtx.map(c => {
         const desc = visualDescs[c.id] ? ` — appearance: ${visualDescs[c.id]}` : "";
         const cls = c.classify ? `, a ${c.classify}` : "";
         const pro = pronouns(c.gender);
@@ -2792,7 +2795,20 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
       ).join(", ");
 
       const occasionFinal = resolvedOccCust.trim() || resolvedOcc;
-      const occLine  = occasionFinal ? `\nSPECIAL OCCASION: ${occasionFinal}` : "";
+      const occasionNarrative: Record<string, string> = {
+        'hard_day': `This child had a hard day. The story should: acknowledge difficulty honestly (Mirror), validate the feeling without minimizing (Validate), offer a small shift — not a fix (Move), and land on "you are not alone" not "everything is fine" (Rest). The supporting figure listens before speaking. Never say "don't worry" or "it will be fine."`,
+        'birthday': `It's the child's birthday. The world should notice they are special today. Small magic, warmth, celebration. The story should feel like a gift — not a party, but a quiet recognition that today matters.`,
+        'missing_someone': `The child is missing someone. Acknowledge the absence honestly. The creature or a detail in the story carries something that belongs to the missing person. Memory as comfort — not replacement, not "they're always with you" platitudes.`,
+        'big_win': `The child achieved something today. The world should reflect pride back — not loudly, but genuinely. The creature witnessed the achievement. The story lands on earned rest after effort.`,
+        'proud_moment': `Something made the child proud today. The story should mirror that feeling — quiet internal pride, not external celebration. The protagonist discovers something about themselves.`,
+        'first_day': `The child faced something new today. The unfamiliar made navigable. The creature serves as an anchor in strangeness. New places revealing friendly details one at a time.`,
+        'feeling_sick': `The child isn't feeling well. Smallness and comfort. The world comes to the child — they don't have to go anywhere. Gentleness at maximum. Warm, soft, held.`,
+        'new_home': `The child is adjusting to a new home. The unfamiliar slowly revealing friendly details. The creature exploring alongside — discovering together that new can become ours.`,
+      };
+      const occNarr = occasionFinal ? (occasionNarrative[occasionFinal] || '') : '';
+      const occLine = occasionFinal
+        ? `\nSPECIAL OCCASION: ${occasionFinal}${occNarr ? `\n${occNarr}` : ''}`
+        : "";
       const lesArr = Array.isArray(resolvedLesson) ? resolvedLesson : (resolvedLesson ? [resolvedLesson] : []);
       const lesLine  = lesArr.length ? `\nLESSONS (weave these in through action only — never state as a moral): ${lesArr.length > 1 ? "You have been given multiple lessons. Choose ONE — the single one that fits most naturally into this specific story. A story that genuinely embodies one lesson is ten times more powerful than a story that forces two. The others are not wrong; they just don't belong in this story tonight. Pick the one and commit. " : ""}${lesArr.map(l=>"• "+l).join("\n")}` : "";
       const guidanceSafe = resolvedGuidance.trim().slice(0, 300).replace(/[\u201C\u201D""]/g, '"');
@@ -2866,16 +2882,19 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
 
       const heroChar = allChars.find(c => c.type === "hero");
       const supportChar = allChars.find(c => c.type !== "hero");
+      const noChildHero = isFreePath && builderChoices?.childIsHero === false;
 
       const storyBrief = {
         genre: genreFromMood,
-        situation,
-        protagonistName: name,
-        protagonistAge: ageCfg.label.replace("Age ","").split("–")[0],
-        weirdDetail: resolvedTraits.length ? `${name} is ${resolvedTraits.join(", ")}` : undefined,
-        want: brief1Safe
+        situation: noChildHero
+          ? `STORY DIRECTIVE (the child is NOT a character — follow the user's vision): "${brief1Safe || 'a bedtime story'}"`
+          : situation,
+        protagonistName: noChildHero ? undefined : name,
+        protagonistAge: noChildHero ? undefined : ageCfg.label.replace("Age ","").split("–")[0],
+        weirdDetail: noChildHero ? undefined : (resolvedTraits.length ? `${name} is ${resolvedTraits.join(", ")}` : undefined),
+        want: noChildHero ? undefined : (brief1Safe
           ? (isFreePath ? brief1Safe : `${name} is ${brief1Safe}`)
-          : undefined,
+          : undefined),
         supportingName: supportChar?.name || (supportChar ? capitalize(supportChar.type) : undefined),
         supportingDetail: supportChar?.classify ? classifyVoice[supportChar.classify] : undefined,
         targetFeeling: ({
@@ -2893,6 +2912,47 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
         asChunks: false,
       };
 
+      // ── DreamKeeper data (needed by blueprint + prompt) ────────────────
+      const dkVirtue = companionDk?.virtue || '';
+      const dkVirtueDesc = companionDk?.virtueDescription || '';
+      const dkPersonality = companionDk?.personalityTraits?.join(', ') || '';
+
+      // ── Micro-blueprint: quick planning step before prose generation ────
+      let blueprintCtx = '';
+      try {
+        const bpPrompt = `You are a bedtime story architect. Given tonight's story seed and context, create a micro-blueprint. You are NOT writing the story — you are planning structural bones so the storyteller writes a better story.
+
+${noChildHero ? `STORY DIRECTIVE: "${brief1Safe}"` : `CHILD: ${name}, age ${ageCfg.label.replace("Age ","")}`}
+${!noChildHero && brief1Safe ? `TONIGHT'S SEED: "${brief1Safe}"` : ''}
+GENRE: ${genreFromMood}
+${guidanceSafe ? `CHILD'S UNIQUE DETAIL: ${guidanceSafe}` : ''}
+${resolvedTraits.length ? `PERSONALITY: ${resolvedTraits.join(', ')}` : ''}
+${contextSafe ? `CURRENT SITUATION: ${contextSafe}` : ''}
+${companionCreature?.name && dkVirtue ? `DREAMKEEPER: ${companionCreature.name} (${dkVirtue})` : ''}
+
+Return ONLY this JSON — no explanation, no markdown:
+{"planted_detail":"one small specific object or detail established early that solves/pays off at the end","flaw":"one lovable weakness (flip side of a strength) that creates tension","emotional_arc":"3 beats in under 15 words: start → middle → end","sensory_anchor":"one specific sensory detail that grounds this world","final_image":"the exact image or sensation the story should end on"}`;
+
+        const bpRaw = await callClaude(
+          [{role:"user",content:bpPrompt}],
+          "You are a story architect. Return only valid JSON. Be specific, not generic. Every detail should feel like it belongs to THIS story and no other.",
+          500
+        );
+        const bp = extractJSON(bpRaw);
+        if (bp?.planted_detail) {
+          const parts = [
+            bp.planted_detail ? `Planted detail (establish early, pay off at end): ${bp.planted_detail}` : '',
+            bp.flaw && !noChildHero ? `${name}'s lovable flaw tonight: ${bp.flaw}` : '',
+            bp.emotional_arc ? `Emotional arc: ${bp.emotional_arc}` : '',
+            bp.sensory_anchor ? `Sensory anchor for this world: ${bp.sensory_anchor}` : '',
+            bp.final_image ? `Final image (the story should end HERE): ${bp.final_image}` : '',
+          ].filter(Boolean);
+          blueprintCtx = `\n━━━ STORY BLUEPRINT ━━━\n${parts.join('\n')}\nThese are structural guides — follow them but write freely within them.\n`;
+        }
+      } catch (e) {
+        console.error('[Gen] Blueprint generation failed (continuing without):', e);
+      }
+
       // Build system + user from the new prompts module
       const { system: promptSystem, user: promptUser } = buildStoryPrompt(storyBrief);
 
@@ -2902,16 +2962,15 @@ Return ONLY JSON: {"headline":"3-6 words capturing tonight's feeling (not the ti
       )).join(",");
 
       const simpleSchema = `{"title":"3-6 word title","cover_prompt":"[15-20 words: wide magical bedtime scene establishing the story world, cozy glowing folk-art atmosphere]","pages":[${pgSchema(totalN)}],"refrain":"4-8 word refrain from the story"}`;
-      const advSchema = `{"title":"3-6 word title","cover_prompt":"[15-20 words: wide magical bedtime scene establishing the story world, cozy glowing folk-art atmosphere]","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"exciting choice question for ${name}","option_a_label":"4-7 words","option_b_label":"4-7 words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}],"refrain":"4-8 word refrain from the story"}`;
+      const advChoiceTarget = noChildHero ? 'the reader' : name;
+      const advSchema = `{"title":"3-6 word title","cover_prompt":"[15-20 words: wide magical bedtime scene establishing the story world, cozy glowing folk-art atmosphere]","setup_pages":[${pgSchema(setupN)}],"choice":{"question":"exciting choice question for ${advChoiceTarget}","option_a_label":"4-7 words","option_b_label":"4-7 words"},"path_a":[${pgSchema(resN)}],"path_b":[${pgSchema(resN)}],"refrain":"4-8 word refrain from the story"}`;
 
       // ── DreamKeeper context (additive — omitted if no creature) ────────
-      // Injected here in SleepSeedCore rather than in buildStoryPrompt()
-      // because companionCreature is a prop available here but not in the
-      // base prompt builder's brief interface. The prompt module remains
-      // untouched — this block is appended alongside the other contextual
-      // sections (age, characters, setting) that SleepSeedCore already adds.
       const dreamKeeperCtx = companionCreature?.name
-        ? `\n━━━ DREAMKEEPER CONTEXT ━━━\nThis child's DreamKeeper is ${companionCreature.name} (a ${companionCreature.creatureType !== 'spirit' ? companionCreature.creatureType : 'magical creature'}).\nThe DreamKeeper should be a subtle presence — a safe companion felt within the story world.\nDo not make the DreamKeeper a main character unless the story is about them.\nWeave the DreamKeeper naturally: a familiar warmth, a background detail, a small moment of comfort.\n`
+        ? `\n━━━ DREAMKEEPER COMPANION ━━━
+Name: ${companionCreature.name} (a ${companionCreature.creatureType !== 'spirit' ? companionCreature.creatureType : 'magical creature'})${dkVirtue ? `\nVirtue: ${dkVirtue} — shown through ACTION, never named or explained` : ''}${dkVirtueDesc ? `\nHow the virtue looks: ${dkVirtueDesc}` : ''}${dkPersonality ? `\nPersonality in stories: ${dkPersonality}` : ''}${companionCreature.dreamAnswer ? `\nDreams about: ${companionCreature.dreamAnswer}` : ''}
+Role: The DreamKeeper is ${name}'s companion. It should feel like a real relationship — not a mascot.
+Rules: Show the virtue through specific actions. Never name the virtue. Never lecture. The creature has its own wants and quirks. It is warm but not perfect.\n`
         : '';
 
       // ── Assemble final prompt with characters + age + JSON output ───────
@@ -2922,14 +2981,14 @@ ${ageLine}
 
 ━━━ CHARACTERS ━━━
 ${charCtx}
-${dreamKeeperCtx}
+${dreamKeeperCtx}${blueprintCtx}
 ━━━ WORLD ━━━
 ${worldLine}
 
 ━━━ OCCASION AND CONTEXT ━━━${guidLine}${occLine}${lesLine}${moodLine}${paceLine}${styleLine}${traitLine}
 
 ${resolvedAdv
-  ? `CHOOSE-YOUR-ADVENTURE FORMAT:\nWrite ${setupN} setup pages, then a choice moment, then ${resN} resolution pages per path. Both paths end with ${name} safely, warmly asleep.`
+  ? `CHOOSE-YOUR-ADVENTURE FORMAT:\nWrite ${setupN} setup pages, then a choice moment, then ${resN} resolution pages per path. Both paths end with ${noChildHero ? 'the protagonist' : name} safely, warmly asleep.`
   : `STORY SHAPE: Write EXACTLY ${totalN} pages. Not ${totalN-1}, not ${totalN+1}. Exactly ${totalN}.`}
 
 ━━━ OUTPUT ━━━
@@ -2971,6 +3030,64 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
       } else {
         if (!validPages(story.pages)) throw new Error("Response missing pages — the story was incomplete");
         story.pages = normPages(story.pages);
+      }
+
+      // ── Quality gate: structural auto-fail check ──────────────────────
+      try {
+        const storyText = resolvedAdv
+          ? [...(story.setup_pages||[]), ...(story.path_a||[])].map(p => p.text).join('\n')
+          : (story.pages||[]).map((p:any) => p.text).join('\n');
+        const qcPrompt = `Review this bedtime story against these structural criteria. Score each 0 or 1. Return ONLY JSON.
+
+STORY:
+"""
+${storyText.slice(0, 3000)}
+"""
+
+{"protagonist_solves":1_or_0,"no_named_lesson":1_or_0,"earned_ending":1_or_0,"structural_pass":true_or_false}
+
+Rules:
+- protagonist_solves: The protagonist (or story's main character) solves their own problem — NOT an adult who arrives and fixes it. Score 1 if yes.
+- no_named_lesson: The ending is an image, sensation, or moment — NOT a stated moral like "and they learned that..." Score 1 if yes.
+- earned_ending: The emotional weight of the ending matches what the story earned — not happier or sadder than warranted. Score 1 if yes.
+- structural_pass: true if ALL three scores are 1, false if ANY is 0.`;
+
+        const qcRaw = await callClaude(
+          [{role:"user",content:qcPrompt}],
+          "You are a story quality reviewer. Return only valid JSON. Be strict.",
+          300
+        );
+        const qc = extractJSON(qcRaw);
+
+        if (qc && qc.structural_pass === false) {
+          console.warn('[Gen] Quality check failed, regenerating:', qc);
+          setGen(g => ({...g, progress: 75, label: "Polishing the story..."}));
+          const failReasons = [
+            qc.protagonist_solves === 0 ? 'The protagonist must solve their own problem — no adult rescue.' : '',
+            qc.no_named_lesson === 0 ? 'End on an image or sensation, not a stated moral.' : '',
+            qc.earned_ending === 0 ? 'The ending emotional weight must match what the story earned.' : '',
+          ].filter(Boolean).join(' ');
+
+          const retryRaw = await callClaude(
+            [{role:"user",content:`${storyPrompt}\n\n━━━ REVISION REQUIRED ━━━\nThe previous attempt had these issues: ${failReasons}\nFix ONLY these problems. Keep everything else. Return the corrected JSON.`}],
+            promptSystem,
+            4096
+          );
+          const retryStory = extractJSON(retryRaw);
+          if (retryStory && retryStory.title) {
+            if (resolvedAdv) {
+              if (validPages(retryStory.setup_pages)) story.setup_pages = normPages(retryStory.setup_pages);
+              if (validPages(retryStory.path_a)) story.path_a = normPages(retryStory.path_a);
+              if (validPages(retryStory.path_b)) story.path_b = normPages(retryStory.path_b);
+            } else if (validPages(retryStory.pages)) {
+              story.pages = normPages(retryStory.pages);
+            }
+            story.title = retryStory.title || story.title;
+            story.refrain = retryStory.refrain || story.refrain;
+          }
+        }
+      } catch (e) {
+        console.error('[Gen] Quality check failed (continuing with original):', e);
       }
 
       setGen(g => ({...g,stepIdx:2,progress:80,label:"Your book is ready!"}));
@@ -3621,6 +3738,51 @@ ${resolvedAdv ? advSchema : simpleSchema}`;
         <div style={{fontSize:13,color:'rgba(234,242,255,.45)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.65,marginBottom:24,animation:'nc-fadeUp .6s .6s ease both',opacity:0}}>
           Keep this moment
         </div>
+        {/* Story feedback */}
+        {!storyFeedback && (
+          <div style={{display:'flex',gap:10,justifyContent:'center',marginBottom:16,animation:'nc-fadeUp .6s .65s ease both',opacity:0}}>
+            {([
+              {key:'loved' as const, emoji:'\u2764\uFE0F', label:'Loved it'},
+              {key:'good' as const, emoji:'\uD83D\uDC4D', label:'Good'},
+              {key:'retry' as const, emoji:'\uD83D\uDD04', label:'Try again'},
+            ]).map(fb => (
+              <button key={fb.key} onClick={() => {
+                setStoryFeedback(fb.key);
+                if (fb.key === 'retry') {
+                  setStoryFeedback(null);
+                  setChosenPath(null);
+                  setGen({stepIdx:0,progress:0,label:'Starting over...',error:null});
+                  setTimeout(() => { if (builderChoices) doAutoGenerate(builderChoices); }, 300);
+                  return;
+                }
+                try {
+                  const entry = { rating: fb.key, title: book?.title, genre: storyMood, date: new Date().toISOString() };
+                  const prev = JSON.parse(localStorage.getItem(`ss_story_feedback_${userId}`) || '[]');
+                  prev.push(entry);
+                  if (prev.length > 50) prev.shift();
+                  localStorage.setItem(`ss_story_feedback_${userId}`, JSON.stringify(prev));
+                } catch {}
+              }} style={{
+                padding:'10px 16px',borderRadius:14,cursor:'pointer',
+                border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)',
+                color:'rgba(244,239,232,.6)',fontSize:12,fontWeight:600,
+                fontFamily:"'Nunito',sans-serif",display:'flex',alignItems:'center',gap:6,
+                transition:'background .15s,border-color .15s',
+              }}
+              onMouseEnter={e=>{e.currentTarget.style.background='rgba(255,255,255,.08)';e.currentTarget.style.borderColor='rgba(255,255,255,.15)';}}
+              onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,.03)';e.currentTarget.style.borderColor='rgba(255,255,255,.08)';}}
+              >
+                <span style={{fontSize:16}}>{fb.emoji}</span>{fb.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {storyFeedback && storyFeedback !== 'retry' && (
+          <div style={{fontSize:11,color:'rgba(245,184,76,.5)',fontFamily:"'DM Mono',monospace",textAlign:'center',marginBottom:16,animation:'nc-fadeUp .3s ease both'}}>
+            {storyFeedback === 'loved' ? 'We\u2019ll remember what worked \u2728' : 'Thanks for the feedback'}
+          </div>
+        )}
+
         <div style={{width:'100%',animation:'nc-fadeUp .6s .7s ease both',opacity:0,display:'flex',flexDirection:'column',gap:10}}>
           {v8rGoldenSeed && renderV8rGoldenSeed()}
           {!book?.nightCard && (

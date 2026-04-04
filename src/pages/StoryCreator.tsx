@@ -164,6 +164,17 @@ const VIBE_BRIEF: Record<string, string> = {
   'mysterious': 'about to discover something magical and mysterious',
 };
 
+const FREE_PLACEHOLDERS = [
+  "A dragon who's afraid of toast...",
+  "What if the moon fell into a puddle...",
+  "A tiny kingdom inside the sock drawer...",
+  "A story where everything is backwards...",
+  "The socks have a secret meeting every night...",
+  "A brave little fox who learns to swim...",
+  "What if clouds were actually someone's pillows...",
+  "A cat who accidentally becomes a pirate captain...",
+];
+
 const MAKE_ANYTHING_CHARS = [
   { key: 'dreamkeeper', label: 'My DreamKeeper', emoji: '' },
   { key: 'someone', label: 'Someone I know', emoji: '\u{1F9D1}' },
@@ -422,13 +433,15 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
 
   const isRitual = entryMode === 'ritual';
 
-  const primaryChar = selectedCharacters[0] ?? selectedCharacter ?? null;
-  const childName = primaryChar?.name ?? 'friend';
+  const primaryCharFromCtx = selectedCharacters[0] ?? selectedCharacter ?? null;
+  // Re-derive after characters load (context may be empty on "Create" tab entry)
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const primaryChar = primaryCharFromCtx ?? characters.find(c => c.isFamily) ?? characters[0] ?? null;
+  const childName = primaryChar?.name ?? user?.displayName ?? 'friend';
   const defaultLevel = ageDescToLevel(primaryChar?.ageDescription);
 
   // ── Data ──
   const [loading, setLoading] = useState(true);
-  const [characters, setCharacters] = useState<Character[]>([]);
   const [creature, setCreature] = useState<HatchedCreature | null>(companionCreature);
 
   useEffect(() => {
@@ -502,6 +515,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   const [freeListening, setFreeListening] = useState(false);
   const [dreamkeeperInStory, setDreamkeeperInStory] = useState(true);
   const [childIsHero, setChildIsHero] = useState(true);
+  const [freePlaceholderIdx] = useState(() => Math.floor(Math.random() * FREE_PLACEHOLDERS.length));
 
   // Settings state
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -819,6 +833,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
       occasionCustom: '',
       style,
       pace: 'normal',
+      childIsHero: mode === 'free' ? childIsHero : true,
     };
 
     setSelectedCharacter(heroChar || null);
@@ -1405,35 +1420,54 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                   </div>
                 )}
 
-                {/* Transcript display */}
-                {freeTranscript && (
-                  <div style={{
-                    background: 'rgba(111,231,221,.06)', border: '1px solid rgba(111,231,221,.2)',
-                    borderRadius: 14, padding: '11px 14px', marginBottom: 10, animation: 'fadeUp .25s ease both',
-                  }}>
-                    <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: '#6FE7DD', letterSpacing: '.06em', textTransform: 'uppercase' as const, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      {'\u{1F399}\uFE0F'} Heard
+                {/* Transcript → editable, or type from scratch */}
+                {freeTranscript ? (
+                  <div style={{ animation: 'fadeUp .25s ease both' }}>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      marginBottom: 6,
+                    }}>
+                      <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: '#6FE7DD', letterSpacing: '.06em', textTransform: 'uppercase' as const, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        {'\u{1F399}\uFE0F'} Heard
+                      </div>
+                      <button
+                        onClick={() => { setFreeBrief(freeTranscript); setFreeTranscript(''); }}
+                        style={{
+                          fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: '.04em',
+                          color: 'rgba(111,231,221,.5)', background: 'none', border: 'none',
+                          cursor: 'pointer', padding: '2px 4px',
+                        }}
+                      >
+                        {'\u270E'} Edit
+                      </button>
                     </div>
-                    <div style={{ fontFamily: 'var(--body)', fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,.82)', lineHeight: 1.6 }}>
-                      {freeTranscript}
-                    </div>
+                    <textarea
+                      className="sc-textarea cyan"
+                      rows={2}
+                      value={freeTranscript}
+                      onChange={e => { setFreeBrief(e.target.value); setFreeTranscript(''); }}
+                      style={{ caretColor: '#6FE7DD' }}
+                    />
                   </div>
+                ) : (
+                  <>
+                    {hasSpeechAPI && (
+                      <div className="sc-or">
+                        <div className="sc-or-line" />
+                        <span className="sc-or-text">or type instead</span>
+                        <div className="sc-or-line" />
+                      </div>
+                    )}
+                    <textarea
+                      className="sc-textarea cyan"
+                      rows={2}
+                      value={freeBrief}
+                      onChange={e => setFreeBrief(e.target.value)}
+                      placeholder={FREE_PLACEHOLDERS[freePlaceholderIdx]}
+                      style={{ caretColor: '#6FE7DD' }}
+                    />
+                  </>
                 )}
-
-                {/* Or type instead */}
-                <div className="sc-or">
-                  <div className="sc-or-line" />
-                  <span className="sc-or-text">or type instead</span>
-                  <div className="sc-or-line" />
-                </div>
-                <textarea
-                  className="sc-textarea cyan"
-                  rows={2}
-                  value={freeBrief}
-                  onChange={e => { setFreeBrief(e.target.value); setFreeTranscript(''); }}
-                  placeholder="A dragon that's afraid of toast..."
-                  style={{ caretColor: '#6FE7DD' }}
-                />
 
                 {/* Helper text */}
                 {!freeHasContent && (

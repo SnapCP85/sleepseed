@@ -276,6 +276,7 @@ export interface BuilderChoices {
   occasionCustom: string;
   style: string;       // 'standard' | 'rhyming' | 'adventure' | 'mystery'
   pace: string;        // 'normal' | 'sleepy' | 'snappy'
+  childIsHero?: boolean; // false = story follows the user's prompt directive, child not forced as protagonist
 }
 
 // ── App view state ────────────────────────────────────────────────────────────
