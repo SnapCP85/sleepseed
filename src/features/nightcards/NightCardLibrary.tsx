@@ -580,7 +580,7 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
           <div style={{position:'fixed',inset:0,zIndex:201,display:'flex',alignItems:'center',justifyContent:'center',padding:20,pointerEvents:'none',flexDirection:'column'}}>
             {/* Soft glow behind card */}
             <div style={{position:'absolute',top:'35%',left:'50%',transform:'translate(-50%,-50%)',width:320,height:320,borderRadius:'50%',background:'radial-gradient(circle,rgba(154,127,212,.12) 0%,transparent 70%)',pointerEvents:'none',animation:'ncl-fadeUp .4s ease both'}}/>
-            <div style={{pointerEvents:'all',width:'100%',maxWidth:300,animation:'ncl-cardIn .35s cubic-bezier(.2,.8,.3,1) both',position:'relative',zIndex:1}}>
+            <div style={{pointerEvents:'all',width:'100%',maxWidth:300,maxHeight:'calc(100vh - 40px)',overflowY:'auto',scrollbarWidth:'none' as any,animation:'ncl-cardIn .35s cubic-bezier(.2,.8,.3,1) both',position:'relative',zIndex:1}}>
               <NightCard card={viewing} size="full" flipped={flipped} onFlip={()=>setFlipped(!flipped)} />
 
               {/* Context strip below card */}

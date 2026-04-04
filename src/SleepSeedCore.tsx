@@ -1030,7 +1030,7 @@ STRUCTURE \u2014 model: Julia Donaldson (The Gruffalo), Mo Willems (Pigeon serie
 \u2022 RULE OF THREE (preferred): ${name} tries something on page 3, page 5, and page 7. Attempt 1 fails hilariously. Attempt 2 fails differently and even more hilariously. Attempt 3 succeeds \u2014 but not how anyone expected.
 \u2022 OR RUNNING JOKE: A silly thing happens on page 1 and keeps happening. On the last page it happens one final time with a twist.
 \u2022 Every page must have at least one line of dialogue. Characters say the WRONG thing, the BRAVE thing, the FUNNY thing.
-\u2022 Page count: follow the chosen story length (short=8, standard=10, long=12). Fit the Rule of Three to whatever page count is chosen: attempt 1 at ~30% through, attempt 2 at ~55%, attempt 3 at ~75%. Last page is always sleep.
+\u2022 Page count: follow the chosen story length (short=8, standard=10, long=12). Fit the Rule of Three to whatever page count is chosen: attempt 1 at ~30% through, attempt 2 at ~55%, attempt 3 at ~75%. Last page is the emotional payoff — end on whatever the story earns.
 
 HERO AGENCY (critical): ${name} must make ONE decision that changes everything. Not "helped" \u2014 decided. PASSIVE (bad): "${name} watched as the dragon flew away." ACTIVE (good): "${name} knew exactly what to do. She climbed up. She knocked three times. And she asked the question nobody else had thought to ask."
 
@@ -1055,7 +1055,7 @@ STRUCTURE \u2014 model: Roald Dahl (The Enormous Crocodile), Arnold Lobel (Frog 
 \u2022 The hero must be underestimated by at least one other character \u2014 and prove them spectacularly, satisfyingly wrong.
 \u2022 Running joke: one funny thing escalates across 3\u20134 pages and pays off just before the ending.
 \u2022 Characters have contradictions: brave but secretly nervous, bossy but genuinely kind underneath.
-\u2022 Page count: follow the chosen story length (short=8, standard=12, long=16). Plant seed by page 2. Twist lands on the penultimate page. Final page is always the sleep landing.
+\u2022 Page count: follow the chosen story length (short=8, standard=12, long=16). Plant seed by page 2. Twist lands on the penultimate page. Final page is the emotional payoff — end on whatever the story earns.
 
 HERO AGENCY (critical): ${name} must make one decision under pressure that only THEY could make \u2014 using something specific about who they are. Not luck. Not help from others. Them.
 
@@ -1080,7 +1080,7 @@ STRUCTURE \u2014 model: Roald Dahl (Fantastic Mr Fox), A.A. Milne (Winnie-the-Po
 \u2022 EMOTIONAL TURN: At least one moment where something genuinely difficult happens \u2014 real doubt, a mistake with consequences, something that matters. Then a resolution that feels earned, not given.
 \u2022 SECONDARY CHARACTER ARC: One supporting character has their own small journey that intersects with ${name}'s at the climax in an unexpected way.
 \u2022 Characters have genuine contradictions AND growth: someone starts wrong about something important and ends changed.
-\u2022 Page count: follow the chosen story length (short=8, standard=12, long=16). Clue in first 25% of pages. Emotional turn at 65\u201375% through. Revelation on penultimate page. Final page is always the sleep landing.
+\u2022 Page count: follow the chosen story length (short=8, standard=12, long=16). Clue in first 25% of pages. Emotional turn at 65\u201375% through. Revelation on penultimate page. Final page is the emotional payoff — end on whatever the story earns.
 
 HERO AGENCY (critical): ${name} must face a moment where the easy path is genuinely tempting \u2014 and choose the harder, right thing instead. The reader must feel the weight of that choice.
 
@@ -1088,7 +1088,7 @@ ONE TRUE THING: One moment should feel so emotionally true that it could only ha
 
 TONE: Intelligent, funny, and emotionally honest. Not condescending. The best moment should make both the child AND the parent feel something real.
 
-BEDTIME GUARD: No matter how sophisticated the structure, this is still a bedtime story. The emotional complexity earns its place only if it resolves completely and lands in warmth and sleep. A 9-year-old reading this at 9pm should feel satisfied, seen, and sleepy — not stimulated or unsettled.
+STORY GUARD: The emotional complexity earns its place only if it resolves completely. A child reading this should feel satisfied and seen — not confused or unsettled. The story earns whatever ending fits it best.
 
 DIALOGUE AT THIS AGE sounds like: "Okay but hear me out." / "That's... actually kind of brilliant." / "I wasn't scared. I just didn't want to go first." / "Can I ask you something weird?" / "Never mind. Actually no, wait." Children this age are self-aware. They try to sound casual about things that matter. They use humour to approach hard topics sideways.
 
@@ -1587,6 +1587,7 @@ export default function SleepSeed({
   const [ncRecording,    setNcRecording]    = useState(false);       // currently recording voice
   const [ncDrawing,      setNcDrawing]      = useState<string|null>(null); // child drawing data URL
   const [ncDrawingOpen,  setNcDrawingOpen]  = useState(false);       // drawing canvas open
+  const [ncDrawColor,   setNcDrawColor]    = useState('#2a1a0e');    // drawing pen color
   const ncDrawCanvasRef  = useRef<HTMLCanvasElement>(null);
   const ncDrawingRef     = useRef(false);                             // is finger/mouse down
   const ncMediaRecRef    = useRef<MediaRecorder|null>(null);
@@ -2171,6 +2172,9 @@ export default function SleepSeed({
       ctx.fillStyle = "rgba(212,160,48,.35)";
       ctx.font = "500 22px sans-serif";
       ctx.textAlign = "center";
+      const shareUrl = book.librarySlug
+        ? `${window.location.origin}/?library=${book.librarySlug}`
+        : 'https://sleepseed.vercel.app';
       ctx.fillText(`A story for ${book.heroName}  ·  sleepseed.vercel.app`, SIZE/2, SIZE-52);
 
       // Export
@@ -2178,7 +2182,7 @@ export default function SleepSeed({
         if(!blob) return;
         const file = new File([blob], `${book.title.replace(/[^a-z0-9]/gi,"_")}_card.png`, {type:"image/png"});
         if(navigator.canShare?.({files:[file]})) {
-          await navigator.share({files:[file], title:book.title, text:`A bedtime story for ${book.heroName} — made with SleepSeed\n\nsleepseed.vercel.app`, url:'https://sleepseed.vercel.app'});
+          await navigator.share({files:[file], title:book.title, text:`A bedtime story for ${book.heroName} — made with SleepSeed\n\n${shareUrl}`, url:shareUrl});
         } else {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a"); a.href=url; a.download=file.name; a.click();
@@ -2565,6 +2569,20 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
           lessons: Array.isArray(lessons) && lessons.length > 0 ? lessons : undefined,
         });
         console.log('[Story] Saved to Supabase:', entry.id);
+
+        // Auto-generate shareable link (make story public with slug)
+        try {
+          const { slug } = await submitStoryToLibrary(entry.id, userId, {
+            ageGroup: ageGroup || undefined,
+            vibe: storyMood || undefined,
+            mood: storyMood || undefined,
+            storyStyle: storyStyle || undefined,
+            storyLength: storyLen || undefined,
+          });
+          // Store slug on bookData so share modal can build the URL immediately
+          bookData.librarySlug = slug;
+          console.log('[Story] Public link generated:', slug);
+        } catch (e) { console.error('[Story] submitStoryToLibrary failed (story still saved):', e); }
       } catch(e) { console.error('[Story] dbSaveStory failed:', e); }
     }
   },[memories,occasion,occasionCustom,userId,preloadedCharacter,ageGroup,storyMood,storyBrief2,theme,storyStyle,storyLen,lessons]);
@@ -2655,8 +2673,8 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
           quote: entry.quote || entry.bondingA || "",
           memory_line: entry.memory_line || undefined,
           whisper: entry.whisper || undefined,
-          bondingQuestion: entry.bondingQ || undefined,
-          bondingAnswer: entry.bondingA || undefined,
+          bondingQuestion: entry.bondingQuestion || entry.bondingQ || undefined,
+          bondingAnswer: entry.bondingAnswer || entry.bondingA || undefined,
           gratitude: entry.gratitude || undefined,
           extra: entry.extra || undefined,
           photo: entry.photo || undefined,
@@ -2671,6 +2689,7 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
           // Phase 1 enrichment fields
           childMood: entry.childMood || undefined,
           childAge: entry.childAge || undefined,
+          parentReflection: entry.parentReflection || undefined,
           bedtimeActual: entry.bedtimeActual || undefined,
           tags: entry.tags || undefined,
           milestone: entry.milestone || undefined,
@@ -2961,13 +2980,13 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
         supportingName: supportChar?.name || (supportChar ? capitalize(supportChar.type) : undefined),
         supportingDetail: supportChar?.classify ? classifyVoice[supportChar.classify] : undefined,
         targetFeeling: ({
-          'comedy': 'warm, delighted, and settling into a grin — giggling fading to sleep',
-          'adventure': 'brave, steady, and resting after the journey — safe at last',
-          'wonder': 'wonderstruck and quietly drifting — one beautiful question still sparkling',
-          'cosy': 'safe, held, and exactly where they belong — drifting gently',
+          'comedy': 'warm and delighted — the reader should be grinning at the last line',
+          'adventure': 'satisfied and brave — the journey earned, the protagonist changed',
+          'wonder': 'wonderstruck — one beautiful question the reader carries with them',
+          'cosy': 'safe, held, and exactly where they belong',
           'therapeutic': 'deeply seen, gently held, and not alone — feeling is survivable',
-          'mystery': 'curious but calm, one gentle wonder remaining — settling into quiet',
-        } as Record<string, string>)[genreFromMood] || 'safe and sleepy — carried gently into sleep',
+          'mystery': 'the click of understanding — the last piece falls into place',
+        } as Record<string, string>)[genreFromMood] || 'emotionally complete — the story earned its ending',
         finalLineApproach: ({
           'comedy': 'moment', 'adventure': 'image', 'wonder': 'image',
           'cosy': 'sensation', 'therapeutic': 'sensation', 'mystery': 'image',
@@ -3059,7 +3078,7 @@ ${worldLine}
 ━━━ OCCASION AND CONTEXT ━━━${guidLine}${occLine}${lesLine}${moodLine}${paceLine}${styleLine}${traitLine}
 
 ${resolvedAdv
-  ? `CHOOSE-YOUR-ADVENTURE FORMAT:\nWrite ${setupN} setup pages, then a choice moment, then ${resN} resolution pages per path. Both paths end with ${noChildHero ? 'the protagonist' : name} safely, warmly asleep.`
+  ? `CHOOSE-YOUR-ADVENTURE FORMAT:\nWrite ${setupN} setup pages, then a choice moment, then ${resN} resolution pages per path. Both paths must reach a satisfying, emotionally complete ending.`
   : `STORY SHAPE: Write EXACTLY ${totalN} pages. Not ${totalN-1}, not ${totalN+1}. Exactly ${totalN}.`}
 
 ━━━ OUTPUT ━━━
@@ -3781,7 +3800,7 @@ Rules:
     setNcResult(null);setNcRevealed(false);setNcPhotoMode('idle');
     setNcChildMood("");setNcGenPct(0);setNcGenTextIdx(0);
     setNcAudioBlob(null);setNcAudioUrl(null);setNcRecording(false);
-    setNcDrawing(null);setNcDrawingOpen(false);
+    setNcDrawing(null);setNcDrawingOpen(false);setNcDrawColor('#2a1a0e');
     setNcGenTextIdx(0);setNcGenPct(0);ncSrRef.current?.stop();setNcListening(false);
     window.speechSynthesis?.cancel();
     if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}
@@ -4617,6 +4636,18 @@ Rules:
                       <div style={{width:'100%',marginBottom:12,animation:'nc-fadeUp .3s ease both'}}>
                         <div style={{background:'rgba(20,216,144,.04)',border:'1px solid rgba(20,216,144,.15)',borderRadius:14,padding:'12px',textAlign:'center'}}>
                           <div style={{fontSize:10,color:'rgba(20,216,144,.5)',fontFamily:"'DM Mono',monospace",marginBottom:8}}>DRAW SOMETHING {'\u2728'}</div>
+                          {/* Color palette */}
+                          <div style={{display:'flex',gap:6,justifyContent:'center',marginBottom:8,flexWrap:'wrap'}}>
+                            {['#2a1a0e','#e74c3c','#e67e22','#f1c40f','#27ae60','#2980b9','#8e44ad','#ecf0f1'].map(color=>(
+                              <button key={color} onClick={()=>setNcDrawColor(color)} style={{
+                                width:26,height:26,borderRadius:'50%',border:ncDrawColor===color?'2.5px solid rgba(20,216,144,.8)':'2px solid rgba(255,255,255,.15)',
+                                background:color,cursor:'pointer',padding:0,
+                                boxShadow:ncDrawColor===color?`0 0 8px ${color}40`:'none',
+                                transition:'transform .15s, box-shadow .15s',
+                                transform:ncDrawColor===color?'scale(1.15)':'scale(1)',
+                              }}/>
+                            ))}
+                          </div>
                           <canvas ref={ncDrawCanvasRef} width={260} height={180} style={{
                             width:'100%',maxWidth:260,height:180,borderRadius:10,
                             background:'rgba(255,255,255,.95)',cursor:'crosshair',touchAction:'none',
@@ -4626,7 +4657,7 @@ Rules:
                               const c=ncDrawCanvasRef.current;if(!c)return;
                               const ctx=c.getContext('2d');if(!ctx)return;
                               const r=c.getBoundingClientRect();
-                              ctx.strokeStyle='#2a1a0e';ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';
+                              ctx.strokeStyle=ncDrawColor;ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';
                               ctx.beginPath();ctx.moveTo((e.clientX-r.left)*(c.width/r.width),(e.clientY-r.top)*(c.height/r.height));
                             }}
                             onPointerMove={e=>{

@@ -293,7 +293,7 @@ export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
     let photoUrl = nc.photo ?? null;
     if (photoUrl && photoUrl.startsWith('data:')) photoUrl = await uploadPhoto(nc.userId, photoUrl, `nc_${nc.id}`);
     let extraField = nc.extra ?? null;
-    if (nc.isOrigin || nc.whisper || nc.occasion || nc.streakCount != null || nc.nightNumber != null || nc.creatureEmoji || nc.creatureColor || nc.childMood || nc.childAge || nc.parentReflection || nc.tags || nc.bedtimeActual || nc.lessonTheme) {
+    if (nc.isOrigin || nc.whisper || nc.occasion || nc.streakCount != null || nc.nightNumber != null || nc.creatureEmoji || nc.creatureColor || nc.childMood || nc.childAge || nc.parentReflection || nc.tags || nc.bedtimeActual || nc.lessonTheme || nc.milestone || nc.audioClip || nc.childDrawing) {
       try {
         const packed: any = {};
         if (nc.isOrigin) packed.isOrigin = true;
