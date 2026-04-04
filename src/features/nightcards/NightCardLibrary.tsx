@@ -287,7 +287,7 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
         card_id: nc.id, share_token: token, created_at: new Date().toISOString(),
       });
       if (error) { console.error('Share insert error:', error); return ''; }
-      return `${window.location.origin}/nightcard/${token}`;
+      return `${window.location.origin}/?nc=${token}`;
     } catch (e) { console.error('Share link generation failed:', e); return ''; }
   };
 

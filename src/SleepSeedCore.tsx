@@ -1598,6 +1598,7 @@ export default function SleepSeed({
   const [viewingNightCard, setViewingNightCard] = useState<any>(null); // Night Card detail view
   const [ncDetailFlipped,  setNcDetailFlipped]  = useState(false);     // flip state for detail modal
   const [ncShareSheetOpen, setNcShareSheetOpen] = useState(false);     // premium share sheet
+  const [ncShareUrl, setNcShareUrl] = useState('');
   const [styleDna,         setStyleDna]         = useState<any>(null); // Style DNA for feedback
   const [showFeedback,     setShowFeedback]     = useState(false);     // StoryFeedback sheet visible
   const [libSubmitState,   setLibSubmitState]   = useState<'idle'|'confirming'|'submitting'|'done'>('idle');
@@ -4745,7 +4746,18 @@ Rules:
                         <div style={{position:'absolute',inset:0,background:'linear-gradient(108deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%)',animation:'nc-shimmer 5.5s infinite',pointerEvents:'none'}}/>
                         <span style={{position:'relative',zIndex:1}}>Save &amp; go home</span>
                       </button>
-                      <button onClick={()=>setNcShareSheetOpen(true)} style={{width:'100%',padding:'11px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.04)',color:'rgba(234,242,255,.55)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.2px',textAlign:'center'}}>Share this card</button>
+                      <button onClick={async ()=>{
+                        setNcShareSheetOpen(true);
+                        // Generate share token for the night card
+                        const ncId = lastSavedStoryIdRef.current;
+                        if (ncId && userId) {
+                          try {
+                            const token = crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+                            await supabase.from('night_card_shares').upsert({ card_id: ncId, share_token: token, created_at: new Date().toISOString() });
+                            setNcShareUrl(`${window.location.origin}/?nc=${token}`);
+                          } catch(e) { console.error('[Share] token generation failed:', e); }
+                        }
+                      }} style={{width:'100%',padding:'11px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.04)',color:'rgba(234,242,255,.55)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.2px',textAlign:'center'}}>Share this card</button>
                     </div>
                   </div>
                 </div>
@@ -4770,8 +4782,9 @@ Rules:
               storyTitle: book.title,
               heroName: book.heroName,
             }}
-            onClose={() => setNcShareSheetOpen(false)}
-            onViewLibrary={() => { setNcShareSheetOpen(false); onHome ? onHome() : setStage('home'); }}
+            shareUrl={ncShareUrl}
+            onClose={() => { setNcShareSheetOpen(false); setNcShareUrl(''); }}
+            onViewLibrary={() => { setNcShareSheetOpen(false); setNcShareUrl(''); onHome ? onHome() : setStage('home'); }}
           />
         )}
 
