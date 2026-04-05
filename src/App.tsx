@@ -1053,8 +1053,10 @@ function AppInner() {
 
   if (view === 'dashboard') {
     // Auto-route new users straight to onboarding (not dashboard with a prompt)
-    // In demo mode, skip this — demo user should always land on dashboard
-    const isDemo = (() => { try { return sessionStorage.getItem('sleepseed_demo') === '1' || new URLSearchParams(window.location.search).get('demo') === 'true'; } catch { return false; } })();
+    // Demo mode: skip all onboarding redirects
+    const DEMO_UID = '71d31ef2-391b-4bb3-9060-b856560e5739';
+    const isDemo = user?.id === DEMO_UID
+      || ((() => { try { return sessionStorage.getItem('sleepseed_demo') === '1' || new URLSearchParams(window.location.search).get('demo') === 'true'; } catch { return false; } })());
     const needsParentSetup = !isDemo && user && !user.isGuest && !parentSetupDone && !onboardingDone;
     const needsChildOnboarding = !isDemo && user && !user.isGuest && parentSetupDone && !onboardingDone;
     if (needsParentSetup) { setView('parent-onboarding'); return null; }
