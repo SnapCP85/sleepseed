@@ -6,8 +6,8 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 */
 
 const CSS = `
-.ra-word{transition:background .08s,color .08s;border-radius:3px;padding:0 1px}
-.ra-word.on{background:rgba(245,184,76,.25);color:#F5B84C;box-shadow:0 0 8px rgba(245,184,76,.15)}
+.ra-word{transition:background .1s,color .1s;border-radius:4px;padding:1px 2px}
+.ra-word.on{background:rgba(245,184,76,.32);color:#F5B84C;box-shadow:0 0 12px rgba(245,184,76,.2);text-shadow:0 0 4px rgba(245,184,76,.15)}
 .ra-controls{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
 .ra-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:50px;font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;border:none}
 .ra-btn-play{background:rgba(245,184,76,.12);border:1.5px solid rgba(245,184,76,.25);color:#F5B84C}
@@ -18,7 +18,7 @@ const CSS = `
 .ra-speed{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(244,239,232,.3);font-family:monospace}
 .ra-speed-btn{width:24px;height:24px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(244,239,232,.4);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .ra-speed-btn:hover{background:rgba(255,255,255,.08);color:rgba(244,239,232,.7)}
-.ra-light .ra-word.on{background:rgba(200,112,32,.2);color:#8A4A00;box-shadow:0 0 8px rgba(200,112,32,.1)}
+.ra-light .ra-word.on{background:rgba(200,112,32,.28);color:#8A4A00;box-shadow:0 0 10px rgba(200,112,32,.12);text-shadow:none}
 .ra-light .ra-btn-play{background:rgba(200,112,32,.1);border-color:rgba(200,112,32,.2);color:#8A4A00}
 .ra-light .ra-btn-play:hover{background:rgba(200,112,32,.18)}
 .ra-light .ra-btn-play.active{background:rgba(200,112,32,.18);border-color:rgba(200,112,32,.35)}

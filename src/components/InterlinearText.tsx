@@ -10,13 +10,13 @@ import type { TranslatedSentence } from '../lib/translate';
 */
 
 const CSS = `
-.il-sentence{margin-bottom:14px}
-.il-foreign{margin-bottom:3px}
-.il-english{font-size:0.78em;opacity:1;font-style:italic;line-height:1.5;color:rgba(244,239,232,.7)}
-.il-word{transition:background .08s,color .08s;border-radius:3px;padding:0 1px}
-.il-word.on{background:rgba(245,184,76,.25);color:#F5B84C;box-shadow:0 0 8px rgba(245,184,76,.15)}
-.il-light .il-word.on{background:rgba(200,112,32,.2);color:#8A4A00;box-shadow:0 0 8px rgba(200,112,32,.1)}
-.il-light .il-english{color:rgba(58,40,0,.6);opacity:1}
+.il-sentence{margin-bottom:16px;padding:6px 8px;border-radius:10px;margin-left:-8px;margin-right:-8px;transition:background .2s}
+.il-foreign{margin-bottom:4px}
+.il-english{font-size:0.92em;font-style:italic;line-height:1.55;color:rgba(244,239,232,.85);margin-top:2px}
+.il-word{transition:background .1s,color .1s;border-radius:4px;padding:1px 2px}
+.il-word.on{background:rgba(245,184,76,.32);color:#F5B84C;box-shadow:0 0 12px rgba(245,184,76,.2)}
+.il-light .il-word.on{background:rgba(200,112,32,.25);color:#8A4A00;box-shadow:0 0 10px rgba(200,112,32,.12)}
+.il-light .il-english{color:rgba(58,40,0,.75)}
 .il-controls{display:flex;align-items:center;gap:8px;margin-top:12px}
 .il-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:50px;font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;border:none}
 .il-btn-play{background:rgba(245,184,76,.12);border:1.5px solid rgba(245,184,76,.25);color:#F5B84C}
@@ -173,7 +173,7 @@ export default function InterlinearText({ sentences, theme = 'dark', foreignStyl
     <div className={`${theme === 'light' ? 'il-light' : ''} ${className || ''}`}>
       <style>{CSS}</style>
       {sentences.map((s, i) => (
-        <div key={i} className="il-sentence" style={i === activeSentenceIdx ? { background: theme === 'light' ? 'rgba(200,112,32,.06)' : 'rgba(245,184,76,.04)', borderRadius: 8, padding: '6px 8px', margin: '0 -8px 14px' } : undefined}>
+        <div key={i} className="il-sentence" style={i === activeSentenceIdx ? { background: theme === 'light' ? 'rgba(200,112,32,.1)' : 'rgba(245,184,76,.08)', border: theme === 'light' ? '1px solid rgba(200,112,32,.12)' : '1px solid rgba(245,184,76,.15)' } : undefined}>
           <div className="il-foreign" style={foreignStyle}>
             {renderForeignWords(s.foreign, i)}
           </div>
