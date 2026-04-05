@@ -202,7 +202,7 @@ const CSS = `
 
 /* ─── Page ─── */
 .ml-page{
-  min-height:100vh;font-family:var(--ml-sans);color:var(--ml-cream);-webkit-font-smoothing:antialiased;
+  min-height:100vh;width:100%;max-width:100vw;font-family:var(--ml-sans);color:var(--ml-cream);-webkit-font-smoothing:antialiased;
   background:
     radial-gradient(ellipse 90% 35% at 50% 0%,#141c30 0%,transparent 60%),
     radial-gradient(ellipse 60% 40% at 80% 45%,rgba(148,130,255,0.06) 0%,transparent 55%),
@@ -212,7 +212,7 @@ const CSS = `
 }
 /* Starfield — breathing */
 .ml-page::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;
   animation:mlStarBreathe 8s ease-in-out infinite;
   background-image:
     radial-gradient(1.5px 1.5px at 12% 8%,rgba(255,255,255,0.6),transparent),
@@ -233,7 +233,7 @@ const CSS = `
 .ml-page>*{position:relative;z-index:1}
 
 /* ─── Inner wrapper — single centering container ─── */
-.ml-inner{max-width:440px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+.ml-inner{width:100%;max-width:440px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
 
 /* ─── Top bar ─── */
 .ml-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 0 28px}
