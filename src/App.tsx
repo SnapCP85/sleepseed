@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { AppProvider, useApp } from './AppContext';
 import PublicHomepage from './pages/PublicHomepage';
 import Auth from './pages/Auth';
@@ -539,11 +539,14 @@ function AppInner() {
   };
 
   // Self-heal: if user has data in Supabase but localStorage flags were wiped, restore them
+  const selfHealAttempted = useRef<string | null>(null);
   useEffect(() => {
     if (!user || user.isGuest) return;
     const uid = user.id;
+    if (selfHealAttempted.current === uid) return; // already tried for this user
     const hasOnboarding = !!localStorage.getItem(`sleepseed_onboarding_${uid}`);
     if (hasOnboarding) return; // flags are fine
+    selfHealAttempted.current = uid;
     // Check if user has characters in Supabase — if so, they've onboarded before
     import('./lib/storage').then(({ getCharacters }) => {
       getCharacters(uid).then(chars => {
