@@ -1052,10 +1052,10 @@ function AppInner() {
   }
 
   if (view === 'dashboard') {
-    // Auto-route new users straight to onboarding (not dashboard with a prompt)
-    // NOTE: Do NOT call setView here — it causes infinite re-render loops when
-    // handleSession resets view to 'dashboard' on token refresh. Show the prompt
-    // banner instead and let the user tap to onboarding.
+    // Onboarding status — shown as prompt banner, NOT used for auto-redirect
+    // (auto-redirect during render causes infinite loops with handleSession)
+    const needsParentSetup = user && !user.isGuest && !parentSetupDone && !onboardingDone;
+    const needsChildOnboarding = user && !user.isGuest && parentSetupDone && !onboardingDone;
 
     // Ritual prompt — shown when DreamKeeper is selected but 3-night ritual is in progress
     const ritualComplete = user && !user.isGuest

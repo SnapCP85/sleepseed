@@ -69,8 +69,13 @@ export default class ErrorBoundary extends Component<Props, State> {
           </div>
           <button
             onClick={() => {
+              // Clear all sleepseed localStorage to break any loops
+              try {
+                Object.keys(localStorage).filter(k => k.startsWith('sleepseed_') || k.startsWith('ss2_') || k.startsWith('ss_') || k.startsWith('sb-')).forEach(k => localStorage.removeItem(k));
+                sessionStorage.clear();
+              } catch {}
               this.setState({ hasError: false });
-              window.location.href = window.location.pathname;
+              window.location.href = window.location.origin;
             }}
             style={{
               padding: '14px 32px',
