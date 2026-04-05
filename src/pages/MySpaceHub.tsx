@@ -193,6 +193,27 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
     }, 300);
   };
 
+  // ── Insights patterns ──
+  const patterns = useMemo(() => {
+    if (allCards.length < 3) return null;
+    // Most common mood
+    const moodCounts: Record<string, number> = {};
+    allCards.forEach(c => { if (c.childMood) moodCounts[c.childMood] = (moodCounts[c.childMood] || 0) + 1; });
+    const topMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0];
+    // Tag frequency
+    const tagCounts: Record<string, number> = {};
+    allCards.forEach(c => { c.tags?.forEach((t: string) => { tagCounts[t] = (tagCounts[t] || 0) + 1; }); });
+    const topTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([t]) => t);
+    // Longest streak
+    const dates = [...new Set(allCards.map(c => c.date?.slice(0, 10)).filter(Boolean))].sort();
+    let longest = 1, cur = 1;
+    for (let i = 1; i < dates.length; i++) {
+      const diff = Math.round((new Date(dates[i]).getTime() - new Date(dates[i - 1]).getTime()) / 86400000);
+      if (diff === 1) { cur++; longest = Math.max(longest, cur); } else { cur = 1; }
+    }
+    return { totalMemories: allCards.length, topMood: topMood ? { emoji: topMood[0], count: topMood[1] } : null, topTags, longestStreak: longest };
+  }, [allCards]);
+
   const sanctuaryBg = `radial-gradient(circle at 50% 50%, ${hexToRgba(creatureColor, 0.28)} 0%, ${hexToRgba(creatureColor, 0.14)} 22%, ${hexToRgba(creatureColor, 0.06)} 38%, transparent 62%)`;
   const creatureFilter = `drop-shadow(0 0 30px ${hexToRgba(creatureColor, 0.55)}) drop-shadow(0 20px 40px rgba(0,0,0,0.6)) drop-shadow(0 0 60px ${hexToRgba(creatureColor, 0.35)})`;
 
@@ -287,6 +308,73 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
 
         {/* Tracker */}
         <Tracker nightCards={nights} stories={storyCount} />
+
+        {/* ═══ Insights ═══ */}
+        {patterns && (
+          <div className="msh-insights">
+            {/* Growth strip */}
+            {allCards.length >= 5 && (
+              <div className="msh-growth">
+                <div className="msh-insights-label">The journey so far</div>
+                <div className="msh-growth-strip">
+                  {[...allCards].sort((a, b) => a.date.localeCompare(b.date)).map((card, i, arr) => {
+                    const isMilestone = card.milestone || card.isOrigin;
+                    const isToday = card.date?.startsWith(new Date().toISOString().slice(0, 10));
+                    const h = isMilestone ? 36 : 14 + Math.random() * 14;
+                    const bg = card.isOrigin
+                      ? 'rgba(245,184,76,.55)'
+                      : card.milestone
+                      ? 'rgba(200,140,255,.45)'
+                      : isToday
+                      ? 'rgba(20,216,144,.45)'
+                      : card.childMood
+                      ? 'rgba(154,127,212,.28)'
+                      : 'rgba(244,239,232,.1)';
+                    return (
+                      <div
+                        key={card.id || i}
+                        title={card.headline}
+                        style={{
+                          width: Math.max(4, Math.min(7, 280 / arr.length)),
+                          height: h, borderRadius: 2,
+                          background: bg, flexShrink: 0,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+                <div className="msh-growth-range">
+                  <span>{(() => { try { return new Date(allCards[allCards.length - 1]?.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }); } catch { return ''; } })()}</span>
+                  <span>today</span>
+                </div>
+              </div>
+            )}
+
+            {/* Patterns grid */}
+            <div className="msh-patterns">
+              <div className="msh-pattern-card" style={{ background: 'rgba(245,184,76,.03)', borderColor: 'rgba(245,184,76,.1)' }}>
+                <div className="msh-pattern-value" style={{ color: 'rgba(245,184,76,.65)' }}>{patterns.totalMemories}</div>
+                <div className="msh-pattern-label">memories</div>
+              </div>
+              <div className="msh-pattern-card" style={{ background: 'rgba(245,130,20,.03)', borderColor: 'rgba(245,130,20,.1)' }}>
+                <div className="msh-pattern-value" style={{ color: 'rgba(245,130,20,.65)' }}>{patterns.longestStreak}</div>
+                <div className="msh-pattern-label">longest streak</div>
+              </div>
+              {patterns.topMood && (
+                <div className="msh-pattern-card" style={{ background: 'rgba(154,127,212,.03)', borderColor: 'rgba(154,127,212,.1)' }}>
+                  <div className="msh-pattern-value">{patterns.topMood.emoji}</div>
+                  <div className="msh-pattern-label">most common mood</div>
+                </div>
+              )}
+              {patterns.topTags.length > 0 && (
+                <div className="msh-pattern-card" style={{ background: 'rgba(20,216,144,.03)', borderColor: 'rgba(20,216,144,.1)' }}>
+                  <div className="msh-pattern-value msh-pattern-tags" style={{ color: 'rgba(20,216,144,.55)' }}>{patterns.topTags.join(', ')}</div>
+                  <div className="msh-pattern-label">favorite themes</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -319,8 +407,8 @@ const CSS = `
 }
 .msh-root::before {
   content: '';
-  position: fixed;
-  inset: 0;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
   background-image:
     radial-gradient(1.5px 1.5px at 12% 8%, rgba(255,255,255,0.55), transparent),
     radial-gradient(1px 1px at 28% 15%, rgba(255,255,255,0.4), transparent),
@@ -495,6 +583,48 @@ const CSS = `
 .msh-guest-sub { font-size: 14px; color: var(--cream-dim); opacity: 0.7; margin-bottom: 28px; line-height: 1.6; }
 .msh-guest-btn { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; padding: 14px 26px; background: rgba(245,184,76,0.08); border: 1px solid rgba(245,184,76,0.4); border-radius: 100px; color: var(--amber); cursor: pointer; transition: all 0.4s ease; }
 .msh-guest-btn:hover { background: rgba(245,184,76,0.16); color: rgb(255,230,180); }
+
+/* ─── Insights ─── */
+.msh-insights { position: relative; z-index: 4; max-width: 340px; margin: 32px auto 0; padding: 0 8px; }
+.msh-insights::before {
+  content: ''; display: block; width: 30px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(245,184,76,0.3), transparent);
+  margin: 0 auto 24px;
+}
+.msh-insights-label {
+  font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--cream-dim); opacity: 0.5;
+  text-align: center; margin-bottom: 14px;
+}
+.msh-growth { margin-bottom: 24px; }
+.msh-growth-strip {
+  display: flex; align-items: flex-end; gap: 3px; height: 48px; padding: 4px 0;
+}
+.msh-growth-range {
+  display: flex; justify-content: space-between;
+  font-family: 'DM Mono', monospace; font-size: 7px; letter-spacing: 0.12em;
+  color: var(--cream-dim); opacity: 0.35; margin-top: 6px;
+}
+.msh-patterns {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.msh-pattern-card {
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 12px; padding: 12px 14px;
+  text-align: center;
+}
+.msh-pattern-value {
+  font-family: 'Fraunces', serif; font-style: italic; font-weight: 500;
+  font-size: 22px; line-height: 1; letter-spacing: -0.01em;
+}
+.msh-pattern-tags {
+  font-size: 13px; font-weight: 400; line-height: 1.3;
+}
+.msh-pattern-label {
+  font-family: 'DM Mono', monospace; font-size: 7px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--cream-dim); opacity: 0.5;
+  margin-top: 5px;
+}
 
 /* ─── Responsive ─── */
 @media (max-width: 480px) {

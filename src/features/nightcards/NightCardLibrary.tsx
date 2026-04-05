@@ -306,7 +306,7 @@ const CSS = `
 .ml-bucket-rule{width:40px;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,0.3),transparent);margin:14px auto 0}
 
 /* ─── Grid ─── */
-.ml-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:6px 0 4px}
+.ml-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:6px 0 4px;overflow:hidden}
 
 /* ─── Tile ─── */
 .ml-tile{
@@ -320,7 +320,7 @@ const CSS = `
     0 1px 2px rgba(0,0,0,0.25),
     0 8px 16px -6px rgba(0,0,0,0.4),
     0 20px 40px -14px rgba(0,0,0,0.5);
-  position:relative;cursor:pointer;aspect-ratio:5/7;display:flex;flex-direction:column;
+  position:relative;cursor:pointer;aspect-ratio:5/7;display:flex;flex-direction:column;min-width:0;
   transform:rotate(var(--tilt));
   transition:transform .5s cubic-bezier(.22,.61,.36,1),box-shadow .4s ease;
 }
