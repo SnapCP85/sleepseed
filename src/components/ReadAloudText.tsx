@@ -115,15 +115,35 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
     window.speechSynthesis.speak(utter);
   }, [text, rate, findWordAtChar, onFinish, stopAll]);
 
-  // ── 11Labs TTS ──
+  // ── 11Labs TTS (with rate-limit retry) ──
+  const elRequestRef = useRef(0); // debounce guard
   const playWith11Labs = useCallback(async () => {
+    const reqId = ++elRequestRef.current;
     setLoading(true);
-    try {
+    // Debounce rapid page turns — wait 150ms, bail if a newer request came in
+    await new Promise(r => setTimeout(r, 150));
+    if (reqId !== elRequestRef.current) { setLoading(false); return; }
+
+    const tryFetch = async (attempt = 0): Promise<Response> => {
       const res = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, voiceId, speed: rate }),
       });
+      if (res.status === 429 && attempt < 2) {
+        // Rate limited — back off and retry
+        const wait = (attempt + 1) * 1500;
+        console.warn(`[TTS] Rate limited, retrying in ${wait}ms (attempt ${attempt + 1})`);
+        await new Promise(r => setTimeout(r, wait));
+        if (reqId !== elRequestRef.current) throw new Error('Cancelled');
+        return tryFetch(attempt + 1);
+      }
+      return res;
+    };
+
+    try {
+      const res = await tryFetch();
+      if (reqId !== elRequestRef.current) { setLoading(false); return; } // stale
       if (!res.ok) throw new Error(`TTS ${res.status}`);
       const blob = await res.blob();
       if (blob.size < 100) throw new Error('Empty audio');
@@ -163,9 +183,10 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
       setIsPlaying(true);
       playingRef.current = true;
       audio.play();
-    } catch {
+    } catch(e: any) {
       setLoading(false);
-      // Fallback to browser speech
+      if (e?.message === 'Cancelled') return;
+      console.error('[ReadAloudText] EL TTS failed, using browser speech:', e);
       playWithBrowserSpeech();
     }
   }, [text, voiceId, rate, onFinish, stopAll, playWithBrowserSpeech]);

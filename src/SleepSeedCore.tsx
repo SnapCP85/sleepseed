@@ -1306,13 +1306,20 @@ const SleepUtils = {
 };
 
 /* ── ElevenLabs helpers ── */
-const elTTS = async (text, voiceId, speed=1.0) => {
-  console.log('[elTTS] Requesting voice:', voiceId, 'text length:', text?.length);
+const elTTS = async (text, voiceId, speed=1.0, attempt=0): Promise<string> => {
+  console.log('[elTTS] Requesting voice:', voiceId, 'text length:', text?.length, attempt > 0 ? `(retry ${attempt})` : '');
   const resp = await fetch("/api/tts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text, voiceId, speed }),
   });
+  // Retry on rate limit (429)
+  if(resp.status === 429 && attempt < 2) {
+    const wait = (attempt + 1) * 1500;
+    console.warn(`[elTTS] Rate limited, retrying in ${wait}ms`);
+    await new Promise(r => setTimeout(r, wait));
+    return elTTS(text, voiceId, speed, attempt + 1);
+  }
   if(!resp.ok) {
     const errText = await resp.text().catch(()=>'');
     console.error('[elTTS] API error:', resp.status, errText.slice(0,200));
