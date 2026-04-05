@@ -1034,8 +1034,10 @@ function AppInner() {
 
   if (view === 'dashboard') {
     // Auto-route new users straight to onboarding (not dashboard with a prompt)
-    const needsParentSetup = user && !user.isGuest && !parentSetupDone && !onboardingDone;
-    const needsChildOnboarding = user && !user.isGuest && parentSetupDone && !onboardingDone;
+    // In demo mode, skip this — demo user should always land on dashboard
+    const isDemo = (() => { try { return sessionStorage.getItem('sleepseed_demo') === '1' || new URLSearchParams(window.location.search).get('demo') === 'true'; } catch { return false; } })();
+    const needsParentSetup = !isDemo && user && !user.isGuest && !parentSetupDone && !onboardingDone;
+    const needsChildOnboarding = !isDemo && user && !user.isGuest && parentSetupDone && !onboardingDone;
     if (needsParentSetup) { setView('parent-onboarding'); return null; }
     if (needsChildOnboarding) { setView('onboarding'); return null; }
 
