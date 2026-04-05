@@ -2629,6 +2629,10 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
     const next = [entry,...nightCards];
     setNightCards(next);
     await sSet("nightcards",{items:next},userId);
+    // Verify v1 write
+    const v1VerifyKey = userId ? `ss9_u_${userId}_nightcards` : `ss9_nightcards`;
+    const v1Verify = localStorage.getItem(v1VerifyKey);
+    console.log('[NC] v1 localStorage write verify — key:', v1VerifyKey, 'stored:', !!v1Verify, 'byteLen:', v1Verify?.length);
 
     // Compute streak + night number for new fields
     const charCards = nightCards.filter(c => preloadedCharacter && c.characterIds?.includes(preloadedCharacter.id));
@@ -4736,6 +4740,18 @@ Rules:
                         lastSavedStoryIdRef.current = ncId;
                         console.log('[NC] Built ncData, calling saveNightCard...');
                         try{await saveNightCard(ncData);}catch(err){console.error('[NC] saveNightCard failed:',err);}
+                        // Verify save actually worked
+                        const v2Key = `ss2_nightcards_${userId||'guest'}`;
+                        const v2Check = JSON.parse(localStorage.getItem(v2Key)||'[]');
+                        const v1Key = userId ? `ss9_u_${userId}_nightcards` : `ss9_nightcards`;
+                        const v1Check = JSON.parse(localStorage.getItem(v1Key)||'null');
+                        console.log('[NC] POST-SAVE VERIFY — v2 key:', v2Key, 'count:', v2Check.length, 'v1 key:', v1Key, 'has items:', !!(v1Check?.items?.length));
+                        if(v2Check.length===0 && (!v1Check?.items?.length)){
+                          console.error('[NC] SAVE FAILED — card not found in any localStorage key!');
+                          alert('Night card save may have failed — card not found in storage. Please try again.');
+                          setNcSaving(false);
+                          return;
+                        }
                         const updatedBook={...book,nightCard:ncData};setBook(updatedBook);
                         const updatedMemories=memories.map(m=>m.bookData?.title===book.title&&m.heroName===book.heroName?{...m,bookData:updatedBook}:m);
                         setMemories(updatedMemories);try{await sSet("memories",{items:updatedMemories});}catch(err){console.error('[NC] sSet failed:',err);}

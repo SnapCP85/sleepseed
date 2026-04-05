@@ -211,7 +211,12 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
   const [reflectionSaved, setReflectionSaved] = useState(false);
 
   useEffect(() => {
+    console.log('[NCLibrary] Loading cards for userId:', userId);
+    const v2Key = `ss2_nightcards_${userId}`;
+    const v2Raw = localStorage.getItem(v2Key);
+    console.log('[NCLibrary] v2 localStorage key:', v2Key, 'raw length:', v2Raw?.length, 'parsed count:', v2Raw ? JSON.parse(v2Raw).length : 0);
     getNightCards(userId).then(fetched => {
+      console.log('[NCLibrary] getNightCards returned:', fetched.length, 'cards');
       const sorted = [...fetched].sort((a, b) => {
         if (a.isOrigin) return -1;
         if (b.isOrigin) return 1;

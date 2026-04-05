@@ -287,7 +287,11 @@ export const getNightCards = async (userId: string): Promise<SavedNightCard[]> =
 export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
   // localStorage first
   const existing = lsGet<SavedNightCard>(LS_CARDS(nc.userId)).filter(x => x.id !== nc.id);
-  lsSet(LS_CARDS(nc.userId), [nc, ...existing]);
+  const newArr = [nc, ...existing];
+  lsSet(LS_CARDS(nc.userId), newArr);
+  // Verify write
+  const lsVerify = localStorage.getItem(LS_CARDS(nc.userId));
+  console.log('[storage] saveNightCard v2 write — key:', LS_CARDS(nc.userId), 'count:', newArr.length, 'stored:', !!lsVerify, 'byteLen:', lsVerify?.length);
   // Supabase sync
   try {
     let photoUrl = nc.photo ?? null;
