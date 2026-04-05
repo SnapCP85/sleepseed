@@ -6,39 +6,41 @@ import { getDreamKeeperById, V1_DREAMKEEPERS, type DreamKeeper } from '../lib/dr
 import type { HatchedCreature, SavedNightCard } from '../lib/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MySpaceHub — Memory center: creature orbit, last night, memories + stories
+// MySpaceHub — "The Creature's Night"
 // ─────────────────────────────────────────────────────────────────────────────
 
-const CSS = `
-.msh{min-height:100vh;min-height:100dvh;background:#060912;font-family:'Nunito',system-ui,sans-serif;color:#F4EFE8;-webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden}
-.msh-inner{max-width:960px;margin:0 auto;padding:0 20px 120px;position:relative;z-index:5}
-@media(min-width:768px){.msh-inner{padding:0 40px 120px}}
+type Stage = 'seedling' | 'sprout' | 'blooming' | 'radiant';
 
-@keyframes msh-idle{0%,100%{transform:scale(1) translateY(0)}25%{transform:scale(1.01) translateY(-2px)}50%{transform:scale(1.02) translateY(-4px)}75%{transform:scale(1.01) translateY(-2px)}}
-@keyframes msh-fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes msh-glowPulse{0%,100%{opacity:.3}50%{opacity:.55}}
-@keyframes msh-orbit{from{transform:rotate(0deg) translateX(var(--orbit-r)) rotate(0deg)}to{transform:rotate(360deg) translateX(var(--orbit-r)) rotate(-360deg)}}
-@keyframes msh-twinkle{0%,100%{opacity:.05}50%{opacity:.2}}
-@keyframes msh-modalIn{from{opacity:0;transform:scale(.92) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
-@keyframes msh-shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+function stageFromCount(n: number): Stage {
+  if (n < 3) return 'seedling';
+  if (n < 7) return 'sprout';
+  if (n < 14) return 'blooming';
+  return 'radiant';
+}
 
-/* nav cards */
-.msh-nav{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.msh-nav-card{border-radius:16px;padding:16px;cursor:pointer;transition:all .22s;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;position:relative;overflow:hidden;border:1px solid transparent}
-.msh-nav-card:hover{transform:translateY(-2px)}
-.msh-nav-card::before{content:'';position:absolute;inset:0;border-radius:16px;opacity:0;transition:opacity .22s}
-.msh-nav-card:hover::before{opacity:1}
+function stageLabel(s: Stage): string {
+  return { seedling: 'Seedling', sprout: 'Sprout', blooming: 'Blooming', radiant: 'Radiant' }[s];
+}
 
-/* last night card */
-.msh-lastnight{border-radius:16px;padding:18px 20px;position:relative;overflow:hidden;cursor:pointer;transition:transform .2s}
-.msh-lastnight:hover{transform:translateY(-1px)}
+const NUMBER_WORDS = [
+  'Zero','One','Two','Three','Four','Five','Six','Seven','Eight','Nine',
+  'Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen',
+  'Seventeen','Eighteen','Nineteen','Twenty','Twenty-one','Twenty-two',
+  'Twenty-three','Twenty-four','Twenty-five','Twenty-six','Twenty-seven',
+  'Twenty-eight','Twenty-nine','Thirty',
+];
 
-/* memory peek */
-.msh-peek{display:flex;flex-direction:column;gap:0}
-.msh-peek-item{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.03);display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s;margin:0 -4px;padding-left:4px;padding-right:4px;border-radius:8px}
-.msh-peek-item:hover{background:rgba(255,255,255,.03)}
-.msh-peek-item:last-child{border-bottom:none}
-`;
+function nightsWord(n: number): string {
+  return n >= 0 && n <= 30 ? NUMBER_WORDS[n] : String(n);
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const h = (hex || '#9482ff').replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 function resolveDreamKeeper(creature: HatchedCreature | null): DreamKeeper | null {
   if (!creature) return null;
@@ -49,43 +51,94 @@ function resolveDreamKeeper(creature: HatchedCreature | null): DreamKeeper | nul
   return V1_DREAMKEEPERS[0];
 }
 
-function hexToRgb(hex: string): string {
-  if (!hex || hex.length < 7) return '245,184,76';
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  if (isNaN(r) || isNaN(g) || isNaN(b)) return '245,184,76';
-  return `${r},${g},${b}`;
+function buildPersonalityLines(c: HatchedCreature): string[] {
+  const name = c.name;
+  const traits = c.personalityTraits || [];
+  const dream = (c.dreamAnswer || '')
+    .replace(/^i dream(s?)\s*(about|of)?\s*/i, '')
+    .replace(/[.!?]$/, '')
+    .trim();
+  const lines: string[] = [];
+  if (dream) lines.push(`${name} dreams of ${dream}.`);
+  if (traits.length >= 2) lines.push(`${name} is ${traits[0]} and ${traits[1]}.`);
+  lines.push(`${name} remembers the shape of every silence.`);
+  lines.push(`${name} waits for the quiet only you bring.`);
+  return lines;
 }
 
-const ORBIT_COLORS = ['#9A7FD4', '#F5B84C', '#14d890', '#ff82b8', '#82b4ff', '#FFD275', '#C4A7FF'];
+// ─── Sub-components ──────────────────────────────────────────────────────────
 
-function formatCardDate(iso: string): string {
-  try {
-    const d = new Date(iso);
-    const now = new Date();
-    const diff = Math.floor((now.getTime() - d.getTime()) / 86400000);
-    if (diff === 0) return 'Tonight';
-    if (diff === 1) return 'Last night';
-    if (diff < 7) return `${diff} nights ago`;
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  } catch { return ''; }
+function MemoriesObject({ count, creatureEmoji, onOpen }: { count: number; creatureEmoji: string; onOpen: () => void }) {
+  const stars = useMemo(() => [
+    { top: 14, left: 18, big: true }, { top: 30, left: 48, big: false },
+    { top: 10, left: 72, big: true }, { top: 42, left: 82, big: false },
+    { top: 24, left: 32, big: false }, { top: 54, left: 58, big: true },
+    { top: 62, left: 22, big: false },
+  ], []);
+  const handleKey = (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); } };
+  return (
+    <div className="msh-memories" onClick={onOpen} onKeyDown={handleKey} role="button" tabIndex={0} aria-label={`Open Memories, ${count} Night Cards`}>
+      <div className="msh-mem-stack" />
+      <div className="msh-mem-card">
+        <div className="msh-mem-sky">
+          {stars.map((s, i) => <span key={i} className={`msh-star${s.big ? ' big' : ''}`} style={{ top: `${s.top}%`, left: `${s.left}%` }} />)}
+          <div className="msh-mem-sky-creature">{creatureEmoji}</div>
+        </div>
+        <div className="msh-mem-body">
+          <div className="msh-mem-title">Memories</div>
+          <div className="msh-mem-count">{count} night{count !== 1 ? 's' : ''}</div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-interface Props {
-  onSignUp: () => void;
-  onReadStory?: (book: any) => void;
+function BookObject({ count, onOpen }: { count: number; onOpen: () => void }) {
+  const handleKey = (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); } };
+  return (
+    <div className="msh-book" onClick={onOpen} onKeyDown={handleKey} role="button" tabIndex={0} aria-label={`Open Stories, ${count} Stories`}>
+      <div className="msh-book-glow-under" />
+      <div className="msh-book-spine" />
+      <div className="msh-book-cover">
+        <div className="msh-book-ornament">◆ ◆ ◆</div>
+        <div className="msh-book-title">Stories</div>
+        <div className="msh-book-count">{count} stor{count !== 1 ? 'ies' : 'y'}</div>
+      </div>
+    </div>
+  );
 }
+
+function Tracker({ nightCards, stories }: { nightCards: number; stories: number }) {
+  return (
+    <div className="msh-tracker" role="group" aria-label="Archive totals">
+      <div className="msh-tracker-rule" />
+      <div className="msh-tracker-row">
+        <div className="msh-tracker-group">
+          <div className="msh-tracker-num">{nightCards}</div>
+          <div className="msh-tracker-label">Night Cards</div>
+        </div>
+        <div className="msh-tracker-orn" aria-hidden="true">◆</div>
+        <div className="msh-tracker-group">
+          <div className="msh-tracker-num">{stories}</div>
+          <div className="msh-tracker-label">Stories</div>
+        </div>
+      </div>
+      <div className="msh-tracker-rule" />
+    </div>
+  );
+}
+
+// ─── Main ────────────────────────────────────────────────────────────────────
+
+interface Props { onSignUp: () => void; onReadStory?: (book: any) => void; }
 
 export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
   const { user, setView, companionCreature } = useApp();
-
   const [creatures, setCreatures] = useState<HatchedCreature[]>([]);
-  const [recentStories, setRecentStories] = useState<any[]>([]);
   const [allCards, setAllCards] = useState<SavedNightCard[]>([]);
   const [storyCount, setStoryCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [selectedCard, setSelectedCard] = useState<SavedNightCard | null>(null);
+  const [personalityIdx, setPersonalityIdx] = useState(0);
+  const [personalityVisible, setPersonalityVisible] = useState(true);
 
   const userId = user?.id;
 
@@ -93,408 +146,369 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
     if (!userId) return;
     let cancelled = false;
 
-    const load = async () => {
+    // Optimistic from localStorage
+    try {
+      const stories: any[] = JSON.parse(localStorage.getItem(`ss2_stories_${userId}`) || '[]');
+      const cards: SavedNightCard[] = JSON.parse(localStorage.getItem(`ss2_nightcards_${userId}`) || '[]');
+      if (stories.length || cards.length) {
+        setStoryCount(stories.length);
+        setAllCards(cards);
+      }
+    } catch {}
+
+    // Async hydrate
+    (async () => {
       try {
         const [stories, cards, hatched] = await Promise.all([
           getStories(userId), getNightCards(userId), getAllHatchedCreatures(userId),
         ]);
         if (cancelled) return;
-        setRecentStories(stories.slice(0, 6));
-        setStoryCount(stories.length);
+        setStoryCount(Array.isArray(stories) ? stories.length : 0);
         setAllCards(cards);
         setCreatures(hatched);
-      } catch {}
-      if (!cancelled) setLoading(false);
-    };
+      } catch (e) { console.error('MySpaceHub load failed', e); }
+    })();
 
-    try {
-      const stories: any[] = JSON.parse(localStorage.getItem(`ss2_stories_${userId}`) || '[]');
-      const cards: SavedNightCard[] = JSON.parse(localStorage.getItem(`ss2_nightcards_${userId}`) || '[]');
-      if (stories.length || cards.length) {
-        setRecentStories(stories.slice(0, 6));
-        setStoryCount(stories.length);
-        setAllCards(cards);
-        setLoading(false);
-      }
-    } catch {}
-
-    load();
     return () => { cancelled = true; };
   }, [userId]);
 
-  // ── Derived ──────────────────────────────────────────────────────────────
+  // ── Derived ──
   const primaryCreature = companionCreature || creatures[0] || null;
   const dk = resolveDreamKeeper(primaryCreature);
-  const creatureImageSrc = dk?.imageSrc;
+  const creatureImg = dk?.imageSrc;
   const creatureName = primaryCreature?.name || dk?.name || '';
   const creatureColor = primaryCreature?.color || dk?.color || '#F5B84C';
-  const rgb = hexToRgb(creatureColor);
+  const creatureEmoji = primaryCreature?.creatureEmoji || dk?.emoji || '🌙';
+  const nights = allCards.length;
+  const stage = useMemo<Stage>(() => stageFromCount(storyCount), [storyCount]);
 
-  const storyN = primaryCreature
-    ? allCards.filter(c => c.characterIds?.includes(primaryCreature.characterId)).length
-    : storyCount;
-  const growthStage = storyN < 3 ? 'Seedling' : storyN < 7 ? 'Sprout' : storyN < 14 ? 'Blooming' : 'Radiant';
+  const personalityLines = useMemo(() => primaryCreature ? buildPersonalityLines(primaryCreature) : [], [primaryCreature]);
 
-  const orbitCards = useMemo(() => allCards.slice(0, 7), [allCards]);
-  const lastNightCard = allCards[0] || null;
-  const recentPeek = allCards.slice(1, 4); // next 3 after the featured one
+  const cyclePersonality = () => {
+    if (personalityLines.length === 0) return;
+    setPersonalityVisible(false);
+    setTimeout(() => {
+      setPersonalityIdx(i => (i + 1) % personalityLines.length);
+      setPersonalityVisible(true);
+    }, 300);
+  };
 
-  const stars = useMemo(() => {
-    const arr: { x: number; y: number; s: number; d: number; dl: number }[] = [];
-    for (let i = 0; i < 40; i++) arr.push({
-      x: Math.random() * 100, y: Math.random() * 50,
-      s: 1 + Math.random() * 0.7, d: 3 + Math.random() * 4, dl: Math.random() * 5,
-    });
-    return arr;
-  }, []);
+  const sanctuaryBg = `radial-gradient(circle at 50% 50%, ${hexToRgba(creatureColor, 0.28)} 0%, ${hexToRgba(creatureColor, 0.14)} 22%, ${hexToRgba(creatureColor, 0.06)} 38%, transparent 62%)`;
+  const creatureFilter = `drop-shadow(0 0 30px ${hexToRgba(creatureColor, 0.55)}) drop-shadow(0 20px 40px rgba(0,0,0,0.6)) drop-shadow(0 0 60px ${hexToRgba(creatureColor, 0.35)})`;
 
-  // ── Guest state ────────────────────────────────────────────────────────────
+  // ── Guest state ──
   if (!user || user.isGuest) {
     return (
-      <div className="msh">
+      <div className="msh-root">
         <style>{CSS}</style>
-        <div className="msh-inner" style={{ paddingTop: 80, textAlign: 'center' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>{'\u2728'}</div>
-          <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 24, fontWeight: 300, marginBottom: 12 }}>
-            Your space is waiting
-          </div>
-          <div style={{ fontSize: 14, color: 'rgba(244,239,232,.45)', lineHeight: 1.6, marginBottom: 32 }}>
-            Sign up to meet your DreamKeeper and start collecting memories.
-          </div>
-          <button onClick={onSignUp} style={{
-            padding: '16px 40px', border: 'none', borderRadius: 14,
-            background: 'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)',
-            color: '#080200', fontSize: 16, fontWeight: 700, cursor: 'pointer',
-            fontFamily: "'Nunito',system-ui,sans-serif",
-          }}>
-            Get started
-          </button>
+        <div className="msh-guest">
+          <div className="msh-guest-title">Your creature is waiting.</div>
+          <div className="msh-guest-sub">Sign up to meet your DreamKeeper and begin the ritual.</div>
+          <button className="msh-guest-btn" onClick={onSignUp}>Begin →</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── No creature yet ──
+  if (!primaryCreature) {
+    return (
+      <div className="msh-root">
+        <style>{CSS}</style>
+        <div className="msh-guest">
+          <div className="msh-guest-title">No DreamKeeper yet.</div>
+          <div className="msh-guest-sub">Complete onboarding to hatch your first companion.</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="msh">
+    <div className={`msh-root msh-stage-${stage}`}>
       <style>{CSS}</style>
 
-      {/* Ambient stars */}
-      {stars.map((s, i) => (
-        <div key={i} style={{
-          position: 'absolute', left: `${s.x}%`, top: `${s.y}%`,
-          width: s.s, height: s.s, borderRadius: '50%', background: '#EEE8FF',
-          pointerEvents: 'none', zIndex: 0,
-          animation: `msh-twinkle ${s.d}s ${s.dl}s ease-in-out infinite`,
-        }} />
-      ))}
-
-      <div className="msh-inner">
-
-        {/* ═══ HEADER ═══ */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          paddingTop: 52, marginBottom: 24,
-          animation: 'msh-fadeUp .5s ease-out',
-        }}>
-          <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 300, fontSize: 'clamp(22px,5.5vw,28px)', lineHeight: 1.3 }}>
-            My Space
-          </div>
-          <button
-            onClick={() => setView('user-profile')}
-            style={{
-              background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)',
-              borderRadius: 12, width: 40, height: 40, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'background .2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.1)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.05)'; }}
-            aria-label="Settings"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(244,239,232,.4)" strokeWidth="1.7" strokeLinecap="round">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-            </svg>
-          </button>
-        </div>
-
-        {/* ═══ DREAMKEEPER SCENE ═══ */}
-        <div style={{
-          position: 'relative',
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          marginBottom: 8,
-          animation: 'msh-fadeUp .7s .1s ease-out both',
-        }}>
-          {/* Glow aura */}
-          <div style={{
-            position: 'absolute', left: '50%', top: '50%',
-            transform: 'translate(-50%,-50%)',
-            width: 280, height: 280, borderRadius: '50%',
-            background: `radial-gradient(circle, rgba(${rgb},.15) 0%, rgba(${rgb},.05) 40%, transparent 70%)`,
-            animation: 'msh-glowPulse 5s ease-in-out infinite',
-            pointerEvents: 'none',
-          }} />
-
-          {/* Memory orbit */}
-          {orbitCards.length > 0 && (
-            <div style={{
-              position: 'absolute', left: '50%', top: '50%',
-              transform: 'translate(-50%,-50%)',
-              width: 280, height: 280, borderRadius: '50%',
-              pointerEvents: 'none',
-            }}>
-              {orbitCards.map((card, i) => {
-                const duration = 40 + i * 5;
-                const color = ORBIT_COLORS[i % ORBIT_COLORS.length];
-                const hasPhoto = !!card.photo;
-                const dotSize = hasPhoto ? 22 : (10 + (i === 0 ? 4 : 0));
-                return (
-                  <div
-                    key={card.id || i}
-                    onClick={(e) => { e.stopPropagation(); setSelectedCard(card); }}
-                    style={{
-                      position: 'absolute', left: '50%', top: '50%',
-                      width: dotSize, height: dotSize, marginLeft: -dotSize / 2, marginTop: -dotSize / 2,
-                      borderRadius: '50%',
-                      background: card.photo ? 'none' : color,
-                      boxShadow: card.photo ? `0 0 10px ${color}44` : `0 0 8px ${color}66`,
-                      overflow: 'hidden',
-                      '--orbit-r': '130px',
-                      animation: `msh-orbit ${duration}s linear infinite`,
-                      animationDelay: `${-(duration / orbitCards.length) * i}s`,
-                      cursor: 'pointer', pointerEvents: 'auto', zIndex: 3,
-                      border: card.photo ? `1.5px solid ${color}88` : 'none',
-                    } as React.CSSProperties}
-                    title={card.headline || card.storyTitle || 'Memory'}
-                  >
-                    {card.photo && (
-                      <img src={card.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Creature */}
-          <div style={{
-            width: 180, height: 220,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            animation: 'msh-idle 7s ease-in-out infinite',
-            position: 'relative', zIndex: 4,
-          }}>
-            {creatureImageSrc ? (
-              <img src={creatureImageSrc} alt={creatureName} style={{
-                width: '100%', height: '100%', objectFit: 'contain',
-                filter: `drop-shadow(0 0 28px rgba(${rgb},.35))`,
-              }} />
-            ) : (
-              <div style={{ fontSize: 72, lineHeight: 1, filter: `drop-shadow(0 0 20px rgba(${rgb},.4))` }}>
-                {primaryCreature?.creatureEmoji || dk?.emoji || '\uD83C\uDF19'}
-              </div>
-            )}
-          </div>
-
-          {/* Name + stage */}
-          {creatureName && (
-            <div style={{ textAlign: 'center', marginTop: 4, position: 'relative', zIndex: 4 }}>
-              <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 18, fontWeight: 400, color: '#F4EFE8' }}>
-                {creatureName}
-              </div>
-              <div style={{
-                fontFamily: "'DM Mono',monospace", fontSize: 10,
-                color: `rgba(${rgb},.55)`, letterSpacing: '.06em',
-                textTransform: 'uppercase', marginTop: 2,
-              }}>
-                {growthStage} &middot; {storyN} {storyN === 1 ? 'night' : 'nights'}
-              </div>
-            </div>
-          )}
-
-          {orbitCards.length > 0 && (
-            <div style={{
-              textAlign: 'center', marginTop: 10, position: 'relative', zIndex: 4,
-              fontFamily: "'DM Mono',monospace", fontSize: 9,
-              color: 'rgba(244,239,232,.25)', letterSpacing: '.03em',
-            }}>
-              Tap the orbs to view memories
-            </div>
-          )}
-        </div>
-
-        {/* ═══ JOURNEY COUNTER ═══ */}
-        {storyN > 0 && (
-          <div style={{
-            animation: 'msh-fadeUp .7s .25s ease-out both',
-            textAlign: 'center', margin: '20px 0 6px',
-          }}>
-            <div style={{
-              fontFamily: "'Fraunces',Georgia,serif", fontSize: 14, fontWeight: 300,
-              color: 'rgba(245,184,76,.5)', letterSpacing: '.01em',
-            }}>
-              {storyN} {storyN === 1 ? 'night' : 'nights'} of stories together
-            </div>
-            {/* Journey line */}
-            <div style={{
-              margin: '10px auto 0', width: '60%', maxWidth: 200, height: 2,
-              borderRadius: 1, background: 'rgba(245,184,76,.1)', overflow: 'hidden',
-            }}>
-              <div style={{
-                height: '100%', borderRadius: 1,
-                width: `${Math.min(100, (storyN / 30) * 100)}%`,
-                background: 'linear-gradient(90deg, rgba(245,184,76,.35), rgba(245,184,76,.7))',
-                transition: 'width .8s ease',
-              }} />
-            </div>
-          </div>
-        )}
-
-        {/* ═══ NAV CARDS — side by side ═══ */}
-        <div className="msh-nav" style={{ animation: 'msh-fadeUp .7s .3s ease-out both', margin: '20px 0' }}>
-          {/* Memories */}
-          <div
-            className="msh-nav-card"
-            onClick={() => setView('nightcard-library')}
-            style={{
-              background: `linear-gradient(160deg, rgba(${rgb},.06), rgba(154,127,212,.04))`,
-              borderColor: 'rgba(154,127,212,.15)',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(154,127,212,.3)'; e.currentTarget.style.background = `linear-gradient(160deg, rgba(${rgb},.1), rgba(154,127,212,.08))`; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(154,127,212,.15)'; e.currentTarget.style.background = `linear-gradient(160deg, rgba(${rgb},.06), rgba(154,127,212,.04))`; }}
-          >
-            <div style={{ fontSize: 28, marginBottom: 2, filter: 'drop-shadow(0 0 8px rgba(154,127,212,.4))' }}>{'\uD83C\uDF19'}</div>
-            <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 500, color: '#F4EFE8' }}>
-              Memories
-            </div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: 'rgba(154,127,212,.55)', letterSpacing: '.04em' }}>
-              {allCards.length} night card{allCards.length !== 1 ? 's' : ''}
-            </div>
-          </div>
-
-          {/* Stories */}
-          <div
-            className="msh-nav-card"
-            onClick={() => setView('story-library')}
-            style={{
-              background: 'linear-gradient(160deg, rgba(245,184,76,.04), rgba(255,210,117,.03))',
-              borderColor: 'rgba(245,184,76,.12)',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.28)'; e.currentTarget.style.background = 'linear-gradient(160deg, rgba(245,184,76,.08), rgba(255,210,117,.06))'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(245,184,76,.12)'; e.currentTarget.style.background = 'linear-gradient(160deg, rgba(245,184,76,.04), rgba(255,210,117,.03))'; }}
-          >
-            <div style={{ fontSize: 28, marginBottom: 2, filter: 'drop-shadow(0 0 8px rgba(245,184,76,.4))' }}>{'\uD83D\uDCD6'}</div>
-            <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 500, color: '#F4EFE8' }}>
-              Stories
-            </div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: 'rgba(245,184,76,.5)', letterSpacing: '.04em' }}>
-              {storyCount} stor{storyCount !== 1 ? 'ies' : 'y'}
-            </div>
-          </div>
-        </div>
-
-
-        {/* ═══ EMPTY STATE ═══ */}
-        {!loading && allCards.length === 0 && recentStories.length === 0 && (
-          <div style={{
-            animation: 'msh-fadeUp .7s .3s ease-out both',
-            background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.05)',
-            borderRadius: 16, padding: '28px 20px', textAlign: 'center',
-            marginTop: 8,
-          }}>
-            <div style={{ fontSize: 32, marginBottom: 10 }}>{'\u2728'}</div>
-            <div style={{
-              fontFamily: "'Fraunces',Georgia,serif", fontSize: 15, fontWeight: 300,
-              color: 'rgba(244,239,232,.5)', lineHeight: 1.6, marginBottom: 6,
-            }}>
-              Your memories will orbit here
-            </div>
-            <div style={{
-              fontFamily: "'DM Mono',monospace", fontSize: 10,
-              color: 'rgba(244,239,232,.2)', letterSpacing: '.03em',
-            }}>
-              Each story creates a Night Card that joins the constellation
-            </div>
-          </div>
-        )}
-
+      {/* Top bar */}
+      <div className="msh-topbar">
+        <div className="msh-title">My Space</div>
+        <button
+          className="msh-top-btn"
+          onClick={() => setView('user-profile')}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setView('user-profile'); } }}
+          aria-label="Settings"
+        >⚙</button>
       </div>
 
-      {/* ═══ NIGHT CARD MODAL ═══ */}
-      {selectedCard && (
-        <div
-          onClick={() => setSelectedCard(null)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 60,
-            background: 'rgba(0,0,0,.85)', backdropFilter: 'blur(12px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 20, animation: 'msh-fadeUp .15s ease',
-          }}
-        >
+      {/* Scene */}
+      <div className="msh-scene">
+        <div className="msh-sanctuary" style={{ background: sanctuaryBg }} />
+
+        {/* Fireflies */}
+        {stage !== 'seedling' && <><div className="msh-firefly f1" /><div className="msh-firefly f2" /></>}
+        {(stage === 'blooming' || stage === 'radiant') && <><div className="msh-firefly f3" /><div className="msh-firefly f4" /></>}
+        {stage === 'radiant' && <><div className="msh-firefly f5" /><div className="msh-firefly f6" /></>}
+
+        {/* Personality line */}
+        {personalityLines.length > 0 && (
           <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: selectedCard.isOrigin
-                ? 'linear-gradient(175deg, #150e05, #1a1008)'
-                : 'linear-gradient(175deg, #0d1428, #0f0a20)',
-              border: '1px solid rgba(255,255,255,.08)',
-              borderRadius: 22, maxWidth: 380, width: '100%',
-              padding: '28px 24px', position: 'relative',
-              animation: 'msh-modalIn .25s ease',
-            }}
+            className="msh-personality"
+            onClick={cyclePersonality}
+            aria-live="polite"
+            style={{ opacity: personalityVisible ? 0.72 : 0 }}
           >
-            <button
-              onClick={() => setSelectedCard(null)}
-              style={{
-                position: 'absolute', top: 12, right: 12,
-                background: 'rgba(255,255,255,.06)', border: 'none',
-                width: 30, height: 30, borderRadius: '50%',
-                color: 'rgba(255,255,255,.4)', fontSize: 16, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              &times;
-            </button>
-
-            <div style={{ textAlign: 'center', fontSize: 36, marginBottom: 12 }}>
-              {selectedCard.creatureEmoji || selectedCard.emoji || dk?.emoji || '\uD83C\uDF19'}
-            </div>
-
-            <div style={{
-              fontFamily: "'Fraunces',Georgia,serif", fontSize: 18, fontWeight: 400,
-              textAlign: 'center', lineHeight: 1.4, marginBottom: 10,
-            }}>
-              {selectedCard.headline || selectedCard.storyTitle}
-            </div>
-
-            {selectedCard.quote && (
-              <div style={{
-                fontFamily: "'Lora','Fraunces',Georgia,serif", fontStyle: 'italic',
-                fontSize: 13, color: 'rgba(244,239,232,.5)', textAlign: 'center',
-                lineHeight: 1.6, marginBottom: 12,
-              }}>
-                &ldquo;{selectedCard.quote}&rdquo;
-              </div>
-            )}
-
-            {selectedCard.memory_line && (
-              <div style={{
-                fontSize: 12, color: 'rgba(244,239,232,.35)', textAlign: 'center',
-                lineHeight: 1.6, marginBottom: 8,
-              }}>
-                {selectedCard.memory_line}
-              </div>
-            )}
-
-            <div style={{
-              fontFamily: "'DM Mono',monospace", fontSize: 9,
-              color: 'rgba(244,239,232,.2)', textAlign: 'center', marginTop: 8,
-            }}>
-              {selectedCard.date ? new Date(selectedCard.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
-              {selectedCard.nightNumber ? ` \u00B7 Night ${selectedCard.nightNumber}` : ''}
-            </div>
+            {personalityLines[personalityIdx]}
           </div>
+        )}
+
+        {/* Creature row */}
+        <div className="msh-creature-row">
+          <MemoriesObject count={nights} creatureEmoji={creatureEmoji} onOpen={() => setView('nightcard-library')} />
+
+          <div className="msh-creature-wrap" onClick={cyclePersonality} style={{ filter: creatureFilter }}>
+            {creatureImg ? (
+              <img src={creatureImg} alt={creatureName} className="msh-creature-img" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+            ) : (
+              <div className="msh-creature-emoji">{creatureEmoji}</div>
+            )}
+          </div>
+
+          <BookObject count={storyCount} onOpen={() => setView('story-library')} />
         </div>
-      )}
+
+        {/* Identity */}
+        <div className="msh-identity">
+          <div className="msh-name">{creatureName}</div>
+          <div className="msh-stage">{stageLabel(stage)}</div>
+        </div>
+
+        {/* Quiet line */}
+        <div className="msh-quiet-line">
+          <span className="msh-accent">{nightsWord(nights)} night{nights !== 1 ? 's' : ''}</span> woven together.
+        </div>
+
+        {/* Tracker */}
+        <Tracker nightCards={nights} stories={storyCount} />
+      </div>
     </div>
   );
 }
+
+// ─── CSS ─────────────────────────────────────────────────────────────────────
+
+const CSS = `
+.msh-root {
+  --night: #060912;
+  --amber: #F5B84C;
+  --amber-deep: #a8782b;
+  --cream: #F4EFE8;
+  --cream-dim: #d8d1c5;
+  --ink: #2a2620;
+  --ink-faint: #9a9185;
+  --purple-soft: #9A7FD4;
+
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 90% 35% at 50% 0%, #141c30 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 45%, rgba(148,130,255,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 40% at 20% 75%, rgba(245,184,76,0.035) 0%, transparent 60%),
+    var(--night);
+  font-family: 'Nunito', sans-serif;
+  color: var(--cream);
+  padding: 44px 20px 120px;
+  overflow-x: hidden;
+  position: relative;
+}
+.msh-root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 8%, rgba(255,255,255,0.55), transparent),
+    radial-gradient(1px 1px at 28% 15%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1.5px 1.5px at 45% 10%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 62% 18%, rgba(255,255,255,0.35), transparent),
+    radial-gradient(1.5px 1.5px at 78% 6%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 88% 22%, rgba(255,255,255,0.35), transparent),
+    radial-gradient(1px 1px at 8% 32%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1.5px 1.5px at 35% 38%, rgba(255,255,255,0.45), transparent),
+    radial-gradient(1.5px 1.5px at 72% 42%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 92% 48%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1.5px 1.5px at 42% 65%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 68% 72%, rgba(255,255,255,0.28), transparent),
+    radial-gradient(1.5px 1.5px at 25% 85%, rgba(255,255,255,0.35), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes mshFadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes mshSanctuaryBreath{0%,100%{opacity:.78;transform:translate(-50%,-52%) scale(1)}50%{opacity:1;transform:translate(-50%,-52%) scale(1.04)}}
+@keyframes mshCreatureIdle{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(1.015)}}
+@keyframes mshDrift1{0%,100%{transform:translate(0,0);opacity:.35}50%{transform:translate(18px,-12px);opacity:.95}}
+@keyframes mshDrift2{0%,100%{transform:translate(0,0);opacity:.4}50%{transform:translate(-16px,-20px);opacity:.85}}
+@keyframes mshDrift3{0%,100%{transform:translate(0,0);opacity:.3}50%{transform:translate(12px,-16px);opacity:.9}}
+
+.msh-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 4px; max-width: 440px; margin: 0 auto;
+  position: relative; z-index: 5;
+}
+.msh-title { font-family: 'Fraunces', serif; font-weight: 400; font-size: 17px; color: var(--cream); opacity: 0.82; }
+.msh-top-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(255,255,255,0.05); border: 0.5px solid rgba(255,255,255,0.08);
+  color: var(--cream-dim); font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+.msh-top-btn:hover { background: rgba(245,184,76,0.08); border-color: rgba(245,184,76,0.3); color: var(--amber); }
+
+.msh-scene {
+  max-width: 440px; margin: 0 auto; position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-start; padding: 72px 0 40px; min-height: 620px;
+}
+
+.msh-sanctuary {
+  position: absolute; top: 38%; left: 50%; transform: translate(-50%, -52%);
+  width: 480px; height: 480px; pointer-events: none;
+  animation: mshSanctuaryBreath 8s ease-in-out infinite; z-index: 1;
+}
+
+/* Fireflies */
+.msh-firefly { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 8px rgba(245,184,76,0.65), 0 0 16px rgba(245,184,76,0.3); pointer-events: none; z-index: 3; }
+.msh-firefly.f1 { top: 28%; left: 22%; animation: mshDrift1 9s ease-in-out infinite; }
+.msh-firefly.f2 { top: 48%; left: 78%; animation: mshDrift2 11s ease-in-out infinite; }
+.msh-firefly.f3 { top: 62%; left: 18%; animation: mshDrift3 13s ease-in-out infinite; }
+.msh-firefly.f4 { top: 20%; left: 72%; animation: mshDrift1 14s ease-in-out infinite 2s; }
+.msh-firefly.f5 { top: 72%; left: 64%; animation: mshDrift2 10s ease-in-out infinite 3s; }
+.msh-firefly.f6 { top: 40%; left: 12%; animation: mshDrift3 12s ease-in-out infinite 1s; }
+
+/* Personality */
+.msh-personality {
+  position: relative; z-index: 4; font-family: 'Fraunces', serif;
+  font-style: italic; font-size: 14px; line-height: 1.55; color: var(--cream);
+  max-width: 300px; text-align: center; margin-bottom: 26px; padding: 0 20px;
+  cursor: pointer; transition: opacity 0.3s ease;
+}
+.msh-personality::before, .msh-personality::after {
+  content: ''; display: block; width: 30px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(148,130,255,0.35), transparent);
+  margin: 10px auto;
+}
+
+/* Creature row */
+.msh-creature-row { position: relative; z-index: 4; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 0 4px; }
+.msh-creature-wrap { display: flex; align-items: center; justify-content: center; cursor: pointer; animation: mshCreatureIdle 7s ease-in-out infinite; }
+.msh-creature-emoji { font-size: 180px; line-height: 1; }
+.msh-creature-img { width: 180px; height: 220px; object-fit: contain; }
+
+/* ─── MEMORIES (Night Cards archive) ─── */
+.msh-memories {
+  position: relative; width: 108px; transform: rotate(4deg); cursor: pointer;
+  transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+  filter: drop-shadow(0 18px 28px rgba(0,0,0,0.72)) drop-shadow(0 5px 10px rgba(0,0,0,0.5)) drop-shadow(0 0 38px rgba(245,184,76,0.35));
+}
+.msh-memories:hover, .msh-memories:focus-visible { transform: rotate(2deg) translateY(-5px) scale(1.04); outline: none; }
+.msh-mem-stack { position: absolute; inset: 0; pointer-events: none; z-index: -1; }
+.msh-mem-stack::before, .msh-mem-stack::after {
+  content: ''; position: absolute; aspect-ratio: 5/7; border-radius: 5px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 0 0 0.5px rgba(42,38,32,0.12), 0 10px 18px -8px rgba(0,0,0,0.6);
+}
+.msh-mem-stack::before { top: 6px; left: 8px; width: 100%; background: #e2d9c7; transform: rotate(3deg); }
+.msh-mem-stack::after { top: 3px; left: -4px; width: 100%; background: #ece4d3; transform: rotate(-2.5deg); }
+.msh-stage-seedling .msh-mem-stack::before, .msh-stage-seedling .msh-mem-stack::after { display: none; }
+.msh-stage-sprout .msh-mem-stack::before { display: none; }
+.msh-stage-radiant .msh-memories { filter: drop-shadow(0 22px 34px rgba(0,0,0,0.78)) drop-shadow(0 6px 12px rgba(0,0,0,0.55)) drop-shadow(0 0 48px rgba(245,184,76,0.5)); }
+
+.msh-mem-card {
+  position: relative; background: var(--cream);
+  background-image: radial-gradient(ellipse 120% 80% at 50% 0%, rgba(255,250,240,0.72) 0%, transparent 50%), radial-gradient(ellipse 100% 60% at 50% 100%, rgba(245,184,76,0.05) 0%, transparent 50%);
+  border-radius: 5px; padding: 5px 5px 7px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.78), inset 0 0 0 0.5px rgba(42,38,32,0.08);
+  aspect-ratio: 5/7; display: flex; flex-direction: column; overflow: hidden;
+}
+.msh-mem-sky {
+  height: 46%; border-radius: 2px; position: relative; overflow: hidden; flex-shrink: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 60%, rgba(245,184,76,0.14) 0%, transparent 60%), linear-gradient(180deg, #0f1733 0%, #1e2452 45%, #3a2859 100%);
+}
+.msh-mem-sky .msh-star { position: absolute; width: 1px; height: 1px; background: #fff; border-radius: 50%; opacity: 0.75; }
+.msh-mem-sky .msh-star.big { width: 1.8px; height: 1.8px; opacity: 0.9; }
+.msh-mem-sky-creature { position: absolute; left: 50%; top: 54%; transform: translate(-50%,-50%); font-size: 26px; filter: drop-shadow(0 2px 6px rgba(245,184,76,0.3)); }
+.msh-mem-body { flex: 1; padding: 8px 3px 2px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center; position: relative; z-index: 1; }
+.msh-mem-title { font-family: 'Fraunces', serif; font-style: italic; font-weight: 400; font-size: 13px; color: var(--ink); line-height: 1; letter-spacing: -0.005em; margin-top: 3px; }
+.msh-mem-count { font-family: 'DM Mono', monospace; font-size: 5.5px; letter-spacing: 0.2em; color: var(--ink-faint); text-transform: uppercase; padding-top: 4px; border-top: 0.5px solid rgba(42,38,32,0.15); width: 64%; }
+
+/* ─── BOOK (Stories archive) ─── */
+.msh-book {
+  position: relative; width: 108px; aspect-ratio: 5/7; transform: rotate(-4deg); cursor: pointer;
+  transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+  filter: drop-shadow(0 18px 28px rgba(0,0,0,0.72)) drop-shadow(0 5px 10px rgba(0,0,0,0.5)) drop-shadow(0 0 40px rgba(148,130,255,0.4));
+}
+.msh-book:hover, .msh-book:focus-visible { transform: rotate(-2deg) translateY(-5px) scale(1.04); outline: none; }
+.msh-stage-radiant .msh-book { filter: drop-shadow(0 22px 34px rgba(0,0,0,0.78)) drop-shadow(0 6px 12px rgba(0,0,0,0.55)) drop-shadow(0 0 52px rgba(148,130,255,0.55)); }
+.msh-book-spine {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 9px;
+  background: linear-gradient(90deg, #2a1f48 0%, #3a2d5e 30%, #2a1f48 70%, #1a1238 100%);
+  border-radius: 2px 0 0 2px;
+  box-shadow: inset -1.5px 0 2px rgba(0,0,0,0.5), inset 1px 0 0 rgba(148,130,255,0.2);
+}
+.msh-book-spine::after {
+  content: ''; position: absolute; inset: 10px 1.5px;
+  border-top: 0.5px solid rgba(245,184,76,0.25); border-bottom: 0.5px solid rgba(245,184,76,0.25);
+}
+.msh-stage-seedling .msh-book-spine::after { display: none; }
+.msh-book-cover {
+  position: absolute; left: 9px; right: 0; top: 0; bottom: 0;
+  background: radial-gradient(ellipse 120% 80% at 50% 0%, rgba(255,250,235,0.7) 0%, transparent 50%), linear-gradient(135deg, #f1e8d5 0%, #e5dcc6 100%);
+  border-radius: 0 3px 3px 0; padding: 14px 8px 10px;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), inset -1.5px 0 3px rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(42,38,32,0.08);
+  overflow: hidden;
+}
+.msh-book-cover::after { content: ''; position: absolute; inset: 7px; border: 0.5px solid rgba(168,120,43,0.3); border-radius: 1px; pointer-events: none; }
+.msh-book-ornament { font-family: 'DM Mono', monospace; font-size: 5px; letter-spacing: 0.35em; color: var(--amber-deep); opacity: 0.55; position: relative; z-index: 1; }
+.msh-book-title { font-family: 'Fraunces', serif; font-style: italic; font-weight: 400; font-size: 13px; color: var(--ink); line-height: 1; letter-spacing: -0.005em; position: relative; z-index: 1; }
+.msh-book-count { font-family: 'DM Mono', monospace; font-size: 5.5px; letter-spacing: 0.2em; color: var(--ink-faint); text-transform: uppercase; padding-top: 4px; border-top: 0.5px solid rgba(42,38,32,0.14); width: 62%; position: relative; z-index: 1; }
+.msh-book-glow-under { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); width: 130px; height: 20px; background: radial-gradient(ellipse 100% 100% at 50% 0%, rgba(148,130,255,0.22) 0%, transparent 70%); pointer-events: none; z-index: -1; }
+
+/* ─── Identity ─── */
+.msh-identity { position: relative; z-index: 4; text-align: center; margin-top: 28px; }
+.msh-name { font-family: 'Fraunces', serif; font-weight: 400; font-size: 32px; color: var(--cream); letter-spacing: -0.01em; line-height: 1; }
+.msh-stage { font-family: 'Fraunces', serif; font-style: italic; font-size: 14px; color: var(--purple-soft); opacity: 0.78; margin-top: 8px; }
+
+/* ─── Quiet line ─── */
+.msh-quiet-line { text-align: center; font-family: 'Fraunces', serif; font-style: italic; font-size: 14px; color: var(--cream); opacity: 0.55; margin-top: 28px; padding: 0 20px; position: relative; z-index: 4; }
+.msh-accent { color: var(--amber); opacity: 0.9; font-weight: 500; }
+
+/* ─── Tracker ─── */
+.msh-tracker { position: relative; z-index: 4; max-width: 300px; margin: 36px auto 0; padding: 14px 20px; }
+.msh-tracker-rule { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, rgba(245,184,76,0.35), transparent); }
+.msh-tracker-row { display: flex; align-items: center; justify-content: center; gap: 28px; padding: 14px 0; }
+.msh-tracker-group { display: flex; flex-direction: column; align-items: center; }
+.msh-tracker-num { font-family: 'Fraunces', serif; font-style: italic; font-weight: 500; font-size: 22px; color: var(--amber); line-height: 1; letter-spacing: -0.01em; }
+.msh-tracker-label { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--cream-dim); opacity: 0.62; margin-top: 5px; }
+.msh-tracker-orn { font-size: 7px; color: var(--amber); opacity: 0.55; margin-bottom: 12px; }
+
+/* ─── Guest / Empty ─── */
+.msh-guest { max-width: 340px; margin: 100px auto 0; text-align: center; position: relative; z-index: 1; }
+.msh-guest-title { font-family: 'Fraunces', serif; font-size: 26px; color: var(--cream); margin-bottom: 12px; }
+.msh-guest-sub { font-size: 14px; color: var(--cream-dim); opacity: 0.7; margin-bottom: 28px; line-height: 1.6; }
+.msh-guest-btn { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; padding: 14px 26px; background: rgba(245,184,76,0.08); border: 1px solid rgba(245,184,76,0.4); border-radius: 100px; color: var(--amber); cursor: pointer; transition: all 0.4s ease; }
+.msh-guest-btn:hover { background: rgba(245,184,76,0.16); color: rgb(255,230,180); }
+
+/* ─── Responsive ─── */
+@media (max-width: 480px) {
+  .msh-root { padding: 36px 14px 120px; }
+  .msh-creature-emoji { font-size: 140px; }
+  .msh-creature-img { width: 140px; height: 170px; }
+  .msh-sanctuary { width: 380px; height: 380px; }
+  .msh-memories, .msh-book { width: 86px; }
+  .msh-mem-sky-creature { font-size: 22px; }
+  .msh-mem-title, .msh-book-title { font-size: 11.5px; }
+  .msh-book-cover { padding: 11px 6px 8px; }
+  .msh-creature-row { gap: 8px; }
+  .msh-name { font-size: 26px; }
+  .msh-tracker-num { font-size: 20px; }
+  .msh-tracker-label { font-size: 7px; }
+}
+`;

@@ -3,7 +3,7 @@ import { useApp } from '../AppContext';
 import { getCharacters, ensureRefCode } from '../lib/storage';
 import { BASE_URL } from '../lib/config';
 import { supabase } from '../lib/supabase';
-import { getAllHatchedCreatures } from '../lib/hatchery';
+import { getAllHatchedCreatures, updateCreatureName } from '../lib/hatchery';
 import { getCreature } from '../lib/creatures';
 import type { Character, HatchedCreature } from '../lib/types';
 import { getBedtimeSettings, saveBedtimeSettings, requestNotificationPermission } from '../lib/bedtimeReminder';
@@ -56,6 +56,8 @@ export default function UserProfile() {
   const [copied, setCopied] = useState(false);
   const [creatures, setCreatures] = useState<HatchedCreature[]>([]);
   const [bedtimeOpen, setBedtimeOpen] = useState(false);
+  const [editingCreatureId, setEditingCreatureId] = useState<string | null>(null);
+  const [editCreatureName, setEditCreatureName] = useState('');
   const [bedtime, setBedtime] = useState(() => user ? getBedtimeSettings(user.id) : { enabled: false, time: '19:30' });
   const [bedtimeTime, setBedtimeTime] = useState(bedtime.time);
 
@@ -145,8 +147,46 @@ export default function UserProfile() {
                       <div className="pf-kid-name">{c.name}</div>
                       <div className="pf-kid-meta">
                         {c.ageDescription ? `Age ${c.ageDescription}` : ''}
-                        {cr ? ` \u00B7 ${cr.name}` : ''}
-                        {crDef ? ` \u00B7 ${crDef.name}` : ''}
+                        {cr ? ` · ${cr.creatureEmoji || ''} ` : ''}
+                        {cr && editingCreatureId === cr.id ? (
+                          <span onClick={e => e.stopPropagation()} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                            <input
+                              value={editCreatureName}
+                              onChange={e => setEditCreatureName(e.target.value)}
+                              onKeyDown={async e => {
+                                if (e.key === 'Enter' && editCreatureName.trim() && user) {
+                                  await updateCreatureName(user.id, editCreatureName.trim());
+                                  setCreatures(prev => prev.map(x => x.id === cr.id ? { ...x, name: editCreatureName.trim() } : x));
+                                  setEditingCreatureId(null);
+                                }
+                                if (e.key === 'Escape') setEditingCreatureId(null);
+                              }}
+                              autoFocus
+                              maxLength={24}
+                              style={{
+                                width: 80, padding: '2px 6px', borderRadius: 6,
+                                border: '1px solid rgba(245,184,76,.4)', background: 'rgba(245,184,76,.08)',
+                                color: '#F5B84C', fontSize: 11, fontFamily: "'Fraunces',serif",
+                                outline: 'none',
+                              }}
+                            />
+                            <button onClick={async () => {
+                              if (editCreatureName.trim() && user) {
+                                await updateCreatureName(user.id, editCreatureName.trim());
+                                setCreatures(prev => prev.map(x => x.id === cr.id ? { ...x, name: editCreatureName.trim() } : x));
+                                setEditingCreatureId(null);
+                              }
+                            }} style={{ background: 'none', border: 'none', color: '#14d890', fontSize: 11, cursor: 'pointer', padding: '0 2px' }}>✓</button>
+                            <button onClick={() => setEditingCreatureId(null)} style={{ background: 'none', border: 'none', color: 'rgba(234,242,255,.3)', fontSize: 11, cursor: 'pointer', padding: '0 2px' }}>✕</button>
+                          </span>
+                        ) : cr ? (
+                          <span
+                            onClick={e => { e.stopPropagation(); setEditingCreatureId(cr.id); setEditCreatureName(cr.name); }}
+                            style={{ cursor: 'pointer', borderBottom: '1px dashed rgba(245,184,76,.3)', paddingBottom: 1 }}
+                            title="Tap to rename"
+                          >{cr.name}</span>
+                        ) : null}
+                        {crDef ? ` · ${crDef.name}` : ''}
                       </div>
                     </div>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(234,242,255,.24)" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>

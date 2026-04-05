@@ -240,6 +240,24 @@ function AppInner() {
             getAllHatchedCreatures(uid).then(creatures => {
               if (creatures && creatures.length > 0) {
                 localStorage.setItem(`sleepseed_ritual_complete_${uid}`, '1');
+                // Also set the ritual state JSON so isRitualComplete() returns true
+                const creature = creatures[0];
+                const ritualKey = `sleepseed_ritual_${uid}`;
+                if (!localStorage.getItem(ritualKey) || !JSON.parse(localStorage.getItem(ritualKey)!).ritualComplete) {
+                  const childChar = chars.find((c: any) => c.isFamily && c.type === 'human');
+                  localStorage.setItem(ritualKey, JSON.stringify({
+                    currentNight: 3,
+                    night1Complete: true,
+                    night2Complete: true,
+                    night3Complete: true,
+                    ritualComplete: true,
+                    eggState: 'hatched',
+                    creatureName: creature.name || '',
+                    creatureEmoji: creature.creatureEmoji || creature.creature_emoji || '',
+                    creatureColor: creature.color || '',
+                    childName: childChar?.name || '',
+                  }));
+                }
               }
               window.location.reload();
             });
