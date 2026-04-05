@@ -3889,7 +3889,7 @@ Rules:
     <div className="ss-page" key="end" style={{position:'relative',minHeight:'100%',background:'#060912',display:'flex',flexDirection:'column',overflow:'hidden'}}>
       {/* Atmosphere */}
       <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 30%,rgba(60,30,120,.4),transparent 65%),radial-gradient(ellipse at 30% 80%,rgba(20,30,100,.25),transparent 50%)'}}/>
-      <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 28px 20px',textAlign:'center'}}>
+      <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 28px 20px',textAlign:'center',maxWidth:480,margin:'0 auto',width:'100%'}}>
         {/* Ornament */}
         <div style={{marginBottom:24,animation:'nc-fadeIn 1s ease both'}}>
           <svg viewBox="0 0 80 24" width="80" height="24" fill="none">
