@@ -4755,7 +4755,7 @@ Rules:
                     )}
 
                     {/* Save + actions */}
-                    <div style={{width:'100%',display:'flex',flexDirection:'column',gap:8,animation:'nc-fadeUp .4s .6s ease both',opacity:0}}>
+                    <div style={{width:'100%',display:'flex',flexDirection:'column',gap:8,animation:'nc-fadeUp .4s .3s ease both'}}>
                       <button disabled={ncSaving} onClick={async()=>{
                         if(ncSaving)return;
                         setNcSaving(true);
@@ -4803,8 +4803,9 @@ Rules:
                         const updatedMemories=memories.map(m=>m.bookData?.title===book.title&&m.heroName===book.heroName?{...m,bookData:updatedBook}:m);
                         setMemories(updatedMemories);try{await sSet("memories",{items:updatedMemories});}catch(err){console.error('[NC] sSet failed:',err);}
                         console.log('[NC] Night card saved successfully, going home');
+                        setNcSaving(false);
                         onHome?onHome():setStage("home");
-                        }catch(err){console.error('[NC] CRITICAL save error:',err);setNcSaving(false);}
+                        }catch(err:any){console.error('[NC] CRITICAL save error:',err);alert('Night card save error: '+(err?.message||err));setNcSaving(false);}
                       }} style={{position:'relative',width:'100%',padding:'15px 20px',borderRadius:18,border:'none',cursor:ncSaving?'wait':'pointer',overflow:'hidden',background:ncSaving?'rgba(245,184,76,.5)':'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)',transition:'background .2s'}}>
                         <div style={{position:'absolute',inset:0,background:'linear-gradient(108deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%)',animation:'nc-shimmer 5.5s infinite',pointerEvents:'none'}}/>
                         <span style={{position:'relative',zIndex:1}}>{ncSaving ? 'Saving...' : 'Save & go home'}</span>
