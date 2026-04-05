@@ -233,7 +233,7 @@ const CSS = `
 .ml-page>*{position:relative;z-index:1}
 
 /* ─── Inner wrapper — single centering container ─── */
-.ml-inner{width:100%;max-width:440px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+.ml-inner{width:100%;max-width:440px;margin:0 auto;padding:0 16px;position:relative;z-index:1;overflow:hidden}
 
 /* ─── Top bar ─── */
 .ml-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 0 28px}
@@ -306,7 +306,7 @@ const CSS = `
 .ml-bucket-rule{width:40px;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,0.3),transparent);margin:14px auto 0}
 
 /* ─── Grid ─── */
-.ml-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:6px 0 4px}
+.ml-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:6px 0 4px}
 
 /* ─── Tile ─── */
 .ml-tile{

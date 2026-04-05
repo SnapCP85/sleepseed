@@ -118,7 +118,7 @@ const CSS = `
 .sl-page>*{position:relative;z-index:1}
 
 /* ─── Inner wrapper — single centering container ─── */
-.sl-inner{width:100%;max-width:440px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+.sl-inner{width:100%;max-width:440px;margin:0 auto;padding:0 16px;position:relative;z-index:1;overflow:hidden}
 
 /* ─── Top bar ─── */
 .sl-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 0 28px}
