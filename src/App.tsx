@@ -133,7 +133,11 @@ function AppInner() {
   // Demo mode auto-login
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('demo') !== 'true') return;
+    if (params.get('demo') !== 'true') {
+      // Clear stale demo flag if not on demo URL
+      try { sessionStorage.removeItem('sleepseed_demo'); } catch {}
+      return;
+    }
     import('./lib/demo-mode').then(async ({ activateDemo, setDemoLocalStorage, DEMO_EMAIL, DEMO_PASSWORD, initDemoShortcuts }) => {
       activateDemo();
       initDemoShortcuts();
