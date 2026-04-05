@@ -112,7 +112,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         // Set user + view IMMEDIATELY so UI shows dashboard fast
         setUser(u);
         const params = new URLSearchParams(window.location.search);
-        const isUrlDriven = params.get('view') === 'library' || params.get('library') || params.get('s');
+        const isUrlDriven = params.get('view') === 'library' || params.get('library') || params.get('s') || params.get('story');
         if (!isUrlDriven) {
           if (isInitial || viewRef.current === 'public' || viewRef.current === 'auth') {
             setView('dashboard');
@@ -140,7 +140,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       migrationDoneRef.current = null;
       // Don't overwrite URL-driven views (shared stories, library) with 'public'
       const params = new URLSearchParams(window.location.search);
-      const isUrlDriven = params.get('library') || params.get('s') || params.get('nc');
+      const isUrlDriven = params.get('library') || params.get('s') || params.get('nc') || params.get('story');
       if (!isUrlDriven && (viewRef.current === 'public' || viewRef.current === 'auth' || viewRef.current === 'dashboard')) {
         setView('public');
       }

@@ -1637,6 +1637,7 @@ export default function SleepSeed({
   // v8r: story reader upgrade state
   const [v8rTrayOpen,      setV8rTrayOpen]      = useState(false);
   const [v8rShareOpen,     setV8rShareOpen]     = useState(false);
+  const [v8rShareUrl,      setV8rShareUrl]      = useState('');
   const [v8rLinkCopied,    setV8rLinkCopied]    = useState(false);
   const [v8rShareIncludeNightCard, setV8rShareIncludeNightCard] = useState(false);
   const [v8rShareMessage, setV8rShareMessage] = useState('');
@@ -2303,11 +2304,24 @@ export default function SleepSeed({
       ctx.textAlign = "center";
       ctx.fillText(`A story for ${book.heroName}  ·  sleepseed.vercel.app`, SIZE/2, SIZE-52);
       // Build private share link for the image share
-      let imgShareUrl = BASE_URL;
-      try {
-        const payload = { t: book.title, n: book.heroName, r: book.refrain || '', p: (book.pages || []).map((pg: any) => pg.text || '') };
-        imgShareUrl = `${BASE_URL}/?s=${btoa(encodeURIComponent(JSON.stringify(payload)))}`;
-      } catch {}
+      let imgShareUrl = v8rShareUrl || BASE_URL;
+      if (!v8rShareUrl) {
+        const sid = lastSavedStoryIdRef.current;
+        if (sid) {
+          try {
+            const { createStoryShareToken } = await import('./lib/storage');
+            const token = await createStoryShareToken(sid);
+            if (token) { imgShareUrl = `${BASE_URL}/?story=${token}`; setV8rShareUrl(imgShareUrl); }
+          } catch {}
+        }
+        // Fallback: embedded URL
+        if (imgShareUrl === BASE_URL) {
+          try {
+            const payload = { t: book.title, n: book.heroName, r: book.refrain || '', p: (book.pages || []).map((pg: any) => pg.text || '') };
+            imgShareUrl = `${BASE_URL}/?s=${btoa(encodeURIComponent(JSON.stringify(payload)))}`;
+          } catch {}
+        }
+      }
 
       // Export
       canvas.toBlob(async (blob) => {
@@ -3876,7 +3890,26 @@ Rules:
 
           <div style={{fontSize:8,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.26)',letterSpacing:'.9px',margin:'4px 0 8px',paddingLeft:2}}>SHARE & EXIT</div>
           <div style={{display:'flex',gap:7}}>
-            <button onClick={()=>{setV8rTrayOpen(false);setV8rShareOpen(true);}} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:5,padding:'10px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.07)',background:'rgba(255,255,255,.04)',cursor:'pointer'}}>
+            <button onClick={async()=>{
+              setV8rTrayOpen(false);setV8rShareOpen(true);
+              // Generate share token for short URL
+              const sid = lastSavedStoryIdRef.current;
+              if (sid && !v8rShareUrl) {
+                try {
+                  const { createStoryShareToken } = await import('./lib/storage');
+                  const token = await createStoryShareToken(sid);
+                  if (token) setV8rShareUrl(`${BASE_URL}/?story=${token}`);
+                } catch {
+                  // Fallback: embedded URL
+                  if (book) {
+                    try {
+                      const payload = { t: book.title, n: book.heroName, r: book.refrain || '', p: (book.pages || []).map((pg: any) => pg.text || '') };
+                      setV8rShareUrl(`${BASE_URL}/?s=${btoa(encodeURIComponent(JSON.stringify(payload)))}`);
+                    } catch {}
+                  }
+                }
+              }
+            }} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:5,padding:'10px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.07)',background:'rgba(255,255,255,.04)',cursor:'pointer'}}>
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="rgba(234,242,255,.68)" strokeWidth="1.8" strokeLinecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
               <span style={{fontSize:8.5,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.48)',letterSpacing:'.2px'}}>Share</span>
             </button>
@@ -3892,14 +3925,7 @@ Rules:
 
   const renderV8rShareModal = () => {
     if (!v8rShareOpen) return null;
-    // Build a self-contained share link (no public library needed)
-    const storyUrl = (() => {
-      if (!book) return BASE_URL;
-      try {
-        const payload = { t: book.title, n: book.heroName, r: book.refrain || '', p: (book.pages || []).map((pg: any) => pg.text || '') };
-        return `${BASE_URL}/?s=${btoa(encodeURIComponent(JSON.stringify(payload)))}`;
-      } catch { return BASE_URL; }
-    })();
+    const storyUrl = v8rShareUrl || BASE_URL;
     const shareBtn = (icon: React.ReactNode, label: string, onClick: ()=>void, accent?: string) => (
       <div onClick={onClick} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,padding:'11px 8px',borderRadius:16,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',cursor:'pointer'}}>
         {icon}

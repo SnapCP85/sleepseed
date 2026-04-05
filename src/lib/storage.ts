@@ -212,6 +212,53 @@ export const saveStory = async (s: SavedStory): Promise<void> => {
   } catch(e) { console.error('[storage] saveStory Supabase error:', e); }
 };
 
+// ── Private story share tokens ──────────────────────────────────────────────
+// Creates a share token for a private story. The story stays private but
+// anyone with the token can read it without logging in.
+export const createStoryShareToken = async (storyId: string): Promise<string> => {
+  const token = typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  try {
+    await supabase.from('story_shares').upsert({
+      story_id: storyId,
+      share_token: token,
+      created_at: new Date().toISOString(),
+    });
+  } catch (e) { console.error('[storage] createStoryShareToken error:', e); }
+  return token;
+};
+
+// Fetches a story by its share token — no auth required
+export const getStoryByShareToken = async (token: string): Promise<any | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('story_shares')
+      .select('story_id')
+      .eq('share_token', token)
+      .single();
+    if (error || !data) return null;
+    const { data: story, error: storyErr } = await supabase
+      .from('stories')
+      .select('id, title, hero_name, character_ids, refrain, date, book_data')
+      .eq('id', data.story_id)
+      .single();
+    if (storyErr || !story) return null;
+    // Strip sensitive data
+    const bookData = story.book_data || {};
+    delete bookData.parentNote;
+    delete bookData.nightCard;
+    return {
+      id: story.id,
+      title: story.title,
+      heroName: story.hero_name,
+      refrain: story.refrain,
+      date: story.date,
+      bookData,
+    };
+  } catch (e) { console.error('[storage] getStoryByShareToken error:', e); return null; }
+};
+
 export const deleteStory = async (userId: string, storyId: string): Promise<void> => {
   lsSet(LS_STORIES(userId), lsGet<SavedStory>(LS_STORIES(userId)).filter(s => s.id !== storyId));
   try { await supabase.from('stories').delete().eq('id', storyId).eq('user_id', userId); } catch(e) { console.error('[storage] deleteStory error:', e); }

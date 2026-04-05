@@ -139,9 +139,13 @@ function AppInner() {
 
   // Check for shared story / library links on mount
   const [isSharedStory, setIsSharedStory] = useState(false);
+  const [sharedStoryToken, setSharedStoryToken] = useState<string | null>(null);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('s')) { setIsSharedStory(true); return; }
+
+    const storyToken = params.get('story');
+    if (storyToken) { setSharedStoryToken(storyToken); return; }
 
     const librarySlug = params.get('library');
     if (librarySlug) { setLibraryStorySlug(librarySlug); setView('story-cover'); return; }
@@ -248,6 +252,9 @@ function AppInner() {
   // ── All hooks above this line ─────────────────────────────────────────────
 
   if (isSharedStory) return <SharedStoryViewer />;
+
+  // Private story share via token — renders full reader without auth
+  if (sharedStoryToken) return <SharedStoryViewer token={sharedStoryToken} />;
   if (view === 'dev-story') return <DevStoryTest />;
   if (new URLSearchParams(window.location.search).get('view') === 'admin-upload') return <AdminUploadBook />;
   if (new URLSearchParams(window.location.search).get('view') === 'editorial-console') return <AdminEditorialConsole />;

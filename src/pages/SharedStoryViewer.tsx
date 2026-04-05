@@ -82,7 +82,7 @@ interface SharedStory {
   d?: string;  // date
 }
 
-export default function SharedStoryViewer() {
+export default function SharedStoryViewer({ token }: { token?: string } = {}) {
   const [story, setStory] = useState<SharedStory | null>(null);
   const [error, setError] = useState('');
   const [pageIdx, setPageIdx] = useState(0);
@@ -91,6 +91,25 @@ export default function SharedStoryViewer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    // Token-based private share: load from Supabase
+    if (token) {
+      import('../lib/storage').then(({ getStoryByShareToken }) => {
+        getStoryByShareToken(token).then(data => {
+          if (!data) { setError('This story link could not be found or has expired.'); return; }
+          const pages = data.bookData?.pages || data.bookData?.setup_pages || [];
+          setStory({
+            t: data.title || 'A Story',
+            n: data.heroName || '',
+            r: data.refrain || '',
+            p: pages.map((pg: any) => typeof pg === 'string' ? pg : pg.text || ''),
+            d: data.date,
+          });
+        }).catch(() => setError('Could not load this story.'));
+      });
+      return;
+    }
+
+    // Embedded story: parse from URL
     try {
       const params = new URLSearchParams(window.location.search);
       const encoded = params.get('s');
@@ -101,7 +120,7 @@ export default function SharedStoryViewer() {
     } catch {
       setError('This story link could not be read. It may be corrupted or expired.');
     }
-  }, []);
+  }, [token]);
 
   if (error) return (
     <div className="sv-wrap">
