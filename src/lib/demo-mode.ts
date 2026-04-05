@@ -47,12 +47,15 @@ export function setDemoLocalStorage(userId: string): void {
   } catch {}
 }
 
-/** Reset demo to clean state — re-run seed and refresh */
+/** Reset demo to clean state — only clears DEMO user data, not other accounts */
 export function resetDemo(): void {
   deactivateDemo();
-  // Clear all sleepseed localStorage
+  // Only clear localStorage keys for the demo user ID — never touch other accounts
+  const DEMO_UID = '71d31ef2-391b-4bb3-9060-b856560e5739';
   try {
-    const keys = Object.keys(localStorage).filter(k => k.startsWith('sleepseed_') || k.startsWith('ss2_') || k.startsWith('ss_'));
+    const keys = Object.keys(localStorage).filter(k =>
+      k.includes(DEMO_UID) || k === 'sleepseed_demo'
+    );
     keys.forEach(k => localStorage.removeItem(k));
   } catch {}
   window.location.href = window.location.pathname + '?demo=true';
