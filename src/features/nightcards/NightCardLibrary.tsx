@@ -212,9 +212,102 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
 
   useEffect(() => {
     console.log('[NCLibrary] Loading cards for userId:', userId);
-    const v2Key = `ss2_nightcards_${userId}`;
-    const v2Raw = localStorage.getItem(v2Key);
-    console.log('[NCLibrary] v2 localStorage key:', v2Key, 'raw length:', v2Raw?.length, 'parsed count:', v2Raw ? JSON.parse(v2Raw).length : 0);
+
+    // ── Reconcile v1 → v2: recover cards that were saved to the v1 key but never made it to v2 ──
+    const reconcile = () => {
+      try {
+        const v1Key = `ss9_u_${userId}_nightcards`;
+        const v1Raw = localStorage.getItem(v1Key);
+        const v1Data = v1Raw ? JSON.parse(v1Raw) : null;
+        const v1Cards: any[] = v1Data?.items || (Array.isArray(v1Data) ? v1Data : []);
+
+        const v2Key = `ss2_nightcards_${userId}`;
+        const v2Raw = localStorage.getItem(v2Key);
+        const v2Cards: any[] = v2Raw ? JSON.parse(v2Raw) : [];
+
+        console.log('[NCLibrary] v1 count:', v1Cards.length, 'v2 count:', v2Cards.length);
+
+        if (v1Cards.length === 0) return;
+
+        // Strip base64 from both to save space
+        const strip = (c: any) => ({...c,
+          photo: c.photo?.startsWith?.('data:') ? null : c.photo,
+          childDrawing: c.childDrawing?.startsWith?.('data:') ? null : c.childDrawing,
+        });
+
+        const v2Ids = new Set(v2Cards.map((c: any) => c.id).filter(Boolean));
+        const missing = v1Cards.filter((c: any) => c.id && !v2Ids.has(c.id));
+
+        if (missing.length > 0) {
+          const toAdd = missing.map((c: any) => strip({
+            id: c.id, userId,
+            heroName: c.heroName || '', storyTitle: c.storyTitle || '',
+            characterIds: c.characterIds || [],
+            headline: c.headline || c.storyTitle || '',
+            quote: c.quote || c.bondingAnswer || c.bondingA || '',
+            memory_line: c.memory_line || '',
+            bondingQuestion: c.bondingQuestion || c.bondingQ || '',
+            bondingAnswer: c.bondingAnswer || c.bondingA || '',
+            gratitude: c.gratitude || '',
+            extra: c.extra || '',
+            photo: c.photo || null,
+            emoji: c.emoji || '🌙',
+            date: c.date || new Date().toISOString().split('T')[0],
+            childMood: c.childMood, childAge: c.childAge,
+            bedtimeActual: c.bedtimeActual, tags: c.tags,
+            milestone: c.milestone, whisper: c.whisper || c.reflection,
+            isOrigin: c.isOrigin, creatureEmoji: c.creatureEmoji, creatureColor: c.creatureColor,
+            nightNumber: c.nightNumber, streakCount: c.streakCount,
+            reflection: c.reflection,
+          }));
+          const merged = [...v2Cards.map(strip), ...toAdd];
+          localStorage.setItem(v2Key, JSON.stringify(merged));
+          console.log(`[NCLibrary] RECOVERED ${missing.length} cards from v1 → v2 (total: ${merged.length})`);
+
+          // Push recovered cards to Supabase (fire and forget)
+          for (const card of toAdd) {
+            const packed: any = {};
+            if (card.isOrigin) packed.isOrigin = true;
+            if (card.whisper) packed.whisper = card.whisper;
+            if (card.creatureEmoji) packed.creatureEmoji = card.creatureEmoji;
+            if (card.creatureColor) packed.creatureColor = card.creatureColor;
+            if (card.childMood) packed.childMood = card.childMood;
+            if (card.childAge) packed.childAge = card.childAge;
+            if (card.tags?.length) packed.tags = card.tags;
+            if (card.bedtimeActual) packed.bedtimeActual = card.bedtimeActual;
+            if (card.nightNumber != null) packed.nightNumber = card.nightNumber;
+            if (card.streakCount != null) packed.streakCount = card.streakCount;
+            if (card.milestone) packed.milestone = card.milestone;
+            supabase.from('night_cards').upsert({
+              id: card.id, user_id: userId, hero_name: card.heroName,
+              story_id: null, story_title: card.storyTitle,
+              character_ids: card.characterIds || [],
+              headline: card.headline, quote: card.quote,
+              memory_line: card.memory_line || null,
+              bonding_question: card.bondingQuestion || null,
+              bonding_answer: card.bondingAnswer || null,
+              gratitude: card.gratitude || null,
+              extra: Object.keys(packed).length ? JSON.stringify(packed) : (card.extra || null),
+              photo_url: card.photo || null,
+              emoji: card.emoji || '🌙', date: card.date,
+            }).then(({ error }) => {
+              if (error) console.warn('[NCLibrary] Supabase recovery push failed:', card.id, error.message);
+            });
+          }
+        } else {
+          // No missing cards, but still clean base64 from v2 if needed
+          const needsClean = v2Cards.some((c: any) => c.photo?.startsWith?.('data:') || c.childDrawing?.startsWith?.('data:'));
+          if (needsClean) {
+            localStorage.setItem(v2Key, JSON.stringify(v2Cards.map(strip)));
+            console.log('[NCLibrary] Cleaned base64 from v2');
+          }
+        }
+      } catch(e) { console.error('[NCLibrary] Reconciliation error:', e); }
+    };
+
+    reconcile();
+
+    // Now load cards normally (getNightCards reads v2 + Supabase)
     getNightCards(userId).then(fetched => {
       console.log('[NCLibrary] getNightCards returned:', fetched.length, 'cards');
       const sorted = [...fetched].sort((a, b) => {
