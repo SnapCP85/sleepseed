@@ -812,7 +812,7 @@ export default function LibraryStoryReader({ slug }: Props) {
           )}
           <div className="lr-sp-text">
             {translating ? (
-              <div style={{textAlign:'center',color:'var(--cream-faint)',fontStyle:'italic'}}>Translating\u2026</div>
+              <div style={{textAlign:'center',color:'var(--cream-faint)',fontStyle:'italic'}}>Translating{'\u2026'}</div>
             ) : isTranslated && learningMode ? (
               <InterlinearText
                 sentences={translatedPage.sentences}
@@ -1111,7 +1111,7 @@ export default function LibraryStoryReader({ slug }: Props) {
                   <span style={{fontSize:20,width:32,textAlign:'center'}}>{v.emoji}</span>
                   <div className="lr-vpick-name">{v.name}</div>
                   <div className="lr-vpick-desc">{v.desc}</div>
-                  {previewingVoice === v.id && <span style={{fontSize:11,color:'var(--amber)'}}>Playing\u2026</span>}
+                  {previewingVoice === v.id && <span style={{fontSize:11,color:'var(--amber)'}}>Playing{'\u2026'}</span>}
                 </div>
               ))}
             </div>
