@@ -141,9 +141,15 @@ function AppInner() {
     import('./lib/demo-mode').then(async ({ activateDemo, setDemoLocalStorage, DEMO_EMAIL, DEMO_PASSWORD, initDemoShortcuts }) => {
       activateDemo();
       initDemoShortcuts();
-      if (user) { setDemoLocalStorage(user.id); return; }
-      // Auto-login
+      const DEMO_UID = '71d31ef2-391b-4bb3-9060-b856560e5739';
+      // If already logged in as demo user, just set flags
+      if (user && user.id === DEMO_UID) { setDemoLocalStorage(user.id); return; }
+      // If logged in as someone else, sign out first
       const { supabase } = await import('./lib/supabase');
+      if (user && user.id !== DEMO_UID) {
+        await supabase.auth.signOut();
+      }
+      // Login as demo user
       const { data } = await supabase.auth.signInWithPassword({ email: DEMO_EMAIL, password: DEMO_PASSWORD });
       if (data?.user) {
         setDemoLocalStorage(data.user.id);
