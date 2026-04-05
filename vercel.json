@@ -6,7 +6,8 @@
     { "source": "/stories/:slug", "destination": "/api/og/:slug" },
     { "source": "/stories", "destination": "/?view=library" },
     { "source": "/nightcard/:token", "destination": "/api/og-nightcard/:token" },
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" }
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/family/:path*", "destination": "/index.html" }
   ],
   "functions": {
     "api/claude.js":  { "maxDuration": 120 },
