@@ -1682,40 +1682,103 @@ export default function SleepSeed({
   useEffect(() => {
     // Use user-scoped keys for memories and nightcards to prevent cross-user data leakage
     sGet("memories", userId).then(s => { if(s?.items) setMemories(s.items); });
-    sGet("nightcards", userId).then(s => {
-      if(s?.items) {
-        setNightCards(s.items);
-        // One-time cleanup: strip base64 photos from localStorage to reclaim space
-        const hasBase64 = s.items.some((c:any) => c.photo?.startsWith?.('data:') || c.childDrawing?.startsWith?.('data:'));
-        if (hasBase64) {
-          const cleaned = s.items.map((c:any) => ({...c,
-            photo: c.photo?.startsWith?.('data:') ? '[uploaded]' : c.photo,
-            childDrawing: c.childDrawing?.startsWith?.('data:') ? '[uploaded]' : c.childDrawing,
-          }));
-          sSet("nightcards", {items:cleaned}, userId);
-          console.log('[NC] Cleaned base64 from v1 localStorage, saved', (JSON.stringify(s.items).length - JSON.stringify(cleaned).length)/1024|0, 'KB');
-        }
+    sGet("nightcards", userId).then(async (s) => {
+      const v1Cards: any[] = s?.items || [];
+
+      // Strip base64 from v1
+      const stripB64 = (c: any) => ({...c,
+        photo: c.photo?.startsWith?.('data:') ? null : c.photo,
+        childDrawing: c.childDrawing?.startsWith?.('data:') ? null : c.childDrawing,
+      });
+      const v1Cleaned = v1Cards.map(stripB64);
+      if (v1Cards.some((c:any) => c.photo?.startsWith?.('data:') || c.childDrawing?.startsWith?.('data:'))) {
+        sSet("nightcards", {items:v1Cleaned}, userId);
+        console.log('[NC] Cleaned base64 from v1 localStorage');
       }
-    });
-    // Also clean v2 key
-    if (userId) {
-      try {
-        const v2Key = `ss2_nightcards_${userId}`;
-        const v2Raw = localStorage.getItem(v2Key);
-        if (v2Raw) {
-          const v2Cards = JSON.parse(v2Raw);
-          const hasBase64 = v2Cards.some((c:any) => c.photo?.startsWith?.('data:') || c.childDrawing?.startsWith?.('data:'));
-          if (hasBase64) {
-            const cleaned = v2Cards.map((c:any) => ({...c,
-              photo: c.photo?.startsWith?.('data:') ? null : c.photo,
-              childDrawing: c.childDrawing?.startsWith?.('data:') ? null : c.childDrawing,
-            }));
-            localStorage.setItem(v2Key, JSON.stringify(cleaned));
-            console.log('[NC] Cleaned base64 from v2 localStorage, saved', (v2Raw.length - JSON.stringify(cleaned).length)/1024|0, 'KB');
+
+      // Reconcile: merge v1 cards into v2 (the key NightCardLibrary reads)
+      if (userId && v1Cleaned.length > 0) {
+        try {
+          const v2Key = `ss2_nightcards_${userId}`;
+          const v2Raw = localStorage.getItem(v2Key);
+          const v2Cards: any[] = v2Raw ? JSON.parse(v2Raw) : [];
+          // Strip base64 from v2 too
+          const v2Cleaned = v2Cards.map(stripB64);
+          // Find cards in v1 that are missing from v2
+          const v2Ids = new Set(v2Cleaned.map((c:any) => c.id));
+          const missing = v1Cleaned.filter((c:any) => c.id && !v2Ids.has(c.id));
+          if (missing.length > 0) {
+            // Merge missing v1 cards into v2
+            const merged = [...v2Cleaned, ...missing.map((c:any) => ({
+              id: c.id, userId: userId,
+              heroName: c.heroName || '', storyTitle: c.storyTitle || '',
+              characterIds: c.characterIds || [],
+              headline: c.headline || c.storyTitle || '',
+              quote: c.quote || c.bondingAnswer || c.bondingA || '',
+              memory_line: c.memory_line || '',
+              bondingQuestion: c.bondingQuestion || c.bondingQ || '',
+              bondingAnswer: c.bondingAnswer || c.bondingA || '',
+              gratitude: c.gratitude || '',
+              extra: c.extra || '',
+              photo: (c.photo && !c.photo.startsWith('data:')) ? c.photo : null,
+              emoji: c.emoji || '🌙',
+              date: c.date || new Date().toISOString().split('T')[0],
+              childMood: c.childMood, childAge: c.childAge,
+              bedtimeActual: c.bedtimeActual, tags: c.tags,
+              milestone: c.milestone, whisper: c.whisper,
+              isOrigin: c.isOrigin, creatureEmoji: c.creatureEmoji, creatureColor: c.creatureColor,
+              nightNumber: c.nightNumber, streakCount: c.streakCount,
+            }))];
+            localStorage.setItem(v2Key, JSON.stringify(merged));
+            console.log(`[NC] RECOVERED ${missing.length} night cards from v1 → v2 (total: ${merged.length})`);
+
+            // Also push recovered cards to Supabase
+            for (const card of missing) {
+              try {
+                const dbRow: any = {
+                  id: card.id, user_id: userId,
+                  hero_name: card.heroName || '', story_id: null,
+                  story_title: card.storyTitle || '',
+                  character_ids: card.characterIds || [],
+                  headline: card.headline || card.storyTitle || '',
+                  quote: card.quote || card.bondingAnswer || card.bondingA || '',
+                  memory_line: card.memory_line || null,
+                  bonding_question: card.bondingQuestion || card.bondingQ || null,
+                  bonding_answer: card.bondingAnswer || card.bondingA || null,
+                  gratitude: card.gratitude || null,
+                  photo_url: (card.photo && !card.photo.startsWith('data:')) ? card.photo : null,
+                  emoji: card.emoji || '🌙',
+                  date: card.date || new Date().toISOString().split('T')[0],
+                };
+                // Pack enrichment fields into extra
+                const packed: any = {};
+                if (card.isOrigin) packed.isOrigin = true;
+                if (card.whisper) packed.whisper = card.whisper;
+                if (card.creatureEmoji) packed.creatureEmoji = card.creatureEmoji;
+                if (card.creatureColor) packed.creatureColor = card.creatureColor;
+                if (card.childMood) packed.childMood = card.childMood;
+                if (card.childAge) packed.childAge = card.childAge;
+                if (card.tags?.length) packed.tags = card.tags;
+                if (card.bedtimeActual) packed.bedtimeActual = card.bedtimeActual;
+                if (card.nightNumber != null) packed.nightNumber = card.nightNumber;
+                if (card.streakCount != null) packed.streakCount = card.streakCount;
+                if (card.milestone) packed.milestone = card.milestone;
+                if (Object.keys(packed).length) dbRow.extra = JSON.stringify(packed);
+                else dbRow.extra = card.extra || null;
+                await supabase.from('night_cards').upsert(dbRow);
+              } catch(e) { console.error('[NC] Recovery Supabase push failed for', card.id, e); }
+            }
+            console.log(`[NC] Pushed ${missing.length} recovered cards to Supabase`);
+          } else if (v2Cards.length !== v2Cleaned.length || v2Cards.some((c:any) => c.photo?.startsWith?.('data:'))) {
+            // No missing cards but still need to clean base64
+            localStorage.setItem(v2Key, JSON.stringify(v2Cleaned));
+            console.log('[NC] Cleaned base64 from v2 localStorage');
           }
-        }
-      } catch(e) { console.error('[NC] v2 cleanup error:', e); }
-    }
+        } catch(e) { console.error('[NC] Reconciliation error:', e); }
+      }
+
+      setNightCards(v1Cleaned);
+    });
     sGet("style_dna").then(s => { if(s) setStyleDna(s); });
     sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); });
     sGet("onboarded").then(s => { if(s?.v) setHasSeenOnboard(true); });
