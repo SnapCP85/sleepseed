@@ -2467,13 +2467,13 @@ export default function SleepSeed({
         ncStreamRef.current = stream;
         if(ncVideoRef.current) ncVideoRef.current.srcObject = stream;
       })
-      .catch(() => { if(!cancelled) setNcStep(4); });
+      .catch(() => { if(!cancelled) setNcStep(2); });
     return () => { cancelled = true; ncStreamRef.current?.getTracks().forEach(t=>t.stop()); ncStreamRef.current=null; };
   },[stage,ncStep,ncPhoto]);
 
   // ── Night Card generation animation effect ──
   useEffect(() => {
-    if (stage === 'nightcard' && ncStep === 3) {
+    if (stage === 'nightcard' && ncStep === 1) {
       setNcGenTextIdx(0);
       setNcGenPct(0);
       const iv = setInterval(() => {
@@ -2494,7 +2494,7 @@ export default function SleepSeed({
 
   // ── Night Card generation effect ──
   useEffect(() => {
-    if(stage!=="nightcard" || ncStep!==3 || ncGenerating || ncResult) return;
+    if(stage!=="nightcard" || ncStep!==1 || ncGenerating || ncResult) return;
     setNcGenerating(true);
     const name = book?.heroName||"";
     const bondingParts: string[] = [];
@@ -2540,11 +2540,11 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
         setNcResult(parsed);
       } catch(_) { setNcResult(fallback); }
       setNcGenPct(100);
-      setTimeout(() => setNcStep(4), 400);
+      setTimeout(() => setNcStep(2), 400);
     }).catch(() => {
       setNcResult(fallback);
       setNcGenPct(100);
-      setTimeout(() => setNcStep(4), 400);
+      setTimeout(() => setNcStep(2), 400);
     });
   },[stage,ncStep,ncGenerating,ncResult]);
 
@@ -3889,44 +3889,43 @@ Rules:
     <div className="ss-page" key="end" style={{position:'relative',minHeight:'100%',background:'#060912',display:'flex',flexDirection:'column',overflow:'hidden'}}>
       {/* Atmosphere */}
       <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 30%,rgba(60,30,120,.4),transparent 65%),radial-gradient(ellipse at 30% 80%,rgba(20,30,100,.25),transparent 50%)'}}/>
-      <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',alignItems:'center',padding:'24px 28px 20px',textAlign:'center',maxWidth:480,margin:'0 auto',width:'100%',overflowY:'auto',scrollbarWidth:'none' as any,justifyContent:'safe center'}}>
+      <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'20px 28px',textAlign:'center',maxWidth:420,margin:'0 auto',width:'100%'}}>
         {/* Ornament */}
-        <div style={{marginBottom:16,animation:'nc-fadeIn 1s ease both',flexShrink:0}}>
-          <svg viewBox="0 0 80 24" width="80" height="24" fill="none">
+        <div style={{marginBottom:12,animation:'nc-fadeIn .8s ease both'}}>
+          <svg viewBox="0 0 80 24" width="60" height="18" fill="none">
             <line x1="0" y1="12" x2="28" y2="12" stroke="rgba(245,184,76,.3)" strokeWidth=".8"/>
             <circle cx="40" cy="12" r="4" fill="rgba(245,184,76,.5)"/>
             <circle cx="40" cy="12" r="2" fill="#F5B84C"/>
             <line x1="52" y1="12" x2="80" y2="12" stroke="rgba(245,184,76,.3)" strokeWidth=".8"/>
-            <circle cx="31" cy="12" r="1.5" fill="rgba(245,184,76,.35)"/>
-            <circle cx="49" cy="12" r="1.5" fill="rgba(245,184,76,.35)"/>
           </svg>
         </div>
-        <div style={{fontSize:12,color:'rgba(234,242,255,.38)',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:8,animation:'nc-fadeUp .6s .1s ease both',flexShrink:0}}>THE END</div>
-        <div style={{fontSize:'clamp(22px,5vw,32px)',fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.1,letterSpacing:'-.6px',marginBottom:4,animation:'nc-fadeUp .6s .2s ease both',flexShrink:0}}>{book?.title??'Tonight\'s Story'}</div>
-        <div style={{fontSize:13,color:'rgba(234,242,255,.35)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',marginBottom:16,animation:'nc-fadeUp .6s .3s ease both',flexShrink:0}}>A story for {book?.heroName??heroName}</div>
-        {book?.refrain && (
-          <div style={{padding:'10px 16px',background:'rgba(245,184,76,.07)',border:'1px solid rgba(245,184,76,.2)',borderRadius:14,marginBottom:16,animation:'nc-fadeUp .6s .4s ease both',flexShrink:0}}>
-            <div style={{fontSize:10,color:'rgba(245,184,76,.5)',fontFamily:"'DM Mono',monospace",letterSpacing:'.6px',marginBottom:4}}>TONIGHT{'\u2019'}S REFRAIN</div>
-            <div style={{fontSize:12,color:'rgba(244,239,232,.6)',fontFamily:"'Lora',serif",fontStyle:'italic',lineHeight:1.5}}>"{book.refrain}"</div>
+        <div style={{fontSize:10,color:'rgba(234,242,255,.35)',fontFamily:"'DM Mono',monospace",letterSpacing:'2.5px',marginBottom:6,animation:'nc-fadeUp .5s .1s ease both'}}>THE END</div>
+        <div style={{fontSize:'clamp(20px,5vw,28px)',fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.15,letterSpacing:'-.5px',marginBottom:3,animation:'nc-fadeUp .5s .15s ease both'}}>{book?.title??'Tonight\'s Story'}</div>
+        <div style={{fontSize:12,color:'rgba(234,242,255,.3)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',marginBottom:16,animation:'nc-fadeUp .5s .2s ease both'}}>A story for {book?.heroName??heroName}</div>
+
+        {/* Golden Seed collected */}
+        <div style={{
+          width:'100%',padding:'12px 16px',
+          background:'linear-gradient(135deg,rgba(245,184,76,.08),rgba(200,140,20,.04))',
+          border:'1px solid rgba(245,184,76,.22)',borderRadius:14,
+          marginBottom:16,animation:'nc-fadeUp .5s .25s ease both',
+          display:'flex',alignItems:'center',gap:12,
+        }}>
+          <div style={{
+            width:36,height:36,borderRadius:'50%',flexShrink:0,
+            background:'radial-gradient(circle at 40% 35%,#F5C060,#C87020)',
+            display:'flex',alignItems:'center',justifyContent:'center',
+            boxShadow:'0 0 12px rgba(245,184,76,.3)',fontSize:16,
+          }}>{'\u2726'}</div>
+          <div style={{textAlign:'left'}}>
+            <div style={{fontSize:11,fontWeight:700,color:'rgba(245,184,76,.85)',fontFamily:"'Nunito',sans-serif"}}>Golden Seed collected</div>
+            <div style={{fontSize:9,color:'rgba(245,184,76,.4)',fontFamily:"'DM Mono',monospace",letterSpacing:'.3px',marginTop:1}}>Tonight added a glow to your egg</div>
           </div>
-        )}
-        {/* Story Card artifact */}
-        <div style={{marginBottom:14,animation:'nc-fadeUp .6s .5s ease both',flexShrink:0}}>
-          <StoryCard
-            title={book?.title??'Tonight\'s Story'}
-            heroName={book?.heroName??heroName}
-            quote={book?.refrain}
-            creatureEmoji={companionCreature?.creatureEmoji??'🐰'}
-            creatureName={companionCreature?.name??'SleepSeed'}
-            width={180}
-          />
         </div>
-        <div style={{fontSize:11,color:'rgba(234,242,255,.35)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.5,marginBottom:14,animation:'nc-fadeUp .6s .55s ease both',flexShrink:0}}>
-          Keep this moment
-        </div>
+
         {/* Story feedback */}
-        {!storyFeedback && (
-          <div style={{display:'flex',gap:10,justifyContent:'center',marginBottom:16,animation:'nc-fadeUp .6s .65s ease both',opacity:0}}>
+        {!storyFeedback ? (
+          <div style={{display:'flex',gap:8,justifyContent:'center',marginBottom:14,animation:'nc-fadeUp .5s .3s ease both'}}>
             {([
               {key:'loved' as const, emoji:'\u2764\uFE0F', label:'Loved it'},
               {key:'good' as const, emoji:'\uD83D\uDC4D', label:'Good'},
@@ -3935,8 +3934,7 @@ Rules:
               <button key={fb.key} onClick={() => {
                 setStoryFeedback(fb.key);
                 if (fb.key === 'retry') {
-                  setStoryFeedback(null);
-                  setChosenPath(null);
+                  setStoryFeedback(null);setChosenPath(null);
                   setGen({stepIdx:0,progress:0,label:'Starting over...',error:null});
                   setTimeout(() => { if (builderChoices) doAutoGenerate(builderChoices); }, 300);
                   return;
@@ -3944,48 +3942,50 @@ Rules:
                 try {
                   const entry = { rating: fb.key, title: book?.title, genre: storyMood, date: new Date().toISOString() };
                   const prev = JSON.parse(localStorage.getItem(`ss_story_feedback_${userId}`) || '[]');
-                  prev.push(entry);
-                  if (prev.length > 50) prev.shift();
+                  prev.push(entry);if (prev.length > 50) prev.shift();
                   localStorage.setItem(`ss_story_feedback_${userId}`, JSON.stringify(prev));
                 } catch {}
               }} style={{
-                padding:'10px 16px',borderRadius:14,cursor:'pointer',
+                padding:'8px 14px',borderRadius:12,cursor:'pointer',
                 border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)',
-                color:'rgba(244,239,232,.6)',fontSize:12,fontWeight:600,
-                fontFamily:"'Nunito',sans-serif",display:'flex',alignItems:'center',gap:6,
+                color:'rgba(244,239,232,.55)',fontSize:11,fontWeight:600,
+                fontFamily:"'Nunito',sans-serif",display:'flex',alignItems:'center',gap:5,
                 transition:'background .15s,border-color .15s',
               }}
-              onMouseEnter={e=>{e.currentTarget.style.background='rgba(255,255,255,.08)';e.currentTarget.style.borderColor='rgba(255,255,255,.15)';}}
-              onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,.03)';e.currentTarget.style.borderColor='rgba(255,255,255,.08)';}}
+              onMouseEnter={e=>{e.currentTarget.style.background='rgba(255,255,255,.08)';}}
+              onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,.03)';}}
               >
-                <span style={{fontSize:16}}>{fb.emoji}</span>{fb.label}
+                <span style={{fontSize:14}}>{fb.emoji}</span>{fb.label}
               </button>
             ))}
           </div>
-        )}
-        {storyFeedback && storyFeedback !== 'retry' && (
-          <div style={{fontSize:11,color:'rgba(245,184,76,.5)',fontFamily:"'DM Mono',monospace",textAlign:'center',marginBottom:16,animation:'nc-fadeUp .3s ease both'}}>
+        ) : storyFeedback !== 'retry' ? (
+          <div style={{fontSize:10,color:'rgba(245,184,76,.5)',fontFamily:"'DM Mono',monospace",marginBottom:14,animation:'nc-fadeUp .3s ease both'}}>
             {storyFeedback === 'loved' ? 'We\u2019ll remember what worked \u2728' : 'Thanks for the feedback'}
           </div>
-        )}
+        ) : null}
 
-        <div style={{width:'100%',animation:'nc-fadeUp .6s .7s ease both',opacity:0,display:'flex',flexDirection:'column',gap:10}}>
-          {v8rGoldenSeed && renderV8rGoldenSeed()}
-          {!book?.nightCard && (
+        {/* CTAs */}
+        <div style={{width:'100%',display:'flex',flexDirection:'column',gap:8,animation:'nc-fadeUp .5s .35s ease both'}}>
+          {!book?.nightCard ? (
             <>
-              <button onClick={builderChoices?.path === 'ritual' ? exitToHome : enterNightCardFlow} style={{position:'relative',width:'100%',padding:'17px 20px',borderRadius:18,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)'}}>
+              <button onClick={builderChoices?.path === 'ritual' ? exitToHome : enterNightCardFlow} style={{position:'relative',width:'100%',padding:'16px 20px',borderRadius:16,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 6px 20px rgba(245,184,76,.3)'}}>
                 <div style={{position:'absolute',inset:0,background:'linear-gradient(108deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%)',animation:'nc-shimmer 5.5s infinite',pointerEvents:'none'}}/>
                 <span style={{position:'relative',zIndex:1}}>{builderChoices?.path === 'ritual' ? 'Continue tonight\u2019s ritual \u2192' : 'Save tonight\u2019s memory \u2192'}</span>
               </button>
-              {builderChoices?.path !== 'ritual' && (
-                <button onClick={exitToHome} style={{background:'none',border:'none',color:'rgba(234,242,255,.25)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.3px',padding:'4px 0'}}>skip for now</button>
-              )}
+              <div style={{display:'flex',gap:8}}>
+                <button onClick={shareStory} style={{flex:1,padding:'12px',borderRadius:14,border:'1px solid rgba(244,239,232,.12)',background:'rgba(244,239,232,.04)',color:'rgba(234,242,255,.5)',fontSize:12,fontWeight:600,fontFamily:"'Nunito',sans-serif",cursor:'pointer'}}>Share story</button>
+                {builderChoices?.path !== 'ritual' && (
+                  <button onClick={exitToHome} style={{flex:1,padding:'12px',borderRadius:14,border:'1px solid rgba(255,255,255,.06)',background:'transparent',color:'rgba(234,242,255,.25)',fontSize:12,fontFamily:"'Nunito',sans-serif",cursor:'pointer'}}>Skip for now</button>
+                )}
+              </div>
             </>
+          ) : (
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={exitToHome} style={{flex:2,position:'relative',padding:'16px 20px',borderRadius:16,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif"}}>Home</button>
+              <button onClick={shareStory} style={{flex:1,padding:'12px',borderRadius:14,border:'1px solid rgba(244,239,232,.12)',background:'rgba(244,239,232,.04)',color:'rgba(234,242,255,.5)',fontSize:12,fontWeight:600,fontFamily:"'Nunito',sans-serif",cursor:'pointer'}}>Share</button>
+            </div>
           )}
-          {book?.nightCard && (
-            <button onClick={exitToHome} style={{position:'relative',width:'100%',padding:'17px 20px',borderRadius:18,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)'}}>Home</button>
-          )}
-          <button onClick={shareStory} style={{width:'100%',padding:'15px 20px',borderRadius:18,border:'1px solid rgba(244,239,232,.16)',background:'rgba(244,239,232,.06)',color:'rgba(234,242,255,.68)',fontSize:14,fontWeight:600,fontFamily:"'Fraunces',serif",cursor:'pointer'}}>Share this story</button>
         </div>
       </div>
       {renderV8rTopBar()}{renderV8rTray()}{renderV8rShareModal()}
@@ -4447,158 +4447,87 @@ Rules:
                 </div>
               </div>
             )}
-            {/* Screen 1 — Bonding Question */}
+            {/* Screen 1 — Combined: Bonding + Mood (merged steps 0+1) */}
             {ncStep===0 && (
               <div style={{minHeight:'100dvh',background:'#060912',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'}}>
                 <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 20%,rgba(154,127,212,.18),transparent 60%)'}}/>
-                <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',padding:'60px 24px 24px'}}>
-                  {/* Progress pills */}
-                  <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:8}}>
-                    {[0,1,2].map(i=><div key={i} style={{height:8,borderRadius:4,transition:'all .3s cubic-bezier(.2,.8,.3,1)',background:i<0?'rgba(245,184,76,.7)':i===0?'#F5B84C':'rgba(234,242,255,.15)',width:i===0?24:8}}/>)}
+                <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',padding:'48px 24px 24px',overflowY:'auto',scrollbarWidth:'none' as any}}>
+                  {/* Progress pills (2 steps now) */}
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:12,flexShrink:0}}>
+                    {[0,1].map(i=><div key={i} style={{height:8,borderRadius:4,transition:'all .3s',background:i===0?'#F5B84C':'rgba(234,242,255,.15)',width:i===0?24:8}}/>)}
                   </div>
                   {/* Creature + speech bubble */}
-                  <div style={{display:'flex',alignItems:'flex-end',gap:12,marginBottom:24,animation:'nc-fadeUp .35s ease both'}}>
+                  <div style={{display:'flex',alignItems:'flex-end',gap:12,marginBottom:18,animation:'nc-fadeUp .35s ease both',flexShrink:0}}>
                     <div style={{flexShrink:0,animation:'nc-floatY 4.5s ease-in-out infinite'}}>
-                      <div style={{fontSize:48,lineHeight:1}}>{companionCreature?.creatureEmoji??'🐰'}</div>
+                      <div style={{fontSize:40,lineHeight:1}}>{companionCreature?.creatureEmoji??'\uD83D\uDC30'}</div>
                     </div>
-                    <div style={{position:'relative',flex:1,background:'rgba(154,127,212,.12)',border:'1px solid rgba(154,127,212,.28)',borderRadius:'18px 18px 18px 4px',padding:'13px 15px'}}>
-                      <div style={{fontSize:9,color:'rgba(180,155,240,.65)',fontFamily:"'DM Mono',monospace",letterSpacing:'.6px',marginBottom:5,textTransform:'uppercase'}}>{companionCreature?.name??'Moon Bunny'} asks</div>
-                      <div style={{fontSize:14,fontWeight:700,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.4,letterSpacing:'-.1px'}}>{ncBondingQ||'What was the best part of today?'}</div>
+                    <div style={{flex:1,background:'rgba(154,127,212,.12)',border:'1px solid rgba(154,127,212,.28)',borderRadius:'16px 16px 16px 4px',padding:'11px 14px'}}>
+                      <div style={{fontSize:8,color:'rgba(180,155,240,.6)',fontFamily:"'DM Mono',monospace",letterSpacing:'.6px',marginBottom:4,textTransform:'uppercase'}}>{companionCreature?.name??'Moon Bunny'} asks</div>
+                      <div style={{fontSize:13,fontWeight:700,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.4}}>{ncBondingQ||'What was the best part of today?'}</div>
                     </div>
                   </div>
-                  <div style={{fontSize:20,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",letterSpacing:'-.4px',lineHeight:1.2,marginBottom:6,animation:'nc-fadeUp .35s .05s ease both',opacity:0}}>{book?.heroName??heroName}, what do<br/>you think?</div>
-                  <div style={{fontSize:12,color:'rgba(234,242,255,.36)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',marginBottom:22,animation:'nc-fadeUp .35s .1s ease both',opacity:0}}>Say it aloud or type it below</div>
-                  <div style={{marginBottom:14,animation:'nc-fadeUp .35s .15s ease both',opacity:0}}>
+                  {/* Bonding answer input */}
+                  <div style={{marginBottom:16,animation:'nc-fadeUp .35s .1s ease both',flexShrink:0}}>
                     <div style={{position:'relative'}}>
-                      <textarea value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)} placeholder="Type what they said…" style={{width:'100%',minHeight:80,padding:'14px 48px 14px 16px',borderRadius:16,border:`1px solid ${ncListening?'rgba(245,184,76,.55)':'rgba(154,127,212,.28)'}`,background:ncListening?'rgba(245,184,76,.08)':'rgba(154,127,212,.07)',color:'rgba(234,242,255,.82)',fontSize:14,fontFamily:"'Nunito',sans-serif",resize:'none',outline:'none',lineHeight:1.55,transition:'border-color .25s,background .25s'}}/>
+                      <textarea value={ncBondingA} onChange={e=>setNcBondingA(e.target.value)} placeholder="Type what they said..." style={{width:'100%',minHeight:60,padding:'12px 44px 12px 14px',borderRadius:14,border:`1px solid ${ncListening?'rgba(245,184,76,.55)':'rgba(154,127,212,.25)'}`,background:ncListening?'rgba(245,184,76,.08)':'rgba(154,127,212,.06)',color:'rgba(234,242,255,.82)',fontSize:13,fontFamily:"'Nunito',sans-serif",resize:'none',outline:'none',lineHeight:1.5}}/>
                       {typeof window!=='undefined'&&!!((window as any).SpeechRecognition||(window as any).webkitSpeechRecognition)&&(
                         <button onClick={()=>{
-                          const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
-                          if(!SR)return;
+                          const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;if(!SR)return;
                           if(ncListening){ncSrRef.current?.stop();setNcListening(false);return;}
-                          const sr=new SR();
-                          sr.continuous=false;sr.interimResults=false;sr.lang='en-US';
+                          const sr=new SR();sr.continuous=false;sr.interimResults=false;sr.lang='en-US';
                           sr.onresult=(e:any)=>{const t=e.results[0]?.[0]?.transcript||'';setNcBondingA(prev=>prev?(prev.trimEnd()+' '+t):t);setNcListening(false);};
-                          sr.onerror=()=>setNcListening(false);
-                          sr.onend=()=>setNcListening(false);
+                          sr.onerror=()=>setNcListening(false);sr.onend=()=>setNcListening(false);
                           sr.start();ncSrRef.current=sr;setNcListening(true);
-                        }} style={{position:'absolute',right:8,top:8,width:32,height:32,borderRadius:'50%',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',background:ncListening?'rgba(245,184,76,.92)':'rgba(154,127,212,.18)',transition:'background .25s,transform .15s',transform:ncListening?'scale(1.08)':'scale(1)',animation:ncListening?'nc-micPulse 1.2s ease-in-out infinite':'none'}} aria-label={ncListening?'Stop listening':'Start voice input'}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={ncListening?'#172200':'rgba(234,242,255,.7)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="1" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
+                        }} style={{position:'absolute',right:6,top:6,width:30,height:30,borderRadius:'50%',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',background:ncListening?'rgba(245,184,76,.92)':'rgba(154,127,212,.15)',transition:'all .2s',animation:ncListening?'nc-micPulse 1.2s ease-in-out infinite':'none'}} aria-label="Voice input">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={ncListening?'#172200':'rgba(234,242,255,.6)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="1" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                         </button>
                       )}
                     </div>
                   </div>
-                  <div style={{marginTop:'auto',display:'flex',flexDirection:'column',gap:9,animation:'nc-fadeUp .35s .25s ease both',opacity:0}}>
-                    <button onClick={()=>setNcStep(1)} style={{position:'relative',width:'100%',padding:'17px 20px',borderRadius:18,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)'}}>
-                      <div style={{position:'absolute',inset:0,background:'linear-gradient(108deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%)',animation:'nc-shimmer 5.5s infinite',pointerEvents:'none'}}/>
-                      <span style={{position:'relative',zIndex:1}}>Save this answer →</span>
-                    </button>
-                    <button onClick={()=>setNcStep(1)} style={{background:'none',border:'none',color:'rgba(234,242,255,.25)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.3px',padding:'4px 0'}}>skip this question</button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Screen 2 — Gratitude + Mood Picker */}
-            {ncStep===1 && (
-              <div style={{minHeight:'100dvh',background:'#060912',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'}}>
-                <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 20%,rgba(20,216,144,.1),transparent 60%)'}}/>
-                <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',padding:'60px 24px 24px'}}>
-                  <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:8}}>
-                    {[0,1,2].map(i=><div key={i} style={{height:8,borderRadius:4,transition:'all .3s cubic-bezier(.2,.8,.3,1)',background:i<1?'rgba(245,184,76,.7)':i===1?'#F5B84C':'rgba(234,242,255,.15)',width:i===1?24:8}}/>)}
-                  </div>
-                  <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',marginBottom:20}}>
-                    <div style={{fontSize:11,color:'rgba(20,216,144,.6)',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:16,animation:'nc-fadeUp .35s ease both'}}>THE BEST MOMENT</div>
-                    <div style={{fontSize:26,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.2,letterSpacing:'-.5px',marginBottom:10,animation:'nc-fadeUp .35s .05s ease both',opacity:0}}>What were the best<br/>3 seconds of today?</div>
-                    <div style={{fontSize:13,color:'rgba(234,242,255,.38)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.6,marginBottom:20,animation:'nc-fadeUp .35s .1s ease both',opacity:0}}>One small moment. Anything counts.</div>
-                    <div style={{display:'flex',flexWrap:'wrap',gap:7,marginBottom:18,animation:'nc-fadeUp .35s .15s ease both',opacity:0}}>
-                      {['When we laughed','A hug','Something yummy','A surprise','Being silly','Feeling cozy'].map(chip=>(
-                        <div key={chip} onClick={()=>setNcGratitude(chip)} style={{padding:'7px 12px',borderRadius:20,border:`1px solid ${ncGratitude===chip?'rgba(20,216,144,.45)':'rgba(20,216,144,.18)'}`,background:ncGratitude===chip?'rgba(20,216,144,.15)':'rgba(20,216,144,.07)',fontSize:11,color:'rgba(20,216,144,.75)',fontFamily:"'Nunito',sans-serif",cursor:'pointer',transition:'all .2s'}}>{chip}</div>
-                      ))}
-                    </div>
-                    <div style={{animation:'nc-fadeUp .35s .2s ease both',opacity:0,marginBottom:24}}>
-                      <textarea value={ncGratitude} onChange={e=>setNcGratitude(e.target.value)} placeholder="When we laughed at the dog…" style={{width:'100%',minHeight:70,padding:'14px 16px',borderRadius:16,border:'1px solid rgba(20,216,144,.22)',background:'rgba(20,216,144,.07)',color:'rgba(234,242,255,.82)',fontSize:14,fontFamily:"'Nunito',sans-serif",resize:'none',outline:'none',lineHeight:1.55}}/>
-                    </div>
-                    {/* Mood picker */}
-                    <div style={{animation:'nc-fadeUp .35s .25s ease both',opacity:0}}>
-                      <div style={{fontSize:11,color:'rgba(244,239,232,.35)',fontFamily:"'DM Mono',monospace",letterSpacing:'.5px',marginBottom:10}}>HOW DOES {(book?.heroName??heroName).toUpperCase()} FEEL RIGHT NOW?</div>
-                      <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-                        {[
-                          {emoji:'😊',label:'happy'},{emoji:'😴',label:'sleepy'},{emoji:'🤗',label:'cozy'},
-                          {emoji:'😌',label:'calm'},{emoji:'🥰',label:'loved'},{emoji:'😆',label:'silly'},
-                        ].map(m=>(
-                          <div key={m.emoji} onClick={()=>setNcChildMood(ncChildMood===m.emoji?'':m.emoji)} style={{
-                            display:'flex',flexDirection:'column',alignItems:'center',gap:3,
-                            padding:'8px 10px',borderRadius:14,cursor:'pointer',transition:'all .2s',
-                            background:ncChildMood===m.emoji?'rgba(245,184,76,.12)':'rgba(255,255,255,.04)',
-                            border:`1.5px solid ${ncChildMood===m.emoji?'rgba(245,184,76,.4)':'rgba(255,255,255,.08)'}`,
-                            minWidth:52,
-                          }}>
-                            <span style={{fontSize:22}}>{m.emoji}</span>
-                            <span style={{fontSize:9,color:ncChildMood===m.emoji?'rgba(245,184,76,.8)':'rgba(234,242,255,.35)',fontFamily:"'Nunito',sans-serif",fontWeight:600}}>{m.label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{display:'flex',flexDirection:'column',gap:9,animation:'nc-fadeUp .35s .3s ease both',opacity:0}}>
-                    <button onClick={()=>setNcStep(2)} style={{position:'relative',width:'100%',padding:'17px 20px',borderRadius:18,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)'}}>
-                      <div style={{position:'absolute',inset:0,background:'linear-gradient(108deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%)',animation:'nc-shimmer 5.5s infinite',pointerEvents:'none'}}/>
-                      <span style={{position:'relative',zIndex:1}}>Save this moment →</span>
-                    </button>
-                    <button onClick={()=>setNcStep(2)} style={{background:'none',border:'none',color:'rgba(234,242,255,.25)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.3px',padding:'4px 0'}}>skip</button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Screen 3 — Parent Whisper */}
-            {ncStep===2 && (
-              <div style={{minHeight:'100dvh',background:'linear-gradient(170deg,#04080f,#080c1e)',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'}}>
-                <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 40%,rgba(90,60,160,.14),transparent 60%)'}}/>
-                <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',padding:'60px 24px 24px'}}>
-                  <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,marginBottom:8}}>
-                    {[0,1,2].map(i=><div key={i} style={{height:8,borderRadius:4,transition:'all .3s cubic-bezier(.2,.8,.3,1)',background:i<2?'rgba(245,184,76,.7)':i===2?'#F5B84C':'rgba(234,242,255,.15)',width:i===2?24:8}}/>)}
-                  </div>
-                  <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',marginBottom:20}}>
-                    <div style={{display:'inline-flex',alignItems:'center',gap:6,padding:'5px 12px',background:'rgba(154,127,212,.1)',border:'1px solid rgba(154,127,212,.22)',borderRadius:20,marginBottom:20,width:'fit-content',animation:'nc-fadeUp .35s ease both'}}>
-                      <span style={{fontSize:10}}>🤫</span>
-                      <span style={{fontSize:9,color:'rgba(154,127,212,.7)',fontFamily:"'DM Mono',monospace",letterSpacing:'.5px'}}>PARENT'S WHISPER · PRIVATE</span>
-                    </div>
-                    <div style={{fontSize:24,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.2,letterSpacing:'-.4px',marginBottom:10,animation:'nc-fadeUp .35s .05s ease both',opacity:0}}>A note to your<br/>future self.</div>
-                    <div style={{fontSize:13,color:'rgba(234,242,255,.36)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.65,marginBottom:28,animation:'nc-fadeUp .35s .1s ease both',opacity:0}}>Something only you would notice tonight.<br/>You'll thank yourself for writing this down.</div>
-                    <div style={{padding:'14px 16px',background:'rgba(154,127,212,.07)',border:'1px solid rgba(154,127,212,.15)',borderRadius:14,marginBottom:20,animation:'nc-fadeUp .35s .15s ease both',opacity:0}}>
-                      <div style={{fontSize:9,color:'rgba(154,127,212,.5)',fontFamily:"'DM Mono',monospace",letterSpacing:'.5px',marginBottom:8}}>TAP TO START WITH</div>
+                  {/* Mood picker (compact) */}
+                  <div style={{marginBottom:16,animation:'nc-fadeUp .35s .15s ease both',flexShrink:0}}>
+                    <div style={{fontSize:9,color:'rgba(244,239,232,.3)',fontFamily:"'DM Mono',monospace",letterSpacing:'.5px',marginBottom:8}}>HOW DOES {(book?.heroName??heroName).toUpperCase()} FEEL?</div>
+                    <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
                       {[
-                        ncBondingA.trim() ? `I don't want to forget when ${book?.heroName||heroName} said "${ncBondingA.trim().slice(0,40)}${ncBondingA.trim().length>40?'...':''}"` : null,
-                        ncGratitude.trim() ? `Tonight's best moment: ${ncGratitude.trim().slice(0,40)}${ncGratitude.trim().length>40?'...':''}` : null,
-                        ncChildMood ? `${book?.heroName||heroName} was feeling ${ncChildMood==='😊'?'so happy':ncChildMood==='😴'?'beautifully sleepy':ncChildMood==='🤗'?'so cozy':ncChildMood==='😌'?'perfectly calm':ncChildMood==='🥰'?'full of love':ncChildMood==='😆'?'wonderfully silly':'content'} tonight` : null,
-                        'How they seemed tonight',
-                        'What I\'m feeling about them right now',
-                      ].filter(Boolean).slice(0,3).map((p,i,arr)=>(
-                        <div key={i} onClick={()=>setNcExtra(p!)} style={{fontSize:12,color:'rgba(234,242,255,.38)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',padding:'5px 0',borderBottom:i<arr.length-1?'1px solid rgba(255,255,255,.05)':'none',cursor:'pointer',transition:'color .15s'}}
-                          onMouseEnter={e=>{e.currentTarget.style.color='rgba(234,242,255,.6)';}}
-                          onMouseLeave={e=>{e.currentTarget.style.color='rgba(234,242,255,.38)';}}
-                        >{p}</div>
+                        {emoji:'\uD83D\uDE0A',label:'happy'},{emoji:'\uD83D\uDE34',label:'sleepy'},{emoji:'\uD83E\uDD17',label:'cozy'},
+                        {emoji:'\uD83D\uDE0C',label:'calm'},{emoji:'\uD83E\uDD70',label:'loved'},{emoji:'\uD83D\uDE06',label:'silly'},
+                      ].map(m=>(
+                        <div key={m.emoji} onClick={()=>setNcChildMood(ncChildMood===m.emoji?'':m.emoji)} style={{
+                          display:'flex',flexDirection:'column',alignItems:'center',gap:2,
+                          padding:'6px 8px',borderRadius:12,cursor:'pointer',transition:'all .2s',
+                          background:ncChildMood===m.emoji?'rgba(245,184,76,.12)':'rgba(255,255,255,.03)',
+                          border:`1.5px solid ${ncChildMood===m.emoji?'rgba(245,184,76,.4)':'rgba(255,255,255,.06)'}`,
+                          minWidth:46,
+                        }}>
+                          <span style={{fontSize:20}}>{m.emoji}</span>
+                          <span style={{fontSize:8,color:ncChildMood===m.emoji?'rgba(245,184,76,.8)':'rgba(234,242,255,.3)',fontFamily:"'Nunito',sans-serif",fontWeight:600}}>{m.label}</span>
+                        </div>
                       ))}
                     </div>
-                    <div style={{animation:'nc-fadeUp .35s .2s ease both',opacity:0}}>
-                      <textarea value={ncExtra} onChange={e=>setNcExtra(e.target.value)} placeholder="She was so peaceful tonight…" style={{width:'100%',minHeight:80,padding:'14px 16px',borderRadius:16,border:'1px solid rgba(154,127,212,.2)',background:'rgba(154,127,212,.06)',color:'rgba(234,242,255,.82)',fontSize:14,fontFamily:"'Nunito',sans-serif",resize:'none',outline:'none',lineHeight:1.55}}/>
+                  </div>
+                  {/* Best moment chips */}
+                  <div style={{marginBottom:16,animation:'nc-fadeUp .35s .2s ease both',flexShrink:0}}>
+                    <div style={{fontSize:9,color:'rgba(20,216,144,.5)',fontFamily:"'DM Mono',monospace",letterSpacing:'.5px',marginBottom:8}}>BEST MOMENT TONIGHT</div>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                      {['When we laughed','A hug','Being silly','Feeling cozy'].map(chip=>(
+                        <div key={chip} onClick={()=>setNcGratitude(ncGratitude===chip?'':chip)} style={{padding:'6px 11px',borderRadius:18,border:`1px solid ${ncGratitude===chip?'rgba(20,216,144,.4)':'rgba(20,216,144,.15)'}`,background:ncGratitude===chip?'rgba(20,216,144,.12)':'rgba(20,216,144,.05)',fontSize:10,color:'rgba(20,216,144,.7)',fontFamily:"'Nunito',sans-serif",cursor:'pointer',transition:'all .2s'}}>{chip}</div>
+                      ))}
                     </div>
                   </div>
-                  <div style={{display:'flex',flexDirection:'column',gap:9,animation:'nc-fadeUp .35s .25s ease both',opacity:0}}>
-                    <button onClick={()=>setNcStep(3)} style={{position:'relative',width:'100%',padding:'17px 20px',borderRadius:18,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)'}}>
+                  {/* CTA */}
+                  <div style={{marginTop:'auto',display:'flex',flexDirection:'column',gap:8,flexShrink:0,animation:'nc-fadeUp .35s .25s ease both'}}>
+                    <button onClick={()=>setNcStep(1)} style={{position:'relative',width:'100%',padding:'15px 20px',borderRadius:16,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 6px 20px rgba(245,184,76,.28)'}}>
                       <div style={{position:'absolute',inset:0,background:'linear-gradient(108deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%)',animation:'nc-shimmer 5.5s infinite',pointerEvents:'none'}}/>
-                      <span style={{position:'relative',zIndex:1}}>Save memory →</span>
+                      <span style={{position:'relative',zIndex:1}}>Create memory {'\u2192'}</span>
                     </button>
-                    <button onClick={()=>{setNcExtra('');setNcStep(3);}} style={{background:'none',border:'none',color:'rgba(234,242,255,.25)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.3px',padding:'4px 0'}}>skip · save without whisper</button>
+                    <button onClick={()=>setNcStep(1)} style={{background:'none',border:'none',color:'rgba(234,242,255,.2)',fontSize:10,fontFamily:"'DM Mono',monospace",cursor:'pointer',padding:'3px 0'}}>skip</button>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Screen 4 — Generating Ceremony */}
-            {ncStep===3 && (
+            {/* Screen 2 — Generating Ceremony (was step 3, now step 1) */}
+            {ncStep===1 && (
               <div style={{minHeight:'100dvh',background:'#060912',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 28px',textAlign:'center',position:'relative'}}>
                 <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 40%,rgba(60,30,120,.35),transparent 65%),radial-gradient(ellipse at 20% 80%,rgba(20,100,80,.2),transparent 50%)'}}/>
                 <div style={{position:'relative',zIndex:1,display:'flex',flexDirection:'column',alignItems:'center'}}>
@@ -4619,8 +4548,8 @@ Rules:
               </div>
             )}
 
-            {/* Screen 5 — Card Reveal + Photo + Save */}
-            {ncStep===4 && ncResult && (
+            {/* Screen 3 — Card Reveal + Whisper + Media + Save (was step 4, now step 2) */}
+            {ncStep===2 && ncResult && (
               <div style={{height:'100dvh',maxHeight:'100dvh',background:'#060912',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'}}>
                 <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 30%,rgba(20,100,60,.3),transparent 65%)'}}/>
                 <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',alignItems:'center',padding:'40px 20px 20px',overflowY:'auto',scrollbarWidth:'none' as any,WebkitOverflowScrolling:'touch' as any}}>
@@ -4752,6 +4681,15 @@ Rules:
                         </div>
                       </div>
                     )}
+
+                    {/* Parent whisper (moved here from separate screen) */}
+                    <div style={{width:'100%',marginBottom:10,animation:'nc-fadeUp .4s .25s ease both'}}>
+                      <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:6}}>
+                        <span style={{fontSize:10}}>{'\uD83E\uDD2B'}</span>
+                        <span style={{fontSize:8,color:'rgba(154,127,212,.6)',fontFamily:"'DM Mono',monospace",letterSpacing:'.5px'}}>PARENT{'\u2019'}S WHISPER {'\u00B7'} PRIVATE</span>
+                      </div>
+                      <textarea value={ncExtra} onChange={e=>setNcExtra(e.target.value)} placeholder="A note to your future self about tonight..." style={{width:'100%',minHeight:48,padding:'10px 14px',borderRadius:12,border:'1px solid rgba(154,127,212,.18)',background:'rgba(154,127,212,.05)',color:'rgba(234,242,255,.75)',fontSize:12,fontFamily:"'Nunito',sans-serif",resize:'none',outline:'none',lineHeight:1.5}} maxLength={280}/>
+                    </div>
 
                     {/* Save + actions */}
                     <div style={{width:'100%',display:'flex',flexDirection:'column',gap:8,animation:'nc-fadeUp .4s .3s ease both'}}>
@@ -4927,7 +4865,7 @@ Rules:
             )}
 
             {/* Step 3: Photo */}
-            {ncStep===3 && (
+            {ncStep===1 && (
               <div className="nc-step-card" key="s3">
                 <div className="nc-step-icon">📸</div>
                 <div className="nc-step-title">Capture this moment</div>
@@ -4977,7 +4915,7 @@ Rules:
                                 ncStreamRef.current?.getTracks().forEach(t=>t.stop());
                                 ncStreamRef.current = null;
                               } else {
-                                setNcStep(4); // fallback
+                                setNcStep(2); // fallback
                               }
                             }
                           }, 1000);
@@ -4989,7 +4927,7 @@ Rules:
                       onClick={()=>{
                         ncStreamRef.current?.getTracks().forEach(t=>t.stop());
                         ncStreamRef.current=null;
-                        setNcStep(4);
+                        setNcStep(2);
                       }}>
                       Skip photo →
                     </button>
@@ -5009,7 +4947,7 @@ Rules:
                             if(ncVideoRef.current) ncVideoRef.current.srcObject = stream;
                           }).catch(()=>{});
                       }}>🔄 Retake</button>
-                      <button className="btn" style={{flex:2}} onClick={()=>setNcStep(4)}>
+                      <button className="btn" style={{flex:2}} onClick={()=>setNcStep(2)}>
                         Use this →
                       </button>
                     </div>
