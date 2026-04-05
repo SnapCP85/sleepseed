@@ -218,6 +218,8 @@ function AppInner() {
     }
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const selfHealAttempted = useRef<string | null>(null);
+
   // ── All hooks above this line ─────────────────────────────────────────────
 
   if (isSharedStory) return <SharedStoryViewer />;
@@ -539,7 +541,6 @@ function AppInner() {
   };
 
   // Self-heal: if user has data in Supabase but localStorage flags were wiped, restore them
-  const selfHealAttempted = useRef<string | null>(null);
   useEffect(() => {
     if (!user || user.isGuest) return;
     const uid = user.id;
