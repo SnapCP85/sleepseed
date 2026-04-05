@@ -232,14 +232,17 @@ const CSS = `
 }
 .ml-page>*{position:relative;z-index:1}
 
+/* ─── Inner wrapper — single centering container ─── */
+.ml-inner{max-width:440px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+
 /* ─── Top bar ─── */
-.ml-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 20px 28px;max-width:440px;margin:0 auto}
+.ml-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 0 28px}
 .ml-topbtn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.08);color:var(--ml-cream-dim);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .ml-topbtn:hover{background:rgba(245,184,76,0.08);border-color:rgba(245,184,76,0.3);color:var(--ml-amber)}
 .ml-toptitle{font-family:var(--ml-serif);font-weight:400;font-size:18px;color:var(--ml-cream);opacity:.92}
 
 /* ─── Search panel ─── */
-.ml-search-panel{max-width:440px;margin:0 auto;padding:0 20px;overflow:hidden;transition:max-height .35s cubic-bezier(.22,.61,.36,1),opacity .25s ease;opacity:0;max-height:0}
+.ml-search-panel{overflow:hidden;transition:max-height .35s cubic-bezier(.22,.61,.36,1),opacity .25s ease;opacity:0;max-height:0}
 .ml-search-panel.open{max-height:120px;opacity:1;margin-bottom:16px}
 .ml-search-input{width:100%;background:rgba(255,255,255,.04);border:1.5px solid rgba(244,239,232,.08);border-radius:14px;padding:11px 14px;font-size:13px;color:var(--ml-cream);outline:none;font-family:var(--ml-sans);transition:border-color .2s}
 .ml-search-input:focus{border-color:rgba(245,184,76,.3)}
@@ -250,10 +253,10 @@ const CSS = `
 .ml-mood-clear{display:flex;align-items:center;padding:5px 10px;border-radius:16px;cursor:pointer;background:rgba(200,80,80,.08);border:1px solid rgba(200,80,80,.2);font-size:9px;color:rgba(255,140,130,.6);font-family:var(--ml-mono)}
 
 /* ─── Loading ─── */
-.ml-loading{text-align:center;padding:100px 24px;max-width:440px;margin:0 auto}
+.ml-loading{text-align:center;padding:100px 0}
 
 /* ─── Thread (hero) ─── */
-.ml-thread{text-align:center;padding:4px 0 40px;max-width:440px;margin:0 auto}
+.ml-thread{text-align:center;padding:4px 0 40px}
 .ml-thread-eyebrow{font-family:var(--ml-mono);font-size:9px;letter-spacing:.28em;color:var(--ml-amber);text-transform:uppercase;opacity:.82;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:10px}
 .ml-thread-diamond{font-size:5px;opacity:.7}
 .ml-thread-reason{font-family:var(--ml-serif);font-style:italic;font-size:16px;line-height:1.5;color:var(--ml-cream);opacity:.82;max-width:300px;margin:0 auto 26px;letter-spacing:-.002em}
@@ -285,7 +288,7 @@ const CSS = `
 .ml-thread-meta{margin-top:9px;padding-top:7px;border-top:1px solid var(--ml-hairline);font-family:var(--ml-mono);font-size:7.5px;letter-spacing:.14em;color:var(--ml-ink-faint);text-transform:uppercase}
 
 /* ─── Narrative band ─── */
-.ml-narrative{padding:42px 24px 36px;text-align:center;position:relative;max-width:440px;margin:0 auto}
+.ml-narrative{padding:42px 4px 36px;text-align:center;position:relative}
 .ml-narrative::before,.ml-narrative::after{content:'';position:absolute;left:50%;transform:translateX(-50%);width:60px;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,0.35),transparent)}
 .ml-narrative::before{top:12px}
 .ml-narrative::after{bottom:12px}
@@ -294,8 +297,8 @@ const CSS = `
 .ml-narrative-sub{font-family:var(--ml-serif);font-style:italic;font-size:14px;color:var(--ml-cream);opacity:.52;margin-top:6px;display:block}
 
 /* ─── Bucket ─── */
-.ml-bucket{padding:8px 0 4px;max-width:440px;margin:0 auto}
-.ml-bucket-head{text-align:center;padding:52px 20px 22px}
+.ml-bucket{padding:8px 0 4px}
+.ml-bucket-head{text-align:center;padding:52px 0 22px}
 .ml-bucket-eyebrow{font-family:var(--ml-mono);font-size:8.5px;letter-spacing:.32em;color:var(--ml-amber);text-transform:uppercase;opacity:.8;display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px}
 .ml-bucket-diamond{font-size:4px;opacity:.6}
 .ml-bucket-title{font-family:var(--ml-serif);font-style:italic;font-weight:400;font-size:29px;color:var(--ml-cream);letter-spacing:-.015em;line-height:1.2}
@@ -303,7 +306,7 @@ const CSS = `
 .ml-bucket-rule{width:40px;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,0.3),transparent);margin:14px auto 0}
 
 /* ─── Grid ─── */
-.ml-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:6px 20px 4px;max-width:440px;margin:0 auto}
+.ml-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:6px 0 4px}
 
 /* ─── Tile ─── */
 .ml-tile{
@@ -361,12 +364,12 @@ const CSS = `
 .ml-tile.streak .ml-tile-badge{background:rgba(245,120,40,0.28);border-color:rgba(245,140,60,0.5)}
 
 /* ─── Divider ─── */
-.ml-divider{display:flex;align-items:center;justify-content:center;gap:14px;padding:36px 20px 0;max-width:440px;margin:0 auto}
+.ml-divider{display:flex;align-items:center;justify-content:center;gap:14px;padding:36px 0 0}
 .ml-divider-line{flex:0 0 70px;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,0.3),transparent)}
 .ml-divider-orn{color:var(--ml-amber);opacity:.5;font-size:6px;letter-spacing:.4em}
 
 /* ─── Load more ─── */
-.ml-loadmore{max-width:440px;margin:0 auto;padding:36px 20px 0}
+.ml-loadmore{padding:36px 0 0}
 .ml-loadmore-inner{display:flex;align-items:center;gap:16px;cursor:pointer;transition:opacity .3s}
 .ml-loadmore-inner:hover{opacity:.9}
 .ml-loadmore-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,0.25),transparent)}
@@ -374,7 +377,7 @@ const CSS = `
 .ml-loadmore-inner:hover .ml-loadmore-text{opacity:1}
 
 /* ─── Footer ─── */
-.ml-footer{text-align:center;padding:80px 20px 20px;max-width:440px;margin:0 auto}
+.ml-footer{text-align:center;padding:80px 0 20px}
 .ml-footer-total{font-family:var(--ml-serif);font-style:italic;font-size:15px;color:var(--ml-cream);opacity:.62;margin-bottom:26px;line-height:1.6}
 .ml-footer-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:40px}
 .ml-footer-btn{font-family:var(--ml-mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:11px 17px;background:rgba(245,184,76,0.05);border:1px solid rgba(245,184,76,0.22);border-radius:100px;color:var(--ml-amber);cursor:pointer;transition:all .35s}
@@ -382,7 +385,7 @@ const CSS = `
 .ml-footer-mark{font-family:var(--ml-mono);font-size:7px;letter-spacing:.3em;text-transform:uppercase;color:var(--ml-cream);opacity:.12}
 
 /* ─── Empty ─── */
-.ml-empty{text-align:center;padding:80px 24px;max-width:440px;margin:0 auto}
+.ml-empty{text-align:center;padding:80px 0}
 
 /* ─── Modals ─── */
 .ml-confirm-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px);animation:mlFadein .15s ease}
@@ -408,8 +411,8 @@ const CSS = `
 /* ─── Action sheet (bottom slide-up) ─── */
 .ml-actions-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:350;animation:mlFadein .15s ease}
 .ml-actions-sheet{
-  position:fixed;bottom:0;left:0;right:0;z-index:351;
-  max-width:440px;margin:0 auto;
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:351;
+  width:100%;max-width:440px;
   background:linear-gradient(180deg,#131828 0%,#0c1018 100%);
   border-radius:22px 22px 0 0;padding:12px 20px 32px;
   animation:mlSlideup .3s cubic-bezier(.22,1,.36,1);
@@ -711,6 +714,8 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
     <div className="ml-page">
       <style>{CSS}</style>
 
+      <div className="ml-inner">
+
       {/* ── Top bar ── */}
       <div className="ml-topbar">
         <button className="ml-topbtn" onClick={onBack} aria-label="Back">←</button>
@@ -877,6 +882,8 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
           <div className="ml-footer-mark">SleepSeed</div>
         </div>
       )}
+
+      </div>{/* end .ml-inner */}
 
       {/* ── Detail modal ── */}
       {viewing && (

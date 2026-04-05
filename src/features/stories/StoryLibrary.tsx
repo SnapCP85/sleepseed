@@ -117,14 +117,17 @@ const CSS = `
 }
 .sl-page>*{position:relative;z-index:1}
 
+/* ─── Inner wrapper — single centering container ─── */
+.sl-inner{max-width:440px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+
 /* ─── Top bar ─── */
-.sl-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 20px 28px;max-width:440px;margin:0 auto}
+.sl-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 0 28px}
 .sl-topbtn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.08);color:var(--ml-cream-dim);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .sl-topbtn:hover{background:rgba(245,184,76,0.08);border-color:rgba(245,184,76,0.3);color:var(--ml-amber)}
 .sl-toptitle{font-family:var(--ml-serif);font-weight:400;font-size:18px;color:var(--ml-cream);opacity:.92}
 
 /* ─── Search panel ─── */
-.sl-search-panel{max-width:440px;margin:0 auto;padding:0 20px;overflow:hidden;transition:max-height .35s cubic-bezier(.22,.61,.36,1),opacity .25s ease;opacity:0;max-height:0}
+.sl-search-panel{overflow:hidden;transition:max-height .35s cubic-bezier(.22,.61,.36,1),opacity .25s ease;opacity:0;max-height:0}
 .sl-search-panel.open{max-height:140px;opacity:1;margin-bottom:16px}
 .sl-search-input{width:100%;background:rgba(255,255,255,.04);border:1.5px solid rgba(244,239,232,.08);border-radius:14px;padding:11px 14px;font-size:13px;color:var(--ml-cream);outline:none;font-family:var(--ml-sans);transition:border-color .2s}
 .sl-search-input:focus{border-color:rgba(245,184,76,.3)}
@@ -135,7 +138,7 @@ const CSS = `
 .sl-filter-clear{display:flex;align-items:center;padding:5px 10px;border-radius:16px;cursor:pointer;background:rgba(200,80,80,.08);border:1px solid rgba(200,80,80,.2);font-size:9px;color:rgba(255,140,130,.6);font-family:var(--ml-mono)}
 
 /* ─── Narrative band ─── */
-.sl-narrative{padding:42px 24px 36px;text-align:center;position:relative;max-width:440px;margin:0 auto}
+.sl-narrative{padding:42px 4px 36px;text-align:center;position:relative}
 .sl-narrative::before,.sl-narrative::after{content:'';position:absolute;left:50%;transform:translateX(-50%);width:60px;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,0.35),transparent)}
 .sl-narrative::before{top:12px}
 .sl-narrative::after{bottom:12px}
@@ -143,7 +146,7 @@ const CSS = `
 .sl-narrative-text{font-family:var(--ml-serif);font-size:15px;line-height:1.6;color:var(--ml-cream);opacity:.78;letter-spacing:-.003em;max-width:340px;margin:0 auto;position:relative;z-index:1}
 
 /* ─── Origin hero ─── */
-.sl-origin-hero{text-align:center;padding:4px 0 10px;max-width:440px;margin:0 auto}
+.sl-origin-hero{text-align:center;padding:4px 0 10px}
 .sl-origin-eyebrow{font-family:var(--ml-mono);font-size:9px;letter-spacing:.28em;color:var(--ml-amber);text-transform:uppercase;opacity:.82;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:10px}
 .sl-origin-diamond{font-size:5px;opacity:.7}
 .sl-origin-reason{font-family:var(--ml-serif);font-style:italic;font-size:16px;line-height:1.5;color:var(--ml-cream);opacity:.82;max-width:300px;margin:0 auto 26px;letter-spacing:-.002em}
@@ -170,7 +173,7 @@ const CSS = `
 .sl-origin-meta{font-family:var(--ml-mono);font-size:9px;color:rgba(244,239,232,.4);margin-top:4px}
 
 /* ─── Section headers ─── */
-.sl-section{padding:52px 20px 22px;text-align:center;max-width:440px;margin:0 auto}
+.sl-section{padding:52px 0 22px;text-align:center}
 .sl-section-eyebrow{font-family:var(--ml-mono);font-size:8.5px;letter-spacing:.32em;color:var(--ml-amber);text-transform:uppercase;opacity:.8;display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px}
 .sl-section-diamond{font-size:4px;opacity:.6}
 .sl-section-title{font-family:var(--ml-serif);font-style:italic;font-weight:400;font-size:29px;color:var(--ml-cream);letter-spacing:-.015em;line-height:1.2}
@@ -178,12 +181,12 @@ const CSS = `
 .sl-section-rule{width:40px;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,0.3),transparent);margin:14px auto 0}
 
 /* ─── Divider ─── */
-.sl-divider{display:flex;align-items:center;justify-content:center;gap:14px;padding:36px 20px 0;max-width:440px;margin:0 auto}
+.sl-divider{display:flex;align-items:center;justify-content:center;gap:14px;padding:36px 0 0}
 .sl-divider-line{flex:0 0 70px;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,0.3),transparent)}
 .sl-divider-orn{color:var(--ml-amber);opacity:.5;font-size:6px;letter-spacing:.4em}
 
 /* ─── Story grid ─── */
-.sl-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:6px 20px 4px;max-width:440px;margin:0 auto}
+.sl-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:6px 0 4px}
 
 /* ─── Story card ─── */
 .sl-card{
@@ -234,10 +237,10 @@ const CSS = `
 .sl-shared-item:hover{background:rgba(255,255,255,.04)}
 
 /* ─── Empty ─── */
-.sl-empty{text-align:center;padding:80px 24px;max-width:440px;margin:0 auto}
+.sl-empty{text-align:center;padding:80px 0}
 
 /* ─── Footer ─── */
-.sl-footer{text-align:center;padding:80px 20px 20px;max-width:440px;margin:0 auto}
+.sl-footer{text-align:center;padding:80px 0 20px}
 .sl-footer-total{font-family:var(--ml-serif);font-style:italic;font-size:15px;color:var(--ml-cream);opacity:.62;margin-bottom:16px;line-height:1.6}
 .sl-footer-mark{font-family:var(--ml-mono);font-size:7px;letter-spacing:.3em;text-transform:uppercase;color:var(--ml-cream);opacity:.12}
 
@@ -455,6 +458,8 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
     <div className="sl-page" onClick={() => setMenuOpen(null)}>
       <style>{CSS}</style>
 
+      <div className="sl-inner">
+
       {/* ── Top bar ── */}
       <div className="sl-topbar">
         <button className="sl-topbtn" onClick={onBack} aria-label="Back">←</button>
@@ -497,7 +502,7 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
 
       {/* ── Shared with you ── */}
       {sharedWithMe.length > 0 && (
-        <div style={{ maxWidth: 440, margin: '0 auto', padding: '0 20px' }}>
+        <div>
           <div className="sl-section" style={{ padding: '20px 0 12px' }}>
             <div className="sl-section-eyebrow">
               <span className="sl-section-diamond">◆</span>
@@ -618,6 +623,8 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
           <div className="sl-footer-mark">SleepSeed</div>
         </div>
       )}
+
+      </div>{/* end .sl-inner */}
 
       {/* ════════════════════════════════════════════════════════════
          MODALS

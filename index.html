@@ -47,8 +47,8 @@
 
     <!-- Inline critical styles for loading screen — prevents white flash -->
     <style>
-      body{margin:0;background:#060912;overflow-x:hidden}
-      #root{min-height:100vh;position:relative;background:#060912;overflow-x:hidden}
+      html,body{margin:0;padding:0;width:100%;overflow-x:hidden;background:#060912}
+      #root{min-height:100vh;width:100%;position:relative;background:#060912;overflow-x:hidden}
       @keyframes shimmer{0%{transform:translateX(-130%)}100%{transform:translateX(230%)}}
       @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
       @keyframes fadeUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
