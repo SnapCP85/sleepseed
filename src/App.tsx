@@ -252,6 +252,19 @@ function AppInner() {
   if (new URLSearchParams(window.location.search).get('view') === 'admin-upload') return <AdminUploadBook />;
   if (new URLSearchParams(window.location.search).get('view') === 'editorial-console') return <AdminEditorialConsole />;
 
+  // Public story views — must render BEFORE authLoading gate so unauthenticated users can read shared stories
+  if (view === 'story-cover') return (
+    <StoryCover
+      slug={libraryStorySlug ?? ''}
+      onReadStory={() => setView('library-story')}
+    />
+  );
+  if (view === 'library-story') return (
+    <Suspense fallback={<div style={{minHeight:'100vh',background:'#060912',display:'flex',alignItems:'center',justifyContent:'center',color:'rgba(244,239,232,.3)',fontFamily:'system-ui',fontSize:14}}>Loading story&hellip;</div>}>
+      <LibraryStoryReader slug={libraryStorySlug ?? ''} />
+    </Suspense>
+  );
+
   // Test mode pages — render before auth so shareable links work without login
   if (testMode === 'onboarding') {
     if (testPhase === 'parent') return (
@@ -639,19 +652,7 @@ function AppInner() {
       ? <AppLayout currentTab="library" onNav={handleNav}><LibraryHome /></AppLayout>
       : <LibraryHome />
   );
-  if (view === 'story-cover') return (
-    <StoryCover
-      slug={libraryStorySlug ?? ''}
-      onReadStory={() => setView('library-story')}
-    />
-  );
-  if (view === 'library-story') return (
-    user && !user.isGuest
-      ? <AppLayout currentTab="library" onNav={handleNav}>
-          <Suspense fallback={<div style={{minHeight:'100vh',background:'#060912',display:'flex',alignItems:'center',justifyContent:'center',color:'rgba(244,239,232,.3)',fontFamily:'system-ui',fontSize:14}}>Loading story&hellip;</div>}><LibraryStoryReader slug={libraryStorySlug ?? ''} /></Suspense>
-        </AppLayout>
-      : <Suspense fallback={<div style={{minHeight:'100vh',background:'#060912',display:'flex',alignItems:'center',justifyContent:'center',color:'rgba(244,239,232,.3)',fontFamily:'system-ui',fontSize:14}}>Loading story&hellip;</div>}><LibraryStoryReader slug={libraryStorySlug ?? ''} /></Suspense>
-  );
+  // story-cover and library-story are now handled above authLoading gate (public access)
 
   if (view === 'public') return (
     <PublicHomepage

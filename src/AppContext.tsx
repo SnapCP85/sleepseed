@@ -138,7 +138,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setRefCode(null);
       profileLoadedRef.current = null;
       migrationDoneRef.current = null;
-      setView('public');
+      // Don't overwrite URL-driven views (shared stories, library) with 'public'
+      const params = new URLSearchParams(window.location.search);
+      const isUrlDriven = params.get('library') || params.get('s') || params.get('nc');
+      if (!isUrlDriven && (viewRef.current === 'public' || viewRef.current === 'auth' || viewRef.current === 'dashboard')) {
+        setView('public');
+      }
       setAuthLoading(false);
     }
     handlingRef.current = false;
