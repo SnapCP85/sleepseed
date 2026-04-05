@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { AppProvider, useApp } from './AppContext';
 import PublicHomepage from './pages/PublicHomepage';
 import Auth from './pages/Auth';
@@ -130,56 +130,12 @@ function AppInner() {
   const [addChildName, setAddChildName] = useState<string | null>(null);
   const [addChildNameInput, setAddChildNameInput] = useState('');
 
-  // Demo mode auto-login (runs once on mount only)
-  const demoLoginAttempted = useRef(false);
+  // Demo mode — disabled for now. Use incognito + manual login to demo@sleepseed.app
+  // Re-enable by uncommenting when demo infrastructure is needed.
+  // Clear any stale demo flags
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const DEMO_UID = '71d31ef2-391b-4bb3-9060-b856560e5739';
-
-    if (params.get('demo') !== 'true') {
-      // Clear stale demo flag — but only if current user is NOT the demo user
-      if (user && user.id !== DEMO_UID) {
-        try { sessionStorage.removeItem('sleepseed_demo'); } catch {}
-      }
-      return;
-    }
-
-    // Prevent double-fire
-    if (demoLoginAttempted.current) return;
-    demoLoginAttempted.current = true;
-
-    (async () => {
-      const { activateDemo, setDemoLocalStorage, DEMO_EMAIL, DEMO_PASSWORD, initDemoShortcuts } = await import('./lib/demo-mode');
-      activateDemo();
-      initDemoShortcuts();
-
-      // Check current session directly from Supabase (not React state, which may be stale)
-      const { supabase } = await import('./lib/supabase');
-      const { data: { session } } = await supabase.auth.getSession();
-      const currentUid = session?.user?.id;
-
-      if (currentUid === DEMO_UID) {
-        // Already demo user — just set flags
-        setDemoLocalStorage(DEMO_UID);
-        return;
-      }
-
-      // Sign out current user if needed
-      if (currentUid) {
-        await supabase.auth.signOut();
-      }
-
-      // Login as demo user
-      const { data } = await supabase.auth.signInWithPassword({ email: DEMO_EMAIL, password: DEMO_PASSWORD });
-      if (data?.user) {
-        setDemoLocalStorage(data.user.id);
-        // Remove ?demo=true from URL to prevent reload loop
-        const url = new URL(window.location.href);
-        url.searchParams.delete('demo');
-        window.location.href = url.toString();
-      }
-    })();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    try { sessionStorage.removeItem('sleepseed_demo'); } catch {}
+  }, []);
 
   // Check for shared story / library links on mount
   const [isSharedStory, setIsSharedStory] = useState(false);
@@ -581,21 +537,6 @@ function AppInner() {
     setActiveChapterOutput(null);     // prevent chapter conversion override
     setView('story-builder');
   };
-
-  // Demo mode: set localStorage flags synchronously before flag reads
-  if (user && typeof localStorage !== 'undefined') {
-    try {
-      const isDemoUrl = new URLSearchParams(window.location.search).get('demo') === 'true';
-      const isDemoSession = sessionStorage.getItem('sleepseed_demo') === '1';
-      if (isDemoUrl || isDemoSession) {
-        if (!localStorage.getItem(`sleepseed_onboarding_${user.id}`)) {
-          localStorage.setItem(`sleepseed_parent_setup_${user.id}`, '1');
-          localStorage.setItem(`sleepseed_onboarding_${user.id}`, '1');
-          localStorage.setItem(`sleepseed_ritual_complete_${user.id}`, '1');
-        }
-      }
-    } catch {}
-  }
 
   // User-scoped flags
   const onboardingDone = typeof localStorage !== 'undefined' && user
@@ -1082,12 +1023,8 @@ function AppInner() {
 
   if (view === 'dashboard') {
     // Auto-route new users straight to onboarding (not dashboard with a prompt)
-    // Demo mode: skip all onboarding redirects
-    const DEMO_UID = '71d31ef2-391b-4bb3-9060-b856560e5739';
-    const isDemo = user?.id === DEMO_UID
-      || ((() => { try { return sessionStorage.getItem('sleepseed_demo') === '1' || new URLSearchParams(window.location.search).get('demo') === 'true'; } catch { return false; } })());
-    const needsParentSetup = !isDemo && user && !user.isGuest && !parentSetupDone && !onboardingDone;
-    const needsChildOnboarding = !isDemo && user && !user.isGuest && parentSetupDone && !onboardingDone;
+    const needsParentSetup = user && !user.isGuest && !parentSetupDone && !onboardingDone;
+    const needsChildOnboarding = user && !user.isGuest && parentSetupDone && !onboardingDone;
     if (needsParentSetup) { setView('parent-onboarding'); return null; }
     if (needsChildOnboarding) { setView('onboarding'); return null; }
 
