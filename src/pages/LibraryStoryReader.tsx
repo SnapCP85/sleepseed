@@ -252,7 +252,7 @@ export default function LibraryStoryReader({ slug }: Props) {
   const [v8rCreatureAnim,  setV8rCreatureAnim]  = useState<'idle'|'bounce'|'wiggle'|'sparkle'>('idle');
   const [v8rIdleTimer,     setV8rIdleTimer]     = useState<ReturnType<typeof setTimeout>|null>(null);
   const v8rAudioCtxRef     = useRef<AudioContext|null>(null);
-  const v8rAmbientNodesRef = useRef<{osc?:OscillatorNode;gain?:GainNode;intervals?:ReturnType<typeof setInterval>[]}>({});
+  const v8rAmbientNodesRef = useRef<{src?:AudioBufferSourceNode;gain?:GainNode}>({});
 
   const sessionId = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('sleepseed_sid') : null;
   const refFromUrl = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('sleepseed_ref') : null;
@@ -517,40 +517,42 @@ export default function LibraryStoryReader({ slug }: Props) {
   const v8rTextBg = `rgb(${Math.round(6 - v8rNightProgress * 3)},${Math.round(9 - v8rNightProgress * 3)},${Math.round(18 - v8rNightProgress * 2)})`;
   const v8rStarOpacity = v8rNightProgress * 0.35;
 
-  // v8r: ambient sound
+  // v8r: ambient sound (brown noise — warm, sleep-friendly)
   const v8rStartAmbient = useCallback(() => {
     try {
       if (!v8rAudioCtxRef.current) v8rAudioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       const ctx = v8rAudioCtxRef.current;
       if (ctx.state === 'suspended') ctx.resume();
-      const master = ctx.createGain();
-      master.gain.setValueAtTime(.055, ctx.currentTime);
-      master.connect(ctx.destination);
-      const drone = ctx.createOscillator();
-      drone.type = 'sine'; drone.frequency.value = 55;
-      const dGain = ctx.createGain(); dGain.gain.value = .3;
-      drone.connect(dGain); dGain.connect(master); drone.start();
-      const pingIv = setInterval(() => {
-        if (!v8rAmbientNodesRef.current.gain) return;
-        const ping = ctx.createOscillator(); ping.type = 'sine';
-        ping.frequency.value = [523, 659, 784, 1047][Math.floor(Math.random() * 4)];
-        const pGain = ctx.createGain();
-        pGain.gain.setValueAtTime(0, ctx.currentTime);
-        pGain.gain.linearRampToValueAtTime(.038, ctx.currentTime + .06);
-        pGain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + 2.5);
-        ping.connect(pGain); pGain.connect(master); ping.start(); ping.stop(ctx.currentTime + 2.5);
-      }, 4000 + Math.random() * 5000);
-      v8rAmbientNodesRef.current = { osc: drone, gain: master, intervals: [pingIv] };
+      // Generate brown noise buffer (4 seconds, looped)
+      const len = ctx.sampleRate * 4;
+      const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+      for (let ch = 0; ch < 2; ch++) {
+        const data = buf.getChannelData(ch);
+        let last = 0;
+        for (let i = 0; i < len; i++) { const white = Math.random() * 2 - 1; last = (last + (0.02 * white)) / 1.02; data[i] = last * 3.5; }
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf; src.loop = true;
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      gain.gain.setTargetAtTime(0.12, ctx.currentTime, 0.8);
+      const lpf = ctx.createBiquadFilter();
+      lpf.type = 'lowpass'; lpf.frequency.value = 400;
+      src.connect(lpf).connect(gain).connect(ctx.destination);
+      src.start();
+      v8rAmbientNodesRef.current = { src, gain };
     } catch {}
   }, []);
 
   const v8rStopAmbient = useCallback(() => {
     const n = v8rAmbientNodesRef.current;
-    n.intervals?.forEach(clearInterval);
-    try { n.osc?.stop(); } catch {}
-    n.gain?.disconnect();
-    v8rAmbientNodesRef.current = {};
-    try { v8rAudioCtxRef.current?.suspend(); } catch {}
+    if (n.gain) { n.gain.gain.setTargetAtTime(0, (v8rAudioCtxRef.current?.currentTime ?? 0), 0.3); }
+    setTimeout(() => {
+      try { n.src?.stop(); } catch {}
+      n.gain?.disconnect();
+      v8rAmbientNodesRef.current = {};
+      try { v8rAudioCtxRef.current?.suspend(); } catch {}
+    }, 800);
   }, []);
 
   useEffect(() => { if (v8rAmbientOn) v8rStartAmbient(); else v8rStopAmbient(); return v8rStopAmbient; }, [v8rAmbientOn]); // eslint-disable-line
