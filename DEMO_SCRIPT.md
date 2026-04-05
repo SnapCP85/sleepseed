@@ -3,9 +3,10 @@
 ## Setup (Before the Demo)
 
 1. Run `npm run demo:check` — verify all green
-2. Open `https://sleepseed.vercel.app/?demo=true` (or localhost)
-3. Wait for auto-login (< 2 seconds)
-4. Verify dashboard shows Adina's data with Moonlight the Owl
+2. Open an **incognito/private browser window** (recommended — avoids session conflicts with your real account)
+3. Navigate to `https://sleepseed.vercel.app/?demo=true` (or localhost)
+4. Wait for auto-login (< 2 seconds)
+5. Verify dashboard shows Adina's data with Moonlight the Owl
 
 **Reset at any time:** `Ctrl + Shift + R`
 

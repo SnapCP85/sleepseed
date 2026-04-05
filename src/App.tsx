@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { AppProvider, useApp } from './AppContext';
 import PublicHomepage from './pages/PublicHomepage';
 import Auth from './pages/Auth';
@@ -130,39 +130,56 @@ function AppInner() {
   const [addChildName, setAddChildName] = useState<string | null>(null);
   const [addChildNameInput, setAddChildNameInput] = useState('');
 
-  // Demo mode auto-login
+  // Demo mode auto-login (runs once on mount only)
+  const demoLoginAttempted = useRef(false);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const DEMO_UID = '71d31ef2-391b-4bb3-9060-b856560e5739';
+
     if (params.get('demo') !== 'true') {
       // Clear stale demo flag — but only if current user is NOT the demo user
-      const DEMO_UID = '71d31ef2-391b-4bb3-9060-b856560e5739';
       if (user && user.id !== DEMO_UID) {
         try { sessionStorage.removeItem('sleepseed_demo'); } catch {}
       }
       return;
     }
-    import('./lib/demo-mode').then(async ({ activateDemo, setDemoLocalStorage, DEMO_EMAIL, DEMO_PASSWORD, initDemoShortcuts }) => {
+
+    // Prevent double-fire
+    if (demoLoginAttempted.current) return;
+    demoLoginAttempted.current = true;
+
+    (async () => {
+      const { activateDemo, setDemoLocalStorage, DEMO_EMAIL, DEMO_PASSWORD, initDemoShortcuts } = await import('./lib/demo-mode');
       activateDemo();
       initDemoShortcuts();
-      const DEMO_UID = '71d31ef2-391b-4bb3-9060-b856560e5739';
-      // If already logged in as demo user, just set flags
-      if (user && user.id === DEMO_UID) { setDemoLocalStorage(user.id); return; }
-      // If logged in as someone else, sign out first
+
+      // Check current session directly from Supabase (not React state, which may be stale)
       const { supabase } = await import('./lib/supabase');
-      if (user && user.id !== DEMO_UID) {
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUid = session?.user?.id;
+
+      if (currentUid === DEMO_UID) {
+        // Already demo user — just set flags
+        setDemoLocalStorage(DEMO_UID);
+        return;
+      }
+
+      // Sign out current user if needed
+      if (currentUid) {
         await supabase.auth.signOut();
       }
+
       // Login as demo user
       const { data } = await supabase.auth.signInWithPassword({ email: DEMO_EMAIL, password: DEMO_PASSWORD });
       if (data?.user) {
         setDemoLocalStorage(data.user.id);
-        // Remove ?demo=true from URL to prevent reload loop, keep session flag
+        // Remove ?demo=true from URL to prevent reload loop
         const url = new URL(window.location.href);
         url.searchParams.delete('demo');
         window.location.href = url.toString();
       }
-    });
-  }, [user]);
+    })();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Check for shared story / library links on mount
   const [isSharedStory, setIsSharedStory] = useState(false);
