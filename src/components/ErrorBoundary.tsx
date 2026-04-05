@@ -6,16 +6,17 @@ interface Props {
 
 interface State {
   hasError: boolean;
+  errorMessage: string;
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, errorMessage: '' };
   }
 
-  static getDerivedStateFromError(): State {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, errorMessage: error?.message || 'Unknown error' };
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
@@ -55,6 +56,16 @@ export default class ErrorBoundary extends Component<Props, State> {
             marginBottom: 32,
           }}>
             The stars are still here. Let's find our way back.
+          </div>
+          <div style={{
+            fontSize: 10,
+            color: 'rgba(244,239,232,.2)',
+            fontFamily: "'DM Mono', monospace",
+            maxWidth: 400,
+            wordBreak: 'break-all',
+            marginBottom: 20,
+          }}>
+            {this.state.errorMessage}
           </div>
           <button
             onClick={() => {
