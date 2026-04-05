@@ -218,7 +218,32 @@ function AppInner() {
     }
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Self-heal: if user has data in Supabase but localStorage flags were wiped, restore them
   const selfHealAttempted = useRef<string | null>(null);
+  useEffect(() => {
+    if (!user || user.isGuest) return;
+    const uid = user.id;
+    if (selfHealAttempted.current === uid) return;
+    const hasOnboarding = !!localStorage.getItem(`sleepseed_onboarding_${uid}`);
+    if (hasOnboarding) return;
+    selfHealAttempted.current = uid;
+    import('./lib/storage').then(({ getCharacters }) => {
+      getCharacters(uid).then(chars => {
+        if (chars && chars.length > 0) {
+          localStorage.setItem(`sleepseed_parent_setup_${uid}`, '1');
+          localStorage.setItem(`sleepseed_onboarding_${uid}`, '1');
+          import('./lib/hatchery').then(({ getAllHatchedCreatures }) => {
+            getAllHatchedCreatures(uid).then(creatures => {
+              if (creatures && creatures.length > 0) {
+                localStorage.setItem(`sleepseed_ritual_complete_${uid}`, '1');
+              }
+              window.location.reload();
+            });
+          });
+        }
+      });
+    });
+  }, [user]);
 
   // ── All hooks above this line ─────────────────────────────────────────────
 
@@ -540,34 +565,7 @@ function AppInner() {
     setView('story-builder');
   };
 
-  // Self-heal: if user has data in Supabase but localStorage flags were wiped, restore them
-  useEffect(() => {
-    if (!user || user.isGuest) return;
-    const uid = user.id;
-    if (selfHealAttempted.current === uid) return; // already tried for this user
-    const hasOnboarding = !!localStorage.getItem(`sleepseed_onboarding_${uid}`);
-    if (hasOnboarding) return; // flags are fine
-    selfHealAttempted.current = uid;
-    // Check if user has characters in Supabase — if so, they've onboarded before
-    import('./lib/storage').then(({ getCharacters }) => {
-      getCharacters(uid).then(chars => {
-        if (chars && chars.length > 0) {
-          console.log('[auth] Restoring onboarding flags — user has existing data');
-          localStorage.setItem(`sleepseed_parent_setup_${uid}`, '1');
-          localStorage.setItem(`sleepseed_onboarding_${uid}`, '1');
-          // Check for hatched creatures to determine ritual completion
-          import('./lib/hatchery').then(({ getAllHatchedCreatures }) => {
-            getAllHatchedCreatures(uid).then(creatures => {
-              if (creatures && creatures.length > 0) {
-                localStorage.setItem(`sleepseed_ritual_complete_${uid}`, '1');
-              }
-              window.location.reload();
-            });
-          });
-        }
-      });
-    });
-  }, [user]);
+  // (Self-heal effect moved above the "all hooks" line)
 
   // User-scoped flags
   const onboardingDone = typeof localStorage !== 'undefined' && user
