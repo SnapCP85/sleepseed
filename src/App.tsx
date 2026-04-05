@@ -134,8 +134,11 @@ function AppInner() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('demo') !== 'true') {
-      // Clear stale demo flag if not on demo URL
-      try { sessionStorage.removeItem('sleepseed_demo'); } catch {}
+      // Clear stale demo flag — but only if current user is NOT the demo user
+      const DEMO_UID = '71d31ef2-391b-4bb3-9060-b856560e5739';
+      if (user && user.id !== DEMO_UID) {
+        try { sessionStorage.removeItem('sleepseed_demo'); } catch {}
+      }
       return;
     }
     import('./lib/demo-mode').then(async ({ activateDemo, setDemoLocalStorage, DEMO_EMAIL, DEMO_PASSWORD, initDemoShortcuts }) => {
