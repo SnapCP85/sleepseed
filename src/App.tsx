@@ -153,7 +153,10 @@ function AppInner() {
       const { data } = await supabase.auth.signInWithPassword({ email: DEMO_EMAIL, password: DEMO_PASSWORD });
       if (data?.user) {
         setDemoLocalStorage(data.user.id);
-        window.location.reload();
+        // Remove ?demo=true from URL to prevent reload loop, keep session flag
+        const url = new URL(window.location.href);
+        url.searchParams.delete('demo');
+        window.location.href = url.toString();
       }
     });
   }, [user]);
