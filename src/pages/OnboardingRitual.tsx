@@ -51,7 +51,7 @@ function saveRitualNightCard(
   saveNightCard(card).catch(e => console.error(`[ritual] Night ${nightNumber} card save failed:`, e));
 }
 
-export default function OnboardingRitual({ onRitualComplete, onExit }: Props) {
+export default function OnboardingRitual({ onRitualComplete, onExit, demoWalkthrough }: Props & { demoWalkthrough?: boolean }) {
   const { user } = useApp();
   const [ritual, setRitual] = useState<RitualState | null>(null);
 
@@ -86,7 +86,8 @@ export default function OnboardingRitual({ onRitualComplete, onExit }: Props) {
             ritual,
           );
 
-          onExit();
+          if (demoWalkthrough) { /* continue to night 2 — don't exit */ }
+          else onExit();
         }}
       />
     );
@@ -109,7 +110,8 @@ export default function OnboardingRitual({ onRitualComplete, onExit }: Props) {
             ritual,
           );
 
-          onExit();
+          if (demoWalkthrough) { /* continue to night 3 — don't exit */ }
+          else onExit();
         }}
       />
     );

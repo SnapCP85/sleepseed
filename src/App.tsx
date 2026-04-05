@@ -54,7 +54,7 @@ import NightDashboard from './pages/NightDashboard';
 import Night3Story from './pages/Night3Story';
 import HatchCeremony from './components/onboarding/HatchCeremony';
 import PostHatch from './pages/PostHatch';
-import { getRitualState, completeNight3 } from './lib/ritualState';
+import { getRitualState, completeNight3, saveRitualState, createDefaultRitualState } from './lib/ritualState';
 import { assignCreature } from './lib/creatureAssignment';
 import { V1_DREAMKEEPERS } from './lib/dreamkeepers';
 import OnboardingV9Preview from './pages/OnboardingV9Preview';
@@ -129,6 +129,24 @@ function AppInner() {
   // Multi-child: name entry for additional children before DreamKeeper onboarding
   const [addChildName, setAddChildName] = useState<string | null>(null);
   const [addChildNameInput, setAddChildNameInput] = useState('');
+
+  // Demo mode auto-login
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('demo') !== 'true') return;
+    import('./lib/demo-mode').then(async ({ activateDemo, setDemoLocalStorage, DEMO_EMAIL, DEMO_PASSWORD, initDemoShortcuts }) => {
+      activateDemo();
+      initDemoShortcuts();
+      if (user) { setDemoLocalStorage(user.id); return; }
+      // Auto-login
+      const { supabase } = await import('./lib/supabase');
+      const { data } = await supabase.auth.signInWithPassword({ email: DEMO_EMAIL, password: DEMO_PASSWORD });
+      if (data?.user) {
+        setDemoLocalStorage(data.user.id);
+        window.location.reload();
+      }
+    });
+  }, [user]);
 
   // Check for shared story / library links on mount
   const [isSharedStory, setIsSharedStory] = useState(false);
@@ -1088,6 +1106,43 @@ function AppInner() {
     />
   );
   if (view === 'first-night') { setView('dashboard'); return null; }
+
+  // ── Demo Onboarding Walkthrough (all 3 nights back-to-back) ─────────
+  if (view === 'demo-onboarding') {
+    // Reset ritual state to Night 1 so the full sequence plays
+    if (user) {
+      const rs = getRitualState(user.id);
+      if (rs.ritualComplete || rs.night1Complete) {
+        const fresh = createDefaultRitualState();
+        fresh.childName = 'Adina';
+        fresh.creatureName = 'Moonlight';
+        fresh.creatureEmoji = '🦉';
+        fresh.creatureColor = '#9A7FD4';
+        saveRitualState(user.id, fresh);
+        try { localStorage.removeItem(`sleepseed_ritual_complete_${user.id}`); } catch {}
+      }
+    }
+    return (
+      <OnboardingRitual
+        demoWalkthrough
+        onRitualComplete={async () => {
+          // Restore ritual complete state after demo
+          if (user) {
+            try { localStorage.setItem(`sleepseed_ritual_complete_${user.id}`, '1'); } catch {}
+            const { setDemoLocalStorage } = await import('./lib/demo-mode');
+            setDemoLocalStorage(user.id);
+          }
+          setDashKey(k => k + 1);
+          setView('dashboard');
+        }}
+        onExit={() => {
+          // In demo mode this shouldn't fire, but just in case
+          setDashKey(k => k + 1);
+          setView('dashboard');
+        }}
+      />
+    );
+  }
 
   // ── 3-Night Onboarding Ritual ──────────────────────────────────────────
   if (view === 'onboarding-ritual') return (

@@ -4,7 +4,7 @@ import { buildStoryPrompt } from "./sleepseed-prompts";
 import { StoryFeedback, RereadCheck } from "./StoryFeedback";
 import NightCardComponent from "./features/nightcards/NightCard";
 import NightCardShareSheet from "./components/NightCardShareSheet";
-import { saveStory as dbSaveStory, saveNightCard as dbSaveNightCard, submitStoryToLibrary, ensureRefCode } from "./lib/storage";
+import { saveStory as dbSaveStory, saveNightCard as dbSaveNightCard, ensureRefCode } from "./lib/storage";
 import { BASE_URL } from "./lib/config";
 import { supabase } from "./lib/supabase";
 import { getSceneByVibe } from "./lib/storyScenes";
@@ -1598,6 +1598,7 @@ export default function SleepSeed({
   const [viewingNightCard, setViewingNightCard] = useState<any>(null); // Night Card detail view
   const [ncDetailFlipped,  setNcDetailFlipped]  = useState(false);     // flip state for detail modal
   const [ncShareSheetOpen, setNcShareSheetOpen] = useState(false);     // premium share sheet
+  const [ncSaving, setNcSaving] = useState(false);                     // save in progress
   const [ncShareUrl, setNcShareUrl] = useState('');
   const [styleDna,         setStyleDna]         = useState<any>(null); // Style DNA for feedback
   const [showFeedback,     setShowFeedback]     = useState(false);     // StoryFeedback sheet visible
@@ -1899,7 +1900,7 @@ export default function SleepSeed({
     if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current = null; }
     // Brief pause so rapid page turns don't fire overlapping EL requests
     await new Promise(r => setTimeout(r, 80));
-    if(!autoReadRef.current && !text) return; // cancelled during pause
+    if(!autoReadRef.current) return; // cancelled during pause
 
     const onEnd = () => {
       const isLast = pageIdx >= totalPagesRef.current - 1;
@@ -2058,6 +2059,7 @@ export default function SleepSeed({
         if(voiceId) await elDeleteVoice(voiceId);
         const newId = await elCloneVoice(file);
         setVoiceId(newId);
+        setSelectedVoiceId(newId); // Auto-select the cloned voice
         await sSet("voice_id", { id: newId });
         setVcStage("ready");
       } catch(err) {
@@ -2173,17 +2175,20 @@ export default function SleepSeed({
       ctx.fillStyle = "rgba(212,160,48,.35)";
       ctx.font = "500 22px sans-serif";
       ctx.textAlign = "center";
-      const shareUrl = book.librarySlug
-        ? `${window.location.origin}/?library=${book.librarySlug}`
-        : 'https://sleepseed.vercel.app';
       ctx.fillText(`A story for ${book.heroName}  ·  sleepseed.vercel.app`, SIZE/2, SIZE-52);
+      // Build private share link for the image share
+      let imgShareUrl = BASE_URL;
+      try {
+        const payload = { t: book.title, n: book.heroName, r: book.refrain || '', p: (book.pages || []).map((pg: any) => pg.text || '') };
+        imgShareUrl = `${BASE_URL}/?s=${btoa(encodeURIComponent(JSON.stringify(payload)))}`;
+      } catch {}
 
       // Export
       canvas.toBlob(async (blob) => {
         if(!blob) return;
         const file = new File([blob], `${book.title.replace(/[^a-z0-9]/gi,"_")}_card.png`, {type:"image/png"});
         if(navigator.canShare?.({files:[file]})) {
-          await navigator.share({files:[file], title:book.title, text:`A bedtime story for ${book.heroName} — made with SleepSeed\n\n${shareUrl}`, url:shareUrl});
+          await navigator.share({files:[file], title:book.title, text:`A bedtime story for ${book.heroName} — made with SleepSeed\n\n${imgShareUrl}`, url:imgShareUrl});
         } else {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a"); a.href=url; a.download=file.name; a.click();
@@ -2570,20 +2575,6 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
           lessons: Array.isArray(lessons) && lessons.length > 0 ? lessons : undefined,
         });
         console.log('[Story] Saved to Supabase:', entry.id);
-
-        // Auto-generate shareable link (make story public with slug)
-        try {
-          const { slug } = await submitStoryToLibrary(entry.id, userId, {
-            ageGroup: ageGroup || undefined,
-            vibe: storyMood || undefined,
-            mood: storyMood || undefined,
-            storyStyle: storyStyle || undefined,
-            storyLength: storyLen || undefined,
-          });
-          // Store slug on bookData so share modal can build the URL immediately
-          bookData.librarySlug = slug;
-          console.log('[Story] Public link generated:', slug);
-        } catch (e) { console.error('[Story] submitStoryToLibrary failed (story still saved):', e); }
       } catch(e) { console.error('[Story] dbSaveStory failed:', e); }
     }
   },[memories,occasion,occasionCustom,userId,preloadedCharacter,ageGroup,storyMood,storyBrief2,theme,storyStyle,storyLen,lessons]);
@@ -2595,11 +2586,16 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
   },[memories,userId]);
 
   const saveNightCard = useCallback(async (cardData) => {
-    // Milestone detection: check if this card hits a threshold
+    console.log('[NC] saveNightCard called with:', Object.keys(cardData));
+    // Milestone + origin detection
     const totalAfter = nightCards.length + 1;
     const milestoneHit = [10,25,50,100,200,365].find(t => t === totalAfter);
+    const isFirstCard = nightCards.length === 0;
     const entry = {id:uid(),...cardData,date:new Date().toISOString().split("T")[0],
-      ...(milestoneHit ? {milestone:milestoneHit} : {})};
+      ...(milestoneHit ? {milestone:milestoneHit} : {}),
+      ...(isFirstCard ? {isOrigin:true} : {})};
+    // Ensure headline is never empty
+    if (!entry.headline) entry.headline = entry.storyTitle || `A night with ${entry.heroName || 'friend'}`;
     const next = [entry,...nightCards];
     setNightCards(next);
     await sSet("nightcards",{items:next},userId);
@@ -2664,14 +2660,14 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
     // Save to Supabase
     if (userId) {
       try {
-        await dbSaveNightCard({
+        const dbCard = {
           id: entry.id, userId,
           storyId: lastSavedStoryIdRef.current || undefined,
           heroName: entry.heroName || cardData.heroName || "",
           storyTitle: entry.storyTitle || "",
           characterIds: preloadedCharacter ? [preloadedCharacter.id] : [],
           headline: entry.headline || "",
-          quote: entry.quote || entry.bondingA || "",
+          quote: entry.quote || entry.bondingAnswer || entry.bondingA || "",
           memory_line: entry.memory_line || undefined,
           whisper: entry.whisper || undefined,
           bondingQuestion: entry.bondingQuestion || entry.bondingQ || undefined,
@@ -2681,6 +2677,7 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
           photo: entry.photo || undefined,
           emoji: entry.emoji || "🌙",
           date: entry.date,
+          isOrigin: entry.isOrigin || undefined,
           occasion: occasionVal || undefined,
           streakCount: streakVal,
           nightNumber: isJourneyChapter && journeyReadNumber ? journeyReadNumber : nightNum,
@@ -2696,8 +2693,13 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
           milestone: entry.milestone || undefined,
           audioClip: entry.audioClip || undefined,
           childDrawing: entry.childDrawing || undefined,
-        });
-      } catch(e) { console.error('SleepSeedCore dbSaveNightCard:', e); }
+        };
+        console.log('[NC] Saving to Supabase:', dbCard.id, dbCard.headline);
+        await dbSaveNightCard(dbCard);
+        console.log('[NC] Supabase save complete');
+      } catch(e) { console.error('[NC] dbSaveNightCard FAILED:', e); }
+    } else {
+      console.warn('[NC] No userId — skipping Supabase save');
     }
     return entry;
   },[nightCards,userId,preloadedCharacter,companionCreature,occasion,occasionCustom]);
@@ -2749,6 +2751,37 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
   const generate = async (overrides:any={}) => {
     if (generatingRef.current) return;
     generatingRef.current = true;
+
+    // ── Demo mode: instant hardcoded story ──
+    const isDemo = (() => { try { return sessionStorage.getItem('sleepseed_demo') === '1'; } catch { return false; } })();
+    if (isDemo) {
+      try {
+        const { DEMO_STORY } = await import('./lib/demo-story');
+        const name = overrides.heroNameOverride || heroName.trim() || 'Adina';
+        setGen({stepIdx:0,progress:10,label:'Writing tonight\'s story…',error:null});
+        await new Promise(r => setTimeout(r, 800));
+        setGen(g => ({...g,stepIdx:1,progress:50,label:'Adding the magic…'}));
+        await new Promise(r => setTimeout(r, 600));
+        setGen(g => ({...g,stepIdx:2,progress:80,label:'Your book is ready!'}));
+        await new Promise(r => setTimeout(r, 400));
+        const bookData = {
+          title: DEMO_STORY.title,
+          heroName: name,
+          allChars: [
+            {id:'hero',name,type:'hero',photo:null,classify:'',gender:''},
+            ...(companionCreature ? [{id:companionCreature.id,name:companionCreature.name,type:'creature',photo:null,classify:companionCreature.creatureType,gender:''}] : []),
+          ],
+          refrain: DEMO_STORY.refrain,
+          pages: DEMO_STORY.pages.map(p => ({text:p.text})),
+        };
+        setBook(bookData); setPageIdx(0);
+        setGen(g => ({...g,stepIdx:4,progress:100,label:'Your story is ready!'}));
+        await new Promise(r => setTimeout(r, 800));
+        setStage('book');
+        generatingRef.current = false;
+        return;
+      } catch(e) { console.error('[Demo] Fallback to live generation:', e); }
+    }
     const resolvedTheme   = overrides.theme         ?? theme;
     const resolvedChars   = overrides.extraChars    ?? extraChars;
     const resolvedOcc     = overrides.occasion      ?? occasion;
@@ -3445,7 +3478,7 @@ Rules:
     if(!ncResult) return;
     // Use the last saved night card ID for the share link
     const ncId = lastSavedStoryIdRef.current || '';
-    const shareUrl = ncId ? `${window.location.origin}/?nc=${ncId}` : window.location.origin;
+    const shareUrl = ncId ? `${BASE_URL}/?nc=${ncId}` : BASE_URL;
     const storyLine = includeStory && book?.title ? `\nFrom "${book.title}" — a story for ${book.heroName}` : '';
     const shareText = `"${ncResult.headline}"\n${ncResult.quote}${storyLine}`;
     try { await navigator.share?.({title:`${book?.heroName}'s Night Card`,text:shareText,url:shareUrl}); }
@@ -3726,9 +3759,14 @@ Rules:
 
   const renderV8rShareModal = () => {
     if (!v8rShareOpen) return null;
-    const storyUrl = book?.librarySlug
-      ? window.location.origin + '/?library=' + book.librarySlug
-      : window.location.origin;
+    // Build a self-contained share link (no public library needed)
+    const storyUrl = (() => {
+      if (!book) return BASE_URL;
+      try {
+        const payload = { t: book.title, n: book.heroName, r: book.refrain || '', p: (book.pages || []).map((pg: any) => pg.text || '') };
+        return `${BASE_URL}/?s=${btoa(encodeURIComponent(JSON.stringify(payload)))}`;
+      } catch { return BASE_URL; }
+    })();
     const shareBtn = (icon: React.ReactNode, label: string, onClick: ()=>void, accent?: string) => (
       <div onClick={onClick} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,padding:'11px 8px',borderRadius:16,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',cursor:'pointer'}}>
         {icon}
@@ -3801,7 +3839,7 @@ Rules:
     setNcResult(null);setNcRevealed(false);setNcPhotoMode('idle');
     setNcChildMood("");setNcGenPct(0);setNcGenTextIdx(0);
     setNcAudioBlob(null);setNcAudioUrl(null);setNcRecording(false);
-    setNcDrawing(null);setNcDrawingOpen(false);setNcDrawColor('#2a1a0e');
+    setNcDrawing(null);setNcDrawingOpen(false);setNcDrawColor('#2a1a0e');setNcSaving(false);
     setNcGenTextIdx(0);setNcGenPct(0);ncSrRef.current?.stop();setNcListening(false);
     window.speechSynthesis?.cancel();
     if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}
@@ -3809,7 +3847,13 @@ Rules:
     setStage("nightcard");
   };
 
-  const exitToHome = () => { onHome?onHome():setStage("home"); };
+  const exitToHome = () => {
+    // Kill all audio before leaving
+    window.speechSynthesis?.cancel();
+    if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}
+    autoReadRef.current=false;setIsReading(false);
+    onHome?onHome():setStage("home");
+  };
 
   const buildSSEndPage = () => (
     <div className="ss-page" key="end" style={{position:'relative',minHeight:'100%',background:'#060912',display:'flex',flexDirection:'column',overflow:'hidden'}}>
@@ -4075,6 +4119,41 @@ Rules:
               </div>
             </div>
 
+            {/* ── Floating Audio Bar (visible when reading aloud) ── */}
+            {isReading && !noScreenMode && !ssSheetOpen && (
+              <div style={{
+                position:'absolute',bottom:56,left:'50%',transform:'translateX(-50%)',zIndex:75,
+                display:'flex',alignItems:'center',gap:10,
+                padding:'8px 14px 8px 16px',borderRadius:20,
+                background:'rgba(6,9,18,.88)',border:'1px solid rgba(245,184,76,.25)',
+                backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)',
+                boxShadow:'0 8px 24px rgba(0,0,0,.5)',
+                animation:'nc-fadeUp .25s ease both',
+                pointerEvents:'all',
+              }}>
+                <div style={{
+                  width:8,height:8,borderRadius:'50%',background:'#F5B84C',
+                  animation:'ms-glowPulse 1.5s ease-in-out infinite',flexShrink:0,
+                }}/>
+                <span style={{
+                  fontFamily:"'DM Mono',monospace",fontSize:9,color:'rgba(245,184,76,.7)',
+                  letterSpacing:'.4px',whiteSpace:'nowrap',
+                }}>
+                  {PRESET_VOICES.find(v=>v.id===selectedVoiceId)?.name||(voiceId===selectedVoiceId?'Your voice':'Reading...')}
+                </span>
+                <button onClick={()=>{
+                  window.speechSynthesis.cancel();
+                  if(elAudioRef.current){elAudioRef.current.pause();elAudioRef.current=null;}
+                  autoReadRef.current=false;setIsReading(false);
+                }} style={{
+                  padding:'5px 12px',borderRadius:12,border:'none',
+                  background:'rgba(255,255,255,.1)',color:'rgba(244,239,232,.7)',
+                  fontSize:10,fontWeight:600,fontFamily:"'Nunito',sans-serif",
+                  cursor:'pointer',
+                }}>Stop</button>
+              </div>
+            )}
+
             {/* No Screen Mode */}
             {noScreenMode && (
               <div className="ss-noscreen" onClick={()=>setNoScreenMode(false)}>
@@ -4093,10 +4172,10 @@ Rules:
                   <div className="ss-sheet-scroll">
                     <div className="ss-sheet-section">
                       <div className="ss-sheet-row" onClick={()=>{const prog=totalPages>1?pageIdx/(totalPages-1):0.5;toggleRead(getCurrentPageText(),prog);}}>
-                        <div className="ss-sheet-ico" style={{background:'rgba(245,184,76,.12)'}}>{'\uD83D\uDD0A'}</div>
+                        <div className="ss-sheet-ico" style={{background:isReading?'rgba(255,80,80,.12)':'rgba(245,184,76,.12)'}}>{isReading?'\u23F9':'\uD83D\uDD0A'}</div>
                         <div className="ss-sheet-body">
-                          <div className="ss-sheet-label">Read Aloud</div>
-                          <div className="ss-sheet-sub">{PRESET_VOICES.find(v=>v.id===selectedVoiceId)?.name||'Hope'}</div>
+                          <div className="ss-sheet-label">{isReading?'Stop Reading':'Read Aloud'}</div>
+                          <div className="ss-sheet-sub">{voiceId===selectedVoiceId?'Your voice':PRESET_VOICES.find(v=>v.id===selectedVoiceId)?.name||'Hope'}</div>
                         </div>
                         <button className={`ss-sheet-toggle${isReading?' on':''}`} onClick={e=>{e.stopPropagation();const prog=totalPages>1?pageIdx/(totalPages-1):0.5;toggleRead(getCurrentPageText(),prog);}}>
                           <div className="ss-sheet-knob" />
@@ -4106,7 +4185,7 @@ Rules:
                         <div className="ss-sheet-ico" style={{background:'rgba(148,130,255,.12)'}}>{'\uD83C\uDFA4\uFE0F'}</div>
                         <div className="ss-sheet-body">
                           <div className="ss-sheet-label">Choose Voice</div>
-                          <div className="ss-sheet-sub">6 narrators {'\u00B7'} or record your own</div>
+                          <div className="ss-sheet-sub">{voiceId?'6 narrators \u00B7 your voice \u00B7 or no voice':'6 narrators \u00B7 or record your own'}</div>
                         </div>
                         <div className="ss-sheet-chevron">{'\u203A'}</div>
                       </div>
@@ -4700,7 +4779,11 @@ Rules:
 
                     {/* Save + actions */}
                     <div style={{width:'100%',display:'flex',flexDirection:'column',gap:8,animation:'nc-fadeUp .4s .6s ease both',opacity:0}}>
-                      <button onClick={async()=>{
+                      <button disabled={ncSaving} onClick={async()=>{
+                        if(ncSaving)return;
+                        setNcSaving(true);
+                        console.log('[NC] Save button clicked, ncResult:', !!ncResult, 'book:', !!book);
+                        try{
                         const ncId = crypto.randomUUID?.() || `nc_${Date.now()}`;
                         // Calculate child age from birthDate if available
                         const childAgeStr = (() => {
@@ -4737,14 +4820,17 @@ Rules:
                           childDrawing:ncDrawing||undefined,
                           ...ncResult};
                         lastSavedStoryIdRef.current = ncId;
+                        console.log('[NC] Built ncData, calling saveNightCard...');
                         try{await saveNightCard(ncData);}catch(err){console.error('[NC] saveNightCard failed:',err);}
                         const updatedBook={...book,nightCard:ncData};setBook(updatedBook);
                         const updatedMemories=memories.map(m=>m.bookData?.title===book.title&&m.heroName===book.heroName?{...m,bookData:updatedBook}:m);
                         setMemories(updatedMemories);try{await sSet("memories",{items:updatedMemories});}catch(err){console.error('[NC] sSet failed:',err);}
+                        console.log('[NC] Night card saved successfully, going home');
                         onHome?onHome():setStage("home");
-                      }} style={{position:'relative',width:'100%',padding:'15px 20px',borderRadius:18,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)'}}>
+                        }catch(err){console.error('[NC] CRITICAL save error:',err);setNcSaving(false);}
+                      }} style={{position:'relative',width:'100%',padding:'15px 20px',borderRadius:18,border:'none',cursor:ncSaving?'wait':'pointer',overflow:'hidden',background:ncSaving?'rgba(245,184,76,.5)':'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 8px 24px rgba(245,184,76,.28)',transition:'background .2s'}}>
                         <div style={{position:'absolute',inset:0,background:'linear-gradient(108deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%)',animation:'nc-shimmer 5.5s infinite',pointerEvents:'none'}}/>
-                        <span style={{position:'relative',zIndex:1}}>Save &amp; go home</span>
+                        <span style={{position:'relative',zIndex:1}}>{ncSaving ? 'Saving...' : 'Save & go home'}</span>
                       </button>
                       <button onClick={async ()=>{
                         setNcShareSheetOpen(true);
@@ -4754,7 +4840,7 @@ Rules:
                           try {
                             const token = crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
                             await supabase.from('night_card_shares').upsert({ card_id: ncId, share_token: token, created_at: new Date().toISOString() });
-                            setNcShareUrl(`${window.location.origin}/?nc=${token}`);
+                            setNcShareUrl(`${BASE_URL}/?nc=${token}`);
                           } catch(e) { console.error('[Share] token generation failed:', e); }
                         }
                       }} style={{width:'100%',padding:'11px 8px',borderRadius:14,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.04)',color:'rgba(234,242,255,.55)',fontSize:11,fontFamily:"'DM Mono',monospace",cursor:'pointer',letterSpacing:'.2px',textAlign:'center'}}>Share this card</button>

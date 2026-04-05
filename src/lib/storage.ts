@@ -324,8 +324,8 @@ export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
       gratitude: nc.gratitude ?? null, extra: extraField,
       photo_url: photoUrl, emoji: nc.emoji ?? null, date: nc.date,
     });
-    if (ncErr) console.error('[storage] saveNightCard Supabase error:', ncErr);
-    else console.log('[storage] Night Card saved to Supabase:', nc.id);
+    if (ncErr) console.error('[storage] saveNightCard Supabase error:', JSON.stringify(ncErr));
+    else console.log('[storage] Night Card saved to Supabase:', nc.id, nc.headline);
   } catch (e) { console.error('[storage] saveNightCard exception:', e); }
 };
 

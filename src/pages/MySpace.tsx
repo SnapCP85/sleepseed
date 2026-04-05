@@ -1563,6 +1563,30 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
           </div>
         )}
 
+        {/* ═══ DEMO: Watch Onboarding button ═══ */}
+        {(() => { try { return sessionStorage.getItem('sleepseed_demo') === '1'; } catch { return false; } })() && (
+          <div style={{
+            animation: 'ms-fadeUp .8s .8s ease-out both',
+            marginBottom: 20,
+          }}>
+            <button
+              onClick={() => setView('demo-onboarding')}
+              style={{
+                width: '100%', padding: '14px 20px', borderRadius: 14,
+                border: '1px solid rgba(184,161,255,.2)',
+                background: 'rgba(184,161,255,.06)',
+                cursor: 'pointer', fontFamily: "'Nunito',system-ui,sans-serif",
+                fontSize: 13, fontWeight: 600, color: 'rgba(184,161,255,.7)',
+                transition: 'all .2s', textAlign: 'center',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(184,161,255,.12)'; e.currentTarget.style.borderColor = 'rgba(184,161,255,.35)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(184,161,255,.06)'; e.currentTarget.style.borderColor = 'rgba(184,161,255,.2)'; }}
+            >
+              {'\u{1F3AC}'} Watch Onboarding Experience
+            </button>
+          </div>
+        )}
+
       </div>
 
       {/* Night Card detail overlay */}

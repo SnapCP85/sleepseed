@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "demo:seed": "node scripts/seed-demo-showcase.js",
+    "demo:check": "node scripts/demo-check.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.3",

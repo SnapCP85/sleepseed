@@ -5,6 +5,7 @@ import type { SavedNightCard } from '../../lib/types';
 import { getCardVariant } from '../../lib/types';
 import NightCard from './NightCard';
 import { generateNightCardImage, downloadBlob, generateNightCardBook } from '../../lib/shareUtils';
+import { BASE_URL } from '../../lib/config';
 
 // ── Date helpers ──
 function formatDate(iso: string): string {
@@ -287,7 +288,7 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
         card_id: nc.id, share_token: token, created_at: new Date().toISOString(),
       });
       if (error) { console.error('Share insert error:', error); return ''; }
-      return `${window.location.origin}/?nc=${token}`;
+      return `${BASE_URL}/?nc=${token}`;
     } catch (e) { console.error('Share link generation failed:', e); return ''; }
   };
 
@@ -446,7 +447,7 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
                   share_token:token,user_id:userId,child_name:childName,
                   card_ids:cardIds,created_at:new Date().toISOString(),
                 });
-                const url=`${window.location.origin}/family/${token}`;
+                const url=`${BASE_URL}/family/${token}`;
                 if(navigator.share){
                   try{await navigator.share({title:`${childName}'s Night Cards`,text:`See ${childName}'s bedtime memories`,url});return;}catch{}
                 }
@@ -601,6 +602,40 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
               <div style={{textAlign:'center',marginTop:8,fontSize:9,color:'rgba(234,242,255,.2)',fontFamily:"'DM Mono',monospace"}}>
                 {flipped ? 'Tap card to see front' : 'Tap card to flip'}
               </div>
+
+              {/* Add Photo (when card has no photo) */}
+              {viewing && !viewing.photo && (
+                <div style={{marginTop:10}}>
+                  <input type="file" accept="image/*" id="ncl-photo-upload" style={{display:'none'}}
+                    onChange={async(e)=>{
+                      const f=e.target.files?.[0]; if(!f)return;
+                      const reader=new FileReader();
+                      reader.onload=async()=>{
+                        const dataUrl=reader.result as string;
+                        const updated={...viewing,photo:dataUrl};
+                        setCards(prev=>prev.map(c=>c.id===updated.id?updated:c));
+                        setViewing(updated);
+                        try{await saveNightCard(updated);}catch(err){console.error('[NCL] savePhoto:',err);}
+                      };
+                      reader.readAsDataURL(f);
+                    }}
+                  />
+                  <button onClick={()=>document.getElementById('ncl-photo-upload')?.click()} style={{
+                    width:'100%',padding:'10px 14px',borderRadius:12,
+                    border:'1px solid rgba(184,161,255,.15)',background:'rgba(184,161,255,.04)',
+                    color:'rgba(184,161,255,.6)',fontSize:11,fontWeight:600,
+                    fontFamily:"'DM Mono',monospace",cursor:'pointer',textAlign:'center',
+                    letterSpacing:'.3px',
+                  }}>
+                    {'\uD83D\uDCF7'} Add a photo to this memory
+                  </button>
+                </div>
+              )}
+              {viewing?.photo && (
+                <div style={{marginTop:10,textAlign:'center'}}>
+                  <img src={viewing.photo} alt="" style={{maxWidth:'100%',maxHeight:180,borderRadius:12,objectFit:'cover',border:'1px solid rgba(255,255,255,.08)'}}/>
+                </div>
+              )}
 
               {/* Thread navigation — prev/next in sequence */}
               {viewing && (() => {
