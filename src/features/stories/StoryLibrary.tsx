@@ -93,7 +93,7 @@ const CSS = `
     radial-gradient(ellipse 60% 40% at 80% 45%,rgba(148,130,255,0.06) 0%,transparent 55%),
     radial-gradient(ellipse 70% 40% at 20% 75%,rgba(245,184,76,0.035) 0%,transparent 60%),
     var(--ml-night);
-  padding-bottom:96px;position:relative;
+  padding-bottom:96px;position:relative;overflow-x:hidden;
 }
 /* Breathing starfield */
 .sl-page::before{
