@@ -64,6 +64,13 @@ import ErrorBoundary from './components/ErrorBoundary';
 // Old BottomNav removed — replaced by src/components/BottomNavigation.tsx via AppLayout
 
 function AppInner() {
+  // Cache reset — visit ?reset=true to clear all local data and reload
+  if (new URLSearchParams(window.location.search).get('reset') === 'true') {
+    try { localStorage.clear(); sessionStorage.clear(); } catch {}
+    window.location.href = window.location.origin;
+    return null;
+  }
+
   // Shared night card — public, no auth required
   if (new URLSearchParams(window.location.search).get('nc')) return <SharedNightCard />;
   // Family collection view — public, no auth required
