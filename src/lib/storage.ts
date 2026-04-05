@@ -285,13 +285,15 @@ export const getNightCards = async (userId: string): Promise<SavedNightCard[]> =
 };
 
 export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
-  // localStorage first
-  const existing = lsGet<SavedNightCard>(LS_CARDS(nc.userId)).filter(x => x.id !== nc.id);
-  const newArr = [nc, ...existing];
+  // localStorage first — strip base64 data to prevent QuotaExceededError
+  const stripBase64 = (c: SavedNightCard): SavedNightCard => ({...c,
+    photo: c.photo?.startsWith?.('data:') ? undefined : c.photo,
+    childDrawing: (c as any).childDrawing?.startsWith?.('data:') ? undefined : (c as any).childDrawing,
+  });
+  const existing = lsGet<SavedNightCard>(LS_CARDS(nc.userId)).filter(x => x.id !== nc.id).map(stripBase64);
+  const newArr = [stripBase64(nc), ...existing];
   lsSet(LS_CARDS(nc.userId), newArr);
-  // Verify write
-  const lsVerify = localStorage.getItem(LS_CARDS(nc.userId));
-  console.log('[storage] saveNightCard v2 write — key:', LS_CARDS(nc.userId), 'count:', newArr.length, 'stored:', !!lsVerify, 'byteLen:', lsVerify?.length);
+  console.log('[storage] saveNightCard v2 write — key:', LS_CARDS(nc.userId), 'count:', newArr.length);
   // Supabase sync
   try {
     let photoUrl = nc.photo ?? null;
@@ -320,14 +322,21 @@ export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
         extraField = JSON.stringify(packed);
       } catch(_) {}
     }
-    const { error: ncErr } = await supabase.from('night_cards').upsert({
-      id: nc.id, user_id: nc.userId, hero_name: nc.heroName, story_id: nc.storyId ?? null,
+    // First try with storyId, fall back to null if FK constraint fails
+    const baseRow = {
+      id: nc.id, user_id: nc.userId, hero_name: nc.heroName,
       story_title: nc.storyTitle, character_ids: nc.characterIds ?? [],
       headline: nc.headline, quote: nc.quote, memory_line: nc.memory_line ?? null,
       bonding_question: nc.bondingQuestion ?? null, bonding_answer: nc.bondingAnswer ?? null,
       gratitude: nc.gratitude ?? null, extra: extraField,
       photo_url: photoUrl, emoji: nc.emoji ?? null, date: nc.date,
-    });
+    };
+    let { error: ncErr } = await supabase.from('night_cards').upsert({...baseRow, story_id: nc.storyId ?? null});
+    // If FK constraint fails (story not in DB), retry without storyId
+    if (ncErr?.code === '23503') {
+      console.warn('[storage] storyId FK failed, retrying without storyId');
+      ({ error: ncErr } = await supabase.from('night_cards').upsert({...baseRow, story_id: null}));
+    }
     if (ncErr) console.error('[storage] saveNightCard Supabase error:', JSON.stringify(ncErr));
     else console.log('[storage] Night Card saved to Supabase:', nc.id, nc.headline);
   } catch (e) { console.error('[storage] saveNightCard exception:', e); }

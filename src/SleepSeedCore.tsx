@@ -1682,7 +1682,40 @@ export default function SleepSeed({
   useEffect(() => {
     // Use user-scoped keys for memories and nightcards to prevent cross-user data leakage
     sGet("memories", userId).then(s => { if(s?.items) setMemories(s.items); });
-    sGet("nightcards", userId).then(s => { if(s?.items) setNightCards(s.items); });
+    sGet("nightcards", userId).then(s => {
+      if(s?.items) {
+        setNightCards(s.items);
+        // One-time cleanup: strip base64 photos from localStorage to reclaim space
+        const hasBase64 = s.items.some((c:any) => c.photo?.startsWith?.('data:') || c.childDrawing?.startsWith?.('data:'));
+        if (hasBase64) {
+          const cleaned = s.items.map((c:any) => ({...c,
+            photo: c.photo?.startsWith?.('data:') ? '[uploaded]' : c.photo,
+            childDrawing: c.childDrawing?.startsWith?.('data:') ? '[uploaded]' : c.childDrawing,
+          }));
+          sSet("nightcards", {items:cleaned}, userId);
+          console.log('[NC] Cleaned base64 from v1 localStorage, saved', (JSON.stringify(s.items).length - JSON.stringify(cleaned).length)/1024|0, 'KB');
+        }
+      }
+    });
+    // Also clean v2 key
+    if (userId) {
+      try {
+        const v2Key = `ss2_nightcards_${userId}`;
+        const v2Raw = localStorage.getItem(v2Key);
+        if (v2Raw) {
+          const v2Cards = JSON.parse(v2Raw);
+          const hasBase64 = v2Cards.some((c:any) => c.photo?.startsWith?.('data:') || c.childDrawing?.startsWith?.('data:'));
+          if (hasBase64) {
+            const cleaned = v2Cards.map((c:any) => ({...c,
+              photo: c.photo?.startsWith?.('data:') ? null : c.photo,
+              childDrawing: c.childDrawing?.startsWith?.('data:') ? null : c.childDrawing,
+            }));
+            localStorage.setItem(v2Key, JSON.stringify(cleaned));
+            console.log('[NC] Cleaned base64 from v2 localStorage, saved', (v2Raw.length - JSON.stringify(cleaned).length)/1024|0, 'KB');
+          }
+        }
+      } catch(e) { console.error('[NC] v2 cleanup error:', e); }
+    }
     sGet("style_dna").then(s => { if(s) setStyleDna(s); });
     sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); });
     sGet("onboarded").then(s => { if(s?.v) setHasSeenOnboard(true); });
@@ -2628,11 +2661,9 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
     if (!entry.headline) entry.headline = entry.storyTitle || `A night with ${entry.heroName || 'friend'}`;
     const next = [entry,...nightCards];
     setNightCards(next);
-    await sSet("nightcards",{items:next},userId);
-    // Verify v1 write
-    const v1VerifyKey = userId ? `ss9_u_${userId}_nightcards` : `ss9_nightcards`;
-    const v1Verify = localStorage.getItem(v1VerifyKey);
-    console.log('[NC] v1 localStorage write verify — key:', v1VerifyKey, 'stored:', !!v1Verify, 'byteLen:', v1Verify?.length);
+    // Strip base64 photos before localStorage write to prevent QuotaExceededError
+    const nextForStorage = next.map(c => ({...c, photo: c.photo?.startsWith?.('data:') ? '[uploaded]' : c.photo, childDrawing: c.childDrawing?.startsWith?.('data:') ? '[uploaded]' : c.childDrawing}));
+    await sSet("nightcards",{items:nextForStorage},userId);
 
     // Compute streak + night number for new fields
     const charCards = nightCards.filter(c => preloadedCharacter && c.characterIds?.includes(preloadedCharacter.id));
@@ -2672,7 +2703,7 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
         bondingAnswer: entry.bondingA || "",
         gratitude: entry.gratitude || "",
         extra: entry.extra || "",
-        photo: entry.photo || null,
+        photo: (entry.photo && !entry.photo.startsWith('data:')) ? entry.photo : null,
         emoji: entry.emoji || "🌙",
         date: entry.date,
         childMood: entry.childMood || undefined,
@@ -2682,9 +2713,14 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
         milestone: entry.milestone || undefined,
         whisper: entry.whisper || undefined,
         audioClip: entry.audioClip || undefined,
-        childDrawing: entry.childDrawing || undefined,
+        childDrawing: (entry.childDrawing && !entry.childDrawing.startsWith('data:')) ? entry.childDrawing : null,
       };
-      localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...existing]));
+      // Strip base64 from existing entries too (cleanup)
+      const cleanExisting = existing.map((c: any) => ({...c,
+        photo: c.photo?.startsWith?.('data:') ? null : c.photo,
+        childDrawing: c.childDrawing?.startsWith?.('data:') ? null : c.childDrawing,
+      }));
+      localStorage.setItem(v2Key, JSON.stringify([v2Entry, ...cleanExisting]));
     } catch(e) { console.error('SleepSeedCore v2 localStorage save failed:', e); }
     // Detect journey chapter context from book metadata (set by App.tsx chapterToBookData)
     const bookAny = book as Record<string, unknown> | null;
@@ -4737,7 +4773,7 @@ Rules:
                           audioClip:audioClipUrl||undefined,
                           childDrawing:ncDrawing||undefined,
                           ...ncResult};
-                        lastSavedStoryIdRef.current = ncId;
+                        // Don't overwrite lastSavedStoryIdRef — it holds the actual story ID from saveMemory
                         console.log('[NC] Built ncData, calling saveNightCard...');
                         try{await saveNightCard(ncData);}catch(err){console.error('[NC] saveNightCard failed:',err);}
                         // Verify save actually worked
