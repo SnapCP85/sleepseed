@@ -370,6 +370,7 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
   return (
     <div style={{minHeight:'100dvh',background:'#060912',display:'flex',flexDirection:'column',paddingBottom:76}}>
       <style>{CSS}</style>
+    <div style={{maxWidth:640,margin:'0 auto',width:'100%'}}>
 
       {/* ── HEADER ── */}
       <div style={{padding:'20px 20px 0',display:'flex',alignItems:'center',gap:14,marginBottom:16}}>
@@ -573,6 +574,8 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
           </div>
         ));
       })()}
+
+    </div>{/* end max-width container */}
 
       {/* ── SELECTED CARD MODAL ── */}
       {viewing && (
