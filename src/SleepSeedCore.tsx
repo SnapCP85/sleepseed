@@ -3889,9 +3889,9 @@ Rules:
     <div className="ss-page" key="end" style={{position:'relative',minHeight:'100%',background:'#060912',display:'flex',flexDirection:'column',overflow:'hidden'}}>
       {/* Atmosphere */}
       <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 30%,rgba(60,30,120,.4),transparent 65%),radial-gradient(ellipse at 30% 80%,rgba(20,30,100,.25),transparent 50%)'}}/>
-      <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 28px 20px',textAlign:'center',maxWidth:480,margin:'0 auto',width:'100%'}}>
+      <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',alignItems:'center',padding:'24px 28px 20px',textAlign:'center',maxWidth:480,margin:'0 auto',width:'100%',overflowY:'auto',scrollbarWidth:'none' as any,justifyContent:'safe center'}}>
         {/* Ornament */}
-        <div style={{marginBottom:24,animation:'nc-fadeIn 1s ease both'}}>
+        <div style={{marginBottom:16,animation:'nc-fadeIn 1s ease both',flexShrink:0}}>
           <svg viewBox="0 0 80 24" width="80" height="24" fill="none">
             <line x1="0" y1="12" x2="28" y2="12" stroke="rgba(245,184,76,.3)" strokeWidth=".8"/>
             <circle cx="40" cy="12" r="4" fill="rgba(245,184,76,.5)"/>
@@ -3901,28 +3901,27 @@ Rules:
             <circle cx="49" cy="12" r="1.5" fill="rgba(245,184,76,.35)"/>
           </svg>
         </div>
-        <div style={{fontSize:13,color:'rgba(234,242,255,.38)',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:10,animation:'nc-fadeUp .6s .1s ease both',opacity:0}}>THE END</div>
-        <div style={{fontSize:32,fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.1,letterSpacing:'-.6px',marginBottom:6,animation:'nc-fadeUp .6s .2s ease both',opacity:0}}>{book?.title??'Tonight\'s Story'}</div>
-        <div style={{fontSize:13,color:'rgba(234,242,255,.35)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',marginBottom:28,animation:'nc-fadeUp .6s .3s ease both',opacity:0}}>A story for {book?.heroName??heroName}</div>
+        <div style={{fontSize:12,color:'rgba(234,242,255,.38)',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:8,animation:'nc-fadeUp .6s .1s ease both',flexShrink:0}}>THE END</div>
+        <div style={{fontSize:'clamp(22px,5vw,32px)',fontWeight:900,color:'#F4EFE8',fontFamily:"'Fraunces',serif",lineHeight:1.1,letterSpacing:'-.6px',marginBottom:4,animation:'nc-fadeUp .6s .2s ease both',flexShrink:0}}>{book?.title??'Tonight\'s Story'}</div>
+        <div style={{fontSize:13,color:'rgba(234,242,255,.35)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',marginBottom:16,animation:'nc-fadeUp .6s .3s ease both',flexShrink:0}}>A story for {book?.heroName??heroName}</div>
         {book?.refrain && (
-          <div style={{padding:'14px 18px',background:'rgba(245,184,76,.07)',border:'1px solid rgba(245,184,76,.2)',borderRadius:16,marginBottom:28,animation:'nc-fadeUp .6s .4s ease both',opacity:0}}>
-            <div style={{fontSize:11,color:'rgba(245,184,76,.5)',fontFamily:"'DM Mono',monospace",letterSpacing:'.6px',marginBottom:5}}>TONIGHT'S REFRAIN</div>
-            <div style={{fontSize:13,color:'rgba(244,239,232,.6)',fontFamily:"'Lora',serif",fontStyle:'italic',lineHeight:1.6}}>"{book.refrain}"</div>
+          <div style={{padding:'10px 16px',background:'rgba(245,184,76,.07)',border:'1px solid rgba(245,184,76,.2)',borderRadius:14,marginBottom:16,animation:'nc-fadeUp .6s .4s ease both',flexShrink:0}}>
+            <div style={{fontSize:10,color:'rgba(245,184,76,.5)',fontFamily:"'DM Mono',monospace",letterSpacing:'.6px',marginBottom:4}}>TONIGHT{'\u2019'}S REFRAIN</div>
+            <div style={{fontSize:12,color:'rgba(244,239,232,.6)',fontFamily:"'Lora',serif",fontStyle:'italic',lineHeight:1.5}}>"{book.refrain}"</div>
           </div>
         )}
         {/* Story Card artifact */}
-        <div style={{marginBottom:20,animation:'nc-fadeUp .6s .5s ease both',opacity:0}}>
+        <div style={{marginBottom:14,animation:'nc-fadeUp .6s .5s ease both',flexShrink:0}}>
           <StoryCard
             title={book?.title??'Tonight\'s Story'}
             heroName={book?.heroName??heroName}
             quote={book?.refrain}
             creatureEmoji={companionCreature?.creatureEmoji??'🐰'}
             creatureName={companionCreature?.name??'SleepSeed'}
-            width={220}
+            width={180}
           />
         </div>
-        <div style={{fontSize:12,color:'rgba(234,242,255,.38)',fontFamily:"'DM Mono',monospace",letterSpacing:'.5px',marginBottom:8,animation:'nc-fadeUp .6s .55s ease both',opacity:0}}>TONIGHT'S STORY</div>
-        <div style={{fontSize:13,color:'rgba(234,242,255,.45)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.65,marginBottom:24,animation:'nc-fadeUp .6s .6s ease both',opacity:0}}>
+        <div style={{fontSize:11,color:'rgba(234,242,255,.35)',fontFamily:"'Nunito',sans-serif",fontStyle:'italic',lineHeight:1.5,marginBottom:14,animation:'nc-fadeUp .6s .55s ease both',flexShrink:0}}>
           Keep this moment
         </div>
         {/* Story feedback */}
