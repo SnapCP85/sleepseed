@@ -270,18 +270,57 @@ const dbToCard = (row: any): SavedNightCard => {
 };
 
 export const getNightCards = async (userId: string): Promise<SavedNightCard[]> => {
+  // Read from v2 key (primary)
   const local = lsGet<SavedNightCard>(LS_CARDS(userId));
+
+  // Also read from v1 key (SleepSeedCore's key) to catch cards that never made it to v2
+  let v1Cards: SavedNightCard[] = [];
   try {
-    const { data, error } = await supabase.from('night_cards').select('*').eq('user_id', userId).order('date', { ascending: false }).limit(30);
+    const v1Key = `ss9_u_${userId}_nightcards`;
+    const v1Raw = localStorage.getItem(v1Key);
+    if (v1Raw) {
+      const v1Data = JSON.parse(v1Raw);
+      const items = v1Data?.items || (Array.isArray(v1Data) ? v1Data : []);
+      v1Cards = items.filter((c: any) => c && c.id);
+    }
+  } catch(e) { /* ignore parse errors */ }
+
+  // Merge v1 into local (deduplicate by id)
+  const localIds = new Set(local.map(c => c.id));
+  const fromV1 = v1Cards.filter(c => !localIds.has(c.id));
+  const combined = [...local, ...fromV1.map(c => ({
+    ...c,
+    // Normalize field names (v1 uses bondingQ/bondingA, v2 uses bondingQuestion/bondingAnswer)
+    bondingQuestion: (c as any).bondingQuestion || (c as any).bondingQ || undefined,
+    bondingAnswer: (c as any).bondingAnswer || (c as any).bondingA || undefined,
+    // Strip base64 photos
+    photo: (c.photo as any)?.startsWith?.('data:') ? undefined : c.photo,
+  } as SavedNightCard))];
+
+  if (fromV1.length > 0) {
+    console.log(`[storage] getNightCards: recovered ${fromV1.length} cards from v1 key (total: ${combined.length})`);
+    // Persist merged set back to v2 (strip base64)
+    const stripped = combined.map(c => ({...c,
+      photo: (c.photo as any)?.startsWith?.('data:') ? undefined : c.photo,
+    }));
+    lsSet(LS_CARDS(userId), stripped);
+  }
+
+  // Also fetch from Supabase and merge
+  try {
+    const { data, error } = await supabase.from('night_cards').select('*').eq('user_id', userId).order('date', { ascending: false }).limit(200);
     if (!error && data?.length) {
       const db = data.map(dbToCard);
-      const ids = new Set(local.map(c => c.id));
-      const merged = [...local, ...db.filter(c => !ids.has(c.id))];
-      if (merged.length > local.length) lsSet(LS_CARDS(userId), merged);
-      return merged.sort((a, b) => b.date.localeCompare(a.date));
+      const ids = new Set(combined.map(c => c.id));
+      const merged = [...combined, ...db.filter(c => !ids.has(c.id))];
+      if (merged.length > combined.length) {
+        console.log(`[storage] getNightCards: +${merged.length - combined.length} from Supabase (total: ${merged.length})`);
+        lsSet(LS_CARDS(userId), merged);
+      }
+      return merged.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     }
-  } catch(e) { console.error('[storage] getNightCards error:', e); }
-  return local.sort((a, b) => b.date.localeCompare(a.date));
+  } catch(e) { console.error('[storage] getNightCards Supabase error:', e); }
+  return combined.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 };
 
 export const saveNightCard = async (nc: SavedNightCard): Promise<void> => {
