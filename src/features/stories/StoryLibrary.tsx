@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { getStories, deleteStory, getCharacters, submitStoryToLibrary, removeStoryFromLibrary, getFriends, shareStoryWithFriend, getSharedStories, markSharedStoryRead, getNightCards } from '../../lib/storage';
 import type { Friend, SharedStory } from '../../lib/storage';
 import type { SavedStory, Character, SavedNightCard } from '../../lib/types';
@@ -17,6 +17,18 @@ function formatDate(iso: string): string {
     if (diff < 7) return `${diff} nights ago`;
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   } catch { return iso; }
+}
+
+function shortDate(iso: string): string {
+  try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+  catch { return iso; }
+}
+
+function numberWord(n: number): string {
+  const w = ['Zero','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten',
+    'Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen','Twenty',
+    'Twenty-one','Twenty-two','Twenty-three','Twenty-four','Twenty-five'];
+  return n <= 25 ? w[n] : String(n);
 }
 
 function vibeToBucket(vibe?: string): string {
@@ -50,139 +62,193 @@ function storySubtitle(s: SavedStory): string {
 }
 
 // ── CSS ──────────────────────────────────────────────────────────────────────
+// Uses the ml-* (memory library) design system for visual unity with the Memories page
 
 const CSS = `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --night:#060912;--night-mid:#0B1535;--night-card:#0C1840;
-  --amber:#F5B84C;--teal:#14d890;--purple:#9A7FD4;--cream:#F4EFE8;
-  --r-sm:14px;--r-md:18px;--r-lg:22px;
-  --serif:'Fraunces',Georgia,serif;
-  --sans:'Nunito',system-ui,sans-serif;
-  --mono:'DM Mono',monospace;
+  --ml-night:#060912;--ml-amber:#F5B84C;--ml-amber-deep:#a8782b;--ml-amber-dim:#c99436;
+  --ml-teal:#14d890;--ml-purple:#9482ff;--ml-cream:#F4EFE8;--ml-cream-dim:#d8d1c5;
+  --ml-ink:#2a2620;--ml-ink-dim:#6b6359;--ml-ink-faint:#9a9185;
+  --ml-hairline:rgba(42,38,32,0.09);
+  --ml-serif:'Fraunces',Georgia,serif;--ml-sans:'Nunito',system-ui,sans-serif;--ml-mono:'DM Mono',monospace;
 }
-@keyframes slFadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes slTwinkle{0%,100%{opacity:.06}50%{opacity:.22}}
 
-/* ── page ─────────────────────────────────────────────────── */
-.sl{min-height:100dvh;background:linear-gradient(180deg,#060912 0%,#0a0e24 50%,#0f0a20 100%);font-family:var(--sans);color:var(--cream);overflow-x:hidden;-webkit-font-smoothing:antialiased;position:relative}
-.sl-inner{max-width:960px;margin:0 auto;padding:0 16px 32px;position:relative;z-index:5}
-@media(min-width:768px){.sl-inner{padding:0 32px 32px}}
-.sl-star{position:fixed;border-radius:50%;background:#EEE8FF;pointer-events:none;z-index:0}
+/* ─── Animations ─── */
+@keyframes slFadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slCardIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+@keyframes slFadein{from{opacity:0}to{opacity:1}}
+@keyframes slSlideup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slStarBreathe{0%,100%{opacity:.85}50%{opacity:1}}
+@keyframes slGlowPulse{0%,100%{opacity:.1}50%{opacity:.2}}
+@keyframes slTileIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes slHeroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes slFoilShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 
-/* ── header ───────────────────────────────────────────────── */
-.sl-hdr{display:flex;align-items:center;gap:14px;padding:44px 0 6px}
-.sl-back{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .18s}
-.sl-back:hover{background:rgba(255,255,255,.08)}
-.sl-hdr-label{font-family:var(--mono);font-size:9px;letter-spacing:1px;color:rgba(245,184,76,.45);margin-bottom:3px}
-.sl-hdr-title{font-family:var(--serif);font-size:26px;font-weight:900;letter-spacing:-.5px;color:var(--cream)}
+/* ─── Page ─── */
+.sl-page{
+  min-height:100vh;font-family:var(--ml-sans);color:var(--ml-cream);-webkit-font-smoothing:antialiased;
+  background:
+    radial-gradient(ellipse 90% 35% at 50% 0%,#141c30 0%,transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 45%,rgba(148,130,255,0.06) 0%,transparent 55%),
+    radial-gradient(ellipse 70% 40% at 20% 75%,rgba(245,184,76,0.035) 0%,transparent 60%),
+    var(--ml-night);
+  padding-bottom:96px;position:relative;
+}
+/* Breathing starfield */
+.sl-page::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  animation:slStarBreathe 8s ease-in-out infinite;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 8%,rgba(255,255,255,0.6),transparent),
+    radial-gradient(1px 1px at 28% 15%,rgba(255,255,255,0.45),transparent),
+    radial-gradient(1.5px 1.5px at 45% 10%,rgba(255,255,255,0.55),transparent),
+    radial-gradient(1px 1px at 62% 18%,rgba(255,255,255,0.4),transparent),
+    radial-gradient(1.5px 1.5px at 78% 6%,rgba(255,255,255,0.55),transparent),
+    radial-gradient(1px 1px at 88% 22%,rgba(255,255,255,0.4),transparent),
+    radial-gradient(1px 1px at 8% 32%,rgba(255,255,255,0.35),transparent),
+    radial-gradient(1.5px 1.5px at 35% 38%,rgba(255,255,255,0.5),transparent),
+    radial-gradient(1px 1px at 55% 45%,rgba(255,255,255,0.3),transparent),
+    radial-gradient(1.5px 1.5px at 72% 42%,rgba(255,255,255,0.45),transparent),
+    radial-gradient(1px 1px at 92% 48%,rgba(255,255,255,0.35),transparent),
+    radial-gradient(1px 1px at 18% 58%,rgba(255,255,255,0.35),transparent),
+    radial-gradient(1.5px 1.5px at 42% 65%,rgba(255,255,255,0.45),transparent),
+    radial-gradient(1px 1px at 68% 72%,rgba(255,255,255,0.3),transparent);
+}
+.sl-page>*{position:relative;z-index:1}
 
-/* ── filter pills ─────────────────────────────────────────── */
-.sl-pills{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px;scrollbar-width:none;-ms-overflow-style:none;padding:2px 0}
-.sl-pills::-webkit-scrollbar{display:none}
-.sl-pill{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:11px;font-family:var(--sans);font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:rgba(234,242,255,.32);transition:all .2s;-webkit-tap-highlight-color:transparent}
-.sl-pill:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12)}
-.sl-pill.on{background:rgba(245,184,76,.1);border-color:rgba(245,184,76,.28);color:#F5B84C;font-weight:600}
+/* ─── Top bar ─── */
+.sl-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 20px 28px;max-width:440px;margin:0 auto}
+.sl-topbtn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.08);color:var(--ml-cream-dim);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.sl-topbtn:hover{background:rgba(245,184,76,0.08);border-color:rgba(245,184,76,0.3);color:var(--ml-amber)}
+.sl-toptitle{font-family:var(--ml-serif);font-weight:400;font-size:18px;color:var(--ml-cream);opacity:.92}
 
-/* ── identity + stats ─────────────────────────────────────── */
-.sl-world{margin-bottom:18px}
-.sl-world-label{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(244,239,232,.2);margin-bottom:10px}
-.sl-identity{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);margin-bottom:10px;animation:slFadeUp .4s ease both}
-.sl-identity-avatar{width:42px;height:42px;border-radius:50%;border:1.5px solid rgba(245,184,76,.25);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:rgba(245,184,76,.06)}
-.sl-identity-info{flex:1;min-width:0}
-.sl-identity-name{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--cream)}
-.sl-identity-label{font-family:var(--mono);font-size:8px;color:rgba(245,184,76,.4);text-transform:uppercase;letter-spacing:.06em;margin-top:1px}
+/* ─── Search panel ─── */
+.sl-search-panel{max-width:440px;margin:0 auto;padding:0 20px;overflow:hidden;transition:max-height .35s cubic-bezier(.22,.61,.36,1),opacity .25s ease;opacity:0;max-height:0}
+.sl-search-panel.open{max-height:140px;opacity:1;margin-bottom:16px}
+.sl-search-input{width:100%;background:rgba(255,255,255,.04);border:1.5px solid rgba(244,239,232,.08);border-radius:14px;padding:11px 14px;font-size:13px;color:var(--ml-cream);outline:none;font-family:var(--ml-sans);transition:border-color .2s}
+.sl-search-input:focus{border-color:rgba(245,184,76,.3)}
+.sl-search-input::placeholder{color:rgba(255,255,255,.18)}
+.sl-filter-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.sl-filter-chip{display:flex;align-items:center;gap:4px;padding:5px 12px;border-radius:16px;cursor:pointer;transition:all .2s;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);font-family:var(--ml-sans);font-size:11px;font-weight:500;color:rgba(234,242,255,.3)}
+.sl-filter-chip.on{background:rgba(245,184,76,.1);border-color:rgba(245,184,76,.28);color:#F5B84C;font-weight:600}
+.sl-filter-clear{display:flex;align-items:center;padding:5px 10px;border-radius:16px;cursor:pointer;background:rgba(200,80,80,.08);border:1px solid rgba(200,80,80,.2);font-size:9px;color:rgba(255,140,130,.6);font-family:var(--ml-mono)}
 
-.sl-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:0}
-.sl-stat{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:12px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
-.sl-stat-num{font-family:var(--serif);font-size:22px;font-weight:900;color:var(--cream);line-height:1}
-.sl-stat-lbl{font-family:var(--mono);font-size:8px;font-weight:600;color:rgba(234,242,255,.25);text-transform:uppercase;letter-spacing:.08em}
+/* ─── Narrative band ─── */
+.sl-narrative{padding:42px 24px 36px;text-align:center;position:relative;max-width:440px;margin:0 auto}
+.sl-narrative::before,.sl-narrative::after{content:'';position:absolute;left:50%;transform:translateX(-50%);width:60px;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,0.35),transparent)}
+.sl-narrative::before{top:12px}
+.sl-narrative::after{bottom:12px}
+.sl-narrative-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 100% at 50% 50%,rgba(245,184,76,0.04) 0%,transparent 60%)}
+.sl-narrative-text{font-family:var(--ml-serif);font-size:15px;line-height:1.6;color:var(--ml-cream);opacity:.78;letter-spacing:-.003em;max-width:340px;margin:0 auto;position:relative;z-index:1}
 
-/* ── search ───────────────────────────────────────────────── */
-.sl-search-wrap{position:relative;margin-bottom:18px}
-.sl-search-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:rgba(244,239,232,.18)}
-.sl-search-ico svg{width:14px;height:14px;display:block}
-.sl-search{width:100%;padding:11px 14px 11px 38px;border-radius:14px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.025);font-size:13px;color:var(--cream);font-family:var(--sans);outline:none;transition:border-color .2s}
-.sl-search:focus{border-color:rgba(245,184,76,.3)}
-.sl-search::placeholder{color:rgba(255,255,255,.16)}
-
-/* ── section labels ───────────────────────────────────────── */
-.sl-sec{display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px}
-.sl-sec-label{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(244,239,232,.2)}
-
-/* ── origin story ─────────────────────────────────────────── */
-.sl-origin{border-radius:18px;overflow:hidden;cursor:pointer;position:relative;border:1px solid rgba(245,184,76,.1);margin-bottom:20px;transition:all .22s;animation:slFadeUp .4s ease both}
-.sl-origin:hover{transform:translateY(-2px);border-color:rgba(245,184,76,.2)}
+/* ─── Origin hero ─── */
+.sl-origin-hero{text-align:center;padding:4px 0 10px;max-width:440px;margin:0 auto}
+.sl-origin-eyebrow{font-family:var(--ml-mono);font-size:9px;letter-spacing:.28em;color:var(--ml-amber);text-transform:uppercase;opacity:.82;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:10px}
+.sl-origin-diamond{font-size:5px;opacity:.7}
+.sl-origin-reason{font-family:var(--ml-serif);font-style:italic;font-size:16px;line-height:1.5;color:var(--ml-cream);opacity:.82;max-width:300px;margin:0 auto 26px;letter-spacing:-.002em}
+.sl-origin-card{
+  width:260px;margin:0 auto;border-radius:14px;overflow:hidden;cursor:pointer;
+  position:relative;
+  animation:slHeroFloat 4s ease-in-out infinite;
+  border:1px solid rgba(245,184,76,.12);
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.2),
+    0 20px 40px -15px rgba(0,0,0,0.5),
+    0 40px 80px -25px rgba(0,0,0,0.8),
+    0 0 70px -18px rgba(245,184,76,0.3);
+  transition:all .4s ease;
+}
+.sl-origin-card:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(0,0,0,0.2),0 24px 48px -15px rgba(0,0,0,0.55),0 44px 88px -25px rgba(0,0,0,0.85),0 0 80px -16px rgba(245,184,76,0.4)}
+.sl-origin-card::after{content:'';position:absolute;inset:-30px;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(245,184,76,0.14) 0%,transparent 65%);pointer-events:none;z-index:-1;animation:slGlowPulse 6s ease-in-out infinite}
 .sl-origin-cover{position:relative;overflow:hidden}
 .sl-origin-cover svg{display:block;width:100%;height:auto}
-.sl-origin-fade{position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(180deg,transparent,rgba(6,9,18,.92));pointer-events:none}
+.sl-origin-fade{position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(180deg,transparent,rgba(6,9,18,.92));pointer-events:none}
 .sl-origin-body{position:absolute;bottom:0;left:0;right:0;padding:14px 16px 16px;z-index:2}
-.sl-origin-badge{display:inline-block;font-family:var(--mono);font-size:7px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:rgba(245,184,76,.12);border:1px solid rgba(245,184,76,.2);color:#F5B84C;margin-bottom:6px}
-.sl-origin-title{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--cream);line-height:1.3}
-.sl-origin-meta{font-family:var(--mono);font-size:9px;color:rgba(244,239,232,.3);margin-top:4px}
+.sl-origin-badge{display:inline-block;font-family:var(--ml-mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:100px;background:rgba(245,184,76,.3);border:0.5px solid rgba(245,184,76,.5);color:rgba(255,243,214,.95);margin-bottom:6px;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.sl-origin-title{font-family:var(--ml-serif);font-size:15px;font-weight:600;color:var(--ml-cream);line-height:1.3}
+.sl-origin-meta{font-family:var(--ml-mono);font-size:9px;color:rgba(244,239,232,.4);margin-top:4px}
 
-/* ── story grid ───────────────────────────────────────────── */
-.sl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
-@media(min-width:600px){.sl-grid{gap:14px}}
+/* ─── Section headers ─── */
+.sl-section{padding:52px 20px 22px;text-align:center;max-width:440px;margin:0 auto}
+.sl-section-eyebrow{font-family:var(--ml-mono);font-size:8.5px;letter-spacing:.32em;color:var(--ml-amber);text-transform:uppercase;opacity:.8;display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px}
+.sl-section-diamond{font-size:4px;opacity:.6}
+.sl-section-title{font-family:var(--ml-serif);font-style:italic;font-weight:400;font-size:29px;color:var(--ml-cream);letter-spacing:-.015em;line-height:1.2}
+.sl-section-count{font-family:var(--ml-mono);font-size:9px;letter-spacing:.2em;color:var(--ml-cream-dim);opacity:.48;text-transform:uppercase;margin-top:10px}
+.sl-section-rule{width:40px;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,0.3),transparent);margin:14px auto 0}
 
-/* ── story card ───────────────────────────────────────────── */
-.sl-card{border:1px solid rgba(255,255,255,.05);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .22s;animation:slFadeUp .4s ease both;position:relative}
-.sl-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.12)}
+/* ─── Divider ─── */
+.sl-divider{display:flex;align-items:center;justify-content:center;gap:14px;padding:36px 20px 0;max-width:440px;margin:0 auto}
+.sl-divider-line{flex:0 0 70px;height:1px;background:linear-gradient(90deg,transparent,rgba(245,184,76,0.3),transparent)}
+.sl-divider-orn{color:var(--ml-amber);opacity:.5;font-size:6px;letter-spacing:.4em}
+
+/* ─── Story grid ─── */
+.sl-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:6px 20px 4px;max-width:440px;margin:0 auto}
+
+/* ─── Story card ─── */
+.sl-card{
+  border-radius:14px;overflow:hidden;cursor:pointer;position:relative;
+  border:1px solid rgba(255,255,255,.05);
+  background:rgba(255,255,255,.015);
+  transition:all .3s cubic-bezier(.22,.61,.36,1);
+}
+.sl-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.12);box-shadow:0 12px 28px -8px rgba(0,0,0,.5)}
+.sl-card:active{transform:translateY(-1px) scale(.98);transition:transform .12s ease}
 .sl-card-cover{position:relative;overflow:hidden}
 .sl-card-cover svg{display:block;width:100%;height:auto}
 .sl-card-fade{position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(180deg,transparent,rgba(6,9,18,.88));pointer-events:none}
-.sl-card-title{position:absolute;bottom:8px;left:10px;right:10px;font-family:var(--serif);font-size:12.5px;font-weight:600;color:var(--cream);line-height:1.3;z-index:2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sl-card-title{position:absolute;bottom:8px;left:10px;right:10px;font-family:var(--ml-serif);font-size:12.5px;font-weight:600;color:var(--ml-cream);line-height:1.3;z-index:2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
 /* card meta */
 .sl-card-meta{padding:9px 10px 10px;display:flex;flex-direction:column;gap:5px}
-.sl-card-sub{font-family:var(--sans);font-size:11px;font-style:italic;color:rgba(244,239,232,.28);line-height:1.3;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.sl-card-sub{font-family:var(--ml-sans);font-size:11px;font-style:italic;color:rgba(244,239,232,.28);line-height:1.3;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 .sl-card-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.sl-card-pills{display:flex;gap:4px;flex-wrap:nowrap;overflow:hidden}
-.sl-card-pill{font-family:var(--mono);font-size:8px;letter-spacing:.03em;padding:2px 6px;border-radius:5px;background:rgba(255,255,255,.04);color:rgba(244,239,232,.25);white-space:nowrap;text-transform:uppercase}
+.sl-card-pills{display:flex;gap:4px;flex-wrap:nowrap;overflow:hidden;align-items:center}
+.sl-card-pill{font-family:var(--ml-mono);font-size:8px;letter-spacing:.03em;padding:2px 6px;border-radius:5px;background:rgba(255,255,255,.04);color:rgba(244,239,232,.22);white-space:nowrap;text-transform:uppercase}
+.sl-card-date{font-family:var(--ml-mono);font-size:8px;color:rgba(234,242,255,.22);letter-spacing:.05em}
 .sl-card-fav{display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(244,239,232,.12);transition:color .15s;background:none;border:none;padding:2px;font-size:15px;flex-shrink:0}
-.sl-card-fav:hover{color:var(--amber)}
+.sl-card-fav:hover{color:var(--ml-amber)}
 .sl-card-fav.on{color:#F5B84C}
-.sl-card-date{font-family:var(--mono);font-size:8.5px;color:rgba(234,242,255,.22)}
 
-/* ── menu ─────────────────────────────────────────────────── */
-.sl-card-menu-btn{position:absolute;top:6px;left:6px;font-size:14px;z-index:3;cursor:pointer;opacity:.18;transition:all .15s;background:rgba(0,0,0,.3);border:none;color:#F4EFE8;padding:2px 5px;border-radius:6px;backdrop-filter:blur(4px)}
+/* ─── Menu ─── */
+.sl-card-menu-btn{position:absolute;top:6px;left:6px;font-size:14px;z-index:3;cursor:pointer;opacity:.18;transition:all .15s;background:rgba(0,0,0,.35);border:none;color:var(--ml-cream);padding:2px 5px;border-radius:6px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 .sl-card-menu-btn:hover{opacity:.7;background:rgba(0,0,0,.5)}
-.sl-menu{position:absolute;top:26px;left:6px;background:rgba(6,9,18,.97);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:4px;z-index:10;min-width:140px;box-shadow:0 12px 40px rgba(0,0,0,.7);backdrop-filter:blur(16px);animation:slFadeUp .12s ease}
+.sl-menu{position:absolute;top:26px;left:6px;background:rgba(6,9,18,.97);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:4px;z-index:10;min-width:140px;box-shadow:0 12px 40px rgba(0,0,0,.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);animation:slFadeUp .12s ease}
 .sl-menu-item{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;border:none;background:none;width:100%;text-align:left;color:rgba(244,239,232,.55);font-family:inherit;transition:all .12s}
-.sl-menu-item:hover{background:rgba(255,255,255,.06);color:#F4EFE8}
+.sl-menu-item:hover{background:rgba(255,255,255,.06);color:var(--ml-cream)}
 .sl-menu-item.danger{color:rgba(255,130,120,.5)}
 .sl-menu-item.danger:hover{background:rgba(200,80,80,.1);color:rgba(255,130,120,.9)}
 
-/* ── public badge ─────────────────────────────────────────── */
-.sl-public-badge{position:absolute;top:7px;right:7px;font-size:7px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(20,216,144,.12);border:1px solid rgba(20,216,144,.22);color:#14d890;font-family:var(--mono);z-index:3;white-space:nowrap;letter-spacing:.02em;text-transform:uppercase;backdrop-filter:blur(4px)}
+/* ─── Public badge ─── */
+.sl-public-badge{position:absolute;top:7px;right:7px;font-size:7px;font-weight:700;padding:2.5px 8px;border-radius:100px;background:rgba(20,216,144,.12);border:0.5px solid rgba(20,216,144,.22);color:#14d890;font-family:var(--ml-mono);z-index:3;white-space:nowrap;letter-spacing:.02em;text-transform:uppercase;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 
-/* ── library toggle ───────────────────────────────────────── */
-.sl-lib-btn{width:100%;padding:7px 12px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.04em;cursor:pointer;transition:all .15s;margin:0 10px 10px}
+/* ─── Library toggle ─── */
+.sl-lib-btn{width:calc(100% - 20px);padding:7px 12px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--ml-mono);letter-spacing:.04em;cursor:pointer;transition:all .15s;margin:0 10px 10px}
 .sl-lib-btn.add{background:rgba(245,184,76,.08);border:1px solid rgba(245,184,76,.2);color:#F5B84C}
 .sl-lib-btn.add:hover{background:rgba(245,184,76,.15)}
 .sl-lib-btn.in{background:rgba(20,216,144,.06);border:1px solid rgba(20,216,144,.18);color:#14d890}
 .sl-lib-btn.in:hover{background:rgba(20,216,144,.12)}
 
-/* ── shared stories ───────────────────────────────────────── */
+/* ─── Shared stories ─── */
 .sl-shared-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;cursor:pointer;transition:all .15s}
 .sl-shared-item:hover{background:rgba(255,255,255,.04)}
 
-/* ── empty ────────────────────────────────────────────────── */
-.sl-empty{text-align:center;padding:60px 20px}
-.sl-empty-emoji{font-size:56px;margin-bottom:16px}
-.sl-empty-h{font-family:var(--serif);font-size:20px;font-weight:700;margin-bottom:8px;font-style:italic}
-.sl-empty-sub{font-size:13px;color:rgba(234,242,255,.3);line-height:1.65;max-width:280px;margin:0 auto 24px}
-.sl-empty-btn{background:linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010);color:#080200;border:none;border-radius:50px;padding:14px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(200,130,20,.25);transition:all .2s}
-.sl-empty-btn:hover{transform:translateY(-2px);filter:brightness(1.1)}
+/* ─── Empty ─── */
+.sl-empty{text-align:center;padding:80px 24px;max-width:440px;margin:0 auto}
 
-/* ── confirm modal ────────────────────────────────────────── */
-.sl-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(8px);animation:slFadeUp .12s ease}
-.sl-modal{background:var(--night-card);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:28px 24px;max-width:320px;width:100%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.7)}
-.sl-modal h3{font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:8px}
-.sl-modal p{font-size:13px;color:rgba(244,239,232,.4);line-height:1.6;margin-bottom:20px}
+/* ─── Footer ─── */
+.sl-footer{text-align:center;padding:80px 20px 20px;max-width:440px;margin:0 auto}
+.sl-footer-total{font-family:var(--ml-serif);font-style:italic;font-size:15px;color:var(--ml-cream);opacity:.62;margin-bottom:16px;line-height:1.6}
+.sl-footer-mark{font-family:var(--ml-mono);font-size:7px;letter-spacing:.3em;text-transform:uppercase;color:var(--ml-cream);opacity:.12}
+
+/* ─── Modals ─── */
+.sl-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:slFadein .15s ease}
+.sl-modal{background:rgba(13,16,24,.98);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:28px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.7);animation:slSlideup .2s cubic-bezier(.22,1,.36,1)}
+.sl-modal h3{font-family:var(--ml-serif);font-size:18px;font-weight:700;color:var(--ml-cream);margin-bottom:8px}
+.sl-modal p{font-size:13px;color:rgba(244,239,232,.5);line-height:1.6;margin-bottom:20px}
 .sl-modal-btns{display:flex;gap:10px}
-.sl-modal-cancel{flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(244,239,232,.5);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
-.sl-modal-del{flex:1;padding:12px;border-radius:12px;border:none;background:rgba(200,70,60,.85);color:white;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.sl-modal-cancel{flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(244,239,232,.5);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--ml-sans)}
+.sl-modal-del{flex:1;padding:12px;border-radius:12px;border:none;background:rgba(200,70,60,.85);color:white;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--ml-sans)}
 `;
 
 // ── Cover component ──────────────────────────────────────────────────────────
@@ -191,35 +257,6 @@ function StoryCover({ title, vibe, mood }: { title: string; vibe?: string; mood?
   const bucket = vibeToBucket(vibe || mood);
   const svg = useMemo(() => generateCoverSVG(title, bucket), [title, bucket]);
   return <div dangerouslySetInnerHTML={{ __html: svg }} />;
-}
-
-// ── Starfield ────────────────────────────────────────────────────────────────
-
-function Starfield() {
-  const stars = useMemo(() => {
-    const s: { x: number; y: number; r: number; d: number }[] = [];
-    for (let i = 0; i < 40; i++) {
-      const h = ((i * 2654435761) >>> 0);
-      s.push({
-        x: (h % 100),
-        y: ((h >> 8) % 100),
-        r: 0.6 + (h % 3) * 0.4,
-        d: 3 + (h % 4),
-      });
-    }
-    return s;
-  }, []);
-  return (
-    <>
-      {stars.map((s, i) => (
-        <div key={i} className="sl-star" style={{
-          left: `${s.x}%`, top: `${s.y}%`,
-          width: s.r * 2, height: s.r * 2,
-          animation: `slTwinkle ${s.d}s ease-in-out ${(i * 0.3) % 4}s infinite`,
-        }} />
-      ))}
-    </>
-  );
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -235,6 +272,7 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
   const [nightCards, setNightCards] = useState<SavedNightCard[]>([]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<SavedStory | null>(null);
@@ -243,9 +281,9 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
   const [shareMsg, setShareMsg] = useState('');
   const [shareSent, setShareSent] = useState(false);
   const [sharedWithMe, setSharedWithMe] = useState<SharedStory[]>([]);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Phase 1: instant from localStorage cache
     try {
       const cachedStories = JSON.parse(localStorage.getItem(`ss2_stories_${userId}`) || '[]');
       const cachedChars = JSON.parse(localStorage.getItem(`ss2_chars_${userId}`) || '[]');
@@ -259,7 +297,6 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
       setFavorites(new Set(fav));
     } catch {}
 
-    // Phase 2: refresh from Supabase in background
     getStories(userId).then(setStories);
     getCharacters(userId).then(setCharacters);
     getNightCards(userId).then(setNightCards);
@@ -278,8 +315,6 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
 
   const familyChars = useMemo(() => characters.filter(c => c.isFamily === true || (c.isFamily === undefined && c.type === 'human')), [characters]);
   const heroNames = [...new Set(stories.map(s => s.heroName).filter(Boolean))];
-  const primaryChar = familyChars.length > 0 ? familyChars[0] : null;
-  const primaryHeroName = primaryChar?.name || heroNames[0] || '';
 
   const filtered = stories.filter(s => {
     const matchFilter = filter === 'all' || s.heroName === filter;
@@ -297,18 +332,13 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
   const originStory = sorted.find(s => (s as any).isOrigin || s.title?.includes('Night You Were Found'));
   const regularStories = sorted.filter(s => s !== originStory);
 
-  const currentStreak = useMemo(() => {
-    const dates = new Set(nightCards.map(c => c.date.split('T')[0]));
-    let streak = 0;
-    const d = new Date(); d.setHours(0, 0, 0, 0);
-    for (let i = 0; i < 365; i++) {
-      const ds = d.toISOString().split('T')[0];
-      if (dates.has(ds)) { streak++; d.setDate(d.getDate() - 1); }
-      else if (i === 0) { d.setDate(d.getDate() - 1); }
-      else break;
-    }
-    return streak;
-  }, [nightCards]);
+  const childNames = useMemo(() => {
+    const names = [...new Set(stories.map(s => s.heroName).filter(Boolean))];
+    if (names.length === 0) return '';
+    if (names.length === 1) return names[0];
+    if (names.length === 2) return `${names[0]} and ${names[1]}`;
+    return names.slice(0, -1).join(', ') + ', and ' + names[names.length - 1];
+  }, [stories]);
 
   const handleDelete = async (story: SavedStory) => {
     await deleteStory(userId, story.id);
@@ -326,16 +356,15 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
     const ageLabel = AGE_LABELS[s.ageGroup || ''];
 
     return (
-      <div key={s.id} className="sl-card" style={{ animationDelay: `${index * 0.05}s` }}
+      <div key={s.id} className="sl-card"
+        style={{ animation: `slTileIn .4s ${index * 0.05}s cubic-bezier(.22,.61,.36,1) both`, opacity: 0 }}
         onClick={() => onReadStory(s.bookData)}>
 
-        {/* SVG cover */}
         <div className="sl-card-cover">
           <StoryCover title={s.title} vibe={s.vibe} mood={s.mood} />
           <div className="sl-card-fade" />
           <div className="sl-card-title">{s.title}</div>
 
-          {/* Menu button */}
           <button className="sl-card-menu-btn"
             onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === s.id ? null : s.id); }}>
             &#8942;
@@ -375,7 +404,6 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
           {s.isPublic && <div className="sl-public-badge">In Library</div>}
         </div>
 
-        {/* Meta area */}
         <div className="sl-card-meta">
           {sub && <div className="sl-card-sub">{sub}</div>}
           <div className="sl-card-row">
@@ -391,7 +419,6 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
           </div>
         </div>
 
-        {/* Library toggle button */}
         {canPublish && !s.isPublic && (
           <div style={{ padding: '0 10px 10px' }}>
             <button className="sl-lib-btn add"
@@ -425,159 +452,176 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
   // ── Page render ────────────────────────────────────────────────────────────
 
   return (
-    <div className="sl" onClick={() => setMenuOpen(null)}>
+    <div className="sl-page" onClick={() => setMenuOpen(null)}>
       <style>{CSS}</style>
-      <Starfield />
 
-      <div className="sl-inner">
+      {/* ── Top bar ── */}
+      <div className="sl-topbar">
+        <button className="sl-topbtn" onClick={onBack} aria-label="Back">←</button>
+        <div className="sl-toptitle">My Stories</div>
+        <button className="sl-topbtn" aria-label="Search and filter"
+          onClick={() => { setSearchOpen(v => !v); setTimeout(() => searchRef.current?.focus(), 100); }}>
+          {searchOpen ? '✕' : '⋯'}
+        </button>
+      </div>
 
-        {/* Header */}
-        <div className="sl-hdr">
-          <button className="sl-back" onClick={onBack}>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(234,242,255,.5)" strokeWidth="2" strokeLinecap="round"><path d="m15 18-6-6 6-6"/></svg>
-          </button>
-          <div>
-            <div className="sl-hdr-label">LIBRARY</div>
-            <div className="sl-hdr-title">My Stories</div>
-          </div>
-        </div>
-
-        {/* Filter pills */}
+      {/* ── Search panel ── */}
+      <div className={`sl-search-panel${searchOpen ? ' open' : ''}`}>
+        <input ref={searchRef} className="sl-search-input" placeholder="Search stories..."
+          value={search} onChange={e => setSearch(e.target.value)} />
         {heroNames.length > 0 && (
-          <div className="sl-pills">
-            <div className={`sl-pill${filter === 'all' ? ' on' : ''}`}
-              onClick={() => setFilter('all')}>All</div>
+          <div className="sl-filter-chips">
             {heroNames.map(n => (
-              <div key={n} className={`sl-pill${filter === n ? ' on' : ''}`}
+              <div key={n} className={`sl-filter-chip${filter === n ? ' on' : ''}`}
                 onClick={() => setFilter(filter === n ? 'all' : n)}>{n}</div>
             ))}
-          </div>
-        )}
-
-        {/* Identity + stats */}
-        {stories.length > 0 && (
-          <div className="sl-world">
-            <div className="sl-world-label">Your World</div>
-
-            {primaryHeroName && (
-              <div className="sl-identity">
-                <div className="sl-identity-avatar">
-                  {primaryChar?.emoji || '🌙'}
-                </div>
-                <div className="sl-identity-info">
-                  <div className="sl-identity-name">{primaryHeroName}</div>
-                  <div className="sl-identity-label">Your companion</div>
-                </div>
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 900, color: 'var(--cream)', lineHeight: 1 }}>{stories.length}</div>
-                  <div style={{ fontFamily: 'var(--mono)', fontSize: 7, color: 'rgba(234,242,255,.25)', textTransform: 'uppercase', letterSpacing: '.06em', marginTop: 2 }}>Stories</div>
-                </div>
-              </div>
+            {filter !== 'all' && (
+              <div className="sl-filter-clear" onClick={() => setFilter('all')}>✕ clear</div>
             )}
-
-            <div className="sl-stats">
-              <div className="sl-stat">
-                <div className="sl-stat-num">{stories.length}</div>
-                <div className="sl-stat-lbl">Stories</div>
-              </div>
-              <div className="sl-stat">
-                <div className="sl-stat-num">{nightCards.length}</div>
-                <div className="sl-stat-lbl">Memories</div>
-              </div>
-              <div className="sl-stat">
-                <div className="sl-stat-num">{currentStreak}</div>
-                <div className="sl-stat-lbl">Streak</div>
-              </div>
-            </div>
           </div>
-        )}
-
-        {/* Search */}
-        {stories.length > 0 && (
-          <div className="sl-search-wrap">
-            <div className="sl-search-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-              </svg>
-            </div>
-            <input className="sl-search" placeholder="Search your stories..." value={search}
-              onChange={e => setSearch(e.target.value)} />
-          </div>
-        )}
-
-        {/* Shared with you */}
-        {sharedWithMe.length > 0 && (
-          <div>
-            <div className="sl-sec"><div className="sl-sec-label">Shared with you</div></div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-              {sharedWithMe.map(s => (
-                <div key={s.id} className="sl-shared-item" style={{
-                  background: s.read ? 'rgba(255,255,255,.02)' : 'rgba(245,184,76,.04)',
-                  border: `1px solid ${s.read ? 'rgba(255,255,255,.05)' : 'rgba(245,184,76,.15)'}`,
-                  borderRadius: 14,
-                }}
-                  onClick={() => {
-                    if (!s.read) markSharedStoryRead(s.id).then(() => setSharedWithMe(prev => prev.map(x => x.id === s.id ? { ...x, read: true } : x)));
-                    if (s.bookData) onReadStory(s.bookData);
-                  }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(145deg,#251838,#140d28)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>📖</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#F4EFE8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.storyTitle}</div>
-                    <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'rgba(234,242,255,.25)' }}>
-                      From {s.fromDisplayName}{s.message ? ` · "${s.message}"` : ''} · {s.sharedAt?.split('T')[0]}
-                    </div>
-                  </div>
-                  {!s.read && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#F5B84C', flexShrink: 0 }} />}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Main content */}
-        {stories.length === 0 ? (
-          <div className="sl-empty">
-            <div className="sl-empty-emoji">📚</div>
-            <div className="sl-empty-h">Your bookshelf is empty</div>
-            <div className="sl-empty-sub">Every story you create gets added here — your very own library, ready to read any night.</div>
-            <button className="sl-empty-btn" onClick={onCreateStory}>Create your first story</button>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="sl-empty">
-            <div className="sl-empty-emoji">🔍</div>
-            <div className="sl-empty-h" style={{ fontSize: 16 }}>No stories found</div>
-            <div className="sl-empty-sub">Try a different search or filter.</div>
-          </div>
-        ) : (
-          <>
-            {/* Origin story hero card */}
-            {originStory && !search && filter === 'all' && (
-              <div style={{ marginBottom: 20 }}>
-                <div className="sl-sec"><div className="sl-sec-label">Origin Story</div></div>
-                <div className="sl-origin" onClick={() => onReadStory(originStory.bookData)}>
-                  <div className="sl-origin-cover">
-                    <StoryCover title={originStory.title} vibe={originStory.vibe} mood={originStory.mood} />
-                    <div className="sl-origin-fade" />
-                    <div className="sl-origin-body">
-                      <div className="sl-origin-badge">✦ Your first story</div>
-                      <div className="sl-origin-title">{originStory.title}</div>
-                      <div className="sl-origin-meta">{originStory.heroName} · {formatDate(originStory.date)}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Story grid */}
-            <div className="sl-sec"><div className="sl-sec-label">My Stories</div></div>
-            <div className="sl-grid">
-              {regularStories.map((s, i) => renderCard(s, i))}
-            </div>
-          </>
         )}
       </div>
 
-      {/* ── Modals ──────────────────────────────────────────────────────────── */}
+      {/* ── Narrative band ── */}
+      {stories.length > 0 && (
+        <div className="sl-narrative" style={{ animation: 'slFadeUp .5s .15s ease both', opacity: 0 }}>
+          <div className="sl-narrative-glow" />
+          <div className="sl-narrative-text">
+            <span style={{ color: 'var(--ml-amber)', opacity: 0.95, fontWeight: 500, fontStyle: 'italic' }}>
+              {numberWord(stories.length)} stor{stories.length !== 1 ? 'ies' : 'y'}
+            </span>
+            {childNames ? ` with ${childNames}.` : '.'}
+          </div>
+        </div>
+      )}
+
+      {/* ── Shared with you ── */}
+      {sharedWithMe.length > 0 && (
+        <div style={{ maxWidth: 440, margin: '0 auto', padding: '0 20px' }}>
+          <div className="sl-section" style={{ padding: '20px 0 12px' }}>
+            <div className="sl-section-eyebrow">
+              <span className="sl-section-diamond">◆</span>
+              <span>Shared with you</span>
+              <span className="sl-section-diamond">◆</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+            {sharedWithMe.map(s => (
+              <div key={s.id} className="sl-shared-item" style={{
+                background: s.read ? 'rgba(255,255,255,.02)' : 'rgba(245,184,76,.04)',
+                border: `1px solid ${s.read ? 'rgba(255,255,255,.05)' : 'rgba(245,184,76,.15)'}`,
+                borderRadius: 14,
+              }}
+                onClick={() => {
+                  if (!s.read) markSharedStoryRead(s.id).then(() => setSharedWithMe(prev => prev.map(x => x.id === s.id ? { ...x, read: true } : x)));
+                  if (s.bookData) onReadStory(s.bookData);
+                }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(145deg,#251838,#140d28)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>📖</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ml-cream)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.storyTitle}</div>
+                  <div style={{ fontSize: 10, fontFamily: 'var(--ml-mono)', color: 'rgba(234,242,255,.25)' }}>
+                    From {s.fromDisplayName}{s.message ? ` · "${s.message}"` : ''} · {s.sharedAt?.split('T')[0]}
+                  </div>
+                </div>
+                {!s.read && <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--ml-amber)', flexShrink: 0 }} />}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Main content ── */}
+      {stories.length === 0 ? (
+        <div className="sl-empty" style={{ animation: 'slFadeUp .4s ease both' }}>
+          <div style={{ fontSize: 56, opacity: 0.4, marginBottom: 20 }}>📚</div>
+          <div style={{ fontFamily: 'var(--ml-serif)', fontSize: 22, fontWeight: 700, color: 'var(--ml-cream)', marginBottom: 10, fontStyle: 'italic' }}>Your bookshelf is empty</div>
+          <div style={{ fontSize: 14, color: 'rgba(244,239,232,0.4)', lineHeight: 1.72, maxWidth: 360, margin: '0 auto 24px', fontWeight: 300 }}>
+            Every story you create gets added here — your very own library, ready to read any night.
+          </div>
+          <button onClick={onCreateStory} style={{
+            background: 'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)', color: '#080200',
+            border: 'none', borderRadius: 50, padding: '14px 32px', fontSize: 14, fontWeight: 700,
+            cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 6px 20px rgba(200,130,20,.25)',
+            transition: 'all .2s',
+          }}>Create your first story</button>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="sl-empty" style={{ animation: 'slFadeUp .3s ease both' }}>
+          <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 16 }}>🔍</div>
+          <div style={{ fontFamily: 'var(--ml-serif)', fontSize: 18, color: 'var(--ml-cream)', opacity: 0.6, fontStyle: 'italic' }}>No stories match</div>
+          <div style={{ fontSize: 13, color: 'rgba(244,239,232,0.3)', marginTop: 8 }}>Try a different search or clear the filter.</div>
+        </div>
+      ) : (
+        <>
+          {/* ── Origin story hero ── */}
+          {originStory && !search && filter === 'all' && (
+            <div className="sl-origin-hero" style={{ animation: 'slFadeUp .5s .1s ease both', opacity: 0 }}>
+              <div className="sl-origin-eyebrow">
+                <span className="sl-origin-diamond">◆</span>
+                <span>Where it began</span>
+                <span className="sl-origin-diamond">◆</span>
+              </div>
+              <div className="sl-origin-reason">Your very first story together.</div>
+              <div className="sl-origin-card" onClick={() => onReadStory(originStory.bookData)}>
+                <div className="sl-origin-cover">
+                  <StoryCover title={originStory.title} vibe={originStory.vibe} mood={originStory.mood} />
+                  <div className="sl-origin-fade" />
+                  <div className="sl-origin-body">
+                    <div className="sl-origin-badge">◆ Origin Story</div>
+                    <div className="sl-origin-title">{originStory.title}</div>
+                    <div className="sl-origin-meta">
+                      <span style={{ color: 'var(--ml-amber-deep)' }}>◆</span> {originStory.heroName} · {shortDate(originStory.date)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Divider before grid ── */}
+          <div className="sl-divider">
+            <span className="sl-divider-line" />
+            <span className="sl-divider-orn">◆ ◆ ◆</span>
+            <span className="sl-divider-line" />
+          </div>
+
+          {/* ── Section header ── */}
+          <div className="sl-section" style={{ animation: 'slFadeUp .4s .2s ease both', opacity: 0 }}>
+            <div className="sl-section-eyebrow">
+              <span className="sl-section-diamond">◆</span>
+              <span>Your Collection</span>
+              <span className="sl-section-diamond">◆</span>
+            </div>
+            <div className="sl-section-title">My Stories</div>
+            <div className="sl-section-count">
+              {regularStories.length} stor{regularStories.length !== 1 ? 'ies' : 'y'} · {heroNames.length > 0 ? heroNames.join(' & ') : 'Ritual'}
+            </div>
+            <div className="sl-section-rule" />
+          </div>
+
+          {/* ── Story grid ── */}
+          <div className="sl-grid">
+            {regularStories.map((s, i) => renderCard(s, i))}
+          </div>
+        </>
+      )}
+
+      {/* ── Footer ── */}
+      {stories.length > 0 && (
+        <div className="sl-footer" style={{ animation: 'slFadeUp .4s .3s ease both', opacity: 0 }}>
+          <div className="sl-footer-total">
+            <span style={{ color: 'var(--ml-amber)', fontWeight: 500, opacity: 0.95 }}>
+              {numberWord(stories.length)} stor{stories.length !== 1 ? 'ies' : 'y'}
+            </span> told so far.<br />
+            Each one a night remembered.
+          </div>
+          <div className="sl-footer-mark">SleepSeed</div>
+        </div>
+      )}
+
+      {/* ════════════════════════════════════════════════════════════
+         MODALS
+         ════════════════════════════════════════════════════════════ */}
 
       {/* Delete confirmation */}
       {confirmDelete && (
@@ -603,7 +647,7 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
                 <h3>Send "{shareTarget.title}"</h3>
                 <p>Pick a friend to share this story with.</p>
                 <input placeholder="Add a message (optional)" value={shareMsg} onChange={e => setShareMsg(e.target.value)}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.04)', color: '#F4EFE8', fontSize: 12, fontFamily: 'inherit', outline: 'none', marginBottom: 12 }} />
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.04)', color: 'var(--ml-cream)', fontSize: 12, fontFamily: 'inherit', outline: 'none', marginBottom: 12 }} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {friends.map(f => (
                     <button key={f.id} onClick={async () => {
@@ -613,7 +657,7 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
                       <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#D4A060,#B07020)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#fff', fontWeight: 700, flexShrink: 0 }}>
                         {f.friendDisplayName.charAt(0).toUpperCase()}
                       </div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: '#F4EFE8' }}>{f.friendDisplayName}</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ml-cream)' }}>{f.friendDisplayName}</div>
                       <div style={{ marginLeft: 'auto', fontSize: 11, color: 'rgba(245,184,76,.5)' }}>Send →</div>
                     </button>
                   ))}
