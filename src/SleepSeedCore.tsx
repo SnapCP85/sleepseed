@@ -4815,14 +4815,18 @@ Rules:
                           return adjMonths > 0 ? `${adjYears} years, ${adjMonths} months` : `${adjYears} years`;
                         })();
                         const bedtime = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
-                        // Upload audio clip if recorded
+                        // Upload audio clip if recorded (via server-side API to bypass RLS)
                         let audioClipUrl: string|undefined;
                         if(ncAudioBlob && userId){
                           try{
                             const ext=ncAudioBlob.type.includes('webm')?'webm':'m4a';
                             const path=`${userId}/voice_${ncId}.${ext}`;
-                            const{error:upErr}=await supabase.storage.from('photos').upload(path,ncAudioBlob,{contentType:ncAudioBlob.type,upsert:true});
-                            if(!upErr){const{data:urlData}=supabase.storage.from('photos').getPublicUrl(path);audioClipUrl=urlData?.publicUrl;}
+                            // Convert blob to base64
+                            const reader=new FileReader();
+                            const b64:string=await new Promise((resolve,reject)=>{reader.onload=()=>resolve(reader.result as string);reader.onerror=reject;reader.readAsDataURL(ncAudioBlob);});
+                            const upRes=await fetch('/api/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path,contentType:ncAudioBlob.type,base64:b64})});
+                            if(upRes.ok){const{url}=await upRes.json();audioClipUrl=url;}
+                            else console.error('[NC] Audio upload failed:',await upRes.text());
                           }catch(e){console.error('[NC] Audio upload failed:',e);}
                         }
                         const ncData={id:ncId,userId:userId||'',heroName:book.heroName,storyTitle:book.title,refrain:book.refrain||"",

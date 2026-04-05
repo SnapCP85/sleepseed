@@ -74,13 +74,15 @@ export const getSession = async () => {
 
 export const uploadPhoto = async (userId: string, base64: string, name: string): Promise<string> => {
   try {
-    const res  = await fetch(base64);
-    const blob = await res.blob();
     const path = `${userId}/${name}_${Date.now()}.jpg`;
-    const { error } = await supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
-    if (error) return base64;
-    const { data } = supabase.storage.from('photos').getPublicUrl(path);
-    return data.publicUrl;
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path, contentType: 'image/jpeg', base64 }),
+    });
+    if (!res.ok) return base64;
+    const { url } = await res.json();
+    return url || base64;
   } catch {
     return base64;
   }
