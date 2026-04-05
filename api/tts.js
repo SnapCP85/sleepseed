@@ -1,14 +1,13 @@
 export const maxDuration = 30;
 
 export default async function handler(req, res) {
-  res.setHeader('Content-Type', 'application/json');
-
   if (req.method !== 'POST') {
     return res.status(405).json({ error: { message: 'Method not allowed' } });
   }
 
   const key = process.env.ELEVENLABS_KEY;
   if (!key) {
+    console.error('[TTS] ELEVENLABS_KEY not set in environment');
     return res.status(500).json({ error: { message: 'ELEVENLABS_KEY not set' } });
   }
 

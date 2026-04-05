@@ -1967,6 +1967,8 @@ export default function SleepSeed({
     }
     try {
       const ctx = new AudioContext();
+      // Resume context on mobile (browsers suspend until user gesture)
+      if (ctx.state === 'suspended') ctx.resume();
       ambientCtxRef.current = ctx;
       const len = ctx.sampleRate * 4;
       const buf = ctx.createBuffer(2, len, ctx.sampleRate);
