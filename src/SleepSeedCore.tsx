@@ -4637,130 +4637,94 @@ Rules:
                         creatureEmoji:companionCreature?.creatureEmoji,
                       } as any} size="full" />
                     </div>
-                    {/* Photo option */}
-                    {!ncPhoto && (
-                      <div style={{width:'100%',marginBottom:12,animation:'nc-fadeUp .4s .4s ease both',opacity:0}}>
-                        <div
-                          onClick={()=>{
+                    {/* ── Compact action row: Photo · Voice · Drawing ── */}
+                    <div style={{width:'100%',display:'flex',gap:8,marginBottom:10,animation:'nc-fadeUp .4s .4s ease both',opacity:0}}>
+                      {/* Photo: Take or Upload */}
+                      {!ncPhoto ? (
+                        <div style={{flex:1,display:'flex',gap:6}}>
+                          <button onClick={()=>{
+                            const input=document.createElement('input');
+                            input.type='file';input.accept='image/*';input.setAttribute('capture','environment');
+                            input.onchange=(e:any)=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=(ev)=>setNcPhoto(ev.target?.result as string);reader.readAsDataURL(file);};
+                            input.click();
+                          }} style={{flex:1,padding:'10px 8px',borderRadius:12,border:'1.5px dashed rgba(246,197,111,.2)',background:'rgba(246,197,111,.05)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+                            <span style={{fontSize:18}}>📸</span>
+                            <span style={{fontSize:8,color:'rgba(246,197,111,.6)',fontFamily:"'DM Mono',monospace"}}>Take</span>
+                          </button>
+                          <button onClick={()=>{
                             const input=document.createElement('input');
                             input.type='file';input.accept='image/*';
                             input.onchange=(e:any)=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=(ev)=>setNcPhoto(ev.target?.result as string);reader.readAsDataURL(file);};
                             input.click();
-                          }}
-                          style={{
-                            width:'100%',padding:'11px 14px',
-                            background:'rgba(246,197,111,.06)',border:'1.5px dashed rgba(246,197,111,.24)',
-                            borderRadius:14,display:'flex',alignItems:'center',gap:10,cursor:'pointer',
-                          }}
-                        >
-                          <span style={{fontSize:16}}>📷</span>
-                          <div>
-                            <div style={{fontSize:12,fontWeight:700,color:'rgba(246,197,111,.8)',fontFamily:"'Nunito',sans-serif"}}>Add a photo from tonight</div>
-                            <div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.3)',letterSpacing:'.3px',marginTop:1}}>Take one now or choose from your camera roll</div>
-                          </div>
+                          }} style={{flex:1,padding:'10px 8px',borderRadius:12,border:'1.5px dashed rgba(246,197,111,.2)',background:'rgba(246,197,111,.05)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+                            <span style={{fontSize:18}}>🖼</span>
+                            <span style={{fontSize:8,color:'rgba(246,197,111,.6)',fontFamily:"'DM Mono',monospace"}}>Upload</span>
+                          </button>
                         </div>
-                      </div>
-                    )}
-                    {ncPhoto && (
-                      <div style={{width:'100%',marginBottom:12,borderRadius:14,overflow:'hidden',border:'1px solid rgba(246,197,111,.2)',animation:'nc-fadeUp .3s ease both'}}>
-                        <img src={ncPhoto} alt="Tonight" style={{width:'100%',height:120,objectFit:'cover',display:'block'}}/>
-                      </div>
-                    )}
-                    {/* Voice recording option */}
-                    {!ncAudioUrl && (
-                      <div style={{width:'100%',marginBottom:12,animation:'nc-fadeUp .4s .5s ease both',opacity:0}}>
-                        <div
-                          onClick={async()=>{
-                            if(ncRecording){
-                              // Stop recording
-                              ncMediaRecRef.current?.stop();
-                              setNcRecording(false);
-                              return;
-                            }
-                            // Start recording
-                            try{
-                              const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-                              const recorder=new MediaRecorder(stream,{mimeType:MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/mp4'});
-                              const chunks:Blob[]=[];
-                              recorder.ondataavailable=(e)=>{if(e.data.size>0)chunks.push(e.data);};
-                              recorder.onstop=()=>{
-                                stream.getTracks().forEach(t=>t.stop());
-                                const blob=new Blob(chunks,{type:recorder.mimeType});
-                                setNcAudioBlob(blob);
-                                setNcAudioUrl(URL.createObjectURL(blob));
-                              };
-                              ncMediaRecRef.current=recorder;
-                              recorder.start();
-                              setNcRecording(true);
-                              // Auto-stop after 10 seconds
-                              setTimeout(()=>{if(recorder.state==='recording'){recorder.stop();setNcRecording(false);}},10000);
-                            }catch(e){console.error('[NC] Voice recording failed:',e);}
-                          }}
-                          style={{
-                            width:'100%',padding:'11px 14px',
-                            background:ncRecording?'rgba(255,80,80,.08)':'rgba(154,127,212,.06)',
-                            border:`1.5px dashed ${ncRecording?'rgba(255,80,80,.3)':'rgba(154,127,212,.24)'}`,
-                            borderRadius:14,display:'flex',alignItems:'center',gap:10,cursor:'pointer',
-                            transition:'all .2s',
-                          }}
-                        >
-                          <span style={{fontSize:16}}>{ncRecording?'⏹':'🎙'}</span>
-                          <div>
-                            <div style={{fontSize:12,fontWeight:700,color:ncRecording?'rgba(255,120,120,.8)':'rgba(154,127,212,.8)',fontFamily:"'Nunito',sans-serif"}}>
-                              {ncRecording?'Recording... tap to stop':'Record a goodnight — optional'}
-                            </div>
-                            <div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.3)',letterSpacing:'.3px',marginTop:1}}>
-                              {ncRecording?'Up to 10 seconds':`Say goodnight to ${companionCreature?.name||'your DreamKeeper'}`}
-                            </div>
-                          </div>
+                      ) : (
+                        <div style={{flex:2,borderRadius:12,overflow:'hidden',border:'1px solid rgba(246,197,111,.2)',position:'relative'}}>
+                          <img src={ncPhoto} alt="Tonight" style={{width:'100%',height:64,objectFit:'cover',display:'block'}}/>
+                          <button onClick={()=>setNcPhoto(null)} style={{position:'absolute',top:4,right:4,width:20,height:20,borderRadius:'50%',background:'rgba(0,0,0,.6)',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
                         </div>
-                      </div>
-                    )}
-                    {ncAudioUrl && (
-                      <div style={{width:'100%',marginBottom:12,animation:'nc-fadeUp .3s ease both'}}>
-                        <div style={{padding:'10px 14px',background:'rgba(154,127,212,.06)',border:'1px solid rgba(154,127,212,.2)',borderRadius:14,display:'flex',alignItems:'center',gap:10}}>
-                          <span style={{fontSize:16}}>🎙</span>
-                          <audio src={ncAudioUrl} controls style={{flex:1,height:32,opacity:.8}} />
-                          <button onClick={()=>{setNcAudioBlob(null);setNcAudioUrl(null);}} style={{background:'none',border:'none',color:'rgba(255,140,130,.5)',fontSize:12,cursor:'pointer',padding:4}}>✕</button>
+                      )}
+                      {/* Voice */}
+                      {!ncAudioUrl ? (
+                        <button onClick={async()=>{
+                          if(ncRecording){ncMediaRecRef.current?.stop();setNcRecording(false);return;}
+                          try{
+                            const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+                            const recorder=new MediaRecorder(stream,{mimeType:MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/mp4'});
+                            const chunks:Blob[]=[];
+                            recorder.ondataavailable=(e)=>{if(e.data.size>0)chunks.push(e.data);};
+                            recorder.onstop=()=>{stream.getTracks().forEach(t=>t.stop());const blob=new Blob(chunks,{type:recorder.mimeType});setNcAudioBlob(blob);setNcAudioUrl(URL.createObjectURL(blob));};
+                            ncMediaRecRef.current=recorder;recorder.start();setNcRecording(true);
+                            setTimeout(()=>{if(recorder.state==='recording'){recorder.stop();setNcRecording(false);}},10000);
+                          }catch(e){console.error('[NC] Voice recording failed:',e);}
+                        }} style={{flex:1,padding:'10px 8px',borderRadius:12,border:`1.5px dashed ${ncRecording?'rgba(255,80,80,.3)':'rgba(154,127,212,.2)'}`,background:ncRecording?'rgba(255,80,80,.08)':'rgba(154,127,212,.05)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+                          <span style={{fontSize:18}}>{ncRecording?'⏹':'🎙'}</span>
+                          <span style={{fontSize:8,color:ncRecording?'rgba(255,120,120,.7)':'rgba(154,127,212,.6)',fontFamily:"'DM Mono',monospace"}}>{ncRecording?'Stop':'Voice'}</span>
+                        </button>
+                      ) : (
+                        <div style={{flex:1,padding:'6px 8px',borderRadius:12,border:'1px solid rgba(154,127,212,.2)',background:'rgba(154,127,212,.05)',display:'flex',flexDirection:'column',alignItems:'center',gap:2}}>
+                          <audio src={ncAudioUrl} controls style={{width:'100%',height:24,opacity:.8}} />
+                          <button onClick={()=>{setNcAudioBlob(null);setNcAudioUrl(null);}} style={{background:'none',border:'none',color:'rgba(255,140,130,.4)',fontSize:8,cursor:'pointer'}}>Remove</button>
                         </div>
-                      </div>
-                    )}
+                      )}
+                      {/* Drawing */}
+                      {!ncDrawing ? (
+                        <button onClick={()=>setNcDrawingOpen(true)} style={{flex:1,padding:'10px 8px',borderRadius:12,border:'1.5px dashed rgba(20,216,144,.2)',background:'rgba(20,216,144,.05)',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+                          <span style={{fontSize:18}}>{'\u270F\uFE0F'}</span>
+                          <span style={{fontSize:8,color:'rgba(20,216,144,.6)',fontFamily:"'DM Mono',monospace"}}>Draw</span>
+                        </button>
+                      ) : (
+                        <div style={{flex:1,borderRadius:12,overflow:'hidden',border:'1px solid rgba(20,216,144,.15)',position:'relative',display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(20,216,144,.04)'}}>
+                          <img src={ncDrawing} alt="Drawing" style={{maxWidth:'100%',maxHeight:64,borderRadius:8}}/>
+                          <button onClick={()=>{setNcDrawing(null);}} style={{position:'absolute',top:4,right:4,width:20,height:20,borderRadius:'50%',background:'rgba(0,0,0,.6)',border:'none',color:'#fff',fontSize:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
+                        </div>
+                      )}
+                    </div>
 
-                    {/* Drawing capture */}
-                    {!ncDrawing && !ncDrawingOpen && (
-                      <div style={{width:'100%',marginBottom:12,animation:'nc-fadeUp .4s .55s ease both',opacity:0}}>
-                        <div onClick={()=>setNcDrawingOpen(true)} style={{
-                          width:'100%',padding:'11px 14px',
-                          background:'rgba(20,216,144,.06)',border:'1.5px dashed rgba(20,216,144,.2)',
-                          borderRadius:14,display:'flex',alignItems:'center',gap:10,cursor:'pointer',
-                        }}>
-                          <span style={{fontSize:16}}>{'\u270F\uFE0F'}</span>
-                          <div>
-                            <div style={{fontSize:12,fontWeight:700,color:'rgba(20,216,144,.8)',fontFamily:"'Nunito',sans-serif"}}>Add a drawing — optional</div>
-                            <div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.3)',letterSpacing:'.3px',marginTop:1}}>Let {book?.heroName||heroName} draw something tonight</div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    {/* ── Drawing Board Modal (full-screen overlay) ── */}
                     {ncDrawingOpen && !ncDrawing && (
-                      <div style={{width:'100%',marginBottom:12,animation:'nc-fadeUp .3s ease both'}}>
-                        <div style={{background:'rgba(20,216,144,.04)',border:'1px solid rgba(20,216,144,.15)',borderRadius:14,padding:'12px',textAlign:'center'}}>
-                          <div style={{fontSize:10,color:'rgba(20,216,144,.5)',fontFamily:"'DM Mono',monospace",marginBottom:8}}>DRAW SOMETHING {'\u2728'}</div>
+                      <div style={{position:'fixed',inset:0,zIndex:300,background:'rgba(6,9,18,.95)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:20,animation:'nc-fadeUp .2s ease both'}}>
+                        <div style={{width:'100%',maxWidth:340,display:'flex',flexDirection:'column',alignItems:'center'}}>
+                          <div style={{fontSize:11,color:'rgba(20,216,144,.6)',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:12}}>{(book?.heroName||heroName).toUpperCase()}{'\u2019'}S DRAWING</div>
                           {/* Color palette */}
-                          <div style={{display:'flex',gap:6,justifyContent:'center',marginBottom:8,flexWrap:'wrap'}}>
+                          <div style={{display:'flex',gap:8,justifyContent:'center',marginBottom:12,flexWrap:'wrap'}}>
                             {['#2a1a0e','#e74c3c','#e67e22','#f1c40f','#27ae60','#2980b9','#8e44ad','#ecf0f1'].map(color=>(
                               <button key={color} onClick={()=>setNcDrawColor(color)} style={{
-                                width:26,height:26,borderRadius:'50%',border:ncDrawColor===color?'2.5px solid rgba(20,216,144,.8)':'2px solid rgba(255,255,255,.15)',
+                                width:30,height:30,borderRadius:'50%',border:ncDrawColor===color?'3px solid rgba(20,216,144,.8)':'2px solid rgba(255,255,255,.15)',
                                 background:color,cursor:'pointer',padding:0,
-                                boxShadow:ncDrawColor===color?`0 0 8px ${color}40`:'none',
+                                boxShadow:ncDrawColor===color?`0 0 10px ${color}40`:'none',
                                 transition:'transform .15s, box-shadow .15s',
                                 transform:ncDrawColor===color?'scale(1.15)':'scale(1)',
                               }}/>
                             ))}
                           </div>
-                          <canvas ref={ncDrawCanvasRef} width={260} height={180} style={{
-                            width:'100%',maxWidth:260,height:180,borderRadius:10,
+                          <canvas ref={ncDrawCanvasRef} width={320} height={240} style={{
+                            width:'100%',maxWidth:320,height:240,borderRadius:14,
                             background:'rgba(255,255,255,.95)',cursor:'crosshair',touchAction:'none',
+                            boxShadow:'0 8px 32px rgba(0,0,0,.4)',
                           }}
                             onPointerDown={e=>{
                               ncDrawingRef.current=true;
@@ -4781,28 +4745,11 @@ Rules:
                             onPointerUp={()=>{ncDrawingRef.current=false;}}
                             onPointerLeave={()=>{ncDrawingRef.current=false;}}
                           />
-                          <div style={{display:'flex',gap:8,marginTop:8,justifyContent:'center'}}>
-                            <button onClick={()=>{
-                              const c=ncDrawCanvasRef.current;if(!c)return;
-                              const ctx=c.getContext('2d');if(!ctx)return;
-                              ctx.clearRect(0,0,c.width,c.height);
-                            }} style={{padding:'6px 14px',borderRadius:8,border:'1px solid rgba(20,216,144,.15)',background:'transparent',color:'rgba(20,216,144,.6)',fontSize:10,cursor:'pointer',fontFamily:"'Nunito',sans-serif"}}>Clear</button>
-                            <button onClick={()=>{
-                              const c=ncDrawCanvasRef.current;if(!c)return;
-                              setNcDrawing(c.toDataURL('image/png'));
-                              setNcDrawingOpen(false);
-                            }} style={{padding:'6px 14px',borderRadius:8,border:'none',background:'rgba(20,216,144,.2)',color:'rgba(20,216,144,.85)',fontSize:10,fontWeight:600,cursor:'pointer',fontFamily:"'Nunito',sans-serif"}}>Save drawing</button>
-                            <button onClick={()=>setNcDrawingOpen(false)} style={{padding:'6px 14px',borderRadius:8,border:'1px solid rgba(255,255,255,.08)',background:'transparent',color:'rgba(234,242,255,.3)',fontSize:10,cursor:'pointer',fontFamily:"'Nunito',sans-serif"}}>Cancel</button>
+                          <div style={{display:'flex',gap:10,marginTop:14,width:'100%',maxWidth:320}}>
+                            <button onClick={()=>{const c=ncDrawCanvasRef.current;if(!c)return;const ctx=c.getContext('2d');if(!ctx)return;ctx.clearRect(0,0,c.width,c.height);}} style={{flex:1,padding:'10px',borderRadius:12,border:'1px solid rgba(20,216,144,.15)',background:'transparent',color:'rgba(20,216,144,.6)',fontSize:12,cursor:'pointer',fontFamily:"'Nunito',sans-serif"}}>Clear</button>
+                            <button onClick={()=>{const c=ncDrawCanvasRef.current;if(!c)return;setNcDrawing(c.toDataURL('image/png'));setNcDrawingOpen(false);}} style={{flex:2,padding:'10px',borderRadius:12,border:'none',background:'rgba(20,216,144,.2)',color:'rgba(20,216,144,.9)',fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:"'Nunito',sans-serif"}}>Save Drawing</button>
+                            <button onClick={()=>setNcDrawingOpen(false)} style={{flex:1,padding:'10px',borderRadius:12,border:'1px solid rgba(255,255,255,.08)',background:'transparent',color:'rgba(234,242,255,.35)',fontSize:12,cursor:'pointer',fontFamily:"'Nunito',sans-serif"}}>Cancel</button>
                           </div>
-                        </div>
-                      </div>
-                    )}
-                    {ncDrawing && (
-                      <div style={{width:'100%',marginBottom:12,animation:'nc-fadeUp .3s ease both'}}>
-                        <div style={{padding:'10px',background:'rgba(20,216,144,.04)',border:'1px solid rgba(20,216,144,.12)',borderRadius:14,textAlign:'center'}}>
-                          <div style={{fontSize:9,color:'rgba(20,216,144,.4)',fontFamily:"'DM Mono',monospace",marginBottom:6}}>{book?.heroName||heroName}{'\u2019'}S DRAWING</div>
-                          <img src={ncDrawing} alt="Drawing" style={{width:'100%',maxWidth:200,borderRadius:8,border:'1px solid rgba(20,216,144,.1)'}}/>
-                          <button onClick={()=>{setNcDrawing(null);setNcDrawingOpen(true);}} style={{marginTop:6,padding:'4px 12px',borderRadius:6,border:'none',background:'transparent',color:'rgba(255,140,130,.4)',fontSize:9,cursor:'pointer'}}>Redo</button>
                         </div>
                       </div>
                     )}
