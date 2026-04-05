@@ -553,6 +553,21 @@ function AppInner() {
     setView('story-builder');
   };
 
+  // Demo mode: set localStorage flags synchronously before flag reads
+  if (user && typeof localStorage !== 'undefined') {
+    try {
+      const isDemoUrl = new URLSearchParams(window.location.search).get('demo') === 'true';
+      const isDemoSession = sessionStorage.getItem('sleepseed_demo') === '1';
+      if (isDemoUrl || isDemoSession) {
+        if (!localStorage.getItem(`sleepseed_onboarding_${user.id}`)) {
+          localStorage.setItem(`sleepseed_parent_setup_${user.id}`, '1');
+          localStorage.setItem(`sleepseed_onboarding_${user.id}`, '1');
+          localStorage.setItem(`sleepseed_ritual_complete_${user.id}`, '1');
+        }
+      }
+    } catch {}
+  }
+
   // User-scoped flags
   const onboardingDone = typeof localStorage !== 'undefined' && user
     ? !!localStorage.getItem(`sleepseed_onboarding_${user.id}`)
