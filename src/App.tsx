@@ -96,7 +96,7 @@ function AppInner() {
   }
 
   const {
-    user, authLoading, view, setView, logout,
+    user, authLoading, view, setView, goBack, logout,
     selectedCharacter, setSelectedCharacter,
     selectedCharacters, setSelectedCharacters,
     ritualSeed, ritualMood, setRitualSeed,
@@ -1070,7 +1070,7 @@ function AppInner() {
           setAddChildNameInput('');
           handleDreamKeeperComplete(result);
         }}
-        onBack={() => { setAddChildName(null); setAddChildNameInput(''); setView('dashboard'); }}
+        onBack={() => { setAddChildName(null); setAddChildNameInput(''); goBack(); }}
       />;
     }
 
@@ -1255,7 +1255,7 @@ function AppInner() {
         setPreloadedBook(null);
         setView('story-builder');
       }}
-      onBack={() => setView('dashboard')}
+      onBack={goBack}
     />
   );
   if (view === 'story-wizard') return (
@@ -1266,7 +1266,7 @@ function AppInner() {
         setPreloadedBook(null);
         setView('story-builder');
       }}
-      onBack={() => setView('dashboard')}
+      onBack={goBack}
     />
   );
   if (view === 'user-profile') return (
@@ -1302,7 +1302,7 @@ function AppInner() {
     <AppLayout currentTab="my-space" onNav={handleNav}>
       <StoryLibrary
         userId={user!.id}
-        onBack={() => setView('my-space')}
+        onBack={goBack}
         onReadStory={openSavedStory}
         onCreateStory={() => setView('ritual-starter')}
       />
@@ -1313,7 +1313,7 @@ function AppInner() {
     <AppLayout currentTab="my-space" onNav={handleNav}>
       <NightCardLibrary
         userId={user!.id}
-        onBack={() => setView('my-space')}
+        onBack={goBack}
         filterCharacterId={nightCardFilter}
       />
     </AppLayout>
@@ -1326,7 +1326,7 @@ function AppInner() {
       <AppLayout currentTab="my-space" onNav={handleNav}>
         <MemoryPortrait
           child={portraitChild}
-          onBack={() => setView('user-profile')}
+          onBack={goBack}
         />
       </AppLayout>
     );
@@ -1340,7 +1340,7 @@ function AppInner() {
       <CharacterDetail
         character={viewingCharacter}
         userId={user!.id}
-        onBack={() => setView('characters')}
+        onBack={goBack}
         onEdit={goEditCharacter}
         onUseInStory={char => goStoryBuilder(char)}
         onReadStory={openSavedStory}

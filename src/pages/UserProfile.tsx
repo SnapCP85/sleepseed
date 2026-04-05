@@ -50,7 +50,7 @@ const CSS = `
 `;
 
 export default function UserProfile() {
-  const { user, logout, setView, setEditingCharacter, isSubscribed, setIsSubscribed } = useApp();
+  const { user, logout, setView, goBack, setEditingCharacter, isSubscribed, setIsSubscribed } = useApp();
   const [characters, setCharacters] = useState<Character[]>([]);
   const [inviteLink, setInviteLink] = useState('');
   const [copied, setCopied] = useState(false);
@@ -95,7 +95,7 @@ export default function UserProfile() {
 
       {/* Header */}
       <div className="pf-hdr">
-        <button className="pf-back" onClick={() => setView('my-space')}>
+        <button className="pf-back" onClick={goBack}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <h1>Settings</h1>

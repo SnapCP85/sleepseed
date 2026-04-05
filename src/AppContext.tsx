@@ -9,6 +9,7 @@ interface AppCtx {
   authLoading: boolean;
   view: AppView;
   setView: (v: AppView) => void;
+  goBack: () => void;
   login: (u: User) => void;
   logout: () => void;
   selectedCharacter: Character | null;
@@ -62,7 +63,37 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [authLoading,           setAuthLoading]           = useState(true);
   const [view,                  setViewRaw]               = useState<AppView>('public');
   const viewRef = useRef<AppView>('public');
-  const setView = (v: AppView) => { viewRef.current = v; setViewRaw(v); };
+  const viewHistoryRef = useRef<AppView[]>([]);
+
+  const setView = (v: AppView) => {
+    // Push current view onto history stack (skip duplicates)
+    const current = viewRef.current;
+    if (current !== v) {
+      viewHistoryRef.current.push(current);
+      // Cap history at 20 entries
+      if (viewHistoryRef.current.length > 20) viewHistoryRef.current.shift();
+    }
+    viewRef.current = v;
+    setViewRaw(v);
+    // Persist for page refresh survival
+    try { sessionStorage.setItem('ss_view', v); } catch {}
+    // Scroll to top on every view change
+    window.scrollTo(0, 0);
+  };
+
+  const goBack = () => {
+    const stack = viewHistoryRef.current;
+    if (stack.length > 0) {
+      const prev = stack.pop()!;
+      viewRef.current = prev;
+      setViewRaw(prev);
+      try { sessionStorage.setItem('ss_view', prev); } catch {}
+      window.scrollTo(0, 0);
+    } else {
+      // Fallback: go to dashboard
+      setView('dashboard');
+    }
+  };
   const [selectedCharacter,     setSelectedCharacter]     = useState<Character | null>(null);
   const [selectedCharacters,    setSelectedCharacters]    = useState<Character[]>([]);
   const [ritualSeed,            setRitualSeed]            = useState<string>('');
@@ -115,7 +146,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const isUrlDriven = params.get('view') === 'library' || params.get('library') || params.get('s') || params.get('story');
         if (!isUrlDriven) {
           if (isInitial || viewRef.current === 'public' || viewRef.current === 'auth') {
-            setView('dashboard');
+            // Restore saved view from sessionStorage on refresh, otherwise default to dashboard
+            let restoredView: AppView = 'dashboard';
+            try {
+              const saved = sessionStorage.getItem('ss_view') as AppView | null;
+              // Only restore "safe" views (not transient flows like onboarding, story-builder, auth)
+              const safeViews: AppView[] = ['dashboard','my-space','story-library','nightcard-library','user-profile','characters','library','hatchery'];
+              if (saved && safeViews.includes(saved)) restoredView = saved;
+            } catch {}
+            setView(restoredView);
           }
         }
         setAuthLoading(false);
@@ -212,7 +251,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <Ctx.Provider value={{
-      user, authLoading, view, setView, login, logout,
+      user, authLoading, view, setView, goBack, login, logout,
       selectedCharacter, setSelectedCharacter,
       selectedCharacters, setSelectedCharacters,
       ritualSeed, setRitualSeed,
