@@ -63,12 +63,14 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
     wordsRef.current = words;
   }, [text]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount — cancel everything
   useEffect(() => {
     return () => {
+      abortRef.current?.abort();
       window.speechSynthesis?.cancel();
       if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
       if (wordTimerRef.current) clearTimeout(wordTimerRef.current);
+      playingRef.current = false;
     };
   }, []);
 
@@ -83,6 +85,7 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
 
   // ── Stop everything ──
   const stopAll = useCallback(() => {
+    abortRef.current?.abort();
     window.speechSynthesis?.cancel();
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     if (wordTimerRef.current) { clearTimeout(wordTimerRef.current); wordTimerRef.current = null; }
@@ -115,27 +118,33 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
     window.speechSynthesis.speak(utter);
   }, [text, rate, findWordAtChar, onFinish, stopAll]);
 
-  // ── 11Labs TTS (with rate-limit retry) ──
+  // ── 11Labs TTS (with rate-limit retry + abort) ──
   const elRequestRef = useRef(0); // debounce guard
+  const abortRef = useRef<AbortController | null>(null);
   const playWith11Labs = useCallback(async () => {
+    // Cancel any in-flight request
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     const reqId = ++elRequestRef.current;
     setLoading(true);
-    // Debounce rapid page turns — wait 150ms, bail if a newer request came in
-    await new Promise(r => setTimeout(r, 150));
-    if (reqId !== elRequestRef.current) { setLoading(false); return; }
+    // Debounce — wait 300ms so rapid page turns don't spam ElevenLabs
+    await new Promise(r => setTimeout(r, 300));
+    if (reqId !== elRequestRef.current || controller.signal.aborted) { setLoading(false); return; }
 
     const tryFetch = async (attempt = 0): Promise<Response> => {
       const res = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, voiceId, speed: rate }),
+        signal: controller.signal,
       });
       if (res.status === 429 && attempt < 2) {
-        // Rate limited — back off and retry
-        const wait = (attempt + 1) * 1500;
+        const wait = (attempt + 1) * 2000;
         console.warn(`[TTS] Rate limited, retrying in ${wait}ms (attempt ${attempt + 1})`);
         await new Promise(r => setTimeout(r, wait));
-        if (reqId !== elRequestRef.current) throw new Error('Cancelled');
+        if (reqId !== elRequestRef.current || controller.signal.aborted) throw new Error('Cancelled');
         return tryFetch(attempt + 1);
       }
       return res;
@@ -143,7 +152,7 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
 
     try {
       const res = await tryFetch();
-      if (reqId !== elRequestRef.current) { setLoading(false); return; } // stale
+      if (reqId !== elRequestRef.current || controller.signal.aborted) { setLoading(false); return; }
       if (!res.ok) throw new Error(`TTS ${res.status}`);
       const blob = await res.blob();
       if (blob.size < 100) throw new Error('Empty audio');
@@ -185,7 +194,7 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
       audio.play();
     } catch(e: any) {
       setLoading(false);
-      if (e?.message === 'Cancelled') return;
+      if (e?.name === 'AbortError' || e?.message === 'Cancelled') return;
       console.error('[ReadAloudText] EL TTS failed, using browser speech:', e);
       playWithBrowserSpeech();
     }
