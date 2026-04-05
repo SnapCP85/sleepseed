@@ -133,8 +133,9 @@ export async function generateStoryCardImage(opts: {
 }
 
 /**
- * Generate a premium Night Card image (600×800, matching the visual design).
- * Renders: gradient sky, stars, creature, headline, quote, hero name, branding.
+ * Generate a Night Card share image (1080×1350 — 4:5 Instagram ratio).
+ * Matches the new card visual language: photo/creature top, cream paper bottom
+ * with headline + whisper in Kalam + creature seal + SleepSeed wordmark.
  */
 export async function generateNightCardImage(nc: {
   heroName: string;
@@ -147,8 +148,9 @@ export async function generateNightCardImage(nc: {
   creatureEmoji?: string;
   creatureColor?: string;
   isOrigin?: boolean;
+  whisper?: string;
 }): Promise<Blob | null> {
-  const W = 600, H = 840;
+  const W = 1080, H = 1350;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
@@ -156,25 +158,30 @@ export async function generateNightCardImage(nc: {
 
   const creature = nc.creatureEmoji || nc.emoji || '🌙';
   const color = nc.creatureColor || '#9A7FD4';
+  const paperColor = '#f7f1e3';
+  const inkColor = '#2a2620';
+  const inkDim = '#6b6359';
+  const amber = '#F5B84C';
+  const amberDeep = '#a8782b';
 
-  // Parse creature color to rgba
   const hexToRgb = (hex: string) => {
     const m = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
     return m ? { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) } : { r: 154, g: 127, b: 212 };
   };
   const rgb = hexToRgb(color);
 
-  // ── Sky zone (top 45%)
-  const skyH = Math.round(H * 0.45);
+  // ── Photo/sky zone (top 55%)
+  const skyH = Math.round(H * 0.55);
   const skyGrad = ctx.createLinearGradient(0, 0, 0, skyH);
-  skyGrad.addColorStop(0, nc.isOrigin ? '#150e05' : '#0d1428');
-  skyGrad.addColorStop(1, nc.isOrigin ? '#2a1808' : '#1a1040');
+  skyGrad.addColorStop(0, nc.isOrigin ? '#1a0f33' : '#0f1733');
+  skyGrad.addColorStop(0.45, nc.isOrigin ? '#3a1e52' : '#1e2452');
+  skyGrad.addColorStop(1, nc.isOrigin ? '#5a2c4a' : '#3a2859');
   ctx.fillStyle = skyGrad;
   ctx.fillRect(0, 0, W, skyH);
 
-  // Glow
-  const glowGrad = ctx.createRadialGradient(W / 2, skyH * 0.5, 0, W / 2, skyH * 0.5, W * 0.5);
-  glowGrad.addColorStop(0, `rgba(${rgb.r},${rgb.g},${rgb.b},0.2)`);
+  // Glow behind creature
+  const glowGrad = ctx.createRadialGradient(W / 2, skyH * 0.5, 0, W / 2, skyH * 0.5, W * 0.4);
+  glowGrad.addColorStop(0, `rgba(${rgb.r},${rgb.g},${rgb.b},0.18)`);
   glowGrad.addColorStop(1, 'transparent');
   ctx.fillStyle = glowGrad;
   ctx.fillRect(0, 0, W, skyH);
@@ -182,146 +189,180 @@ export async function generateNightCardImage(nc: {
   // Stars
   let hash = 5381;
   for (let i = 0; i < nc.headline.length; i++) hash = (hash * 33) ^ nc.headline.charCodeAt(i);
-  ctx.fillStyle = '#EEE8FF';
-  for (let i = 0; i < 30; i++) {
-    const x = ((hash * (i + 1) * 37) % 5800) / 5800 * W;
-    const y = ((hash * (i + 1) * 53) % 3600) / 3600 * skyH;
-    const s = 1 + ((hash * (i + 1)) % 3) * 0.4;
-    ctx.globalAlpha = 0.12 + ((hash * (i + 1)) % 5) * 0.06;
+  ctx.fillStyle = '#fff';
+  for (let i = 0; i < 40; i++) {
+    const x = ((hash * (i + 1) * 37) % 9700) / 9700 * W;
+    const y = ((hash * (i + 1) * 53) % 7200) / 7200 * skyH;
+    const s = 1 + ((hash * (i + 1)) % 3) * 0.5;
+    ctx.globalAlpha = 0.15 + ((hash * (i + 1)) % 5) * 0.08;
     ctx.beginPath(); ctx.arc(x, y, s, 0, Math.PI * 2); ctx.fill();
   }
   ctx.globalAlpha = 1;
 
-  // Night badge
-  if (nc.nightNumber) {
-    ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.2)`;
-    const badgeW = 90, badgeH = 24, badgeX = 16, badgeY = 16;
-    ctx.beginPath();
-    ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 12);
-    ctx.fill();
-    ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.4)`;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.9)`;
-    ctx.font = '600 10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`NIGHT ${nc.nightNumber}`, badgeX + badgeW / 2, badgeY + 16);
-  }
-
-  // Creature emoji
-  ctx.font = '64px serif';
+  // Creature emoji (centered in sky)
+  ctx.font = '140px serif';
   ctx.textAlign = 'center';
   ctx.fillText(creature, W / 2, skyH * 0.55);
 
-  // Photo (if available, draw it in sky area)
-  const drawRest = () => {
-    // ── Paper zone (bottom 55%)
-    const paperColor = nc.isOrigin ? '#fdf8ee' : '#faf6ee';
+  // Creature seal pill (top-right)
+  const sealText = nc.isOrigin ? '◆ ORIGIN' : `NIGHT ${nc.nightNumber || 1}`;
+  ctx.font = '500 18px sans-serif';
+  const sealW = ctx.measureText(sealText).width + 48;
+  const sealX = W - sealW - 36, sealY = 36;
+  ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.3)`;
+  ctx.beginPath(); ctx.roundRect(sealX, sealY, sealW, 36, 18); ctx.fill();
+  ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.5)`;
+  ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = 'rgba(255,243,214,0.95)';
+  ctx.font = '500 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(sealText, sealX + sealW / 2, sealY + 23);
+
+  // Amber bottom rim on sky
+  const rimGrad = ctx.createLinearGradient(0, skyH - 1, W, skyH - 1);
+  rimGrad.addColorStop(0, 'transparent');
+  rimGrad.addColorStop(0.3, `rgba(245,184,76,0.4)`);
+  rimGrad.addColorStop(0.5, `rgba(245,184,76,0.6)`);
+  rimGrad.addColorStop(0.7, `rgba(245,184,76,0.4)`);
+  rimGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = rimGrad;
+  ctx.fillRect(0, skyH - 1, W, 2);
+
+  // ── Draw paper zone (bottom 45%) ──
+  const drawPaper = () => {
+    const paperY = skyH;
+    const paperH = H - skyH;
+
+    // Paper background with warm radial bloom
     ctx.fillStyle = paperColor;
-    ctx.fillRect(0, skyH, W, H - skyH);
+    ctx.fillRect(0, paperY, W, paperH);
 
-    // Subtle grain texture effect
-    ctx.fillStyle = 'rgba(0,0,0,0.02)';
-    for (let i = 0; i < 200; i++) {
-      const gx = Math.random() * W;
-      const gy = skyH + Math.random() * (H - skyH);
-      ctx.fillRect(gx, gy, 1, 1);
+    // Warm bloom at bottom
+    const bloomGrad = ctx.createRadialGradient(W / 2, H, 0, W / 2, H, W * 0.6);
+    bloomGrad.addColorStop(0, 'rgba(245,184,76,0.06)');
+    bloomGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = bloomGrad;
+    ctx.fillRect(0, paperY, W, paperH);
+
+    // Paper grain
+    ctx.fillStyle = 'rgba(0,0,0,0.015)';
+    for (let i = 0; i < 300; i++) {
+      ctx.fillRect(Math.random() * W, paperY + Math.random() * paperH, 1, 1);
     }
 
-    // Headline
-    ctx.fillStyle = nc.isOrigin ? '#1a0e04' : '#1a0f08';
-    ctx.font = 'bold 18px Georgia, serif';
+    // ── Headline (Fraunces-style serif, centered)
+    ctx.fillStyle = inkColor;
+    ctx.font = '500 42px Georgia, serif';
     ctx.textAlign = 'center';
-    const headlineWords = nc.headline.split(' ');
-    const headLines: string[] = [];
-    let hl = '';
-    for (const w of headlineWords) {
-      const t = hl ? hl + ' ' + w : w;
-      if (ctx.measureText(t).width > W - 60) { headLines.push(hl); hl = w; }
-      else hl = t;
-    }
-    if (hl) headLines.push(hl);
-    const headY = skyH + 32;
-    headLines.slice(0, 2).forEach((l, i) => ctx.fillText(l, W / 2, headY + i * 24));
+    const headLines = wrapText(ctx, nc.headline, W - 120);
+    let y = paperY + 60;
+    headLines.slice(0, 3).forEach(l => { ctx.fillText(l, W / 2, y); y += 52; });
 
-    // Quote
-    ctx.fillStyle = 'rgba(26,15,8,0.55)';
-    ctx.font = 'italic 15px Georgia, serif';
-    const quoteText = `"${nc.quote}"`;
-    const qWords = quoteText.split(' ');
-    const qLines: string[] = [];
-    let ql = '';
-    for (const w of qWords) {
-      const t = ql ? ql + ' ' + w : w;
-      if (ctx.measureText(t).width > W - 80) { qLines.push(ql); ql = w; }
-      else ql = t;
-    }
-    if (ql) qLines.push(ql);
-    const quoteY = headY + headLines.length * 24 + 20;
-    qLines.slice(0, 4).forEach((l, i) => ctx.fillText(l, W / 2, quoteY + i * 22));
-
-    // Origin badge
-    if (nc.isOrigin) {
-      const oy = quoteY + qLines.length * 22 + 20;
-      ctx.fillStyle = 'rgba(245,184,76,0.15)';
-      ctx.beginPath();
-      ctx.roundRect(W / 2 - 60, oy, 120, 24, 12);
-      ctx.fill();
-      ctx.fillStyle = 'rgba(245,184,76,0.8)';
-      ctx.font = '600 10px sans-serif';
-      ctx.fillText('✦ First Night Ever', W / 2, oy + 16);
+    // ── Whisper (Kalam-style, handwritten feel)
+    if (nc.whisper) {
+      y += 12;
+      ctx.fillStyle = inkColor;
+      ctx.globalAlpha = 0.92;
+      ctx.font = 'italic 34px Georgia, cursive';
+      const whisperLines = wrapText(ctx, nc.whisper, W - 140);
+      whisperLines.slice(0, 2).forEach(l => { ctx.fillText(l, W / 2, y); y += 44; });
+      ctx.globalAlpha = 1;
     }
 
-    // Footer
-    const footerY = H - 40;
-    // Divider
-    ctx.strokeStyle = 'rgba(26,15,8,0.08)';
-    ctx.lineWidth = 0.5;
-    ctx.beginPath(); ctx.moveTo(40, footerY - 14); ctx.lineTo(W - 40, footerY - 14); ctx.stroke();
+    // ── Quote (dimmer, smaller)
+    if (nc.quote) {
+      y += 20;
+      ctx.fillStyle = inkDim;
+      ctx.font = 'italic 26px Georgia, serif';
+      ctx.globalAlpha = 0.6;
+      const qLines = wrapText(ctx, `"${nc.quote}"`, W - 160);
+      qLines.slice(0, 2).forEach(l => { ctx.fillText(l, W / 2, y); y += 34; });
+      ctx.globalAlpha = 1;
+    }
 
-    ctx.fillStyle = 'rgba(26,15,8,0.35)';
-    ctx.font = '600 10px sans-serif';
+    // ── Meta row (mood bullet + date)
+    const metaY = H - 120;
+    ctx.fillStyle = amberDeep;
+    ctx.font = '500 20px sans-serif';
+    ctx.textAlign = 'center';
+    const fmtDate = (() => {
+      try { return new Date(nc.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+      catch { return nc.date; }
+    })();
+    ctx.fillText(`◆  ${fmtDate}`, W / 2, metaY);
+
+    // ── Footer divider
+    const footerDivY = H - 80;
+    const divGrad = ctx.createLinearGradient(W * 0.2, footerDivY, W * 0.8, footerDivY);
+    divGrad.addColorStop(0, 'transparent');
+    divGrad.addColorStop(0.5, 'rgba(42,38,32,0.12)');
+    divGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = divGrad;
+    ctx.fillRect(W * 0.15, footerDivY, W * 0.7, 1);
+
+    // ── Footer: child name + SleepSeed
+    const footerY = H - 46;
+    ctx.fillStyle = 'rgba(42,38,32,0.35)';
+    ctx.font = '500 18px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(nc.heroName, 40, footerY);
-    ctx.textAlign = 'center';
-    try {
-      ctx.fillText(new Date(nc.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), W / 2, footerY);
-    } catch { ctx.fillText(nc.date, W / 2, footerY); }
+    ctx.fillText(nc.heroName, 60, footerY);
     ctx.textAlign = 'right';
-    ctx.fillStyle = 'rgba(26,15,8,0.2)';
-    ctx.font = '10px monospace';
-    ctx.fillText('SleepSeed', W - 40, footerY);
+    ctx.fillStyle = 'rgba(42,38,32,0.18)';
+    ctx.font = '300 16px Georgia, serif';
+    ctx.fillText('SleepSeed', W - 60, footerY);
   };
 
-  if (nc.photo) {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      // Draw photo in sky area
-      const photoH = skyH - 20;
-      const scale = Math.max(W / img.width, photoH / img.height);
-      const sw = img.width * scale, sh = img.height * scale;
-      ctx.drawImage(img, (W - sw) / 2, 10 + (photoH - sh) / 2, sw, sh);
-      // Re-draw creature on top of photo
-      ctx.font = '48px serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(creature, W / 2, skyH - 20);
-      drawRest();
-    };
-    img.onerror = () => drawRest();
-    img.src = nc.photo;
-    // Wait for image to load
+  // ── If photo exists, draw it in sky zone, then draw paper
+  if (nc.photo && nc.photo !== '[uploaded]') {
     return new Promise(resolve => {
-      const check = setInterval(() => {
-        if (img.complete || img.naturalWidth > 0) {
-          clearInterval(check);
-          setTimeout(() => canvas.toBlob(b => resolve(b), 'image/png'), 50);
-        }
-      }, 50);
-      setTimeout(() => { clearInterval(check); canvas.toBlob(b => resolve(b), 'image/png'); }, 3000);
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        // Draw photo covering sky zone
+        const scale = Math.max(W / img.width, skyH / img.height);
+        const sw = img.width * scale, sh = img.height * scale;
+        ctx.drawImage(img, (W - sw) / 2, (skyH - sh) / 2, sw, sh);
+
+        // Vignette + gradient overlay on photo
+        const vigGrad = ctx.createRadialGradient(W / 2, skyH / 2, W * 0.3, W / 2, skyH / 2, W * 0.8);
+        vigGrad.addColorStop(0, 'transparent');
+        vigGrad.addColorStop(1, 'rgba(0,0,0,0.25)');
+        ctx.fillStyle = vigGrad;
+        ctx.fillRect(0, 0, W, skyH);
+
+        // Top + bottom darkening
+        const topGrad = ctx.createLinearGradient(0, 0, 0, skyH * 0.25);
+        topGrad.addColorStop(0, 'rgba(0,0,0,0.3)');
+        topGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = topGrad;
+        ctx.fillRect(0, 0, W, skyH * 0.25);
+
+        // Re-draw seal on photo
+        const sealText2 = nc.isOrigin ? '◆ ORIGIN' : `NIGHT ${nc.nightNumber || 1}`;
+        ctx.font = '500 18px sans-serif';
+        const sW = ctx.measureText(sealText2).width + 48;
+        const sX = W - sW - 36;
+        ctx.fillStyle = 'rgba(245,184,76,0.35)';
+        ctx.beginPath(); ctx.roundRect(sX, 36, sW, 36, 18); ctx.fill();
+        ctx.fillStyle = 'rgba(255,243,214,0.95)';
+        ctx.font = '500 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(sealText2, sX + sW / 2, 59);
+
+        // Re-draw amber rim
+        ctx.fillStyle = rimGrad;
+        ctx.fillRect(0, skyH - 1, W, 2);
+
+        drawPaper();
+        canvas.toBlob(b => resolve(b), 'image/png');
+      };
+      img.onerror = () => { drawPaper(); canvas.toBlob(b => resolve(b), 'image/png'); };
+      img.src = nc.photo;
+      // Timeout fallback
+      setTimeout(() => { if (!img.complete) { drawPaper(); canvas.toBlob(b => resolve(b), 'image/png'); } }, 3000);
     });
   } else {
-    drawRest();
+    drawPaper();
     return new Promise(resolve => canvas.toBlob(b => resolve(b), 'image/png'));
   }
 }

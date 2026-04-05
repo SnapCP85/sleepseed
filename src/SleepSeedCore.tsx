@@ -2736,9 +2736,21 @@ Return ONLY JSON: {"headline":"...","quote":"...","memory_line":"...","reflectio
       ...(isFirstCard ? {isOrigin:true} : {})};
     // Ensure headline is never empty
     if (!entry.headline) entry.headline = entry.storyTitle || `A night with ${entry.heroName || 'friend'}`;
+
+    // Upload photo to Supabase BEFORE stripping base64 — prevents photo loss on network failure
+    if (entry.photo?.startsWith?.('data:') && userId) {
+      try {
+        const photoPath = `${userId}/nc_${entry.id}_${Date.now()}.jpg`;
+        const upRes = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: photoPath, contentType: 'image/jpeg', base64: entry.photo }) });
+        if (upRes.ok) { const { url } = await upRes.json(); entry.photo = url; }
+        else console.warn('[NC] Photo upload failed, keeping base64 in memory:', await upRes.text());
+      } catch (e) { console.warn('[NC] Photo upload error, keeping base64 in memory:', e); }
+    }
+
     const next = [entry,...nightCards];
     setNightCards(next);
     // Strip base64 photos before localStorage write to prevent QuotaExceededError
+    // Photos that were successfully uploaded now have URLs, not base64 — they pass through unchanged
     const nextForStorage = next.map(c => ({...c, photo: c.photo?.startsWith?.('data:') ? '[uploaded]' : c.photo, childDrawing: c.childDrawing?.startsWith?.('data:') ? '[uploaded]' : c.childDrawing}));
     await sSet("nightcards",{items:nextForStorage},userId);
 
@@ -4852,8 +4864,8 @@ Rules:
                             const b64:string=await new Promise((resolve,reject)=>{reader.onload=()=>resolve(reader.result as string);reader.onerror=reject;reader.readAsDataURL(ncAudioBlob);});
                             const upRes=await fetch('/api/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path,contentType:ncAudioBlob.type,base64:b64})});
                             if(upRes.ok){const{url}=await upRes.json();audioClipUrl=url;}
-                            else console.error('[NC] Audio upload failed:',await upRes.text());
-                          }catch(e){console.error('[NC] Audio upload failed:',e);}
+                            else{const errText=await upRes.text();console.error('[NC] Audio upload failed:',errText);alert('Voice recording could not be saved. You can try again from the card editor.');}
+                          }catch(e){console.error('[NC] Audio upload failed:',e);alert('Voice recording could not be saved. You can try again from the card editor.');}
                         }
                         const ncData={id:ncId,userId:userId||'',heroName:book.heroName,storyTitle:book.title,refrain:book.refrain||"",
                           characterIds:preloadedCharacter?[preloadedCharacter.id]:[],
