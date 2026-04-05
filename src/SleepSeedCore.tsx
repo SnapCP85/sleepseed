@@ -1307,13 +1307,24 @@ const SleepUtils = {
 
 /* ── ElevenLabs helpers ── */
 const elTTS = async (text, voiceId, speed=1.0) => {
+  console.log('[elTTS] Requesting voice:', voiceId, 'text length:', text?.length);
   const resp = await fetch("/api/tts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text, voiceId, speed }),
   });
-  if(!resp.ok) throw new Error(`TTS error ${resp.status}`);
+  if(!resp.ok) {
+    const errText = await resp.text().catch(()=>'');
+    console.error('[elTTS] API error:', resp.status, errText.slice(0,200));
+    throw new Error(`TTS error ${resp.status}: ${errText.slice(0,100)}`);
+  }
+  const ct = resp.headers.get('content-type') || '';
+  if(!ct.includes('audio')) {
+    console.error('[elTTS] Unexpected content-type:', ct);
+    throw new Error(`TTS returned ${ct} instead of audio`);
+  }
   const blob = await resp.blob();
+  console.log('[elTTS] Got audio blob:', blob.size, 'bytes');
   return URL.createObjectURL(blob);
 };
 
@@ -1894,13 +1905,14 @@ export default function SleepSeed({
 
   // ── ElevenLabs narration ───────────────────────────────────────────────
   const speakTextEL = useCallback(async (text, pageProgress=0.5) => {
-    if(!text) return;
+    if(!text) { console.log('[speakEL] No text, skipping'); return; }
+    console.log('[speakEL] Starting, voice:', selectedVoiceId||voiceId, 'text:', text.slice(0,40));
     // Cancel ALL audio before starting new ElevenLabs playback
     if("speechSynthesis" in window) window.speechSynthesis.cancel();
     if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current = null; }
     // Brief pause so rapid page turns don't fire overlapping EL requests
     await new Promise(r => setTimeout(r, 80));
-    if(!autoReadRef.current) return; // cancelled during pause
+    if(!autoReadRef.current) { console.log('[speakEL] Cancelled during pause'); return; }
 
     const onEnd = () => {
       const isLast = pageIdx >= totalPagesRef.current - 1;
@@ -1914,14 +1926,17 @@ export default function SleepSeed({
     setIsReading(true);
     try {
       const rate = SleepUtils.getSpeechRate(pageProgress);
-      const url  = await elTTS(text, selectedVoiceId||voiceId, rate);
+      const vid = selectedVoiceId||voiceId;
+      if(!vid) { console.warn('[speakEL] No voice ID, falling back'); throw new Error('No voice ID'); }
+      const url  = await elTTS(text, vid, rate);
       const audio = new Audio(url);
       elAudioRef.current = audio;
       audio.onended = () => { URL.revokeObjectURL(url); elAudioRef.current=null; onEnd(); };
-      audio.onerror = () => { URL.revokeObjectURL(url); elAudioRef.current=null; onEnd(); };
+      audio.onerror = (e) => { console.error('[speakEL] Audio playback error:', e); URL.revokeObjectURL(url); elAudioRef.current=null; onEnd(); };
       await audio.play();
+      console.log('[speakEL] Playing audio');
     } catch(err) {
-      console.error("EL TTS error, falling back to browser speech:", err);
+      console.error("[speakEL] Failed, falling back to browser speech:", err);
       // Only fall back if still in auto-read mode (user didn't cancel during fetch)
       if(autoReadRef.current) speakText(text, pageProgress);
       else setIsReading(false);
@@ -1938,6 +1953,7 @@ export default function SleepSeed({
   speakTextRef.current = speakText;
 
   const toggleRead = useCallback((text, pageProgress=0.5) => {
+    console.log('[toggleRead] isReading:', isReading, 'selectedVoiceId:', selectedVoiceId, 'voiceId:', voiceId);
     if(isReading) {
       window.speechSynthesis.cancel();
       if(elAudioRef.current){ elAudioRef.current.pause(); elAudioRef.current=null; }
@@ -1945,8 +1961,13 @@ export default function SleepSeed({
       setIsReading(false);
     } else {
       autoReadRef.current = true;
-      if(selectedVoiceId||voiceId) speakTextEL(text, pageProgress);
-      else speakText(text, pageProgress);
+      if(selectedVoiceId||voiceId) {
+        console.log('[toggleRead] Using ElevenLabs voice:', selectedVoiceId||voiceId);
+        speakTextEL(text, pageProgress);
+      } else {
+        console.log('[toggleRead] Using browser speech (no voice ID)');
+        speakText(text, pageProgress);
+      }
     }
   },[isReading, speakText, speakTextEL, voiceId, selectedVoiceId]);
 
