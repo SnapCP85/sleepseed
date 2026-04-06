@@ -35,6 +35,7 @@ function makeStars(seed: string): { x: number; y: number; d: number; dl: number 
 
 export default function SharedNightCard() {
   const [card, setCard] = useState<SavedNightCard | null>(null);
+  const [storyUrl, setStoryUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -50,10 +51,43 @@ export default function SharedNightCard() {
         if (err || !data) { setError('Card not found or link expired'); setLoading(false); return; }
         const { data: cardData, error: cardErr } = await supabase
           .from('night_cards')
-          .select('id, user_id, hero_name, story_title, headline, quote, memory_line, bonding_question, bonding_answer, gratitude, photo_url, emoji, date, extra')
+          .select('id, user_id, hero_name, story_id, story_title, headline, quote, memory_line, bonding_question, bonding_answer, gratitude, photo_url, emoji, date, extra')
           .eq('id', data.card_id)
           .single();
         if (cardErr || !cardData) { setError('Card not found'); setLoading(false); return; }
+
+        // If the card has a story, try to get a shareable link
+        if (cardData.story_id) {
+          try {
+            // Check if story is public (has library_slug)
+            const { data: storyData } = await supabase
+              .from('stories')
+              .select('library_slug, is_public')
+              .eq('id', cardData.story_id)
+              .single();
+            if (storyData?.library_slug && storyData?.is_public) {
+              setStoryUrl(`/stories/${storyData.library_slug}`);
+            } else {
+              // Create or find a share token for private story
+              const { data: existingShare } = await supabase
+                .from('story_shares')
+                .select('share_token')
+                .eq('story_id', cardData.story_id)
+                .maybeSingle();
+              if (existingShare?.share_token) {
+                setStoryUrl(`/?story=${existingShare.share_token}`);
+              } else {
+                const shareToken = crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+                await supabase.from('story_shares').insert({
+                  story_id: cardData.story_id,
+                  share_token: shareToken,
+                  created_at: new Date().toISOString(),
+                });
+                setStoryUrl(`/?story=${shareToken}`);
+              }
+            }
+          } catch (e) { console.error('[SharedNightCard] story link failed:', e); }
+        }
 
         // Parse all fields from extra JSON
         let parsed: any = {};
@@ -65,6 +99,7 @@ export default function SharedNightCard() {
           id: cardData.id,
           userId: cardData.user_id || '',
           heroName: cardData.hero_name,
+          storyId: cardData.story_id || undefined,
           storyTitle: cardData.story_title,
           characterIds: [],
           headline: cardData.headline,
@@ -138,6 +173,7 @@ export default function SharedNightCard() {
             <NightCardDetailPaginated
               card={card}
               onClose={() => window.location.href = '/'}
+              onOpenStory={storyUrl ? () => { window.location.href = storyUrl; } : undefined}
             />
           </div>
         </div>
