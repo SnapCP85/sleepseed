@@ -191,6 +191,17 @@ const SORT_OPTIONS: { label: string; value: 'recent' | 'popular' | 'thumbs' }[] 
 // ── Cover renderer ───────────────────────────────────────────────────────────
 
 function StoryCover({ story }: { story: LibraryStory }) {
+  if (story.coverUrl) {
+    return (
+      <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
+        <img
+          src={story.coverUrl}
+          alt={story.title}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      </div>
+    );
+  }
   const bucket = (story as any).bookData?.metadata?.bucket || vibeToBucket(story.vibe || story.mood);
   const svg = useMemo(() => generateCoverSVG(story.title, bucket), [story.title, bucket]);
   return <div dangerouslySetInnerHTML={{ __html: svg }} />;
