@@ -16,6 +16,19 @@ body {
   overflow-x: hidden;
 }
 
+/* Fixed starfield canvas */
+#stars-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+/* All sections need to sit above the canvas */
+nav, section, .ps, .mid-cta, .trust-strip {
+  position: relative;
+  z-index: 1;
+}
+
 /* ── Animations ── */
 @keyframes shimmer {
   0% { transform: translateX(-130%); }
@@ -700,6 +713,8 @@ body {
 </head>
 <body>
 
+<canvas id="stars-bg"></canvas>
+
 <!-- ═══════════ NAV ═══════════ -->
 <nav class="nav">
   <div class="nav-logo">
@@ -1091,6 +1106,50 @@ body {
 </section>
 
 <script>
+// ── Full-page starfield canvas ──
+(function() {
+  var canvas = document.getElementById('stars-bg');
+  var ctx = canvas.getContext('2d');
+  var stars = [];
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = document.documentElement.scrollHeight;
+    stars = [];
+    for (var i = 0; i < 180; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.2 + 0.15,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.1 + Math.random() * 0.25,
+        warm: Math.random() < 0.18
+      });
+    }
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  // Re-measure after page fully loads (images, etc.)
+  setTimeout(resize, 1000);
+  setTimeout(resize, 3000);
+
+  function draw(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      var op = 0.05 + 0.25 * (0.5 + 0.5 * Math.sin(t * s.speed * 0.001 + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = s.warm
+        ? 'rgba(245,184,76,' + (op * 0.55).toFixed(3) + ')'
+        : 'rgba(244,239,232,' + op.toFixed(3) + ')';
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+
 // ── Stars ──
 function makeStars(container, count) {
   for (let i = 0; i < count; i++) {
