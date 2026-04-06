@@ -829,9 +829,9 @@ export default function LibraryStoryReader({ slug }: Props) {
               <InterlinearText
                 key={`interlinear-${pgIndex}`}
                 sentences={translatedPage.sentences}
-                theme="light"
+                theme="dark"
                 foreignStyle={{fontFamily:"var(--hand)",fontSize:'clamp(17px,4.5vw,21px)',color:'var(--cream)',lineHeight:1.75}}
-                englishStyle={{fontFamily:"var(--sans)"}}
+                englishStyle={{fontFamily:"var(--sans)",fontSize:'clamp(14px,3.8vw,17px)',color:'rgba(244,239,232,.88)',lineHeight:1.65}}
                 autoPlay={readAloudActive && pgIndex === pageIdx}
                 onFinish={() => { if (isLast) setReadAloudActive(false); else goPage(1); }}
               />
