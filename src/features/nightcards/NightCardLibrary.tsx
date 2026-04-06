@@ -889,7 +889,7 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
       {/* ── Detail modal ── */}
       {viewing && (
         <>
-          <div onClick={closeCard} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.82)', zIndex: 200, animation: 'mlFadein .25s ease both' }} />
+          <div onClick={closeCard} style={{ position: 'fixed', inset: 0, background: 'rgba(6,9,18,.95)', zIndex: 200, animation: 'mlFadein .25s ease both' }} />
           <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, pointerEvents: 'none', flexDirection: 'column' }}>
             <div style={{ position: 'absolute', top: '35%', left: '50%', transform: 'translate(-50%,-50%)', width: 320, height: 320, borderRadius: '50%', background: 'radial-gradient(circle,rgba(154,127,212,.12) 0%,transparent 70%)', pointerEvents: 'none', animation: 'mlFadeUp .4s ease both' }} />
             <div style={{ pointerEvents: 'all', width: '100%', maxWidth: 340, maxHeight: 'calc(100vh - 40px)', overflowY: 'auto', scrollbarWidth: 'none' as any, animation: 'mlCardIn .35s cubic-bezier(.2,.8,.3,1) both', position: 'relative', zIndex: 1 }}>

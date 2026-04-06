@@ -761,11 +761,17 @@ function formatDate(iso: string): string {
 
 function formatTime(iso: string, bedtimeActual?: string): string {
   if (bedtimeActual) {
-    // Convert 24h HH:MM to 12h format
-    const [h, m] = bedtimeActual.split(':').map(Number);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    const h12 = h % 12 || 12;
-    return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
+    // Already formatted (e.g. "8:30 PM", "8pm") — return as-is if it contains AM/PM
+    if (/[ap]m/i.test(bedtimeActual)) return bedtimeActual.toUpperCase();
+    // Try HH:MM 24h format
+    const parts = bedtimeActual.split(':').map(Number);
+    const h = parts[0], m = parts[1];
+    if (!isNaN(h)) {
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const h12 = h % 12 || 12;
+      return isNaN(m) ? `${h12} ${ampm}` : `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
+    }
+    return bedtimeActual; // fallback: show raw value
   }
   try {
     const d = new Date(iso);
