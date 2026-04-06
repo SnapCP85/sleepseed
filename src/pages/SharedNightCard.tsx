@@ -67,6 +67,7 @@ export default function SharedNightCard() {
         let childMood: string | undefined;
         let childAge: string | undefined;
         let bedtimeActual: string | undefined;
+        let childDrawing: string | undefined;
         if (cardData.extra && cardData.extra.startsWith('{')) {
           try {
             const p = JSON.parse(cardData.extra);
@@ -78,6 +79,7 @@ export default function SharedNightCard() {
             if (p.childMood) childMood = p.childMood;
             if (p.childAge) childAge = p.childAge;
             if (p.bedtimeActual) bedtimeActual = p.bedtimeActual;
+            if (p.childDrawing) childDrawing = p.childDrawing;
           } catch {}
         }
 
@@ -101,6 +103,7 @@ export default function SharedNightCard() {
           childMood,
           childAge,
           bedtimeActual,
+          childDrawing,
           // whisper intentionally omitted — private to parent
         });
         setLoading(false);

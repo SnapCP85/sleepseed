@@ -435,7 +435,8 @@ const CSS = `
 
 /* ─── Edit sheet ─── */
 .ml-edit-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;display:flex;align-items:flex-end;justify-content:center;padding:0;animation:mlFadein .2s ease}
-.ml-edit-sheet{width:100%;max-width:440px;background:linear-gradient(180deg,#0f1525 0%,#0a0e1a 100%);border-radius:22px 22px 0 0;padding:20px 24px 36px;animation:mlSlideup .3s cubic-bezier(.22,1,.36,1);max-height:85vh;overflow-y:auto}
+.ml-edit-sheet{width:100%;max-width:440px;background:linear-gradient(180deg,#0f1525 0%,#0a0e1a 100%);border-radius:22px 22px 0 0;padding:20px 24px 36px;animation:mlSlideup .3s cubic-bezier(.22,1,.36,1);max-height:85dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-padding-bottom:120px}
+.ml-edit-input:focus,.ml-edit-textarea:focus{scroll-margin-bottom:120px}
 .ml-edit-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.12);margin:0 auto 18px}
 .ml-edit-title{font-family:var(--ml-serif);font-size:18px;font-weight:500;color:var(--ml-cream);margin-bottom:4px}
 .ml-edit-sub{font-family:var(--ml-mono);font-size:9px;color:rgba(234,242,255,.3);letter-spacing:.1em;margin-bottom:20px}
@@ -944,7 +945,7 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
           <div className="ml-actions-bg" onClick={() => setActionsOpen(false)} />
           <div className="ml-actions-sheet">
             <div className="ml-actions-handle" />
-            <div className="ml-actions-grid">
+            <div className="ml-actions-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
               <button className="ml-actions-item" onClick={() => { setActionsOpen(false); openEdit(); }}>
                 <span className="ml-ai">✏️</span><span className="ml-al">Edit</span>
               </button>
@@ -953,6 +954,19 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
               </button>
               <button className="ml-actions-item" onClick={() => { setActionsOpen(false); openShareMenu(viewing); }}>
                 <span className="ml-ai">↗️</span><span className="ml-al">Share</span>
+              </button>
+              <button className="ml-actions-item" onClick={async () => {
+                setActionsOpen(false);
+                try {
+                  const token = crypto.randomUUID?.() || `fam_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+                  const name = viewing.heroName || 'Child';
+                  await supabase.from('family_shares').upsert({ share_token: token, user_id: userId, child_name: name, card_ids: [viewing.id], created_at: new Date().toISOString() });
+                  const url = `${BASE_URL}/family/${token}`;
+                  if (navigator.share) { try { await navigator.share({ title: `${name}'s Night Card`, url }); } catch {} }
+                  else { await navigator.clipboard.writeText(url).catch(() => {}); alert(`Family link copied!\n${url}`); }
+                } catch (e) { console.error('Family share error:', e); }
+              }}>
+                <span className="ml-ai">👨‍👩‍👧</span><span className="ml-al">Family</span>
               </button>
               <button className="ml-actions-item" onClick={() => { setActionsOpen(false); openPrintView(viewing); }}>
                 <span className="ml-ai">🖨️</span><span className="ml-al">Print</span>
@@ -975,19 +989,19 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
 
             <div className="ml-edit-field">
               <label className="ml-edit-label">Headline</label>
-              <input className="ml-edit-input" value={editHeadline} onChange={e => setEditHeadline(e.target.value)} placeholder="What happened tonight..." maxLength={80} />
+              <input className="ml-edit-input" value={editHeadline} onChange={e => setEditHeadline(e.target.value)} placeholder="What happened tonight..." maxLength={80} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} />
               <div className="ml-edit-hint">The title on the front of the card</div>
             </div>
 
             <div className="ml-edit-field">
               <label className="ml-edit-label">Whisper</label>
-              <input className="ml-edit-input whisper-font" value={editWhisper} onChange={e => setEditWhisper(e.target.value)} placeholder="What you want to remember..." maxLength={100} />
+              <input className="ml-edit-input whisper-font" value={editWhisper} onChange={e => setEditWhisper(e.target.value)} placeholder="What you want to remember..." maxLength={100} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} />
               <div className="ml-edit-hint">Your private note — the handwritten line</div>
             </div>
 
             <div className="ml-edit-field">
               <label className="ml-edit-label">Reflection</label>
-              <textarea className="ml-edit-textarea" value={editReflection} onChange={e => setEditReflection(e.target.value)} placeholder="Anything you want to remember about this night..." maxLength={280} />
+              <textarea className="ml-edit-textarea" value={editReflection} onChange={e => setEditReflection(e.target.value)} placeholder="Anything you want to remember about this night..." maxLength={280} onFocus={e => setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)} />
               <div className="ml-edit-hint">A longer thought — shown on the diary page</div>
             </div>
 
