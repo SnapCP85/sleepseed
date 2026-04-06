@@ -616,17 +616,19 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
   };
 
   const openShareMenu = async (nc: SavedNightCard) => {
+    // Always generate the share link first so recipients get the full interactive card
+    const url = await generateShareLinkFn(nc);
     if (navigator.share) {
+      // Share the link (with optional image attachment)
+      const shareData: ShareData = { title: `${nc.heroName}'s Night Card`, url: url || undefined, text: `${nc.headline || nc.storyTitle} — a bedtime memory` };
       const blob = await generateNightCardImage({ heroName: nc.heroName, headline: nc.headline || nc.storyTitle, quote: nc.quote, emoji: nc.emoji, date: nc.date, photo: nc.photo, nightNumber: nc.nightNumber, creatureEmoji: nc.creatureEmoji, creatureColor: nc.creatureColor, isOrigin: nc.isOrigin, whisper: nc.whisper });
       if (blob) {
         const file = new File([blob], `nightcard-${nc.heroName}-${nc.date}.png`, { type: 'image/png' });
-        if (navigator.canShare?.({ files: [file] })) { try { await navigator.share({ files: [file], title: `Night Card — ${nc.heroName}` }); return; } catch {} }
+        if (navigator.canShare?.({ files: [file] })) shareData.files = [file];
       }
-      const url = await generateShareLinkFn(nc);
-      if (url) { try { await navigator.share({ title: `${nc.heroName}'s Night Card`, url }); } catch {} }
+      try { await navigator.share(shareData); } catch {}
       return;
     }
-    const url = await generateShareLinkFn(nc);
     if (url) { setShareLink(url); setShareMenuCard(nc); }
   };
 
