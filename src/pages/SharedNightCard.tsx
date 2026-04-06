@@ -1,26 +1,24 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { SavedNightCard } from '../lib/types';
-import NightCard from '../features/nightcards/NightCard';
+import NightCardDetailPaginated from '../features/nightcards/NightCardDetailPaginated';
 
 const CSS = `
-.snc{min-height:100vh;min-height:100dvh;background:linear-gradient(180deg,#060912 0%,#0a0e24 40%,#0f0a20 100%);display:flex;flex-direction:column;align-items:center;padding:0;font-family:'Nunito',system-ui,sans-serif;-webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden}
-.snc-stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.snc{min-height:100vh;min-height:100dvh;background:linear-gradient(180deg,#060912 0%,#0a0e24 40%,#0f0a20 100%);display:flex;flex-direction:column;align-items:center;font-family:'Nunito',system-ui,sans-serif;-webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden}
+.snc-stars{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0}
 .snc-star{position:absolute;width:1.5px;height:1.5px;border-radius:50%;background:white;animation:sncTwinkle 4s ease-in-out infinite alternate}
 @keyframes sncTwinkle{0%,100%{opacity:.1}50%{opacity:.4}}
-.snc-content{position:relative;z-index:1;width:100%;max-width:400px;padding:40px 24px 60px;display:flex;flex-direction:column;align-items:center}
-.snc-header{text-align:center;margin-bottom:24px;animation:sncFade .6s ease both}
 @keyframes sncFade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.snc-content{position:relative;z-index:1;width:100%;max-width:400px;padding:40px 20px 60px;display:flex;flex-direction:column;align-items:center}
+.snc-header{text-align:center;margin-bottom:24px;animation:sncFade .6s ease both}
 .snc-card-wrap{animation:sncFade .6s .15s ease both;opacity:0;width:100%;display:flex;justify-content:center;margin-bottom:20px}
-.snc-context{animation:sncFade .6s .3s ease both;opacity:0;text-align:center;margin-bottom:28px}
-.snc-footer{animation:sncFade .6s .45s ease both;opacity:0;text-align:center;width:100%}
+.snc-footer{animation:sncFade .6s .3s ease both;opacity:0;text-align:center;width:100%}
 .snc-cta{display:inline-block;padding:16px 36px;border-radius:16px;background:linear-gradient(145deg,#a06010,#F5B84C 50%,#a06010);color:#120800;font-size:15px;font-weight:700;text-decoration:none;font-family:'Nunito',sans-serif;transition:transform .15s,filter .15s;box-shadow:0 8px 28px rgba(245,184,76,.25)}
 .snc-cta:hover{transform:scale(1.04);filter:brightness(1.1)}
 .snc-loading{color:rgba(244,239,232,.4);font-size:14px;padding:80px 24px;text-align:center}
 .snc-error{color:rgba(255,140,130,.6);font-size:14px;padding:80px 24px;text-align:center}
 `;
 
-// Deterministic stars from card data
 function makeStars(seed: string): { x: number; y: number; d: number; dl: number }[] {
   let h = 5381;
   for (let i = 0; i < seed.length; i++) h = (h * 33) ^ seed.charCodeAt(i);
@@ -39,7 +37,6 @@ export default function SharedNightCard() {
   const [card, setCard] = useState<SavedNightCard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isFlipped, setIsFlipped] = useState(false);
 
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get('nc');
@@ -53,57 +50,45 @@ export default function SharedNightCard() {
         if (err || !data) { setError('Card not found or link expired'); setLoading(false); return; }
         const { data: cardData, error: cardErr } = await supabase
           .from('night_cards')
-          .select('id, hero_name, story_title, headline, quote, memory_line, photo_url, emoji, date, extra')
+          .select('id, user_id, hero_name, story_title, headline, quote, memory_line, bonding_question, bonding_answer, gratitude, photo_url, emoji, date, extra')
           .eq('id', data.card_id)
           .single();
         if (cardErr || !cardData) { setError('Card not found'); setLoading(false); return; }
 
-        // Parse extra for variant fields (but NOT whisper — private to parent)
-        let occasion: string | undefined;
-        let nightNumber: number | undefined;
-        let creatureEmoji: string | undefined;
-        let creatureColor: string | undefined;
-        let isOrigin: boolean | undefined;
-        let childMood: string | undefined;
-        let childAge: string | undefined;
-        let bedtimeActual: string | undefined;
-        let childDrawing: string | undefined;
-        if (cardData.extra && cardData.extra.startsWith('{')) {
-          try {
-            const p = JSON.parse(cardData.extra);
-            if (p.isOrigin) isOrigin = true;
-            if (p.occasion) occasion = p.occasion;
-            if (p.nightNumber != null) nightNumber = p.nightNumber;
-            if (p.creatureEmoji) creatureEmoji = p.creatureEmoji;
-            if (p.creatureColor) creatureColor = p.creatureColor;
-            if (p.childMood) childMood = p.childMood;
-            if (p.childAge) childAge = p.childAge;
-            if (p.bedtimeActual) bedtimeActual = p.bedtimeActual;
-            if (p.childDrawing) childDrawing = p.childDrawing;
-          } catch {}
+        // Parse all fields from extra JSON
+        let parsed: any = {};
+        if (cardData.extra && typeof cardData.extra === 'string' && cardData.extra.startsWith('{')) {
+          try { parsed = JSON.parse(cardData.extra); } catch {}
         }
 
         setCard({
           id: cardData.id,
-          userId: '',
+          userId: cardData.user_id || '',
           heroName: cardData.hero_name,
           storyTitle: cardData.story_title,
           characterIds: [],
           headline: cardData.headline,
           quote: cardData.quote,
           memory_line: cardData.memory_line,
+          bondingQuestion: cardData.bonding_question,
+          bondingAnswer: cardData.bonding_answer,
+          gratitude: cardData.gratitude,
           photo: cardData.photo_url,
           emoji: cardData.emoji,
           date: cardData.date,
-          isOrigin,
-          occasion,
-          nightNumber,
-          creatureEmoji,
-          creatureColor,
-          childMood,
-          childAge,
-          bedtimeActual,
-          childDrawing,
+          isOrigin: parsed.isOrigin || undefined,
+          occasion: parsed.occasion || undefined,
+          nightNumber: parsed.nightNumber ?? undefined,
+          streakCount: parsed.streakCount ?? undefined,
+          creatureEmoji: parsed.creatureEmoji || undefined,
+          creatureColor: parsed.creatureColor || undefined,
+          childMood: parsed.childMood || undefined,
+          childAge: parsed.childAge || undefined,
+          bedtimeActual: parsed.bedtimeActual || undefined,
+          childDrawing: parsed.childDrawing || undefined,
+          audioClip: parsed.audioClip || undefined,
+          parentReflection: parsed.parentReflection || undefined,
+          milestone: parsed.milestone || undefined,
           // whisper intentionally omitted — private to parent
         });
         setLoading(false);
@@ -114,11 +99,6 @@ export default function SharedNightCard() {
   if (error || !card) return <div className="snc"><style>{CSS}</style><div className="snc-error">{error || 'Card not found'}</div></div>;
 
   const stars = makeStars(card.id);
-  const cardDate = (() => {
-    try {
-      return new Date(card.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-    } catch { return card.date; }
-  })();
 
   return (
     <div className="snc">
@@ -150,54 +130,15 @@ export default function SharedNightCard() {
           }}>
             {card.heroName}{'\u2019'}s Night Card
           </div>
-          <div style={{
-            fontFamily: "'Nunito',sans-serif", fontSize: 12,
-            color: 'rgba(244,239,232,.35)', marginTop: 6,
-          }}>
-            {cardDate}
-          </div>
         </div>
 
-        {/* Card */}
+        {/* Full paginated card */}
         <div className="snc-card-wrap">
-          <NightCard
-            card={card}
-            size="full"
-            flipped={isFlipped}
-            onFlip={() => setIsFlipped(!isFlipped)}
-          />
-        </div>
-
-        {/* Context */}
-        <div className="snc-context">
-          {card.childMood && (
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              padding: '5px 12px', borderRadius: 20,
-              background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)',
-              marginBottom: 10,
-            }}>
-              <span style={{ fontSize: 16 }}>{card.childMood}</span>
-              {card.bedtimeActual && (
-                <span style={{
-                  fontFamily: "'DM Mono',monospace", fontSize: 9,
-                  color: 'rgba(244,239,232,.3)',
-                }}>{card.bedtimeActual.toLowerCase()}</span>
-              )}
-            </div>
-          )}
-          <div style={{
-            fontFamily: "'Fraunces',Georgia,serif", fontSize: 13, fontWeight: 300,
-            fontStyle: 'italic', color: 'rgba(244,239,232,.35)', lineHeight: 1.6,
-          }}>
-            Made with love at bedtime
-            {card.childAge ? ` \u00B7 ${card.heroName}, age ${card.childAge}` : ''}
-          </div>
-          <div style={{
-            fontSize: 10, color: 'rgba(244,239,232,.15)', marginTop: 4,
-            fontFamily: "'DM Mono',monospace",
-          }}>
-            tap the card to flip it
+          <div style={{ width: '100%', maxWidth: 340 }}>
+            <NightCardDetailPaginated
+              card={card}
+              onClose={() => window.location.href = '/'}
+            />
           </div>
         </div>
 
