@@ -139,7 +139,7 @@ export default function UserProfile() {
               const crDef = cr ? getCreature(cr.creatureType) : null;
               return (
                 <div key={c.id} style={{ marginBottom: 8 }}>
-                  <div className="pf-kid" onClick={() => { setEditingCharacter(c); setView('characters'); }}>
+                  <div className="pf-kid" onClick={() => { setEditingCharacter(c); setView('character-builder'); }}>
                     <div className="pf-kid-av" style={{ background: c.color ? `linear-gradient(145deg,${c.color}30,rgba(12,24,64,.6))` : 'rgba(255,255,255,.06)', borderColor: c.color ? c.color + '50' : 'rgba(245,184,76,.3)' }}>
                       {c.photo ? <img src={c.photo} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (c.emoji || c.name?.charAt(0))}
                     </div>

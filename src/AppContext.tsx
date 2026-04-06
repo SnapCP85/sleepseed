@@ -151,7 +151,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             try {
               const saved = sessionStorage.getItem('ss_view') as AppView | null;
               // Only restore "safe" views (not transient flows like onboarding, story-builder, auth)
-              const safeViews: AppView[] = ['dashboard','my-space','story-library','nightcard-library','user-profile','characters','library','hatchery'];
+              const safeViews: AppView[] = ['dashboard','my-space','story-library','nightcard-library','user-profile','characters','library','hatchery','ritual-starter','story-wizard','character-builder'];
               if (saved && safeViews.includes(saved)) restoredView = saved;
             } catch {}
             setView(restoredView);
@@ -178,9 +178,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       profileLoadedRef.current = null;
       migrationDoneRef.current = null;
       // Don't overwrite URL-driven views (shared stories, library) with 'public'
+      // Only redirect to public if user was already on public or auth — never kick them mid-session
       const params = new URLSearchParams(window.location.search);
       const isUrlDriven = params.get('library') || params.get('s') || params.get('nc') || params.get('story');
-      if (!isUrlDriven && (viewRef.current === 'public' || viewRef.current === 'auth' || viewRef.current === 'dashboard')) {
+      if (!isUrlDriven && (viewRef.current === 'public' || viewRef.current === 'auth')) {
         setView('public');
       }
       setAuthLoading(false);

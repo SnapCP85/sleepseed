@@ -1255,7 +1255,7 @@ function AppInner() {
         setPreloadedBook(null);
         setView('story-builder');
       }}
-      onBack={goBack}
+      onBack={() => setView('dashboard')}
     />
   );
   if (view === 'story-wizard') return (
@@ -1266,7 +1266,7 @@ function AppInner() {
         setPreloadedBook(null);
         setView('story-builder');
       }}
-      onBack={goBack}
+      onBack={() => setView('dashboard')}
     />
   );
   if (view === 'user-profile') return (
