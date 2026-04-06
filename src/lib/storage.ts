@@ -360,12 +360,33 @@ export const getNightCards = async (userId: string): Promise<SavedNightCard[]> =
     const { data, error } = await supabase.from('night_cards').select('*').eq('user_id', userId).order('date', { ascending: false }).limit(200);
     if (!error && data?.length) {
       const db = data.map(dbToCard);
-      const ids = new Set(combined.map(c => c.id));
-      const merged = [...combined, ...db.filter(c => !ids.has(c.id))];
+      const dbMap = new Map(db.map(c => [c.id, c]));
+      // Enrich local cards with Supabase-only fields (childDrawing, photo, parentReflection, audioClip)
+      // These are stripped from localStorage to save space but exist in Supabase extra JSON
+      const enriched = combined.map(c => {
+        const dbCard = dbMap.get(c.id);
+        if (!dbCard) return c;
+        return {
+          ...c,
+          childDrawing: c.childDrawing || dbCard.childDrawing,
+          photo: c.photo || dbCard.photo,
+          parentReflection: c.parentReflection || dbCard.parentReflection,
+          audioClip: c.audioClip || dbCard.audioClip,
+          whisper: c.whisper || dbCard.whisper,
+        };
+      });
+      // Add cards only in Supabase (not in local)
+      const localIds = new Set(combined.map(c => c.id));
+      const merged = [...enriched, ...db.filter(c => !localIds.has(c.id))];
       if (merged.length > combined.length) {
         console.log(`[storage] getNightCards: +${merged.length - combined.length} from Supabase (total: ${merged.length})`);
-        lsSet(LS_CARDS(userId), merged);
       }
+      // Don't write enriched base64 fields back to localStorage (would exceed quota)
+      const forStorage = merged.map(c => ({...c,
+        childDrawing: (c.childDrawing as any)?.startsWith?.('data:') ? undefined : c.childDrawing,
+        photo: (c.photo as any)?.startsWith?.('data:') ? undefined : c.photo,
+      }));
+      lsSet(LS_CARDS(userId), forStorage);
       return merged.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     }
   } catch(e) { console.error('[storage] getNightCards Supabase error:', e); }

@@ -4669,7 +4669,7 @@ Rules:
 
             {/* Screen 2 — Generating Ceremony (was step 3, now step 1) */}
             {ncStep===1 && (
-              <div style={{minHeight:'100dvh',background:'#060912',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 28px',textAlign:'center',position:'relative'}}>
+              <div style={{minHeight:'100dvh',width:'100%',maxWidth:'100vw',background:'#060912',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 20px',textAlign:'center',position:'relative',overflow:'hidden'}}>
                 <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 40%,rgba(60,30,120,.35),transparent 65%),radial-gradient(ellipse at 20% 80%,rgba(20,100,80,.2),transparent 50%)'}}/>
                 <div style={{position:'relative',zIndex:1,display:'flex',flexDirection:'column',alignItems:'center'}}>
                   <div style={{marginBottom:28,animation:'nc-floatY 3s ease-in-out infinite'}}>

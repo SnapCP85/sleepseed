@@ -73,13 +73,12 @@ export const saveHatchedCreature = async (c: HatchedCreature): Promise<void> => 
   if (error) console.error('saveHatchedCreature:', error);
 };
 
-export const updateCreatureName = async (userId: string, newName: string): Promise<void> => {
+export const updateCreatureName = async (userId: string, creatureId: string, newName: string): Promise<void> => {
   const { error } = await supabase
     .from('hatched_creatures')
     .update({ name: newName })
     .eq('user_id', userId)
-    .order('hatched_at', { ascending: false })
-    .limit(1);
+    .eq('id', creatureId);
   if (error) console.error('updateCreatureName:', error);
 };
 

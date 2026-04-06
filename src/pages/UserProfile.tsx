@@ -155,7 +155,7 @@ export default function UserProfile() {
                               onChange={e => setEditCreatureName(e.target.value)}
                               onKeyDown={async e => {
                                 if (e.key === 'Enter' && editCreatureName.trim() && user) {
-                                  await updateCreatureName(user.id, editCreatureName.trim());
+                                  await updateCreatureName(user.id, cr.id, editCreatureName.trim());
                                   setCreatures(prev => prev.map(x => x.id === cr.id ? { ...x, name: editCreatureName.trim() } : x));
                                   setEditingCreatureId(null);
                                 }
@@ -172,7 +172,7 @@ export default function UserProfile() {
                             />
                             <button onClick={async () => {
                               if (editCreatureName.trim() && user) {
-                                await updateCreatureName(user.id, editCreatureName.trim());
+                                await updateCreatureName(user.id, cr.id, editCreatureName.trim());
                                 setCreatures(prev => prev.map(x => x.id === cr.id ? { ...x, name: editCreatureName.trim() } : x));
                                 setEditingCreatureId(null);
                               }
