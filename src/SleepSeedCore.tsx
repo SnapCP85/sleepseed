@@ -4715,7 +4715,7 @@ Rules:
 
             {/* Screen 2 — Generating Ceremony (was step 3, now step 1) */}
             {ncStep===1 && (
-              <div style={{minHeight:'100dvh',width:'100%',maxWidth:'100vw',background:'#060912',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 20px',textAlign:'center',position:'relative',overflow:'hidden'}}>
+              <div style={{position:'fixed',inset:0,background:'#060912',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 20px',textAlign:'center',overflow:'hidden',zIndex:50}}>
                 <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 40%,rgba(60,30,120,.35),transparent 65%),radial-gradient(ellipse at 20% 80%,rgba(20,100,80,.2),transparent 50%)'}}/>
                 <div style={{position:'relative',zIndex:1,display:'flex',flexDirection:'column',alignItems:'center'}}>
                   <div style={{marginBottom:28,animation:'nc-floatY 3s ease-in-out infinite'}}>
@@ -4737,7 +4737,7 @@ Rules:
 
             {/* Screen 3 — Card Reveal + Whisper + Media + Save (was step 4, now step 2) */}
             {ncStep===2 && ncResult && (
-              <div style={{height:'100dvh',maxHeight:'100dvh',background:'#060912',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'}}>
+              <div style={{position:'fixed',inset:0,background:'#060912',display:'flex',flexDirection:'column',overflow:'hidden',zIndex:50}}>
                 <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 30%,rgba(20,100,60,.3),transparent 65%)'}}/>
                 <div style={{position:'relative',zIndex:1,flex:1,display:'flex',flexDirection:'column',alignItems:'center',padding:'40px 20px 20px',overflowY:'auto',scrollbarWidth:'none' as any,WebkitOverflowScrolling:'touch' as any}}>
                   <style>{`.nc-reveal-scroll::-webkit-scrollbar{display:none}`}</style>

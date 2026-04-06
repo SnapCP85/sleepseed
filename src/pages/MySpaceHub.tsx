@@ -309,6 +309,33 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
         {/* Tracker */}
         <Tracker nightCards={nights} stories={storyCount} />
 
+        {/* ═══ Companions ═══ */}
+        {creatures.length > 1 && (
+          <div className="msh-companions">
+            <div className="msh-companions-label">Companions</div>
+            <div className="msh-companions-row">
+              {creatures.map(c => {
+                const isActive = c.id === primaryCreature?.id;
+                const cColor = c.color || '#F5B84C';
+                return (
+                  <div
+                    key={c.id}
+                    className={`msh-companion-avatar${isActive ? ' active' : ''}`}
+                    style={{
+                      borderColor: isActive ? cColor : 'rgba(255,255,255,.1)',
+                      boxShadow: isActive ? `0 0 12px ${cColor}40` : 'none',
+                    }}
+                    title={`${c.name} — ${c.creatureEmoji}`}
+                  >
+                    <span className="msh-companion-emoji">{c.creatureEmoji}</span>
+                    <div className="msh-companion-name">{c.name}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* ═══ Insights ═══ */}
         {patterns && (
           <div className="msh-insights">
@@ -583,6 +610,32 @@ const CSS = `
 .msh-guest-sub { font-size: 14px; color: var(--cream-dim); opacity: 0.7; margin-bottom: 28px; line-height: 1.6; }
 .msh-guest-btn { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; padding: 14px 26px; background: rgba(245,184,76,0.08); border: 1px solid rgba(245,184,76,0.4); border-radius: 100px; color: var(--amber); cursor: pointer; transition: all 0.4s ease; }
 .msh-guest-btn:hover { background: rgba(245,184,76,0.16); color: rgb(255,230,180); }
+
+/* ─── Companions ─── */
+.msh-companions { position: relative; z-index: 4; max-width: 340px; margin: 28px auto 0; text-align: center; }
+.msh-companions-label {
+  font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--cream-dim); opacity: 0.5; margin-bottom: 14px;
+}
+.msh-companions-row {
+  display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+}
+.msh-companion-avatar {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  width: 56px; padding: 8px 0;
+  border: 1.5px solid rgba(255,255,255,.1); border-radius: 16px;
+  background: rgba(255,255,255,.03);
+  transition: all 0.3s ease;
+}
+.msh-companion-avatar.active {
+  background: rgba(245,184,76,.06);
+}
+.msh-companion-emoji { font-size: 24px; line-height: 1; }
+.msh-companion-name {
+  font-family: 'DM Mono', monospace; font-size: 7px; letter-spacing: 0.1em;
+  color: var(--cream-dim); opacity: 0.6; text-transform: uppercase;
+  max-width: 50px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 /* ─── Insights ─── */
 .msh-insights { position: relative; z-index: 4; max-width: 340px; margin: 32px auto 0; padding: 0 8px; }

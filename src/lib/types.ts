@@ -354,6 +354,7 @@ export type AppView =
   | 'hatch-ceremony'       // Night 3 canvas hatch cinematic
   | 'cinematic-transition' // Elder → egg → Night 1 bridge
   | 'story-cover'          // shared story landing page (before reader)
+  | 'egg-hatch'            // post-7-night egg hatch cinematic (new creature)
   | 'my-space';            // personal hub — creature, memories, stories
 
 // ══════════════════════════════════════════════════════════════════════════════

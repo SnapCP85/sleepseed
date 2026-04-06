@@ -707,11 +707,11 @@ const CSS = `
 
 /* ============ PAGE: DIARY ============ */
 .ncd-diary-page {
-  padding: 8px 14px;
+  padding: 24px 14px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  height: 100%;
+  min-height: 120px;
 }
 .ncd-diary-text {
   font-family: 'Fraunces', serif;

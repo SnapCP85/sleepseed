@@ -1,12 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../AppContext';
-import { getStories, getNightCards, getCharacters, saveNightCard as dbSaveNightCard } from '../lib/storage';
-import { getAllHatchedCreatures } from '../lib/hatchery';
+import { getStories, getNightCards, getCharacters } from '../lib/storage';
+import { getAllHatchedCreatures, getActiveEgg, createEgg } from '../lib/hatchery';
+import { CREATURES } from '../lib/creatures';
+import type { HatcheryEgg } from '../lib/types';
 import { getDreamKeeperById, V1_DREAMKEEPERS, type DreamKeeper } from '../lib/dreamkeepers';
 import { isRitualComplete, getRitualState } from '../lib/ritualState';
 import { journeyService } from '../lib/journey-service';
 import type { Character, HatchedCreature, SavedNightCard, StoryJourney } from '../lib/types';
 import NightCardComponent from '../features/nightcards/NightCard';
+import NightCardDetailPaginated from '../features/nightcards/NightCardDetailPaginated';
 import DreamEgg from '../components/onboarding/DreamEgg';
 import type { EggState } from '../components/onboarding/DreamEgg';
 
@@ -20,6 +23,7 @@ import type { EggState } from '../components/onboarding/DreamEgg';
 interface Props {
   onSignUp: () => void;
   onReadStory?: (book: any) => void;
+  onHatchReady?: (childName: string, characterId: string) => void;
 }
 
 const CSS = `
@@ -139,7 +143,7 @@ function CreatureGreeting({ childName, creatureName, rgb, cardCount }: { childNa
   );
 }
 
-export default function MySpace({ onSignUp, onReadStory }: Props) {
+export default function MySpace({ onSignUp, onReadStory, onHatchReady }: Props) {
   const { user, setView, companionCreature, setCompanionCreature, selectedCharacter, setSelectedCharacter, setActiveJourneyId } = useApp();
 
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -152,11 +156,9 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
   const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
   const [viewingCard, setViewingCard] = useState<SavedNightCard | null>(null);
-  const [cardFlipped, setCardFlipped] = useState(false);
-  const [cardReflection, setCardReflection] = useState('');
-  const [cardReflectionSaved, setCardReflectionSaved] = useState(false);
   const [activeJourney, setActiveJourney] = useState<StoryJourney | null>(null);
   const [journeyLoading, setJourneyLoading] = useState(false);
+  const [activeEgg, setActiveEgg] = useState<HatcheryEgg | null>(null);
 
   const userId = user?.id;
 
@@ -253,6 +255,47 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
     return () => { cancelled = true; };
   }, [userId, activeChild?.id]);
 
+  // ── Ritual state (needed early for egg loading) ────────────────────────────
+  const ritualDone = userId ? isRitualComplete(userId) : true;
+
+  // ── Egg loading (hatchery progress) ───────────────────────────────────────
+  useEffect(() => {
+    if (!userId || !activeChild?.id || !ritualDone) { setActiveEgg(null); return; }
+    let cancelled = false;
+    (async () => {
+      let egg = await getActiveEgg(userId, activeChild.id);
+      if (!egg) {
+        const rc = CREATURES[Math.floor(Math.random() * CREATURES.length)];
+        try { egg = await createEgg(userId, activeChild.id, rc.id, 1); } catch {}
+      }
+      if (!cancelled) setActiveEgg(egg);
+    })();
+    return () => { cancelled = true; };
+  }, [userId, activeChild?.id, ritualDone]);
+
+  // ── Egg stage: count night cards since egg started ────────────────────────
+  const eggStage = useMemo(() => {
+    if (!activeEgg || !activeChild) return 0;
+    const startDate = activeEgg.startedAt.split('T')[0];
+    const count = allCards.filter(card =>
+      (!card.characterIds?.length || card.characterIds.includes(activeEgg.characterId) || card.heroName === activeChild.name) &&
+      card.date.split('T')[0] >= startDate
+    ).length;
+    return Math.min(count, 7);
+  }, [activeEgg, allCards, activeChild]);
+
+  const eggCards = useMemo(() => {
+    if (!activeEgg || !activeChild) return [];
+    const startDate = activeEgg.startedAt.split('T')[0];
+    return allCards
+      .filter(card =>
+        (!card.characterIds?.length || card.characterIds.includes(activeEgg.characterId) || card.heroName === activeChild.name) &&
+        card.date.split('T')[0] >= startDate
+      )
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(0, 7);
+  }, [activeEgg, allCards, activeChild]);
+
   // ── Resurfacing: pick one old card to show ────────────────────────────────
   const resurfacedCard = useMemo(() => {
     if (allCards.length < 3) return null;
@@ -311,7 +354,6 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
   const childName = primaryChild?.name || user?.displayName || 'friend';
   const isFirstTime = storyCount === 0 && cardCount === 0;
 
-  const ritualDone = userId ? isRitualComplete(userId) : true;
   const ritualState = userId && !ritualDone ? getRitualState(userId) : null;
   const nextRitualNight = ritualState?.currentNight || 1;
 
@@ -576,6 +618,63 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
             </div>
           )}
 
+          {/* Shard tracker — 7-night egg progress */}
+          {activeEgg && ritualDone && !isPreHatchEgg && (
+            <div style={{
+              marginTop: 14, display: 'flex', flexDirection: 'column', alignItems: 'center',
+              animation: 'ms-fadeUp .6s .2s ease-out both',
+            }}>
+              {/* 7 dots */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {Array.from({ length: 7 }, (_, i) => {
+                  const filled = i < eggStage;
+                  const card = filled ? eggCards[i] : null;
+                  return (
+                    <div
+                      key={i}
+                      onClick={() => { if (card) setViewingCard(card); }}
+                      style={{
+                        width: 10, height: 10, borderRadius: '50%',
+                        background: filled ? '#14d890' : 'rgba(255,255,255,.06)',
+                        boxShadow: filled ? '0 0 8px rgba(20,216,144,.45)' : 'none',
+                        border: filled ? '1px solid rgba(20,216,144,.5)' : '1px solid rgba(255,255,255,.1)',
+                        cursor: filled ? 'pointer' : 'default',
+                        transition: 'all .2s ease',
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              {/* Label or hatch button */}
+              {eggStage >= 7 && onHatchReady ? (
+                <button
+                  onClick={() => onHatchReady(childName, activeChild?.id || '')}
+                  style={{
+                    marginTop: 10, padding: '8px 22px', border: 'none', borderRadius: 20,
+                    background: 'linear-gradient(135deg, rgba(20,216,144,.5), rgba(20,216,144,.8) 50%, rgba(20,216,144,.5))',
+                    color: '#030408', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                    fontFamily: "'Nunito',sans-serif",
+                    boxShadow: '0 4px 16px rgba(20,216,144,.3)',
+                    animation: 'ms-ctaPulse 3s ease-in-out infinite',
+                    transition: 'transform .15s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.04)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
+                >
+                  Hatch now {'\u2728'}
+                </button>
+              ) : (
+                <div style={{
+                  fontFamily: "'DM Mono',monospace", fontSize: 9,
+                  color: 'rgba(244,239,232,.25)',
+                  letterSpacing: '.04em', marginTop: 8,
+                }}>
+                  {`${7 - eggStage} night${7 - eggStage !== 1 ? 's' : ''} to hatch`}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Greeting bubble */}
           <CreatureGreeting childName={childName} creatureName={creatureName} rgb={rgb} cardCount={cardCount} />
         </div>
@@ -701,13 +800,10 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
                 onClick={() => setViewingCard(tonightCard)}
                 style={{
                   width: 160, cursor: 'pointer',
-                  transition: 'transform .2s ease',
                   filter: 'drop-shadow(0 12px 28px rgba(0,0,0,.5)) drop-shadow(0 0 20px rgba(20,216,144,.12))',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
               >
-                <NightCardComponent card={tonightCard} size="mini" onTap={() => setViewingCard(tonightCard)} />
+                <NightCardComponent card={tonightCard} size="mini" />
               </div>
             </div>
           );
@@ -931,84 +1027,33 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
 
       </div>
 
-      {/* Night Card detail overlay */}
+      {/* Night Card detail — paginated swipe viewer */}
       {viewingCard && (
         <>
-          <div onClick={() => { setViewingCard(null); setCardFlipped(false); setCardReflection(''); setCardReflectionSaved(false); }} style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,.82)',
-            zIndex: 200, animation: 'ms-fadeUp .2s ease both',
-          }} />
+          <div
+            onClick={() => setViewingCard(null)}
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,.85)',
+              zIndex: 200,
+            }}
+          />
           <div style={{
             position: 'fixed', inset: 0, zIndex: 201,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 20, pointerEvents: 'none', flexDirection: 'column',
+            padding: 16, pointerEvents: 'none',
           }}>
-            <div style={{
-              position: 'absolute', top: '35%', left: '50%',
-              transform: 'translate(-50%,-50%)', width: 320, height: 320,
-              borderRadius: '50%', pointerEvents: 'none',
-              background: 'radial-gradient(circle,rgba(154,127,212,.12) 0%,transparent 70%)',
-            }} />
-            <div style={{
-              pointerEvents: 'all', width: '100%', maxWidth: 300,
-              animation: 'ms-fadeUp .3s ease both', position: 'relative', zIndex: 1,
-              maxHeight: '85vh', overflowY: 'auto', scrollbarWidth: 'none' as any,
-            }}>
-              <NightCardComponent card={viewingCard} size="full" flipped={cardFlipped} onFlip={() => setCardFlipped(!cardFlipped)} />
-
-              {/* Context strip */}
-              {(viewingCard.storyTitle || viewingCard.childAge || viewingCard.bedtimeActual) && (
-                <div style={{
-                  marginTop: 10, padding: '8px 12px', borderRadius: 10,
-                  background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)',
-                  display: 'flex', flexWrap: 'wrap', gap: '3px 8px', justifyContent: 'center',
-                  fontFamily: "'DM Mono',monospace", fontSize: 9, color: 'rgba(234,242,255,.28)',
-                }}>
-                  {viewingCard.storyTitle && <span>{'\uD83D\uDCD6'} {viewingCard.storyTitle}</span>}
-                  {viewingCard.bedtimeActual && <span>{'\uD83D\uDD70'} {viewingCard.bedtimeActual.toLowerCase()}</span>}
-                  {viewingCard.childAge && <span>{viewingCard.heroName}, age {viewingCard.childAge}</span>}
-                </div>
-              )}
-
-              {/* Flip hint */}
-              <div style={{ textAlign: 'center', marginTop: 6, fontSize: 9, color: 'rgba(234,242,255,.18)', fontFamily: "'DM Mono',monospace" }}>
-                {cardFlipped ? 'tap card to see front' : 'tap card to flip'}
-              </div>
-
-              {/* Reflection */}
-              {!viewingCard.parentReflection && !cardReflectionSaved && (
-                <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 12, background: 'rgba(20,216,144,.04)', border: '1px solid rgba(20,216,144,.12)' }}>
-                  <div style={{ fontSize: 9, color: 'rgba(20,216,144,.5)', fontFamily: "'DM Mono',monospace", letterSpacing: '.4px', marginBottom: 6 }}>{'\uD83D\uDCAD'} ADD A REFLECTION</div>
-                  <textarea value={cardReflection} onChange={e => setCardReflection(e.target.value)} placeholder="Anything you remember about this night..." style={{ width: '100%', minHeight: 50, padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(20,216,144,.12)', background: 'rgba(20,216,144,.04)', color: 'rgba(234,242,255,.8)', fontSize: 12, fontFamily: "'Nunito',sans-serif", resize: 'none', outline: 'none', lineHeight: 1.5 }} maxLength={280} />
-                  <button disabled={!cardReflection.trim()} onClick={async () => {
-                    if (!viewingCard || !cardReflection.trim()) return;
-                    const updated = { ...viewingCard, parentReflection: cardReflection.trim() };
-                    setAllCards(prev => prev.map(c => c.id === updated.id ? updated : c));
-                    setViewingCard(updated);
-                    setCardReflectionSaved(true);
-                    try { await dbSaveNightCard(updated); } catch (e) { console.error('[MySpace] saveReflection:', e); }
-                  }} style={{ marginTop: 6, padding: '7px 14px', borderRadius: 8, border: 'none', background: cardReflection.trim() ? 'rgba(20,216,144,.2)' : 'rgba(255,255,255,.04)', color: cardReflection.trim() ? 'rgba(20,216,144,.85)' : 'rgba(234,242,255,.2)', fontSize: 11, fontWeight: 600, cursor: cardReflection.trim() ? 'pointer' : 'default', fontFamily: "'Nunito',sans-serif" }}>Save reflection</button>
-                </div>
-              )}
-              {cardReflectionSaved && (
-                <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11, color: 'rgba(20,216,144,.6)', fontFamily: "'Nunito',sans-serif" }}>{'\u2713'} Reflection saved</div>
-              )}
-              {viewingCard.parentReflection && !cardReflectionSaved && (
-                <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 12, background: 'rgba(20,216,144,.04)', border: '1px solid rgba(20,216,144,.08)' }}>
-                  <div style={{ fontSize: 9, color: 'rgba(20,216,144,.4)', fontFamily: "'DM Mono',monospace", letterSpacing: '.4px', marginBottom: 4 }}>{'\uD83D\uDCAD'} REFLECTION</div>
-                  <div style={{ fontSize: 12, fontStyle: 'italic', color: 'rgba(234,242,255,.5)', fontFamily: "'Nunito',sans-serif", lineHeight: 1.5 }}>{viewingCard.parentReflection}</div>
-                </div>
-              )}
-
-              <button
-                onClick={() => { setViewingCard(null); setCardFlipped(false); setCardReflection(''); setCardReflectionSaved(false); }}
-                style={{
-                  width: '100%', marginTop: 12, padding: '11px 8px',
-                  borderRadius: 14, border: '1px solid rgba(255,255,255,.12)',
-                  background: 'rgba(255,255,255,.06)', color: 'rgba(234,242,255,.6)',
-                  fontSize: 11, fontFamily: "'DM Mono',monospace", cursor: 'pointer',
+            <div style={{ pointerEvents: 'all', maxHeight: '90vh', overflowY: 'auto', scrollbarWidth: 'none' as any }}>
+              <NightCardDetailPaginated
+                card={viewingCard}
+                onClose={() => setViewingCard(null)}
+                onOpenStory={(card) => {
+                  setViewingCard(null);
+                  if (card.storyId && onReadStory) {
+                    const story = allStories.find(s => s.id === card.storyId);
+                    if (story?.bookData) onReadStory(story.bookData);
+                  }
                 }}
-              >Close</button>
+              />
             </div>
           </div>
         </>

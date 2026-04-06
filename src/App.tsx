@@ -46,6 +46,9 @@ import type { DreamKeeperResult } from './pages/DreamKeeperOnboarding';
 import { CREATURES } from './lib/creatures';
 import AppLayout from './components/AppLayout';
 import OnboardingRitual from './pages/OnboardingRitual';
+import EggHatchCeremony from './pages/EggHatchCeremony';
+import DevHatchTest from './pages/DevHatchTest';
+import { resolveNextCreature } from './lib/creature-helpers';
 import { initRitualState, isRitualComplete } from './lib/ritualState';
 import ParentOnboarding from './pages/ParentOnboarding';
 import type { ParentOnboardingResult } from './pages/ParentOnboarding';
@@ -80,6 +83,7 @@ function AppInner() {
   // DEV-only routes — gated behind dev mode to prevent accidental access during demos
   if (import.meta.env.DEV) {
     if (new URLSearchParams(window.location.search).get('view') === 'dev-story') return <DevStoryTest />;
+    if (new URLSearchParams(window.location.search).get('view') === 'dev-hatch') return <DevHatchTest />;
     if (new URLSearchParams(window.location.search).get('view') === 'v9-preview') return <OnboardingV9Preview />;
     if (new URLSearchParams(window.location.search).get('view') === 'dk-test') return (
       <DreamKeeperOnboarding
@@ -110,6 +114,7 @@ function AppInner() {
   const [preloadedBook,      setPreloadedBook]      = useState<any>(null);
   const [dashKey,            setDashKey]            = useState(0);
   const [wizardChoices,      setWizardChoices]      = useState<import('./lib/types').BuilderChoices|null>(null);
+  const [pendingHatchData,   setPendingHatchData]   = useState<{ childName: string; characterId: string; creatureData: ReturnType<typeof resolveNextCreature> } | null>(null);
   const [lastOnboardingResult, setLastOnboardingResult] = useState<OnboardingResult|null>(null);
   const [parentSetupData,   setParentSetupData]   = useState<ParentSetupResult|null>(() => {
     // Load from localStorage if available
@@ -1132,7 +1137,15 @@ function AppInner() {
 
         {/* Ritual banner removed — MySpace CTA handles ritual routing directly */}
 
-        <MySpace key={dashKey} onSignUp={goAuth} onReadStory={openSavedStory} />
+        <MySpace key={dashKey} onSignUp={goAuth} onReadStory={openSavedStory} onHatchReady={async (childName, characterId) => {
+          if (!user) return;
+          const allHatched = await getAllHatchedCreatures(user.id);
+          const hatchedTypes = allHatched.map(c => c.creatureType);
+          const currentType = companionCreature?.creatureType || '';
+          const creatureData = resolveNextCreature(currentType, hatchedTypes);
+          setPendingHatchData({ childName, characterId, creatureData });
+          setView('egg-hatch');
+        }} />
       </AppLayout>
     );
   }
@@ -1242,6 +1255,18 @@ function AppInner() {
   if (view === 'nightly-checkin') return <NightlyCheckIn />;
   if (view === 'chapter-handoff') return <ChapterHandoff />;
   if (view === 'book-complete') return <BookComplete />;
+  if (view === 'egg-hatch' && pendingHatchData) return (
+    <EggHatchCeremony
+      childName={pendingHatchData.childName}
+      characterId={pendingHatchData.characterId}
+      creatureData={pendingHatchData.creatureData}
+      onComplete={(creature) => {
+        setCompanionCreature(creature);
+        setPendingHatchData(null);
+        setView('dashboard');
+      }}
+    />
+  );
   if (view === 'memory-reel') return <MemoryReel />;
   if (view === 'series-creator') return <SeriesCreator />;
   if (view === 'journey-library') return <JourneyLibrary onReadStory={openSavedStory} />;
