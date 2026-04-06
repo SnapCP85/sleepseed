@@ -707,8 +707,8 @@ body {
     <span class="nav-brand">SleepSeed</span>
   </div>
   <div class="nav-right">
-    <button class="btn-signin">Sign in</button>
-    <button class="btn-start">Start free</button>
+    <button class="btn-signin" onclick="parent.postMessage('sleepseed:signin','*')">Sign in</button>
+    <button class="btn-start" onclick="parent.postMessage('sleepseed:signup','*')">Start free</button>
   </div>
 </nav>
 
@@ -721,7 +721,7 @@ body {
     Every night before sleep, there's a window where they'll tell you
     what they'd never say at dinner. SleepSeed opens it.
   </p>
-  <button class="hero-cta">
+  <button class="hero-cta" onclick="parent.postMessage('sleepseed:signup','*')">
     <span style="position:relative;z-index:1">Start tonight — free</span>
     <div class="shimmer"></div>
   </button>
@@ -946,7 +946,7 @@ body {
 <!-- ═══════════ MID-PAGE CTA ═══════════ -->
 <section class="mid-cta">
   <div class="mid-cta-inner reveal">
-    <button class="hero-cta" style="font-size:17px; padding:18px 44px;">
+    <button class="hero-cta" style="font-size:17px; padding:18px 44px;" onclick="parent.postMessage('sleepseed:signup','*')">
       <span style="position:relative;z-index:1">Start tonight — free</span>
       <div class="shimmer"></div>
     </button>
@@ -1079,7 +1079,7 @@ body {
   </div>
   <div class="final-headline reveal d1">These nights are <em>happening right now.</em></div>
   <div class="final-sub reveal d2">Will you be listening?</div>
-  <button class="final-cta reveal d3">
+  <button class="final-cta reveal d3" onclick="parent.postMessage('sleepseed:signup','*')">
     <span style="position:relative;z-index:1">Start tonight — free</span>
     <div class="shimmer"></div>
   </button>
