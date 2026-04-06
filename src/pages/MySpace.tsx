@@ -618,59 +618,113 @@ export default function MySpace({ onSignUp, onReadStory, onHatchReady }: Props) 
             </div>
           )}
 
-          {/* Shard tracker — 7-night egg progress */}
+          {/* Shard tracker — 7-night egg progress card */}
           {activeEgg && ritualDone && !isPreHatchEgg && (
             <div style={{
-              marginTop: 14, display: 'flex', flexDirection: 'column', alignItems: 'center',
+              marginTop: 18, width: '100%', maxWidth: 280,
+              background: 'linear-gradient(168deg, rgba(4,14,12,.92), rgba(6,16,14,.96))',
+              border: '1px solid rgba(20,216,144,.15)',
+              borderRadius: 18, padding: '16px 18px 14px',
               animation: 'ms-fadeUp .6s .2s ease-out both',
+              position: 'relative', overflow: 'hidden',
             }}>
-              {/* 7 dots */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {/* Subtle inner glow */}
+              <div style={{
+                position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+                width: 200, height: 80, borderRadius: '50%',
+                background: 'radial-gradient(ellipse, rgba(20,216,144,.08) 0%, transparent 70%)',
+                pointerEvents: 'none',
+              }} />
+
+              {/* Top row: egg emoji + badge + nights left */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                marginBottom: 12, position: 'relative', zIndex: 1,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{
+                    fontSize: 20,
+                    filter: 'drop-shadow(0 0 8px rgba(20,216,144,.3))',
+                  }}>{'\uD83E\uDD5A'}</span>
+                  <span style={{
+                    fontFamily: "'DM Mono',monospace", fontSize: 9,
+                    letterSpacing: '.06em', padding: '3px 9px', borderRadius: 20,
+                    background: 'rgba(20,216,144,.08)', border: '1px solid rgba(20,216,144,.18)',
+                    color: 'rgba(20,216,144,.65)',
+                  }}>
+                    Night {eggStage} of 7
+                  </span>
+                </div>
+                <span style={{
+                  fontFamily: "'Fraunces',Georgia,serif", fontSize: 11,
+                  fontStyle: 'italic', color: 'rgba(20,216,144,.35)',
+                }}>
+                  {eggStage >= 7 ? 'Ready!' : `${7 - eggStage} to hatch`}
+                </span>
+              </div>
+
+              {/* Progress bar */}
+              <div style={{
+                height: 4, borderRadius: 3, background: 'rgba(255,255,255,.06)',
+                overflow: 'hidden', marginBottom: 10, position: 'relative', zIndex: 1,
+              }}>
+                <div style={{
+                  height: '100%', borderRadius: 3,
+                  background: eggStage >= 7
+                    ? 'linear-gradient(90deg, #0a9a5a, #14d890, #0a9a5a)'
+                    : 'linear-gradient(90deg, rgba(20,216,144,.4), #14d890)',
+                  width: `${Math.round((eggStage / 7) * 100)}%`,
+                  transition: 'width .4s ease',
+                  boxShadow: eggStage > 0 ? '0 0 8px rgba(20,216,144,.3)' : 'none',
+                }} />
+              </div>
+
+              {/* 7 shard dots */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                gap: 8, position: 'relative', zIndex: 1,
+              }}>
                 {Array.from({ length: 7 }, (_, i) => {
                   const filled = i < eggStage;
                   const card = filled ? eggCards[i] : null;
+                  const isNext = i === eggStage;
                   return (
                     <div
                       key={i}
                       onClick={() => { if (card) setViewingCard(card); }}
                       style={{
-                        width: 10, height: 10, borderRadius: '50%',
-                        background: filled ? '#14d890' : 'rgba(255,255,255,.06)',
-                        boxShadow: filled ? '0 0 8px rgba(20,216,144,.45)' : 'none',
-                        border: filled ? '1px solid rgba(20,216,144,.5)' : '1px solid rgba(255,255,255,.1)',
+                        width: 9, height: 9, borderRadius: '50%',
+                        background: filled ? '#14d890' : isNext ? 'rgba(20,216,144,.15)' : 'rgba(255,255,255,.05)',
+                        boxShadow: filled ? '0 0 6px rgba(20,216,144,.45)' : 'none',
+                        border: filled ? '1px solid rgba(20,216,144,.5)' : isNext ? '1px solid rgba(20,216,144,.25)' : '1px solid rgba(255,255,255,.08)',
                         cursor: filled ? 'pointer' : 'default',
-                        transition: 'all .2s ease',
+                        transition: 'all .25s ease',
+                        ...(isNext ? { animation: 'ms-glowPulse 3s ease-in-out infinite' } : {}),
                       }}
                     />
                   );
                 })}
               </div>
-              {/* Label or hatch button */}
-              {eggStage >= 7 && onHatchReady ? (
+
+              {/* Hatch button when ready */}
+              {eggStage >= 7 && onHatchReady && (
                 <button
                   onClick={() => onHatchReady(childName, activeChild?.id || '')}
                   style={{
-                    marginTop: 10, padding: '8px 22px', border: 'none', borderRadius: 20,
-                    background: 'linear-gradient(135deg, rgba(20,216,144,.5), rgba(20,216,144,.8) 50%, rgba(20,216,144,.5))',
-                    color: '#030408', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                    width: '100%', marginTop: 12, padding: '10px 20px',
+                    border: 'none', borderRadius: 14,
+                    background: 'linear-gradient(135deg, #0a7a50, #14d890 50%, #0a7a50)',
+                    color: '#030408', fontSize: 13, fontWeight: 700, cursor: 'pointer',
                     fontFamily: "'Nunito',sans-serif",
-                    boxShadow: '0 4px 16px rgba(20,216,144,.3)',
-                    animation: 'ms-ctaPulse 3s ease-in-out infinite',
-                    transition: 'transform .15s',
+                    boxShadow: '0 6px 20px rgba(20,216,144,.3), inset 0 1px 0 rgba(255,255,255,.2)',
+                    transition: 'transform .15s, filter .15s',
+                    position: 'relative', zIndex: 1,
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.04)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.filter = 'brightness(1.1)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.filter = ''; }}
                 >
-                  Hatch now {'\u2728'}
+                  Your egg is ready {'\u2014'} hatch now {'\u2728'}
                 </button>
-              ) : (
-                <div style={{
-                  fontFamily: "'DM Mono',monospace", fontSize: 9,
-                  color: 'rgba(244,239,232,.25)',
-                  letterSpacing: '.04em', marginTop: 8,
-                }}>
-                  {`${7 - eggStage} night${7 - eggStage !== 1 ? 's' : ''} to hatch`}
-                </div>
               )}
             </div>
           )}
