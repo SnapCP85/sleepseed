@@ -238,7 +238,18 @@ export default function LibraryStoryReader({ slug }: Props) {
   const [readAloudActive, setReadAloudActive] = useState(false);
   const [voicePickerOpen, setVoicePickerOpen] = useState(false);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>(() => {
-    try { return localStorage.getItem('sleepseed_voice_id') || 'iCrDUkL56s3C8sCRl7wb'; } catch { return 'iCrDUkL56s3C8sCRl7wb'; }
+    try {
+      // Check for cloned voice first (saved by SleepSeedCore via sSet)
+      const clonedRaw = localStorage.getItem('sleepseed_voice_id');
+      if (clonedRaw) return clonedRaw;
+      // Also check the sSet format used by SleepSeedCore
+      const keys = Object.keys(localStorage);
+      const voiceKey = keys.find(k => k.includes('voice_id') && !k.includes('sleepseed_voice_id'));
+      if (voiceKey) {
+        try { const parsed = JSON.parse(localStorage.getItem(voiceKey)!); if (parsed?.id) return parsed.id; } catch {}
+      }
+      return 'iCrDUkL56s3C8sCRl7wb';
+    } catch { return 'iCrDUkL56s3C8sCRl7wb'; }
   });
   const [previewingVoice, setPreviewingVoice] = useState<string | null>(null);
   const [chromeVisible, setChromeVisible] = useState(true);
@@ -816,33 +827,33 @@ export default function LibraryStoryReader({ slug }: Props) {
               <div style={{textAlign:'center',color:'var(--cream-faint)',fontStyle:'italic'}}>Translating{'\u2026'}</div>
             ) : isTranslated && learningMode ? (
               <InterlinearText
-                key={`interlinear-${pageIdx}`}
+                key={`interlinear-${pgIndex}`}
                 sentences={translatedPage.sentences}
                 theme="light"
                 foreignStyle={{fontFamily:"var(--hand)",fontSize:'clamp(17px,4.5vw,21px)',color:'var(--cream)',lineHeight:1.75}}
                 englishStyle={{fontFamily:"var(--sans)"}}
-                autoPlay={readAloudActive}
+                autoPlay={readAloudActive && pgIndex === pageIdx}
                 onFinish={() => { if (isLast) setReadAloudActive(false); else goPage(1); }}
               />
             ) : isTranslated ? (
               <ReadAloudText
-                key={`translated-${pageIdx}`}
+                key={`translated-${pgIndex}`}
                 text={translatedPage.sentences.map(s => s.foreign).join(' ')}
                 theme="dark"
                 className="lr-sp-text-inner"
                 hideControls
-                autoPlay={readAloudActive}
+                autoPlay={readAloudActive && pgIndex === pageIdx}
                 onFinish={() => { if (isLast) setReadAloudActive(false); else goPage(1); }}
                 voiceId={selectedVoiceId}
               />
             ) : (
               <ReadAloudText
-                key={`page-${pageIdx}`}
+                key={`page-${pgIndex}`}
                 text={pageText}
                 theme="dark"
                 className="lr-sp-text-inner"
                 hideControls
-                autoPlay={readAloudActive}
+                autoPlay={readAloudActive && pgIndex === pageIdx}
                 onFinish={() => { if (isLast) setReadAloudActive(false); else goPage(1); }}
                 voiceId={selectedVoiceId}
               />

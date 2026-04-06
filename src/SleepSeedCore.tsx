@@ -1781,7 +1781,14 @@ export default function SleepSeed({
       setNightCards(v1Cleaned);
     });
     sGet("style_dna").then(s => { if(s) setStyleDna(s); });
-    sGet("voice_id").then(s => { if(s?.id) setVoiceId(s.id); });
+    sGet("voice_id").then(s => {
+      if(s?.id) {
+        setVoiceId(s.id);
+        setSelectedVoiceId(s.id);
+        // Sync to the key LibraryStoryReader reads
+        try { localStorage.setItem('sleepseed_voice_id', s.id); } catch {}
+      }
+    });
     sGet("onboarded").then(s => { if(s?.v) setHasSeenOnboard(true); });
   },[userId]);
 
@@ -2330,9 +2337,15 @@ export default function SleepSeed({
         if(navigator.canShare?.({files:[file]})) {
           await navigator.share({files:[file], title:book.title, text:`A bedtime story for ${book.heroName} — made with SleepSeed\n\n${imgShareUrl}`, url:imgShareUrl});
         } else {
+          // Desktop: download the card image AND copy the share link
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a"); a.href=url; a.download=file.name; a.click();
           setTimeout(()=>URL.revokeObjectURL(url),2000);
+          // Also copy the interactive story link to clipboard
+          try {
+            await navigator.clipboard.writeText(imgShareUrl);
+            setV8rLinkCopied(true);
+          } catch {}
         }
       },"image/png");
     } catch(err) {
@@ -4017,6 +4030,14 @@ Rules:
                 ()=>{shareStory();setV8rShareOpen(false);}
               )}
             </div>
+            {/* Share link preview — always visible so desktop users can see and copy the URL */}
+            {storyUrl && storyUrl !== BASE_URL && (
+              <div onClick={()=>{navigator.clipboard.writeText(storyUrl).catch(()=>{});setV8rLinkCopied(true);}} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderRadius:12,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)',marginBottom:8,cursor:'pointer',transition:'border-color .15s'}} title="Click to copy">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="rgba(245,184,76,.6)" strokeWidth="1.8" strokeLinecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <span style={{fontSize:10,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.45)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1}}>{storyUrl.replace('https://','')}</span>
+                <span style={{fontSize:8,fontFamily:"'DM Mono',monospace",color:'rgba(245,184,76,.5)',flexShrink:0}}>COPY</span>
+              </div>
+            )}
             {v8rLinkCopied&&<div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(20,216,144,.8)',textAlign:'center',marginBottom:8}}>✓ Link copied to clipboard</div>}
           </div>
         </div>
@@ -4452,7 +4473,7 @@ Rules:
                           border:`1.5px solid ${selectedVoiceId===v.id?"rgba(212,160,48,.7)":"rgba(255,255,255,.1)"}`,
                           background:selectedVoiceId===v.id?"rgba(212,160,48,.1)":"rgba(255,255,255,.04)",
                           transition:"all .15s"}}
-                        onClick={()=>{ setSelectedVoiceId(selectedVoiceId===v.id?null:v.id); }}>
+                        onClick={()=>{ const nv = selectedVoiceId===v.id?null:v.id; setSelectedVoiceId(nv); try{localStorage.setItem('sleepseed_voice_id',nv||'');}catch{}; }}>
                         <div style={{fontSize:16,marginBottom:3}}>{v.emoji}</div>
                         <div style={{fontSize:12,fontWeight:700,color:selectedVoiceId===v.id?"var(--gold2)":"var(--cream)"}}>{v.name}</div>
                         <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>{v.desc}</div>
@@ -4465,15 +4486,20 @@ Rules:
                   {/* Clone voice option */}
                   <div style={{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--dimmer)",marginBottom:8}}>Your Own Voice</div>
                   <button style={{width:"100%",padding:"12px 14px",borderRadius:11,cursor:"pointer",textAlign:"left",
-                    border:`1.5px solid ${voiceId?"rgba(76,200,144,.5)":"rgba(255,255,255,.1)"}`,
-                    background:voiceId?"rgba(76,200,144,.08)":"rgba(255,255,255,.04)",marginBottom:14}}
-                    onClick={()=>{ setShowVoicePicker(false); setVcStage(voiceId?"ready":"idle"); setShowVcModal(true); }}>
+                    border:`1.5px solid ${selectedVoiceId===voiceId&&voiceId?"rgba(76,200,144,.7)":voiceId?"rgba(76,200,144,.35)":"rgba(255,255,255,.1)"}`,
+                    background:selectedVoiceId===voiceId&&voiceId?"rgba(76,200,144,.12)":voiceId?"rgba(76,200,144,.05)":"rgba(255,255,255,.04)",marginBottom:14}}
+                    onClick={()=>{
+                      if(voiceId) { setSelectedVoiceId(voiceId); setShowVoicePicker(false); }
+                      else { setShowVoicePicker(false); setVcStage("idle"); setShowVcModal(true); }
+                    }}>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
                       <span style={{fontSize:22}}>🎙️</span>
                       <div>
-                        <div style={{fontSize:12,fontWeight:700,color:voiceId?"#80d8a8":"var(--cream)"}}>{voiceId?"My Voice ✓":"Record My Voice"}</div>
+                        <div style={{fontSize:12,fontWeight:700,color:selectedVoiceId===voiceId&&voiceId?"#80d8a8":voiceId?"rgba(128,216,168,.6)":"var(--cream)"}}>
+                          {voiceId?(selectedVoiceId===voiceId?"My Voice ✓":"My Voice"):"Record My Voice"}
+                        </div>
                         <div style={{fontSize:9,color:"var(--dimmer)",marginTop:1}}>
-                          {voiceId?"Your cloned voice is active — tap to manage":"Clone your voice in 45 seconds"}
+                          {voiceId?(selectedVoiceId===voiceId?"Your voice is selected":"Tap to use your voice"):"Clone your voice in 45 seconds"}
                         </div>
                       </div>
                     </div>
