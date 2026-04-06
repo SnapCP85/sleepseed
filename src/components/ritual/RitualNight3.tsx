@@ -13,12 +13,15 @@ import { V1_DREAMKEEPERS } from '../../lib/dreamkeepers';
 // ─────────────────────────────────────────────────────────────────────────────
 // RitualNight3 — The Hatching
 // ─────────────────────────────────────────────────────────────────────────────
-// 5-step sequence:
+// 8-step sequence:
 //   0. Tonight Is Different — urgency, egg shaking
-//   1. Pre-Hatch Story — "The Bond" (4 pages)
+//   1. Pre-Hatch Story — "The Choosing" (7 pages)
 //   2. Cinematic Hatch Sequence — multi-phase animation
-//   3. First Contact — DreamKeeper speaks
-//   4. Born Card — memory + completion
+//   3. Name Your DreamKeeper
+//   4. First Contact — DreamKeeper speaks
+//   5. Night Card — memory of Night 3
+//   6. Photo Capture — with creature overlay
+//   7. Born Card — Elder whisper closing
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -42,31 +45,31 @@ const HATCH_CSS = `
 function makeStoryPages(childName: string): StoryPage[] {
   return [
     {
-      text: `"${childName}," the Elder DreamKeeper said quietly. Not like a beginning. Like a continuation. "I need to tell you something true before tonight ends."`,
+      text: `"${childName}." The Elder's voice was low. Direct. Not like a beginning. Like a continuation.`,
       scene: 'elder',
     },
     {
-      text: `"In all the world, there are very few DreamKeepers. They do not choose just anyone. They watch. They listen. They wait until they find a child whose heart is worth growing beside — for the rest of their life."`,
-      scene: 'stars',
+      text: `"In all the world, there are very few DreamKeepers. They do not choose just anyone. They watch. They listen. They wait."`,
+      scene: 'cave',
     },
     {
-      text: `"What makes a DreamKeeper choose someone?" The Elder smiled. "Not how brave they are. Not how loud. It chooses someone whose inner world is worth living inside. Someone whose stories matter." The Elder looked at ${childName}. "That is why it chose you."`,
+      text: `"What makes a DreamKeeper choose someone?" The Elder paused. "Not bravery. Not loudness. It chooses someone whose inner world is worth living inside. Someone whose stories matter." A look at ${childName}. "That is why it chose you."`,
       scene: 'elder',
     },
     {
-      text: `"A DreamKeeper does not just protect your sleep. It carries your memories. It grows alongside you. It will know who you are becoming before you know it yourself. This bond — once made — cannot be undone."`,
+      text: `"A DreamKeeper does not just protect your sleep. It carries your memories. It grows alongside you. It will know who you are becoming before you know it yourself."`,
       scene: 'glow',
     },
     {
-      text: `"Every night you come back, it learns something more. Every story you share becomes part of it. One day — many years from now — you will look at it and see pieces of your whole childhood looking back at you."`,
-      scene: 'stars',
+      text: `"Every night you come back, it learns something more. Every story you share becomes part of it. One day you will look at it and see pieces of your whole childhood looking back at you."`,
+      scene: 'moonlit',
     },
     {
-      text: `The Elder reached out and held the egg very gently. The cracks glowed — warm, impatient, almost there. "Tonight, it hatches. And the moment it does — you will have a DreamKeeper. One that is entirely, permanently yours."`,
-      scene: 'elder',
+      text: `The Elder held the egg gently. The cracks glowed — warm, impatient, almost there. "Tonight, it hatches. And the moment it does — you will have a DreamKeeper. One that is entirely, permanently yours."`,
+      scene: 'warmth',
     },
     {
-      text: `"Are you ready, ${childName}?" The egg shook softly in the Elder's hands. Something inside pushed at the shell. A tiny heartbeat. Then a sound — the faintest sound — like a creature taking its very first breath.`,
+      text: `"Are you ready, ${childName}?" The egg shook softly. Something inside pushed at the shell. A tiny heartbeat. Then a sound — like a creature taking its very first breath.`,
       scene: 'glow',
     },
   ];
@@ -80,19 +83,17 @@ function HatchSequence({ emoji, color, childName, creatureImageSrc, creatureName
   const [phase, setPhase] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Multi-phase timeline
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
-    timers.push(setTimeout(() => setPhase(1), 2000));   // Glow intensifies
-    timers.push(setTimeout(() => setPhase(2), 4000));   // Maximum glow
-    timers.push(setTimeout(() => setPhase(3), 5500));   // BLOOM FLASH
-    timers.push(setTimeout(() => setPhase(4), 7000));   // Creature silhouette
-    timers.push(setTimeout(() => setPhase(5), 9000));   // First words + fireworks
-    timers.push(setTimeout(() => setPhase(6), 12000));  // Full reveal + CTA
+    timers.push(setTimeout(() => setPhase(1), 2000));
+    timers.push(setTimeout(() => setPhase(2), 4000));
+    timers.push(setTimeout(() => setPhase(3), 5500));
+    timers.push(setTimeout(() => setPhase(4), 7000));
+    timers.push(setTimeout(() => setPhase(5), 9000));
+    timers.push(setTimeout(() => setPhase(6), 12000));
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  // Canvas — fireworks celebration from phase 3 onward
   useEffect(() => {
     if (phase < 3 || !canvasRef.current) return;
     const canvas = canvasRef.current;
@@ -129,7 +130,6 @@ function HatchSequence({ emoji, color, childName, creatureImageSrc, creatureName
       }
     }
 
-    // Initial burst from center
     burst(cx, cy, 60);
 
     let animId: number;
@@ -137,7 +137,6 @@ function HatchSequence({ emoji, color, childName, creatureImageSrc, creatureName
       frame++;
       ctx.clearRect(0, 0, w, h);
 
-      // Spawn new bursts periodically (fireworks effect)
       if (frame % 35 === 0 && phase >= 5) {
         const bx = w * 0.2 + Math.random() * w * 0.6;
         const by = h * 0.15 + Math.random() * h * 0.35;
@@ -157,7 +156,6 @@ function HatchSequence({ emoji, color, childName, creatureImageSrc, creatureName
         s.vx *= 0.99;
         const alpha = 1 - s.life / s.maxLife;
 
-        // Draw trail
         for (let t = 0; t < s.trail.length; t++) {
           const ta = alpha * (t / s.trail.length) * 0.4;
           ctx.beginPath();
@@ -167,7 +165,6 @@ function HatchSequence({ emoji, color, childName, creatureImageSrc, creatureName
           ctx.fill();
         }
 
-        // Draw spark
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.size * alpha, 0, Math.PI * 2);
         ctx.fillStyle = s.color;
@@ -199,13 +196,11 @@ function HatchSequence({ emoji, color, childName, creatureImageSrc, creatureName
 
       <StarField />
 
-      {/* Fireworks canvas — runs from phase 3 onward */}
       <canvas ref={canvasRef} style={{
         position: 'absolute', inset: 0, width: '100%', height: '100%',
         zIndex: 10, pointerEvents: 'none',
       }} />
 
-      {/* Expanding light rings on bloom */}
       {phase >= 3 && phase < 6 && [0, 1, 2].map(i => (
         <div key={i} style={{
           position: 'absolute', top: '38%', left: '50%',
@@ -217,7 +212,6 @@ function HatchSequence({ emoji, color, childName, creatureImageSrc, creatureName
         }} />
       ))}
 
-      {/* Bloom flash */}
       {phase >= 3 && phase < 5 && (
         <div style={{
           position: 'absolute', top: '38%', left: '50%', transform: 'translate(-50%,-50%)',
@@ -228,7 +222,6 @@ function HatchSequence({ emoji, color, childName, creatureImageSrc, creatureName
         }} />
       )}
 
-      {/* Egg (visible in phases 0-3) */}
       {phase < 4 && (
         <div style={{
           position: 'relative', zIndex: 5,
@@ -241,7 +234,6 @@ function HatchSequence({ emoji, color, childName, creatureImageSrc, creatureName
         </div>
       )}
 
-      {/* Creature PNG — BIG reveal */}
       {phase >= 4 && (
         <div style={{
           position: 'relative', zIndex: 15,
@@ -255,7 +247,6 @@ function HatchSequence({ emoji, color, childName, creatureImageSrc, creatureName
             : `brightness(1) drop-shadow(0 0 32px ${hexToRgba(color, .5)})`,
           transition: 'filter 2.5s ease-out',
         }}>
-          {/* Celebration glow behind creature */}
           <div style={{
             position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
             width: 280, height: 280, borderRadius: '50%',
@@ -267,7 +258,6 @@ function HatchSequence({ emoji, color, childName, creatureImageSrc, creatureName
         </div>
       )}
 
-      {/* Text */}
       <div style={{
         position: 'absolute', bottom: 80, left: 0, right: 0,
         textAlign: 'center', padding: '0 32px', zIndex: 20,
@@ -314,6 +304,7 @@ function HatchSequence({ emoji, color, childName, creatureImageSrc, creatureName
 
 export default function RitualNight3({ ritual, userId, onComplete }: Props) {
   const [step, setStep] = useState(0);
+  const [n3CardSaved, setN3CardSaved] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
   const [customName, setCustomName] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -337,6 +328,15 @@ export default function RitualNight3({ ritual, userId, onComplete }: Props) {
   // Resolve creature PNG image from emoji
   const creatureMatch = V1_DREAMKEEPERS.find(dk => dk.emoji === emoji);
   const creatureImageSrc = creatureMatch?.imageSrc || '/dreamkeepers/transparent/bunny.png';
+
+  // Card saved animation on step 5
+  useEffect(() => {
+    if (step === 5) {
+      setN3CardSaved(false);
+      const t = setTimeout(() => setN3CardSaved(true), 1200);
+      return () => clearTimeout(t);
+    }
+  }, [step]);
 
   // ── Step 0: Tonight Is Different ───────────────────────────────────────────
   if (step === 0) return (
@@ -364,7 +364,6 @@ export default function RitualNight3({ ritual, userId, onComplete }: Props) {
               Three nights of listening. Three nights of growing. Tonight, it becomes yours.
             </div>
 
-            {/* Progress bar */}
             <div style={{
               width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,.06)',
               marginBottom: 24, overflow: 'hidden',
@@ -422,7 +421,6 @@ export default function RitualNight3({ ritual, userId, onComplete }: Props) {
     const displayName = customName.trim() || creatureName;
     const handleConfirmName = () => {
       const finalName = customName.trim() || creatureName;
-      // Persist custom name into ritual state so it flows through to App.tsx
       const updated = { ...ritual, creatureName: finalName };
       saveRitualState(userId, updated);
       setStep(4);
@@ -458,7 +456,6 @@ export default function RitualNight3({ ritual, userId, onComplete }: Props) {
               Give your DreamKeeper a name — this is who they'll be forever.
             </div>
 
-            {/* Name input */}
             <div style={{
               position: 'relative', maxWidth: 260, margin: '0 auto 8px',
             }}>
@@ -512,7 +509,6 @@ export default function RitualNight3({ ritual, userId, onComplete }: Props) {
       <StarField />
       <div className="ob-ritual-inner">
         <div className="ob-ritual-screen" style={{ animation: 'ob-fadeUp .8s ease-out' }}>
-          {/* Creature image — DreamKeeper PNG */}
           <CreatureImage src={creatureImageSrc} size={140} color={color} animate={true} glowIntensity={0.7} />
 
           <div style={{
@@ -550,7 +546,7 @@ export default function RitualNight3({ ritual, userId, onComplete }: Props) {
     </div>
   );
 
-  // ── Step 5: Night Card + Photo ──────────────────────────────────────────
+  // ── Step 5: Night Card ─────────────────────────────────────────────────────
   if (step === 5) return (
     <div className="ob-ritual">
       <style>{RITUAL_CSS}</style>
@@ -560,75 +556,128 @@ export default function RitualNight3({ ritual, userId, onComplete }: Props) {
           <div style={{
             fontFamily: "'DM Mono',monospace", fontSize: 9, color: 'rgba(255,130,184,.65)',
             letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 16,
+            opacity: n3CardSaved ? 1 : 0, transition: 'opacity .6s ease',
           }}>✦ NIGHT 3 · THE HATCHING NIGHT</div>
 
           <MiniNightCard
             title="The Night Your DreamKeeper Was Born"
-            quote={`After three nights of listening, ${finalCreatureName} chose to become ${childName}'s.`}
+            quote={`Three nights of listening. Three nights of growing. ${finalCreatureName} felt ${childName}'s heart — and chose to stay forever.`}
             emoji={emoji}
             nightNumber={3}
             color={color}
             creatureImageSrc={creatureImageSrc}
           />
 
-          {/* Photo capture */}
-          <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }}
-            onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setPhoto(r.result as string); r.readAsDataURL(f); }}} />
-          <input ref={uploadInputRef} type="file" accept="image/*" style={{ display: 'none' }}
-            onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setPhoto(r.result as string); r.readAsDataURL(f); }}} />
-
-          {photo ? (
-            <div style={{ position: 'relative', margin: '14px auto', width: 200, height: 150, borderRadius: 16, overflow: 'hidden', border: '1.5px solid rgba(255,130,184,.3)', boxShadow: '0 12px 32px rgba(0,0,0,.5)' }}>
-              <img src={photo} alt="Tonight's photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              {/* DreamKeeper overlay on photo */}
-              <div style={{
-                position: 'absolute', bottom: 6, right: 6,
-                width: 44, height: 44, borderRadius: '50%',
-                background: 'rgba(0,0,0,.5)', border: '1.5px solid rgba(246,197,111,.4)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                overflow: 'hidden',
-              }}>
-                <img src={creatureImageSrc} alt={finalCreatureName} style={{ width: 36, height: 36, objectFit: 'contain' }} />
-              </div>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', gap: 10, margin: '14px auto', justifyContent: 'center' }}>
-              <button onClick={() => cameraInputRef.current?.click()} style={{
-                padding: '12px 20px', borderRadius: 18, cursor: 'pointer',
-                border: '1.5px solid rgba(255,130,184,.3)',
-                background: 'linear-gradient(145deg, rgba(255,130,184,.12), rgba(184,161,255,.06))',
-                color: 'rgba(255,130,184,.85)', fontSize: 13, fontWeight: 600,
-                fontFamily: "'Fraunces', serif",
-                boxShadow: '0 4px 16px rgba(255,130,184,.1), inset 0 1px 0 rgba(255,255,255,.06)',
-                display: 'flex', alignItems: 'center', gap: 8,
-              }}>📷 Take a photo</button>
-              <button onClick={() => uploadInputRef.current?.click()} style={{
-                padding: '12px 20px', borderRadius: 18, cursor: 'pointer',
-                border: '1.5px solid rgba(184,161,255,.2)',
-                background: 'linear-gradient(145deg, rgba(184,161,255,.08), rgba(6,9,18,.9))',
-                color: 'rgba(234,242,255,.55)', fontSize: 13, fontWeight: 600,
-                fontFamily: "'Fraunces', serif",
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,.04)',
-                display: 'flex', alignItems: 'center', gap: 8,
-              }}>📁 Upload</button>
-            </div>
-          )}
-
           <div style={{
             fontFamily: "'Lora','Fraunces',Georgia,serif", fontStyle: 'italic',
             fontSize: 12, color: 'rgba(246,197,111,.5)', lineHeight: 1.6,
-            maxWidth: 260, margin: '4px auto 16px',
+            maxWidth: 260, margin: '14px auto 16px',
+            opacity: n3CardSaved ? 1 : 0, transition: 'opacity .6s .3s ease',
           }}>
             This is yours to keep forever.
           </div>
 
-          <RitualCTA label="Save to collection →" variant="pink" onClick={() => setStep(6)} />
+          <div style={{ opacity: n3CardSaved ? 1 : 0, transition: 'opacity .6s .5s ease' }}>
+            <RitualCTA label="Continue" variant="pink" onClick={() => setStep(6)} />
+          </div>
         </div>
       </div>
     </div>
   );
 
-  // ── Step 6: Born Card + Completion ─────────────────────────────────────────
+  // ── Step 6: Photo Capture — with creature overlay ──────────────────────────
+  if (step === 6) {
+    const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => setPhoto(reader.result as string);
+        reader.readAsDataURL(file);
+      }
+    };
+
+    return (
+      <div className="ob-ritual">
+        <style>{RITUAL_CSS}</style>
+        <StarField />
+        <div className="ob-ritual-inner">
+          <div className="ob-ritual-screen">
+            <MoonProgress current={2} total={3} />
+
+            <div style={{
+              fontFamily: "'Fraunces', serif", fontWeight: 300,
+              fontSize: 'clamp(20px,5vw,26px)', lineHeight: 1.3, marginBottom: 8,
+            }}>
+              Capture this moment
+            </div>
+            <div style={{
+              fontFamily: "'Lora','Fraunces',Georgia,serif", fontStyle: 'italic',
+              fontSize: 13, color: 'rgba(244,239,232,.35)', lineHeight: 1.6,
+              maxWidth: 260, margin: '0 auto 24px',
+            }}>
+              Years from now, you'll have this.
+            </div>
+
+            <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={handleFile} />
+            <input ref={uploadInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
+
+            {photo ? (
+              <>
+                <div style={{ position: 'relative', margin: '0 auto 8px', width: 200, height: 150, borderRadius: 16, overflow: 'hidden', border: '1.5px solid rgba(255,130,184,.3)', boxShadow: '0 12px 32px rgba(0,0,0,.5)' }}>
+                  <img src={photo} alt="Tonight's photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  {/* DreamKeeper overlay on photo */}
+                  <div style={{
+                    position: 'absolute', bottom: 6, right: 6,
+                    width: 44, height: 44, borderRadius: '50%',
+                    background: 'rgba(0,0,0,.5)', border: '1.5px solid rgba(246,197,111,.4)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    overflow: 'hidden',
+                  }}>
+                    <img src={creatureImageSrc} alt={finalCreatureName} style={{ width: 36, height: 36, objectFit: 'contain' }} />
+                  </div>
+                </div>
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  background: 'rgba(20,216,144,.08)', border: '1px solid rgba(20,216,144,.2)',
+                  borderRadius: 50, padding: '5px 14px', marginBottom: 16,
+                }}>
+                  <span style={{ fontSize: 10, color: '#14d890' }}>✓</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#14d890', letterSpacing: '.04em' }}>Moment saved</span>
+                </div>
+              </>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <button onClick={() => cameraInputRef.current?.click()} style={{
+                  padding: '14px 32px', borderRadius: 18, cursor: 'pointer',
+                  border: '1.5px solid rgba(255,130,184,.3)',
+                  background: 'linear-gradient(145deg, rgba(255,130,184,.12), rgba(184,161,255,.06))',
+                  color: 'rgba(255,130,184,.85)', fontSize: 14, fontWeight: 600,
+                  fontFamily: "'Fraunces', serif",
+                  boxShadow: '0 4px 16px rgba(255,130,184,.1), inset 0 1px 0 rgba(255,255,255,.06)',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                }}>📷 Take a photo</button>
+                <button onClick={() => uploadInputRef.current?.click()} style={{
+                  background: 'none', border: 'none',
+                  color: 'rgba(234,242,255,.4)', fontSize: 12, cursor: 'pointer',
+                  fontFamily: "'Nunito',system-ui,sans-serif",
+                }}>or choose from photos</button>
+              </div>
+            )}
+
+            <button onClick={() => setStep(7)} style={{
+              background: 'none', border: 'none',
+              color: 'rgba(244,239,232,.25)', fontSize: 12, cursor: 'pointer',
+              fontFamily: "'Nunito',system-ui,sans-serif", marginBottom: 16,
+            }}>Skip for now</button>
+
+            {photo && <RitualCTA label="Save to collection →" variant="pink" onClick={() => setStep(7)} />}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Step 7: Born Card + Elder whisper closing ─────────────────────────────
   return (
     <div className="ob-ritual">
       <style>{RITUAL_CSS}</style>
@@ -650,21 +699,31 @@ export default function RitualNight3({ ritual, userId, onComplete }: Props) {
             }}>Night 3 complete</span>
           </div>
 
+          {/* Creature image */}
+          <CreatureImage src={creatureImageSrc} size={100} color={color} animate={true} glowIntensity={0.5} />
+
           <MiniNightCard
             title="The Night Your DreamKeeper Was Born"
-            quote={`After three nights of listening, ${finalCreatureName} chose to become ${childName}'s.`}
+            quote={`Three nights of listening. Three nights of growing. ${finalCreatureName} felt ${childName}'s heart — and chose to stay forever.`}
             emoji={emoji}
             nightNumber={3}
             color={color}
             creatureImageSrc={creatureImageSrc}
           />
 
+          {/* Elder whisper box */}
           <div style={{
-            fontFamily: "'Lora','Fraunces',Georgia,serif", fontStyle: 'italic',
-            fontSize: 12, color: 'rgba(246,197,111,.55)', lineHeight: 1.6,
-            maxWidth: 260, margin: '8px auto 4px',
+            background: 'rgba(184,161,255,.07)', border: '1px solid rgba(184,161,255,.15)',
+            borderRadius: 16, padding: '14px 18px', marginTop: 12, marginBottom: 12,
+            textAlign: 'left', maxWidth: 310, width: '100%',
           }}>
-            "{finalCreatureName} chose you both."
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: 'rgba(184,161,255,.45)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>THE ELDER WHISPERS</div>
+            <div style={{
+              fontFamily: "'Lora','Fraunces',Georgia,serif", fontStyle: 'italic',
+              fontSize: 13, color: 'rgba(244,239,232,.55)', lineHeight: 1.6,
+            }}>
+              "From tonight on, {finalCreatureName} will be with you. Every story. Every dream. Every night."
+            </div>
           </div>
 
           <div style={{

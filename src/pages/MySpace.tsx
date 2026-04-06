@@ -314,12 +314,24 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
   const ritualDone = userId ? isRitualComplete(userId) : true;
   const ritualState = userId && !ritualDone ? getRitualState(userId) : null;
   const nextRitualNight = ritualState?.currentNight || 1;
-  const isPreHatchEgg = !ritualDone || companionCreature?.creatureType === 'spirit' || companionCreature?.creatureEmoji === '\uD83E\uDD5A';
-  const dk = isPreHatchEgg ? null : resolveDreamKeeper(companionCreature);
+
+  // If ritual is done but companionCreature is null, try resolving from ritual state
+  const ritualState2 = userId && ritualDone && !companionCreature ? getRitualState(userId) : null;
+  const ritualFallbackDk = ritualState2?.creatureEmoji ? V1_DREAMKEEPERS.find(dk => dk.emoji === ritualState2.creatureEmoji) : null;
+  const effectiveCompanion = companionCreature || (ritualFallbackDk ? {
+    id: 'ritual-fallback',
+    name: ritualState2?.creatureName || ritualFallbackDk.name,
+    creatureEmoji: ritualFallbackDk.emoji,
+    creatureType: ritualFallbackDk.animal,
+    color: ritualState2?.creatureColor || ritualFallbackDk.color,
+  } as HatchedCreature : null);
+
+  const isPreHatchEgg = !ritualDone || effectiveCompanion?.creatureType === 'spirit' || effectiveCompanion?.creatureEmoji === '\uD83E\uDD5A';
+  const dk = isPreHatchEgg ? null : resolveDreamKeeper(effectiveCompanion);
   const creatureImageSrc = dk?.imageSrc;
-  const creatureName = isPreHatchEgg ? (companionCreature?.name || 'Dream Egg') : (companionCreature?.name || dk?.name || '');
-  const creatureColor = companionCreature?.color || dk?.color || '#F5B84C';
-  const creatureEmoji = isPreHatchEgg ? '\uD83E\uDD5A' : (companionCreature?.creatureEmoji || dk?.emoji || '\uD83C\uDF19');
+  const creatureName = isPreHatchEgg ? (effectiveCompanion?.name || 'Dream Egg') : (effectiveCompanion?.name || dk?.name || '');
+  const creatureColor = effectiveCompanion?.color || dk?.color || '#F5B84C';
+  const creatureEmoji = isPreHatchEgg ? '\uD83E\uDD5A' : (effectiveCompanion?.creatureEmoji || dk?.emoji || '\uD83C\uDF19');
   const rgb = hexToRgb(creatureColor);
 
   const greeting = useMemo(() => {

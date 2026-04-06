@@ -75,8 +75,17 @@ export default function CinematicTransition({ childName, onComplete }: Props) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const W = canvas.width;
-    const H = canvas.height;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const logicalW = rect.width || 345;
+    const logicalH = rect.height || 748;
+    canvas.width = Math.round(logicalW * dpr);
+    canvas.height = Math.round(logicalH * dpr);
+    canvas.style.width = `${logicalW}px`;
+    canvas.style.height = `${logicalH}px`;
+    ctx.scale(dpr, dpr);
+    const W = logicalW;
+    const H = logicalH;
     const { dots: DOTS, lines: LINES } = buildConstellation(childName, W, 245);
     const bgStars = Array.from({ length: 80 }, () => ({
       x: Math.random() * W, y: Math.random() * H,
@@ -237,8 +246,6 @@ export default function CinematicTransition({ childName, onComplete }: Props) {
     <div style={{ position: 'absolute', inset: 0, background: '#030609', overflow: 'hidden' }}>
       <canvas
         ref={canvasRef}
-        width={345}
-        height={748}
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }}
       />
       <div style={{

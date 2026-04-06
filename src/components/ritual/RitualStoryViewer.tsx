@@ -14,7 +14,7 @@ import DreamEgg from '../onboarding/DreamEgg';
 
 export interface StoryPage {
   text: string;
-  scene?: 'stars' | 'elder' | 'egg' | 'glow' | 'forest' | 'dreamlight' | 'eggcrack';
+  scene?: 'stars' | 'elder' | 'egg' | 'glow' | 'forest' | 'dreamlight' | 'eggcrack' | 'moonlit' | 'warmth' | 'cave';
 }
 
 interface Props {
@@ -126,6 +126,84 @@ function SceneVisual({ scene, emoji, color }: { scene: string; emoji: string; co
         <div style={{ width: 130, height: 130, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,240,180,1) 0%, rgba(246,197,111,.7) 30%, rgba(246,197,111,.2) 60%, transparent)', filter: 'blur(22px)', animation: 'ob-flicker 2.5s ease-in-out infinite' }} />
         <div style={{ position: 'absolute', width: 30, height: 30, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,220,1), rgba(246,197,111,.8) 60%)', boxShadow: '0 0 40px rgba(246,197,111,1), 0 0 80px rgba(246,197,111,.5)', animation: 'ob-flicker 2.5s .3s ease-in-out infinite' }} />
       </div>
+    </div>
+  );
+
+  if (scene === 'moonlit') return (
+    <div style={{ ...base, background: 'radial-gradient(ellipse at 50% 30%, rgba(20,30,70,.9), #060912 65%)' }}>
+      <svg style={{ position: 'absolute', inset: 0 }} viewBox="0 0 345 388" width="100%" height="100%">{stars(20, 260)}</svg>
+      {/* Moon */}
+      <div style={{
+        position: 'absolute', top: 30, right: 40,
+        width: 50, height: 50, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(255,248,220,.95), rgba(246,197,111,.6) 60%, transparent)',
+        boxShadow: '0 0 40px rgba(246,197,111,.4), 0 0 80px rgba(246,197,111,.15)',
+      }} />
+      {/* Horizon line */}
+      <div style={{
+        position: 'absolute', bottom: '25%', left: 0, right: 0,
+        height: 1, background: 'rgba(200,210,255,.12)',
+      }} />
+      {/* Ground glow */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: '25%',
+        background: 'linear-gradient(to bottom, transparent, rgba(40,60,140,.15))',
+      }} />
+    </div>
+  );
+
+  if (scene === 'warmth') return (
+    <div style={{ ...base, background: 'radial-gradient(ellipse at 50% 35%, rgba(60,30,10,.8), #060912 65%)' }}>
+      <svg style={{ position: 'absolute', inset: 0 }} viewBox="0 0 345 388" width="100%" height="100%">{stars(10, 200)}</svg>
+      {/* Warm ambient glow */}
+      <div style={{
+        position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%,-50%)',
+        width: 250, height: 250, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(246,197,111,.25), rgba(200,100,30,.1) 50%, transparent 70%)',
+        filter: 'blur(20px)', animation: 'ob-glowPulse 3s ease-in-out infinite',
+      }} />
+      {/* Floating embers */}
+      {[0, 1, 2, 3, 4].map(i => (
+        <div key={i} style={{
+          position: 'absolute',
+          left: `${20 + i * 16}%`, top: `${35 + (i % 3) * 10}%`,
+          width: 3 + (i % 2), height: 3 + (i % 2),
+          borderRadius: '50%',
+          background: i % 2 === 0 ? 'rgba(255,180,80,.6)' : 'rgba(255,220,140,.5)',
+          boxShadow: `0 0 6px rgba(255,180,80,.4)`,
+          animation: `ob-floatY ${2 + i * 0.5}s ${i * 0.4}s ease-in-out infinite`,
+          pointerEvents: 'none',
+        }} />
+      ))}
+    </div>
+  );
+
+  if (scene === 'cave') return (
+    <div style={{ ...base, background: 'radial-gradient(ellipse at 50% 35%, rgba(30,15,50,.9), #060912 65%)' }}>
+      {/* Bioluminescent spots */}
+      {[
+        { x: 15, y: 30, c: 'rgba(100,200,255,.4)' },
+        { x: 70, y: 25, c: 'rgba(150,120,255,.35)' },
+        { x: 40, y: 55, c: 'rgba(80,220,180,.3)' },
+        { x: 85, y: 50, c: 'rgba(200,150,255,.3)' },
+        { x: 25, y: 70, c: 'rgba(100,200,255,.25)' },
+        { x: 60, y: 75, c: 'rgba(150,220,180,.3)' },
+      ].map((spot, i) => (
+        <div key={i} style={{
+          position: 'absolute', left: `${spot.x}%`, top: `${spot.y}%`,
+          width: 8 + (i % 3) * 4, height: 8 + (i % 3) * 4,
+          borderRadius: '50%', background: spot.c,
+          boxShadow: `0 0 12px ${spot.c}`,
+          animation: `ob-breathe ${2.5 + i * 0.3}s ${i * 0.5}s ease-in-out infinite`,
+          pointerEvents: 'none',
+        }} />
+      ))}
+      {/* Cave arch silhouette */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: '40%',
+        background: 'radial-gradient(ellipse 70% 100% at 50% 0%, rgba(10,5,20,.95) 60%, transparent)',
+        pointerEvents: 'none',
+      }} />
     </div>
   );
 

@@ -52,7 +52,7 @@ function saveRitualNightCard(
 }
 
 export default function OnboardingRitual({ onRitualComplete, onExit, demoWalkthrough }: Props & { demoWalkthrough?: boolean }) {
-  const { user } = useApp();
+  const { user, setView } = useApp();
   const [ritual, setRitual] = useState<RitualState | null>(null);
 
   useEffect(() => {
@@ -73,6 +73,7 @@ export default function OnboardingRitual({ onRitualComplete, onExit, demoWalkthr
     return (
       <RitualNight1
         ritual={ritual}
+        onCreateStory={() => { onExit(); setTimeout(() => setView('story-wizard' as any), 100); }}
         onComplete={(smileAnswer) => {
           const updated = completeNight1(user.id, smileAnswer);
           setRitual(updated);
@@ -97,6 +98,7 @@ export default function OnboardingRitual({ onRitualComplete, onExit, demoWalkthr
     return (
       <RitualNight2
         ritual={ritual}
+        onCreateStory={() => { onExit(); setTimeout(() => setView('story-wizard' as any), 100); }}
         onComplete={(talentAnswer) => {
           const updated = completeNight2(user.id, talentAnswer);
           setRitual(updated);
@@ -104,9 +106,9 @@ export default function OnboardingRitual({ onRitualComplete, onExit, demoWalkthr
           // Save Night 2 card
           saveRitualNightCard(
             user.id, 2,
-            'The Night of the Dreamlight',
-            'The Night of the Dreamlight',
-            `${ritual.childName || 'They'} shared a gift — ${talentAnswer} — and the Dreamlight burned brighter.`,
+            'The Night the Egg Remembered',
+            'The Night the Egg Remembered',
+            `${ritual.childName || 'They'} shared a gift — ${talentAnswer} — and the egg held on tighter.`,
             ritual,
           );
 

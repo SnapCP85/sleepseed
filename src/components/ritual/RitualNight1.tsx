@@ -10,21 +10,23 @@ import ElderDreamKeeper from '../onboarding/ElderDreamKeeper';
 // ─────────────────────────────────────────────────────────────────────────────
 // RitualNight1 — The Arrival
 // ─────────────────────────────────────────────────────────────────────────────
-// 9-step sequence:
+// 10-step sequence:
 //   0. Welcome — "Your DreamKeeper is beginning to awaken…"
 //   1. Lore — DreamKeepers explained
 //   2. Share — "What made you smile today?"
 //   3. Egg Responds — DreamKeeper reacts to answer
-//   4. Story — "The Night You Were Chosen" (4 pages)
+//   4. Story — "The Night You Were Chosen" (7 pages)
 //   5. Egg Gifted — "Your first gift has arrived"
 //   6. First Crack — something is happening inside
-//   7. Night Card — memory of Night 1
-//   8. End Night — goodnight
+//   7. Photo — capture this moment
+//   8. Night Card — memory of Night 1
+//   9. End Night — goodnight
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface Props {
   ritual: RitualState;
   onComplete: (smileAnswer: string) => void;
+  onCreateStory?: () => void;
 }
 
 const SMILE_OPTIONS = [
@@ -35,6 +37,16 @@ const SMILE_OPTIONS = [
   { emoji: '🌳', label: 'Being outside' },
   { emoji: '✨', label: 'Something else' },
 ];
+
+// Answer-responsive glow colors for the egg
+const ANSWER_GLOWS: Record<string, string> = {
+  'Playing': 'rgba(100,180,255,.25)',
+  'A hug': 'rgba(255,180,200,.25)',
+  'My pet': 'rgba(180,220,140,.25)',
+  'Something silly': 'rgba(255,220,100,.25)',
+  'Being outside': 'rgba(140,220,180,.25)',
+  'Something else': 'rgba(200,180,255,.25)',
+};
 
 function makeStoryPages(childName: string, smileAnswer: string): StoryPage[] {
   return [
@@ -47,12 +59,12 @@ function makeStoryPages(childName: string, smileAnswer: string): StoryPage[] {
       scene: 'elder',
     },
     {
-      text: `"Hello, ${childName}," said the Elder in a voice as warm as a blanket. "DreamKeepers watch over children while they sleep. We protect their wonder, keep their memories close, and help brave hearts rest."`,
+      text: `"Hello, ${childName}." The Elder's voice was like a blanket pulled close. "DreamKeepers watch over children while they sleep. We protect their wonder, keep their memories close, and help brave hearts rest."`,
       scene: 'elder',
     },
     {
-      text: `"Every DreamKeeper belongs to one special child," the Elder said. "But first, they must learn who that child is. They listen to stories. They listen to the little truths that make a person who they are."`,
-      scene: 'stars',
+      text: `"One child. That's all we get." The Elder's eyes were steady. "Each DreamKeeper belongs to one special child. But first, they must learn who that child is. They listen to stories. They listen to the little truths that make a person who they are."`,
+      scene: 'elder',
     },
     {
       text: `The Elder looked closely at ${childName} and smiled softly. "Tonight, I heard that something made you smile: ${smileAnswer}. That light belongs to you."`,
@@ -69,15 +81,16 @@ function makeStoryPages(childName: string, smileAnswer: string): StoryPage[] {
   ];
 }
 
-export default function RitualNight1({ ritual, onComplete }: Props) {
+export default function RitualNight1({ ritual, onComplete, onCreateStory }: Props) {
   const [step, setStep] = useState(0);
   const [answer, setAnswer] = useState('');
   const [eggReacted, setEggReacted] = useState(false);
+  const [cardSaved, setCardSaved] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
 
-  // Resolve child name — check ritual state first, then localStorage profile
+  // Resolve child name
   const childName = ritual.childName || (() => {
     try {
       const keys = Object.keys(localStorage);
@@ -99,6 +112,15 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
     }
   }, [step]);
 
+  // Card saved animation on step 8 (Night Card)
+  useEffect(() => {
+    if (step === 8) {
+      setCardSaved(false);
+      const t = setTimeout(() => setCardSaved(true), 1200);
+      return () => clearTimeout(t);
+    }
+  }, [step]);
+
   // ── Step 0: Welcome ────────────────────────────────────────────────────────
   if (step === 0) return (
     <div className="ob-ritual">
@@ -110,7 +132,6 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
           <NightLabel night={1} />
           <Thread text="Your DreamKeeper is beginning to awaken…" />
 
-          {/* Egg only — Elder is introduced on the lore screen */}
           <div style={{ marginBottom: 16 }}>
             <EggDisplay state="idle" size={110} color={color} />
           </div>
@@ -148,7 +169,6 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
         <div className="ob-ritual-screen">
           <MoonProgress current={0} total={3} />
 
-          {/* Elder with animation — compact */}
           <div style={{ animation: 'ob-fadeIn .6s ease both', marginBottom: 8 }}>
             <ElderDreamKeeper scale={0.48} animate={true} />
           </div>
@@ -194,6 +214,22 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
             letterSpacing: '.5px', marginBottom: 16,
           }}>
             THE EGG IS LISTENING
+          </div>
+
+          {/* Answer-responsive egg glow */}
+          <div style={{ position: 'relative', marginBottom: 16 }}>
+            {answer && ANSWER_GLOWS[answer] && (
+              <div style={{
+                position: 'absolute', top: '50%', left: '50%',
+                transform: 'translate(-50%,-50%)',
+                width: 140, height: 140, borderRadius: '50%',
+                background: `radial-gradient(circle, ${ANSWER_GLOWS[answer]}, transparent 70%)`,
+                filter: 'blur(16px)', pointerEvents: 'none',
+                animation: 'ob-glowPulse 2s ease-in-out infinite',
+                transition: 'background .5s ease',
+              }} />
+            )}
+            <EggDisplay state="idle" size={70} color={color} />
           </div>
 
           <ChipGrid options={SMILE_OPTIONS} selected={answer} onSelect={setAnswer} color={color} />
@@ -271,10 +307,8 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
         <div className="ob-ritual-screen">
           <MoonProgress current={0} total={3} />
 
-          {/* Elder + small egg — Elder holds egg */}
           <div style={{ position: 'relative', marginBottom: 10 }}>
             <ElderDreamKeeper scale={0.48} animate={true} />
-            {/* Small egg overlapping onto Elder's lower body */}
             <div style={{
               position: 'absolute', bottom: -10, left: '50%', transform: 'translateX(-50%)',
               zIndex: 2, cursor: 'pointer',
@@ -283,13 +317,11 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
             </div>
           </div>
 
-          {/* Elder speech — compact */}
           <SpeechBubble
             speaker="THE ELDER DREAMKEEPER"
             text={`"This egg will become your DreamKeeper. It listens to what you share — that's how it knows who it belongs to."`}
           />
 
-          {/* Echo card */}
           <div style={{
             padding: '8px 14px', background: 'rgba(184,161,255,.07)',
             border: '1px solid rgba(184,161,255,.18)', borderRadius: 14,
@@ -316,13 +348,11 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
         <div className="ob-ritual-screen">
           <MoonProgress current={0} total={3} />
 
-          {/* Speech bubble */}
           <SpeechBubble
             speaker="THE ELDER DREAMKEEPER"
             text={`"That crack appeared because you were here tonight. The egg heard about ${answer || 'something special'}. It's holding onto that."`}
           />
 
-          {/* Tappable egg — pulses to invite tap */}
           <div onClick={() => setStep(7)} style={{
             cursor: 'pointer', marginTop: 4, marginBottom: 4,
             animation: 'ob-heartbeat 3.5s ease-in-out infinite',
@@ -331,7 +361,6 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
             <EggDisplay state="cracked" size={110} color={color} />
           </div>
 
-          {/* Progress bar */}
           <div style={{
             width: '100%', maxWidth: 260, padding: '8px 14px',
             background: 'rgba(246,197,111,.06)', border: '1px solid rgba(246,197,111,.15)',
@@ -346,7 +375,6 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
             </div>
           </div>
 
-          {/* Gold hint text instead of button */}
           <div style={{
             fontFamily: "'DM Mono',monospace", fontSize: 10,
             color: 'rgba(246,197,111,.65)', letterSpacing: '1.8px', textTransform: 'uppercase',
@@ -358,8 +386,90 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
     </div>
   );
 
-  // ── Step 7: Night Card + Photo ──────────────────────────────────────────
-  if (step === 7) return (
+  // ── Step 7: Photo Capture ──────────────────────────────────────────────────
+  if (step === 7) {
+    const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => setPhoto(reader.result as string);
+        reader.readAsDataURL(file);
+      }
+    };
+
+    return (
+      <div className="ob-ritual">
+        <style>{RITUAL_CSS}</style>
+        <StarField />
+        <div className="ob-ritual-inner">
+          <div className="ob-ritual-screen">
+            <MoonProgress current={0} total={3} />
+
+            <div style={{
+              fontFamily: "'Fraunces', serif", fontWeight: 300,
+              fontSize: 'clamp(20px,5vw,26px)', lineHeight: 1.3, marginBottom: 8,
+            }}>
+              Capture this moment
+            </div>
+            <div style={{
+              fontFamily: "'Lora','Fraunces',Georgia,serif", fontStyle: 'italic',
+              fontSize: 13, color: 'rgba(244,239,232,.35)', lineHeight: 1.6,
+              maxWidth: 260, margin: '0 auto 24px',
+            }}>
+              Years from now, you'll have this.
+            </div>
+
+            <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={handleFile} />
+            <input ref={uploadInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
+
+            {photo ? (
+              <>
+                <div style={{ margin: '0 auto 8px', width: 200, height: 150, borderRadius: 16, overflow: 'hidden', border: '1.5px solid rgba(246,197,111,.3)', boxShadow: '0 12px 32px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.04)' }}>
+                  <img src={photo} alt="Tonight's photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  background: 'rgba(20,216,144,.08)', border: '1px solid rgba(20,216,144,.2)',
+                  borderRadius: 50, padding: '5px 14px', marginBottom: 16,
+                }}>
+                  <span style={{ fontSize: 10, color: '#14d890' }}>✓</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#14d890', letterSpacing: '.04em' }}>Moment saved</span>
+                </div>
+              </>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <button onClick={() => cameraInputRef.current?.click()} style={{
+                  padding: '14px 32px', borderRadius: 18, cursor: 'pointer',
+                  border: '1.5px solid rgba(246,197,111,.3)',
+                  background: 'linear-gradient(145deg, rgba(246,197,111,.12), rgba(184,161,255,.06))',
+                  color: 'rgba(246,197,111,.85)', fontSize: 14, fontWeight: 600,
+                  fontFamily: "'Fraunces', serif", letterSpacing: '-0.1px',
+                  boxShadow: '0 4px 16px rgba(246,197,111,.1), inset 0 1px 0 rgba(255,255,255,.06)',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                }}>📷 Take a photo</button>
+                <button onClick={() => uploadInputRef.current?.click()} style={{
+                  background: 'none', border: 'none',
+                  color: 'rgba(234,242,255,.4)', fontSize: 12, cursor: 'pointer',
+                  fontFamily: "'Nunito',system-ui,sans-serif",
+                }}>or choose from photos</button>
+              </div>
+            )}
+
+            <button onClick={() => setStep(8)} style={{
+              background: 'none', border: 'none',
+              color: 'rgba(244,239,232,.25)', fontSize: 12, cursor: 'pointer',
+              fontFamily: "'Nunito',system-ui,sans-serif", marginBottom: 16,
+            }}>Skip for now</button>
+
+            {photo && <RitualCTA label="Continue" onClick={() => setStep(8)} />}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Step 8: Night Card ─────────────────────────────────────────────────────
+  if (step === 8) return (
     <div className="ob-ritual">
       <style>{RITUAL_CSS}</style>
       <StarField />
@@ -370,89 +480,35 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
           <div style={{
             fontFamily: "'DM Mono',monospace", fontSize: 9, color: 'rgba(20,216,144,.5)',
             letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 20,
+            opacity: cardSaved ? 1 : 0, transition: 'opacity .6s ease',
           }}>Tonight's memory · saved</div>
 
           <MiniNightCard
             title="The Night You Were Chosen"
-            quote={`${childName} said "${answer || 'something special'}" — and the egg began to glow.`}
+            quote={`${childName} said "${answer || 'something special'}" made them smile — and deep inside the egg, something stirred. A tiny glow. A first connection.`}
             emoji={emoji}
             nightNumber={1}
             color={color}
           />
 
-          {/* Photo capture — separate inputs for camera vs upload */}
-          <input
-            ref={cameraInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            style={{ display: 'none' }}
-            onChange={e => {
-              const file = e.target.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = () => setPhoto(reader.result as string);
-                reader.readAsDataURL(file);
-              }
-            }}
-          />
-          <input
-            ref={uploadInputRef}
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={e => {
-              const file = e.target.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = () => setPhoto(reader.result as string);
-                reader.readAsDataURL(file);
-              }
-            }}
-          />
-
-          {photo ? (
-            <div style={{ margin: '14px auto', width: 200, height: 150, borderRadius: 16, overflow: 'hidden', border: '1.5px solid rgba(246,197,111,.3)', boxShadow: '0 12px 32px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.04)' }}>
-              <img src={photo} alt="Tonight's photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </div>
-          ) : (
-            <div style={{ display: 'flex', gap: 10, margin: '14px auto', justifyContent: 'center' }}>
-              <button onClick={() => cameraInputRef.current?.click()} style={{
-                padding: '12px 20px', borderRadius: 18, cursor: 'pointer',
-                border: '1.5px solid rgba(246,197,111,.3)',
-                background: 'linear-gradient(145deg, rgba(246,197,111,.12), rgba(184,161,255,.06))',
-                color: 'rgba(246,197,111,.85)', fontSize: 13, fontWeight: 600,
-                fontFamily: "'Fraunces', serif", letterSpacing: '-0.1px',
-                boxShadow: '0 4px 16px rgba(246,197,111,.1), inset 0 1px 0 rgba(255,255,255,.06)',
-                display: 'flex', alignItems: 'center', gap: 8,
-              }}>📷 Take a photo</button>
-              <button onClick={() => uploadInputRef.current?.click()} style={{
-                padding: '12px 20px', borderRadius: 18, cursor: 'pointer',
-                border: '1.5px solid rgba(184,161,255,.2)',
-                background: 'linear-gradient(145deg, rgba(184,161,255,.08), rgba(6,9,18,.9))',
-                color: 'rgba(234,242,255,.55)', fontSize: 13, fontWeight: 600,
-                fontFamily: "'Fraunces', serif", letterSpacing: '-0.1px',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,.04)',
-                display: 'flex', alignItems: 'center', gap: 8,
-              }}>📁 Upload</button>
-            </div>
-          )}
-
           <div style={{
             fontFamily: "'Lora','Fraunces',Georgia,serif", fontStyle: 'italic',
             fontSize: 12, color: 'rgba(246,197,111,.55)', lineHeight: 1.6,
-            maxWidth: 260, margin: '4px auto 20px',
+            maxWidth: 260, margin: '14px auto 20px',
+            opacity: cardSaved ? 1 : 0, transition: 'opacity .6s .3s ease',
           }}>
-            Every night together creates a memory worth keeping.
+            Your first night together, remembered forever.
           </div>
 
-          <RitualCTA label="Continue" onClick={() => setStep(8)} />
+          <div style={{ opacity: cardSaved ? 1 : 0, transition: 'opacity .6s .5s ease' }}>
+            <RitualCTA label="Continue" onClick={() => setStep(9)} />
+          </div>
         </div>
       </div>
     </div>
   );
 
-  // ── Step 8: End Night ──────────────────────────────────────────────────────
+  // ── Step 9: End Night — Goodnight ──────────────────────────────────────────
   return (
     <div className="ob-ritual">
       <style>{RITUAL_CSS}</style>
@@ -468,11 +524,22 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
             }}>
               Goodnight, {childName}
             </div>
+
+            {/* Elder whisper box */}
             <div style={{
-              fontSize: 13, color: 'rgba(244,239,232,.4)', lineHeight: 1.7, marginBottom: 8,
+              background: 'rgba(184,161,255,.07)', border: '1px solid rgba(184,161,255,.15)',
+              borderRadius: 16, padding: '14px 18px', marginBottom: 16,
+              textAlign: 'left',
             }}>
-              Your egg will be here waiting. Come back tomorrow night — it will remember you.
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: 'rgba(184,161,255,.45)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>THE ELDER WHISPERS</div>
+              <div style={{
+                fontFamily: "'Lora','Fraunces',Georgia,serif", fontStyle: 'italic',
+                fontSize: 13, color: 'rgba(244,239,232,.55)', lineHeight: 1.6,
+              }}>
+                "Sleep well, {childName}. The egg will dream about what you shared tonight."
+              </div>
             </div>
+
             <div style={{
               fontFamily: "'DM Mono',monospace", fontSize: 10,
               color: 'rgba(244,239,232,.2)', marginBottom: 28, letterSpacing: '.03em',
@@ -486,6 +553,15 @@ export default function RitualNight1({ ritual, onComplete }: Props) {
             subtitle="Sweet dreams"
             onClick={() => onComplete(answer || 'something special')}
           />
+
+          {onCreateStory && (
+            <button onClick={onCreateStory} style={{
+              background: 'none', border: 'none',
+              color: 'rgba(246,197,111,.45)', fontSize: 13, cursor: 'pointer',
+              fontFamily: "'Lora','Fraunces',Georgia,serif", fontStyle: 'italic',
+              marginTop: 16,
+            }}>Want more? Create your own story</button>
+          )}
         </div>
       </div>
     </div>

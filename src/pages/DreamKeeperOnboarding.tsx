@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   FEELINGS,
   V1_DREAMKEEPERS,
@@ -34,6 +34,17 @@ interface Props {
   onBack?: () => void;
 }
 
+// ── Feeling Descriptions ────────────────────────────────────────────────────
+
+const FEELING_DESCRIPTIONS: Record<string, string> = {
+  safe: 'like nothing can hurt you',
+  calm: 'like a quiet river',
+  brave: 'like you can do anything',
+  curious: 'like there\'s something to discover',
+  cozy: 'like a warm blanket',
+  sleepy: 'like floating on a cloud',
+};
+
 // ── CSS ──────────────────────────────────────────────────────────────────────
 
 const CSS = `
@@ -50,6 +61,8 @@ const CSS = `
 @keyframes dko-glowPulse{0%,100%{box-shadow:0 0 30px rgba(var(--dk-rgb,245,184,76),.15)}50%{box-shadow:0 0 60px rgba(var(--dk-rgb,245,184,76),.35)}}
 @keyframes dko-chipPop{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1.04)}}
 @keyframes dko-cardIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes dko-crossfadeIn{from{opacity:0}to{opacity:1}}
+.dko-crossfade{animation:dko-crossfadeIn .8s ease-out}
 
 .dko{position:fixed;inset:0;z-index:1000;background:#060912;font-family:'Nunito',system-ui,sans-serif;color:#F4EFE8;overflow-y:auto;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 .dko-inner{width:100%;max-width:430px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;position:relative;padding:0 24px}
@@ -78,6 +91,7 @@ export default function DreamKeeperOnboarding({ childName, onComplete, onBack }:
   const [matchedCreature, setMatchedCreature] = useState<DreamKeeper | null>(null);
   const [confirmedCreature, setConfirmedCreature] = useState<DreamKeeper | null>(null);
   const [revealDone, setRevealDone] = useState(false);
+  const [meetReady, setMeetReady] = useState(false);
 
   // Feeling used to arrive at the current match (for the result)
   const [usedFeeling, setUsedFeeling] = useState<string>('safe');
@@ -110,7 +124,13 @@ export default function DreamKeeperOnboarding({ childName, onComplete, onBack }:
   );
 
   // ── Navigation ─────────────────────────────────────────────────────────────
-  const goStep = useCallback((s: number) => setStep(s), []);
+  const goStep = useCallback((s: number) => {
+    if (s === 3) {
+      setMeetReady(false);
+      setTimeout(() => setMeetReady(true), 50);
+    }
+    setStep(s);
+  }, []);
 
   // ── Feeling selection handler ──────────────────────────────────────────────
   const handleFeelingSelect = (feeling: Feeling) => {
@@ -257,9 +277,17 @@ export default function DreamKeeperOnboarding({ childName, onComplete, onBack }:
             <div style={{
               fontFamily: "'Fraunces',Georgia,serif", fontWeight: 300,
               fontSize: 'clamp(22px,5.5vw,28px)', lineHeight: 1.3,
-              textAlign: 'center', marginBottom: 28,
+              textAlign: 'center', marginBottom: 6,
             }}>
-              How do you want to feel tonight?
+              Tonight, what would feel best?
+            </div>
+            <div style={{
+              fontFamily: "'Lora','Fraunces',Georgia,serif",
+              fontStyle: 'italic', fontSize: 13, fontWeight: 400,
+              color: 'rgba(244,239,232,.4)', lineHeight: 1.6,
+              textAlign: 'center', marginBottom: 24,
+            }}>
+              Pick the feeling that sounds like tonight
             </div>
 
             {/* 2x3 Grid */}
@@ -300,6 +328,18 @@ export default function DreamKeeperOnboarding({ childName, onComplete, onBack }:
                     }}>
                       {f.label}
                     </div>
+                    {FEELING_DESCRIPTIONS[f.id] && (
+                      <div style={{
+                        fontSize: 10.5, fontWeight: 400,
+                        fontFamily: "'Lora','Fraunces',Georgia,serif",
+                        fontStyle: 'italic',
+                        color: selected ? `rgba(${f.color},.7)` : 'rgba(244,239,232,.28)',
+                        transition: 'color .2s',
+                        marginTop: 3, lineHeight: 1.3,
+                      }}>
+                        {FEELING_DESCRIPTIONS[f.id]}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -357,9 +397,9 @@ export default function DreamKeeperOnboarding({ childName, onComplete, onBack }:
         <style>{CSS}</style>
         {starField}
         <div className="dko-inner">
-          <div className="dko-screen" style={{
+          <div className={`dko-screen${meetReady ? ' dko-crossfade' : ''}`} style={{
             justifyContent: 'center', alignItems: 'center', textAlign: 'center',
-            animation: 'dko-fadeUp .6s ease-out',
+            opacity: meetReady ? 1 : 0,
           }}>
             {/* Creature image */}
             <div style={{
@@ -373,6 +413,19 @@ export default function DreamKeeperOnboarding({ childName, onComplete, onBack }:
                 width: '100%', height: '100%', objectFit: 'contain',
                 filter: `drop-shadow(0 0 30px rgba(${rgb},.35))`,
               }} />
+            </div>
+
+            {/* Matched badge */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: `rgba(${rgb},.08)`, border: `1px solid rgba(${rgb},.2)`,
+              borderRadius: 50, padding: '5px 14px', marginBottom: 10,
+            }}>
+              <span style={{ fontSize: 10, color: `rgb(${rgb})` }}>&#10022;</span>
+              <span style={{
+                fontFamily: "'DM Mono',monospace", fontSize: 10, color: `rgba(${rgb},.7)`,
+                letterSpacing: '.04em',
+              }}>Matched for {childName}</span>
             </div>
 
             {/* Name + virtue */}
@@ -452,7 +505,7 @@ export default function DreamKeeperOnboarding({ childName, onComplete, onBack }:
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(244,239,232,.5)')}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(244,239,232,.3)')}
             >
-              Show me others
+              Meet a few others
             </button>
           </div>
         </div>
@@ -463,40 +516,33 @@ export default function DreamKeeperOnboarding({ childName, onComplete, onBack }:
   // ══════════════════════════════════════════════════════════════════════════
   // STEP 4 — Browse All DreamKeepers
   // ══════════════════════════════════════════════════════════════════════════
-  if (step === 4) {
+  if (step === 4 && matchedCreature) {
+    const alts = getAlternates(usedFeeling, matchedCreature.id);
+    const browseList = [matchedCreature, ...alts.slice(0, 2)];
     return (
       <div className="dko">
         <style>{CSS}</style>
         {starField}
         <div className="dko-inner">
           <button className="dko-back" onClick={() => goStep(3)} aria-label="Back">&larr;</button>
-          <div className="dko-screen" style={{ animation: 'dko-fadeUp .4s ease-out' }}>
-            {/* Label */}
-            <div style={{
-              fontFamily: "'DM Mono',monospace", fontSize: 11, fontWeight: 400,
-              color: 'rgba(244,239,232,.35)', letterSpacing: '.06em',
-              textTransform: 'uppercase', textAlign: 'center', marginBottom: 8,
-              marginTop: 32,
-            }}>
-              Choose your DreamKeeper
-            </div>
-
+          <div className="dko-screen" style={{ animation: 'dko-fadeUp .4s ease-out', justifyContent: 'center' }}>
             {/* Heading */}
             <div style={{
               fontFamily: "'Fraunces',Georgia,serif", fontWeight: 300,
               fontSize: 'clamp(20px,5vw,26px)', lineHeight: 1.3,
               textAlign: 'center', marginBottom: 24,
             }}>
-              Which one calls to you?
+              Others who felt your call
             </div>
 
-            {/* 2-column grid */}
+            {/* Horizontal list cards */}
             <div style={{
-              display: 'grid', gridTemplateColumns: '1fr 1fr',
-              gap: 12, paddingBottom: 32,
+              display: 'flex', flexDirection: 'column',
+              gap: 12, paddingBottom: 20, width: '100%', maxWidth: 360,
             }}>
-              {V1_DREAMKEEPERS.map((dk, i) => {
+              {browseList.map((dk, i) => {
                 const rgb = hexToRgb(dk.color);
+                const isPrimary = dk.id === matchedCreature.id;
                 return (
                   <div
                     key={dk.id}
@@ -504,55 +550,44 @@ export default function DreamKeeperOnboarding({ childName, onComplete, onBack }:
                     tabIndex={0}
                     onClick={() => handleBrowseSelect(dk)}
                     style={{
-                      borderRadius: 18, overflow: 'hidden', cursor: 'pointer',
-                      border: '1.5px solid rgba(255,255,255,.06)',
-                      background: 'rgba(255,255,255,.02)',
+                      display: 'flex', alignItems: 'center', gap: 16,
+                      padding: '14px 16px', borderRadius: 18, cursor: 'pointer',
+                      border: `1.5px solid ${isPrimary ? `rgba(${rgb},.35)` : 'rgba(255,255,255,.06)'}`,
+                      background: isPrimary ? `rgba(${rgb},.06)` : 'rgba(255,255,255,.02)',
                       transition: 'all .25s cubic-bezier(.16,1,.3,1)',
-                      animation: `dko-cardIn .4s ${0.04 * i}s ease-out both`,
+                      animation: `dko-cardIn .4s ${0.06 * i}s ease-out both`,
                       WebkitTapHighlightColor: 'transparent',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = `rgba(${rgb},.35)`;
-                      e.currentTarget.style.background = `rgba(${rgb},.06)`;
-                      e.currentTarget.style.transform = 'scale(1.03)';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,.06)';
-                      e.currentTarget.style.background = 'rgba(255,255,255,.02)';
-                      e.currentTarget.style.transform = '';
                     }}
                   >
                     {/* Image */}
                     <div style={{
-                      width: '100%', aspectRatio: '3/4',
+                      width: 64, height: 64, flexShrink: 0,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      padding: 10,
                     }}>
                       <img src={dk.imageSrc} alt={dk.name} style={{
                         width: '100%', height: '100%', objectFit: 'contain',
-                        filter: `drop-shadow(0 0 16px rgba(${rgb},.25))`,
-                        transition: 'transform .3s',
+                        filter: `drop-shadow(0 0 12px rgba(${rgb},.3))`,
                       }} />
                     </div>
                     {/* Info */}
-                    <div style={{ padding: '12px 14px 14px' }}>
+                    <div style={{ flex: 1, textAlign: 'left' }}>
                       <div style={{
                         fontFamily: "'Fraunces',Georgia,serif", fontWeight: 400,
-                        fontSize: 15, color: '#F4EFE8', marginBottom: 2,
+                        fontSize: 16, color: '#F4EFE8', marginBottom: 2,
                       }}>
                         {dk.name}
                       </div>
                       <div style={{
                         fontFamily: "'DM Mono',monospace", fontSize: 9,
                         color: `rgba(${rgb},.6)`, letterSpacing: '.06em',
-                        textTransform: 'uppercase', marginBottom: 6,
+                        textTransform: 'uppercase', marginBottom: 4,
                       }}>
                         {dk.virtue}
                       </div>
                       <div style={{
                         fontFamily: "'Lora','Fraunces',Georgia,serif",
                         fontStyle: 'italic', fontSize: 12, fontWeight: 400,
-                        color: 'rgba(244,239,232,.35)', lineHeight: 1.5,
+                        color: 'rgba(244,239,232,.35)', lineHeight: 1.4,
                       }}>
                         "{dk.emotionalLine}"
                       </div>
@@ -561,6 +596,24 @@ export default function DreamKeeperOnboarding({ childName, onComplete, onBack }:
                 );
               })}
             </div>
+
+            {/* Try a different feeling */}
+            <button
+              onClick={() => goStep(1)}
+              style={{
+                background: 'none', border: 'none',
+                color: 'rgba(244,239,232,.3)', fontSize: 13, fontWeight: 400,
+                cursor: 'pointer', marginTop: 8,
+                fontFamily: "'Nunito',system-ui,sans-serif",
+                transition: 'color .15s',
+                textDecoration: 'underline',
+                textUnderlineOffset: '3px',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(244,239,232,.5)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(244,239,232,.3)')}
+            >
+              Try a different feeling
+            </button>
           </div>
         </div>
       </div>

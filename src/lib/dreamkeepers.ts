@@ -92,7 +92,7 @@ export const V1_DREAMKEEPERS: DreamKeeper[] = [
     virtue: 'Courage',
     virtueDescription: 'Hesitates. Goes anyway. Still shaking. Never announces it.',
     emotionalLine: 'I was scared too, once. Then I found you.',
-    feelingMatch: ['safe', 'brave'],
+    feelingMatch: ['brave', 'safe'],
     personalityTraits: ['timid', 'warm', 'quietly brave'],
   },
   {
@@ -194,22 +194,35 @@ export const ELDER_DREAMKEEPER = {
 
 // ── Matching logic ──────────────────────────────────────────────────────────
 
+// ── Deterministic feeling → creature mapping ────────────────────────────────
+// Each feeling maps to exactly ONE primary creature to prevent duplicates.
+const FEELING_PRIMARY: Record<string, string> = {
+  safe: 'dog',       // Star Pup — Loyalty, "I'm yours"
+  calm: 'turtle',    // Tide Turtle — Patience, unhurried calm
+  brave: 'dragon',   // Storm Drake — Resilience, fierce + tender
+  curious: 'owl',    // Dusk Owl — Wisdom, watchful + knowing
+  cozy: 'bear',      // Frost Bear — Kindness, gentle + warm
+  sleepy: 'sloth',   // Willow Sloth — Rest, deeply present
+};
+
 /**
  * Returns the primary DreamKeeper match for a given feeling.
- * Each feeling maps to the creature whose feelingMatch lists that feeling first.
- * Fallback: Moon Bunny (safe default).
+ * Uses a deterministic mapping so each feeling always returns a unique creature.
  */
 export function matchDreamKeeper(feelingId: string): DreamKeeper {
-  // Primary match: creature whose FIRST feelingMatch entry is this feeling
-  const primary = V1_DREAMKEEPERS.find(dk => dk.feelingMatch[0] === feelingId);
-  if (primary) return primary;
+  // Deterministic primary match
+  const primaryId = FEELING_PRIMARY[feelingId];
+  if (primaryId) {
+    const primary = V1_DREAMKEEPERS.find(dk => dk.id === primaryId);
+    if (primary) return primary;
+  }
 
   // Secondary match: creature that has this feeling anywhere in their list
   const secondary = V1_DREAMKEEPERS.find(dk => dk.feelingMatch.includes(feelingId));
   if (secondary) return secondary;
 
-  // Fallback: Moon Bunny
-  return V1_DREAMKEEPERS.find(dk => dk.id === 'bunny')!;
+  // Fallback: Star Pup
+  return V1_DREAMKEEPERS.find(dk => dk.id === 'dog')!;
 }
 
 /**

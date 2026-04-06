@@ -264,13 +264,14 @@ export function MiniNightCard({ title, quote, emoji, nightNumber, color, creatur
 }) {
   return (
     <div style={{
-      width: 244, margin: '0 auto', borderRadius: 18, overflow: 'hidden',
-      background: '#f8f4ee', boxShadow: '0 20px 52px rgba(0,0,0,.58)',
-      animation: 'ob-slideUp .6s ease-out',
+      width: 288, margin: '0 auto', borderRadius: 22, overflow: 'hidden',
+      background: '#f8f4ee',
+      boxShadow: '0 20px 52px rgba(0,0,0,.58), 0 0 0 1px rgba(246,197,111,.08), 0 0 40px rgba(246,197,111,.06)',
+      animation: 'ob-slideUp .6s cubic-bezier(.16,1,.3,1)',
     }}>
       {/* Sky — starfield with DreamEgg */}
       <div style={{
-        height: 130, position: 'relative', overflow: 'hidden',
+        height: 150, position: 'relative', overflow: 'hidden',
         background: 'linear-gradient(165deg, rgba(13,20,40,1) 0%, rgba(26,16,64,.95) 50%, rgba(40,20,80,.8) 100%)',
       }}>
         {/* Tiny stars */}
@@ -321,20 +322,20 @@ export function MiniNightCard({ title, quote, emoji, nightNumber, color, creatur
         </div>
       </div>
       {/* Paper */}
-      <div style={{ padding: '10px 16px 16px', textAlign: 'center' }}>
+      <div style={{ padding: '12px 18px 18px', textAlign: 'center' }}>
         <div style={{
-          fontFamily: "'DM Mono',monospace", fontSize: 8, color: 'rgba(60,40,20,.35)',
-          letterSpacing: '.04em', textTransform: 'uppercase', marginBottom: 4,
+          fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: 'rgba(60,40,20,.35)',
+          letterSpacing: '.04em', textTransform: 'uppercase', marginBottom: 5,
         }}>
           {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
         </div>
         <div style={{
-          fontFamily: "'Fraunces', serif", fontSize: 13, fontWeight: 700,
-          color: '#1a0f08', lineHeight: 1.3, marginBottom: 6,
+          fontFamily: "'Fraunces', serif", fontSize: 14.5, fontWeight: 700,
+          color: '#1a0f08', lineHeight: 1.3, marginBottom: 7,
         }}>{title}</div>
         <div style={{
           fontFamily: "'Lora','Fraunces',Georgia,serif", fontStyle: 'italic',
-          fontSize: 10, color: 'rgba(60,40,20,.45)', lineHeight: 1.5,
+          fontSize: 11.5, color: 'rgba(60,40,20,.45)', lineHeight: 1.5,
         }}>"{quote}"</div>
       </div>
     </div>
