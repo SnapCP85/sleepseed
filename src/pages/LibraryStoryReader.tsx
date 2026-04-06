@@ -383,7 +383,6 @@ export default function LibraryStoryReader({ slug }: Props) {
 
   // ── Page navigation ──
   const goPage = useCallback((dir: number) => {
-    setReadAloudActive(false);
     setPageIdx(p => {
       if (!story) return p;
       const isPdf = !!story.bookData?.pdfUrl;
@@ -817,31 +816,34 @@ export default function LibraryStoryReader({ slug }: Props) {
               <div style={{textAlign:'center',color:'var(--cream-faint)',fontStyle:'italic'}}>Translating{'\u2026'}</div>
             ) : isTranslated && learningMode ? (
               <InterlinearText
+                key={`interlinear-${pageIdx}`}
                 sentences={translatedPage.sentences}
                 theme="light"
                 foreignStyle={{fontFamily:"var(--hand)",fontSize:'clamp(17px,4.5vw,21px)',color:'var(--cream)',lineHeight:1.75}}
                 englishStyle={{fontFamily:"var(--sans)"}}
                 autoPlay={readAloudActive}
-                onFinish={() => setReadAloudActive(false)}
+                onFinish={() => { if (isLast) setReadAloudActive(false); else goPage(1); }}
               />
             ) : isTranslated ? (
               <ReadAloudText
+                key={`translated-${pageIdx}`}
                 text={translatedPage.sentences.map(s => s.foreign).join(' ')}
                 theme="dark"
                 className="lr-sp-text-inner"
                 hideControls
                 autoPlay={readAloudActive}
-                onFinish={() => setReadAloudActive(false)}
+                onFinish={() => { if (isLast) setReadAloudActive(false); else goPage(1); }}
                 voiceId={selectedVoiceId}
               />
             ) : (
               <ReadAloudText
+                key={`page-${pageIdx}`}
                 text={pageText}
                 theme="dark"
                 className="lr-sp-text-inner"
                 hideControls
                 autoPlay={readAloudActive}
-                onFinish={() => setReadAloudActive(false)}
+                onFinish={() => { if (isLast) setReadAloudActive(false); else goPage(1); }}
                 voiceId={selectedVoiceId}
               />
             )}

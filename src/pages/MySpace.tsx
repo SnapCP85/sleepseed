@@ -339,33 +339,69 @@ export default function MySpace({ onSignUp, onReadStory }: Props) {
     return arr;
   }, []);
 
-  // ── Guest state ───────────────────────────────────────────────────────────
+  // ── Guest state — functional guest dashboard ──────────────────────────────
   if (!user || user.isGuest) {
     return (
       <div className="ms">
         <style>{CSS}</style>
-        <div className="ms-inner" style={{ paddingTop: 80, textAlign: 'center' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🌙</div>
+        <div className="ms-inner" style={{ paddingTop: 60, textAlign: 'center' }}>
+          <div style={{ fontSize: 56, marginBottom: 16 }}>🌙</div>
           <div style={{
-            fontFamily: "'Fraunces',Georgia,serif", fontSize: 24, fontWeight: 300,
-            marginBottom: 12,
+            fontFamily: "'Fraunces',Georgia,serif", fontSize: 26, fontWeight: 400,
+            marginBottom: 8, color: '#F4EFE8', letterSpacing: '-.5px',
           }}>
-            Your space is waiting
+            Welcome to SleepSeed
           </div>
-          <div style={{ fontSize: 14, color: 'rgba(244,239,232,.45)', lineHeight: 1.6, marginBottom: 32 }}>
-            Sign up to meet your DreamKeeper and start your story.
+          <div style={{ fontSize: 14, color: 'rgba(244,239,232,.4)', lineHeight: 1.7, marginBottom: 36, maxWidth: 280, margin: '0 auto 36px' }}>
+            Personalised bedtime stories — written in seconds, read together, remembered forever.
           </div>
+
+          {/* Try a story */}
           <button
-            onClick={onSignUp}
+            onClick={() => setView('ritual-starter')}
             style={{
-              padding: '16px 40px', border: 'none', borderRadius: 14,
+              width: '100%', maxWidth: 300, padding: '18px 32px', border: 'none', borderRadius: 16,
               background: 'linear-gradient(135deg,#a06010,#F5B84C 50%,#a06010)',
               color: '#080200', fontSize: 16, fontWeight: 700, cursor: 'pointer',
               fontFamily: "'Nunito',system-ui,sans-serif",
+              boxShadow: '0 6px 24px rgba(200,130,20,.3)',
+              marginBottom: 14, display: 'block', marginLeft: 'auto', marginRight: 'auto',
             }}
           >
-            Get started
+            Try a bedtime story
           </button>
+
+          {/* Browse library */}
+          <button
+            onClick={() => setView('library')}
+            style={{
+              width: '100%', maxWidth: 300, padding: '14px 32px', borderRadius: 16,
+              border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.04)',
+              color: 'rgba(244,239,232,.6)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+              fontFamily: "'Nunito',system-ui,sans-serif",
+              marginBottom: 40, display: 'block', marginLeft: 'auto', marginRight: 'auto',
+            }}
+          >
+            Browse the story library
+          </button>
+
+          {/* Sign up CTA */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', paddingTop: 28 }}>
+            <div style={{ fontSize: 12, color: 'rgba(244,239,232,.3)', marginBottom: 12, fontFamily: "'DM Mono',monospace", letterSpacing: '.5px' }}>
+              Want to save your stories?
+            </div>
+            <button
+              onClick={onSignUp}
+              style={{
+                padding: '12px 32px', borderRadius: 12,
+                border: '1px solid rgba(245,184,76,.25)', background: 'rgba(245,184,76,.06)',
+                color: '#F5B84C', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                fontFamily: "'Nunito',system-ui,sans-serif",
+              }}
+            >
+              Create an account
+            </button>
+          </div>
         </div>
       </div>
     );

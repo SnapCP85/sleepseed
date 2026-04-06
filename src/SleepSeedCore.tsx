@@ -3576,40 +3576,41 @@ Rules:
     }
   }, [pageIdx, book]);
 
-  // v8r: ambient sound functions
+  // v8r: ambient sound — brown noise (warm, sleep-friendly)
   const v8rStartAmbient = () => {
     try {
       if (!v8rAudioCtxRef.current) v8rAudioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       const ctx = v8rAudioCtxRef.current;
       if (ctx.state === 'suspended') ctx.resume();
-      const master = ctx.createGain();
-      master.gain.setValueAtTime(.055, ctx.currentTime);
-      master.connect(ctx.destination);
-      const drone = ctx.createOscillator();
-      drone.type = 'sine'; drone.frequency.value = 55;
-      const dGain = ctx.createGain(); dGain.gain.value = .3;
-      drone.connect(dGain); dGain.connect(master); drone.start();
-      const pingIv = setInterval(() => {
-        if (!v8rAmbientNodesRef.current.gain) return;
-        const ping = ctx.createOscillator(); ping.type = 'sine';
-        ping.frequency.value = [523, 659, 784, 1047][Math.floor(Math.random() * 4)];
-        const pGain = ctx.createGain();
-        pGain.gain.setValueAtTime(0, ctx.currentTime);
-        pGain.gain.linearRampToValueAtTime(.038, ctx.currentTime + .06);
-        pGain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + 2.5);
-        ping.connect(pGain); pGain.connect(master); ping.start(); ping.stop(ctx.currentTime + 2.5);
-      }, 4000 + Math.random() * 5000);
-      v8rAmbientNodesRef.current = { osc: drone, gain: master, intervals: [pingIv] };
+      // Generate brown noise buffer (4 seconds, looped)
+      const len = ctx.sampleRate * 4;
+      const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+      for (let ch = 0; ch < 2; ch++) {
+        const data = buf.getChannelData(ch);
+        let last = 0;
+        for (let i = 0; i < len; i++) { const white = Math.random() * 2 - 1; last = (last + (0.02 * white)) / 1.02; data[i] = last * 3.5; }
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf; src.loop = true;
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      gain.gain.setTargetAtTime(0.12, ctx.currentTime, 0.8);
+      const lpf = ctx.createBiquadFilter();
+      lpf.type = 'lowpass'; lpf.frequency.value = 400;
+      src.connect(lpf).connect(gain).connect(ctx.destination);
+      src.start();
+      v8rAmbientNodesRef.current = { src, gain };
     } catch {}
   };
 
   const v8rStopAmbient = () => {
     const n = v8rAmbientNodesRef.current;
-    n.intervals?.forEach(clearInterval);
-    try { n.osc?.stop(); } catch {}
-    n.gain?.disconnect();
-    v8rAmbientNodesRef.current = {};
-    try { v8rAudioCtxRef.current?.suspend(); } catch {}
+    if (n.gain) { n.gain.gain.setTargetAtTime(0, (v8rAudioCtxRef.current?.currentTime ?? 0), 0.3); }
+    setTimeout(() => {
+      try { n.src?.stop(); } catch {}
+      n.gain?.disconnect();
+      v8rAmbientNodesRef.current = {};
+    }, 500);
   };
 
   // v8r: start/stop ambient
@@ -3875,7 +3876,7 @@ Rules:
           </div>
           <div onClick={()=>{setV8rAmbientOn(p=>!p);setV8rTrayOpen(false);}} style={{padding:'10px 14px',borderRadius:14,border:v8rAmbientOn?'1px solid rgba(245,184,76,.22)':'1px solid rgba(255,255,255,.07)',background:v8rAmbientOn?'rgba(245,184,76,.08)':'rgba(255,255,255,.04)',display:'flex',alignItems:'center',gap:10,cursor:'pointer',marginBottom:10,transition:'all .2s'}}>
             <div style={{fontSize:18,lineHeight:1,animation:v8rAmbientOn?'v8r-soundPulse 2s ease-in-out infinite':'none'}}>🌙</div>
-            <div style={{flex:1}}><div style={{fontSize:11,fontWeight:700,color:v8rAmbientOn?'rgba(245,184,76,.9)':'rgba(234,242,255,.6)',fontFamily:"'Nunito',sans-serif"}}>Night Sounds</div><div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.3)',letterSpacing:'.2px',marginTop:1}}>{v8rAmbientOn?'Soft chimes playing…':'Crickets, chimes, soft wind'}</div></div>
+            <div style={{flex:1}}><div style={{fontSize:11,fontWeight:700,color:v8rAmbientOn?'rgba(245,184,76,.9)':'rgba(234,242,255,.6)',fontFamily:"'Nunito',sans-serif"}}>Night Sounds</div><div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(234,242,255,.3)',letterSpacing:'.2px',marginTop:1}}>{v8rAmbientOn?'White noise playing…':'Warm white noise for sleep'}</div></div>
             <div style={{width:34,height:20,borderRadius:10,background:v8rAmbientOn?'#F5B84C':'rgba(255,255,255,.08)',position:'relative',transition:'background .2s',flexShrink:0}}><div style={{position:'absolute',top:3,left:v8rAmbientOn?17:3,width:14,height:14,borderRadius:'50%',background:'#fff',transition:'left .2s'}}/></div>
           </div>
           {/* DISPLAY */}
