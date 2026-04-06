@@ -377,8 +377,8 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
               <button className="sl-menu-item" onClick={() => { setMenuOpen(null); onReadStory(s.bookData); }}>Read again</button>
               <button className="sl-menu-item" onClick={async () => {
                 setMenuOpen(null);
-                const text = `"${s.title}" — a bedtime story for ${s.heroName}\n${s.bookData?.refrain ? `"${s.bookData.refrain}"\n` : ''}\nsleepseed.vercel.app`;
-                try { await navigator.share?.({title: s.title, text, url: 'https://sleepseed.vercel.app'}); }
+                const text = `"${s.title}" — a bedtime story for ${s.heroName}\n${s.bookData?.refrain ? `"${s.bookData.refrain}"\n` : ''}\nsleepseed.app`;
+                try { await navigator.share?.({title: s.title, text, url: 'https://sleepseed.app'}); }
                 catch(_) { navigator.clipboard?.writeText(text); }
               }}>Share</button>
               {canPublish && !s.isPublic && (

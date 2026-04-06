@@ -771,7 +771,7 @@ export async function generateNightCardBook(
 
   doc.setTextColor(100, 90, 70);
   doc.setFontSize(8);
-  doc.text('sleepseed.vercel.app', W / 2, H - 20, { align: 'center' });
+  doc.text('sleepseed.app', W / 2, H - 20, { align: 'center' });
 
   // ── CARD PAGES ──
   for (const card of sorted) {

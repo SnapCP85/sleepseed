@@ -43,7 +43,7 @@ export default async function handler(req, res) {
   // Crawler — fetch story metadata and return HTML with OG tags
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-  const baseUrl = process.env.VITE_APP_URL || 'https://sleepseed.vercel.app';
+  const baseUrl = process.env.VITE_APP_URL || 'https://sleepseed.app';
 
   if (!supabaseUrl || !supabaseKey) {
     res.writeHead(302, { Location: `/?library=${encodeURIComponent(slug)}` });

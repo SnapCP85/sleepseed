@@ -1,1 +1,1 @@
-export const BASE_URL = 'https://sleepseed.vercel.app';
+export const BASE_URL = 'https://sleepseed.app';

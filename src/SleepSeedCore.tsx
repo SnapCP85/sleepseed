@@ -2302,7 +2302,7 @@ export default function SleepSeed({
       ctx.fillStyle = "rgba(212,160,48,.35)";
       ctx.font = "500 22px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(`A story for ${book.heroName}  ·  sleepseed.vercel.app`, SIZE/2, SIZE-52);
+      ctx.fillText(`A story for ${book.heroName}  ·  sleepseed.app`, SIZE/2, SIZE-52);
       // Build private share link for the image share
       let imgShareUrl = v8rShareUrl || BASE_URL;
       if (!v8rShareUrl) {
@@ -2427,7 +2427,7 @@ export default function SleepSeed({
       // Footer
       doc.setFont("helvetica", "normal"); doc.setFontSize(5.5);
       doc.setTextColor(100, 100, 130);
-      doc.text("sleepseed.vercel.app", W/2, H-10, { align:"center" });
+      doc.text("sleepseed.app", W/2, H-10, { align:"center" });
 
       // ── STORY PAGES (one per page) ────────────────────────────────────
       const allPages = book.isAdventure
@@ -2461,7 +2461,7 @@ export default function SleepSeed({
         doc.setTextColor(...PG_NUM);
         doc.text(String(i+1), PAD, H - 11);
         doc.setFont("helvetica", "normal"); doc.setFontSize(5.5);
-        doc.text("sleepseed.vercel.app", W - PAD, H - 11, { align:"right" });
+        doc.text("sleepseed.app", W - PAD, H - 11, { align:"right" });
       });
 
       // ── THE END PAGE ──────────────────────────────────────────────────

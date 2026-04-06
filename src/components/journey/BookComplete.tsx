@@ -223,8 +223,8 @@ export default function BookComplete() {
         <button onClick={async () => {
           const title = result?.finalTitle || 'Our Book';
           const creature = pendingCreature;
-          const text = `We just finished "${title}" — a 7-night bedtime book! ${creature?.creatureEmoji || '✨'} ${creatureName.trim() || creature?.suggestedName || 'A new companion'} hatched tonight.\n\nsleepseed.vercel.app`;
-          try { await navigator.share?.({title, text, url: 'https://sleepseed.vercel.app'}); }
+          const text = `We just finished "${title}" — a 7-night bedtime book! ${creature?.creatureEmoji || '✨'} ${creatureName.trim() || creature?.suggestedName || 'A new companion'} hatched tonight.\n\nsleepseed.app`;
+          try { await navigator.share?.({title, text, url: 'https://sleepseed.app'}); }
           catch(_) { navigator.clipboard?.writeText(text); }
         }} style={{ padding: '14px 20px', background: 'rgba(245,184,76,.15)', border: '1px solid rgba(245,184,76,.3)', color: '#F5B84C', borderRadius: 12, fontSize: 15, cursor: 'pointer', fontWeight: 600 }}>
           Share our book ✨

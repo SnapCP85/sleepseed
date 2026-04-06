@@ -166,7 +166,7 @@ async function main() {
   if (failed === 0) {
     console.log(`\n🟢 READY — ${passed} checks passed, 0 failed\n`);
     console.log('Demo URL: http://localhost:5173/?demo=true');
-    console.log('Or: https://sleepseed.vercel.app/?demo=true');
+    console.log('Or: https://sleepseed.app/?demo=true');
     console.log('Reset: Ctrl+Shift+R during demo\n');
   } else {
     console.log(`\n🔴 NOT READY — ${failed} issue${failed > 1 ? 's' : ''} found:\n`);

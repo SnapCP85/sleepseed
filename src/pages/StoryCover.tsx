@@ -99,7 +99,7 @@ export default function StoryCover({ slug, onReadStory }: Props) {
       <div style={{ fontSize: 40 }}>🌙</div>
       <div style={{ fontFamily: "'Fraunces',serif", fontSize: 20, fontWeight: 700, color: '#F4EFE8' }}>Story not found</div>
       <div style={{ fontSize: 13 }}>{error || 'This story may have been removed.'}</div>
-      <a className="sc-secondary-link" href="https://sleepseed.vercel.app" style={{ marginTop: 12 }}>Go to SleepSeed →</a>
+      <a className="sc-secondary-link" href="https://sleepseed.app" style={{ marginTop: 12 }}>Go to SleepSeed →</a>
     </div>
   );
 
@@ -167,7 +167,7 @@ export default function StoryCover({ slug, onReadStory }: Props) {
 
         {/* Secondary CTA */}
         <div className="sc-secondary">
-          <a className="sc-secondary-link" href="https://sleepseed.vercel.app">
+          <a className="sc-secondary-link" href="https://sleepseed.app">
             Create your own bedtime story →
           </a>
         </div>
