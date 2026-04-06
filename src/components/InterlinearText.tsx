@@ -12,7 +12,7 @@ import type { TranslatedSentence } from '../lib/translate';
 const CSS = `
 .il-sentence{margin-bottom:16px;padding:6px 8px;border-radius:10px;margin-left:-8px;margin-right:-8px;transition:background .2s}
 .il-foreign{margin-bottom:4px}
-.il-english{font-size:1em;font-style:italic;line-height:1.6;color:rgba(244,239,232,.92);margin-top:4px}
+.il-english{font-size:1em;font-style:italic;line-height:1.6;color:rgba(245,184,76,.85);margin-top:4px}
 .il-word{transition:background .1s,color .1s;border-radius:4px;padding:1px 2px}
 .il-word.on{background:rgba(245,184,76,.32);color:#F5B84C;box-shadow:0 0 12px rgba(245,184,76,.2)}
 .il-light .il-word.on{background:rgba(200,112,32,.25);color:#8A4A00;box-shadow:0 0 10px rgba(200,112,32,.12)}
