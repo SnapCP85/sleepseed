@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SleepSeed — Homepage Preview (Modular)</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100;0,9..144,200;0,9..144,300;0,9..144,400;0,9..144,700;0,9..144,800;1,9..144,100;1,9..144,200;1,9..144,300;1,9..144,400;1,9..144,700&family=Nunito:wght@300;400;600;700&family=Lora:ital,wght@0,400;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #060912;
+  color: #F4EFE8;
+  font-family: 'Nunito', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── Animations ── */
+@keyframes shimmer {
+  0% { transform: translateX(-130%); }
+  100% { transform: translateX(230%); }
+}
+@keyframes starTwinkle {
+  0%, 100% { opacity: 0.18; }
+  50% { opacity: 0.8; }
+}
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.6; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes elderFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+@keyframes floatRot {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg) scale(1); }
+  50% { transform: translateY(-8px) rotate(1.5deg) scale(1.01); }
+}
+@keyframes glowPulseF {
+  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.88); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+}
+@keyframes particleLift {
+  0% { transform: translateY(0); opacity: 0; }
+  15% { opacity: 0.9; }
+  100% { transform: translateY(-24px); opacity: 0; }
+}
+@keyframes owlBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes glowRing {
+  0%, 100% { transform: translate(-50%,-50%) scale(1); opacity: 0.5; }
+  50% { transform: translate(-50%,-50%) scale(1.18); opacity: 1; }
+}
+@keyframes eyeGlow {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+@keyframes blink {
+  0%, 88%, 100% { transform: scaleY(1); }
+  93% { transform: scaleY(0.05); }
+}
+@keyframes blink2 {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.05); }
+}
+@keyframes arrowPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+@keyframes foilSheen {
+  from { transform: translateX(-8%) translateY(-4%); }
+  to { transform: translateX(8%) translateY(4%); }
+}
+
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1);
+}
+.reveal.vis { opacity: 1; transform: none; }
+.reveal.d1 { transition-delay: .1s; }
+.reveal.d2 { transition-delay: .2s; }
+.reveal.d3 { transition-delay: .3s; }
+.reveal.d4 { transition-delay: .4s; }
+
+/* ════════════════════════════════════════════
+   NAV
+════════════════════════════════════════════ */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 64px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; max-width: 960px; margin: 0 auto;
+  background: rgba(6,9,18,.72); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.nav-logo { display: flex; align-items: center; gap: 8px; }
+.nav-moon {
+  width: 20px; height: 20px; border-radius: 50%; background: #F5B84C;
+  position: relative; overflow: hidden;
+}
+.nav-moon::after {
+  content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: #060912; top: -4px; left: -7px;
+}
+.nav-brand { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; color: #F4EFE8; letter-spacing: -0.5px; }
+.nav-right { display: flex; align-items: center; gap: 16px; }
+.btn-signin {
+  background: none; border: none; color: rgba(244,239,232,.5);
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; padding: 6px 10px;
+}
+.btn-signin:hover { color: #F4EFE8; }
+.btn-start {
+  padding: 9px 18px; border-radius: 14px; border: none;
+  background: linear-gradient(135deg, #F5B84C, #FFDFA3); color: #16110A;
+  font-family: 'Fraunces', serif; font-size: 13px; font-weight: 700;
+  cursor: pointer; letter-spacing: -0.1px; box-shadow: 0 4px 16px rgba(245,184,76,.2); transition: transform .15s;
+}
+.btn-start:hover { transform: translateY(-1px); }
+
+/* ════════════════════════════════════════════
+   HERO
+════════════════════════════════════════════ */
+.hero {
+  position: relative; min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 120px 28px 80px;
+  overflow: hidden; text-align: center;
+}
+.hero-glow {
+  position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%);
+  width: 600px; height: 600px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(245,184,76,.06) 0%, rgba(154,127,212,.04) 40%, transparent 70%);
+  filter: blur(40px); animation: glowPulse 6s ease-in-out infinite;
+}
+.hero-stars { position: absolute; inset: 0; pointer-events: none; }
+.star {
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255, var(--star-o, .15));
+  width: var(--star-s, 1px); height: var(--star-s, 1px);
+  animation: starTwinkle var(--star-dur, 3s) var(--star-del, 0s) ease-in-out infinite;
+}
+.hero h1 {
+  font-family: 'Fraunces', serif; font-size: clamp(36px, 7vw, 58px); font-weight: 800;
+  color: #F4EFE8; line-height: 1.1; letter-spacing: -1.2px; max-width: 560px;
+}
+.hero h1 em { font-style: italic; color: #F5B84C; }
+.hero-sub {
+  font-family: 'Nunito', sans-serif; font-size: clamp(15px, 2.5vw, 18px);
+  color: rgba(234,242,255,.42); line-height: 1.7; max-width: 440px; margin: 20px 0 36px;
+}
+.hero-cta {
+  position: relative; padding: 17px 36px; border-radius: 18px; border: none;
+  background: linear-gradient(135deg, #F5B84C, #FFDFA3); color: #16110A;
+  font-family: 'Fraunces', serif; font-size: 16px; font-weight: 700;
+  cursor: pointer; letter-spacing: -0.1px; box-shadow: 0 8px 32px rgba(245,184,76,.25);
+  overflow: hidden; transition: transform .15s;
+}
+.hero-cta:hover { transform: scale(1.02); }
+.hero-cta .shimmer {
+  position: absolute; inset: 0;
+  background: linear-gradient(108deg, transparent 30%, rgba(255,255,255,.22) 50%, transparent 70%);
+  animation: shimmer 5s infinite;
+}
+.hero-trust {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(234,242,255,.2);
+  letter-spacing: 0.5px; margin-top: 16px;
+}
+
+/* ════════════════════════════════════════════
+   CINEMATIC SLIDESHOW (4-phase)
+════════════════════════════════════════════ */
+.cinema {
+  position: relative;
+  height: 100vh; min-height: 600px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 45%, rgba(245,184,76,.05) 0%, transparent 65%), #060912;
+}
+.cinema-glow {
+  position: absolute; width: 600px; height: 600px; left: 50%; top: 50%;
+  transform: translate(-50%,-50%) scale(0.3); border-radius: 50%;
+  background: radial-gradient(circle, rgba(245,184,76,.12) 0%, transparent 65%);
+  opacity: 0; transition: opacity 2.2s ease, transform 2.4s ease; pointer-events: none;
+}
+.cinema-purple-glow {
+  position: absolute; width: 700px; height: 500px; left: 50%; top: 50%;
+  transform: translate(-50%,-50%); border-radius: 50%;
+  background: radial-gradient(circle, rgba(148,130,255,.07) 0%, transparent 65%);
+  opacity: 0; transition: opacity 2s ease; pointer-events: none;
+}
+.cinema-wrap {
+  width: 100%; max-width: 700px; height: 100%; position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Each phase layer */
+.cinema-phase {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 1s ease;
+  padding: 20px 40px; text-align: center;
+}
+
+/* Phase A: owl asks */
+.owl-wrap {
+  position: relative;
+  filter: drop-shadow(0 0 48px rgba(245,184,76,.4));
+  animation: owlBob 4.5s ease-in-out infinite;
+}
+.owl-glow-ring {
+  position: absolute; width: 200px; height: 200px; left: 50%; top: 50%;
+  transform: translate(-50%,-50%); border-radius: 50%;
+  background: radial-gradient(circle, rgba(245,184,76,.20) 0%, transparent 68%);
+  animation: glowRing 3s ease-in-out infinite; pointer-events: none;
+}
+.owl-speech {
+  font-family: 'Fraunces', serif; font-size: clamp(15px, 2.2vw, 19px);
+  font-weight: 200; font-style: italic; color: rgba(244,239,232,.90);
+  line-height: 1.65; max-width: 320px; text-align: center; margin-top: 14px;
+}
+.owl-speech .name { color: rgba(245,184,76,.8); }
+
+/* Phase B: child quote */
+.phase-b-photo {
+  position: absolute; right: -20px; top: 50%; transform: translateY(-50%) rotate(6deg);
+  width: 260px; height: 260px; border-radius: 50%; overflow: hidden;
+  opacity: 0.22; pointer-events: none; z-index: 1; filter: blur(0.5px);
+  -webkit-mask-image: radial-gradient(circle, black 38%, transparent 72%);
+  mask-image: radial-gradient(circle, black 38%, transparent 72%);
+}
+.phase-b-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%; }
+.phase-b-glow {
+  position: absolute; right: -30px; top: 50%; transform: translateY(-50%) rotate(6deg);
+  width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(180,100,20,.08) 0%, transparent 65%);
+  pointer-events: none; z-index: 0; animation: glowRing 5s ease-in-out infinite;
+}
+.phase-b-text { position: relative; z-index: 3; }
+.phase-b-quote {
+  font-family: 'Fraunces', serif; font-size: clamp(28px, 5vw, 50px);
+  font-weight: 100; font-style: italic; color: #F4EFE8;
+  line-height: 1.12; letter-spacing: -1.5px; max-width: 520px; margin-bottom: 18px;
+  text-shadow: 0 2px 24px rgba(0,0,0,.9), 0 0 48px rgba(0,0,0,.7);
+}
+.phase-b-quote em { color: #F5B84C; }
+.phase-b-attr {
+  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 3px;
+  text-transform: uppercase; color: rgba(244,239,232,.78);
+  text-shadow: 0 1px 12px rgba(0,0,0,.9);
+}
+
+/* Phase C: story transform */
+.phase-c-book-bg {
+  position: absolute; right: -20px; top: 50%; transform: translateY(-50%) rotate(6deg);
+  opacity: 0.22; pointer-events: none; z-index: 1; filter: blur(0.5px);
+}
+.phase-c-text { position: relative; z-index: 3; }
+.phase-c-from {
+  font-family: 'Fraunces', serif; font-size: clamp(13px, 1.8vw, 16px);
+  font-weight: 200; font-style: italic; color: rgba(244,239,232,.70); margin-bottom: 14px;
+}
+.phase-c-arrow {
+  width: 1px; height: 38px; margin: 0 auto 16px;
+  background: linear-gradient(to bottom, rgba(245,184,76,.1), rgba(245,184,76,.55), rgba(245,184,76,.1));
+  animation: arrowPulse 2s ease-in-out infinite;
+}
+.phase-c-title {
+  font-family: 'Fraunces', serif; font-size: clamp(28px, 5.5vw, 52px);
+  font-weight: 200; font-style: italic; color: #F4EFE8;
+  line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 6px;
+}
+.phase-c-title em { color: #F5B84C; }
+.phase-c-sub {
+  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2.5px;
+  text-transform: uppercase; color: rgba(244,239,232,.82); margin-top: 8px;
+}
+
+/* Phase D: she lit up */
+.phase-d-nc-bg {
+  position: absolute; right: -20px; top: 50%; transform: translateY(-50%) rotate(6deg);
+  width: 240px; opacity: 0.22; pointer-events: none; z-index: 1; filter: blur(0.5px);
+}
+.phase-d-nc-inner {
+  width: 240px; background: #faf6ee; border-radius: 14px; overflow: hidden;
+  box-shadow: 0 20px 48px rgba(0,0,0,.65), 0 0 36px rgba(245,184,76,.1);
+}
+.phase-d-nc-photo {
+  width: 100%; height: 140px; object-fit: cover; object-position: 50% 25%; display: block;
+}
+.phase-d-nc-body { padding: 9px 10px 10px; background: #fdf8ee; }
+.phase-d-nc-lbl {
+  font-family: 'DM Mono', monospace; font-size: 7.5px; letter-spacing: 2px;
+  text-transform: uppercase; color: rgba(196,129,26,.75); margin-bottom: 4px;
+}
+.phase-d-nc-ttl {
+  font-family: 'Fraunces', serif; font-size: 13px; font-weight: 600;
+  color: #1a0f08; line-height: 1.25; margin-bottom: 4px;
+}
+.phase-d-stack {
+  position: relative; z-index: 3; display: flex; flex-direction: column;
+  align-items: center; gap: 6px;
+}
+.phase-d-line {
+  font-family: 'Fraunces', serif; font-weight: 100; font-style: italic;
+  color: #F4EFE8; line-height: 1; letter-spacing: -2.5px;
+}
+.phase-d-line.big { font-size: clamp(52px, 10vw, 96px); }
+.phase-d-line.med { font-size: clamp(28px, 5.5vw, 52px); }
+.phase-d-line em { color: #F5B84C; }
+.phase-d-rule { width: 40px; height: 1px; background: rgba(245,184,76,.55); margin: 4px auto; }
+.phase-d-meta {
+  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 3px;
+  text-transform: uppercase; color: rgba(244,239,232,.82); margin-top: 8px;
+}
+
+/* Cinema pills */
+.cinema-pills {
+  position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 6px; z-index: 5;
+}
+.cinema-pill {
+  width: 22px; height: 2px; border-radius: 2px; background: rgba(244,239,232,.12);
+  transition: all 0.4s;
+}
+.cinema-pill.on { background: rgba(245,184,76,.7); width: 30px; }
+.cinema-pill.done { background: rgba(245,184,76,.25); }
+
+/* ════════════════════════════════════════════
+   PROBLEM + SOLUTION
+════════════════════════════════════════════ */
+.ps {
+  padding: 80px 6%;
+  background: linear-gradient(180deg, #060912, #0D1120);
+}
+.ps-grid {
+  max-width: 1060px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+}
+@media (max-width: 800px) { .ps-grid { grid-template-columns: 1fr; gap: 40px; } }
+
+/* Problem side */
+.ps-kicker {
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .14em;
+  text-transform: uppercase; font-weight: 700; margin-bottom: 18px;
+  color: rgba(245,184,76,.5);
+}
+.ps-q-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 14px 0; border-bottom: .5px solid rgba(255,255,255,.06);
+}
+.ps-q-row:last-of-type { border-bottom: none; }
+.ps-q {
+  font-family: 'Fraunces', serif; font-size: 16px; font-style: italic;
+  color: rgba(244,239,232,.72);
+}
+.ps-a {
+  font-family: 'DM Mono', monospace; font-size: 14px; color: rgba(244,239,232,.42);
+}
+.ps-punch {
+  font-family: 'Fraunces', serif; font-size: clamp(20px, 2.8vw, 30px); font-weight: 700;
+  color: #F4EFE8; line-height: 1.3; margin-top: 20px;
+}
+.ps-punch em { font-style: italic; color: #F5B84C; }
+
+/* Solution side */
+.ps-sol-h {
+  font-family: 'Fraunces', serif; font-size: clamp(20px, 2.8vw, 30px); font-weight: 700;
+  color: #F4EFE8; line-height: 1.25; margin-bottom: 24px;
+}
+.ps-sol-h em { font-style: italic; color: #F5B84C; }
+.ps-features { display: flex; flex-direction: column; gap: 18px; }
+.ps-feat { display: flex; align-items: flex-start; gap: 14px; }
+.ps-feat-ico {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; overflow: hidden;
+}
+.ps-feat-ico img {
+  width: 32px; height: 32px; object-fit: contain;
+}
+.ps-feat-title {
+  font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700;
+  color: #F4EFE8; margin-bottom: 2px;
+}
+.ps-feat-desc {
+  font-family: 'Nunito', sans-serif; font-size: 13px;
+  color: rgba(244,239,232,.62); line-height: 1.6;
+}
+
+/* ════════════════════════════════════════════
+   INTERACTIVE NIGHT CARD DEMO (Slider)
+════════════════════════════════════════════ */
+.nightcard {
+  position: relative; padding: 80px 28px 100px;
+  display: flex; flex-direction: column; align-items: center;
+}
+.nightcard-glow {
+  position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+  width: 400px; height: 400px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(154,127,212,.06), transparent 70%); filter: blur(40px);
+}
+.nightcard-header { text-align: center; margin-bottom: 40px; max-width: 420px; }
+.nightcard-label {
+  font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(154,127,212,.55);
+  letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 14px;
+}
+.nightcard-title {
+  font-family: 'Fraunces', serif; font-size: clamp(22px, 4.5vw, 28px); font-weight: 700;
+  color: #F4EFE8; line-height: 1.25; letter-spacing: -0.4px; margin-bottom: 8px;
+}
+.nightcard-subtitle {
+  font-family: 'Fraunces', serif; font-size: 15px; font-weight: 300; font-style: italic;
+  color: rgba(234,242,255,.35); line-height: 1.5;
+}
+.nightcard-caption {
+  font-family: 'Lora', serif; font-style: italic; font-size: 14px;
+  color: rgba(234,242,255,.32); line-height: 1.65; margin-top: 28px;
+  text-align: center; max-width: 340px;
+}
+
+/* ── Card shell ── */
+.ncd {
+  width: 320px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #faf6ee;
+  box-shadow: 0 24px 64px rgba(0,0,0,.6), 0 0 0 1px rgba(200,180,140,.25), 0 0 44px rgba(154,127,212,.08);
+  position: relative;
+  animation: floatY 6s ease-in-out infinite;
+}
+
+/* ── Photo zone ── */
+.ncd-photo {
+  position: relative;
+  height: 280px;
+  overflow: hidden;
+}
+.ncd-photo img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.ncd-photo-overlay {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0,0,0,.05), rgba(0,0,0,.15));
+}
+.ncd-close {
+  position: absolute; top: 14px; left: 14px; width: 32px; height: 32px;
+  border-radius: 50%; background: rgba(30,20,10,.45); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,.8); font-size: 14px; z-index: 3; border: none; cursor: default;
+}
+.ncd-night-badge {
+  position: absolute; top: 14px; right: 14px; z-index: 3;
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(80,50,120,.55); backdrop-filter: blur(10px);
+  border: 1px solid rgba(154,127,212,.3); border-radius: 16px;
+  padding: 5px 12px 5px 8px;
+}
+.ncd-night-badge-emoji { font-size: 16px; }
+.ncd-night-badge-text {
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 2px; color: rgba(244,239,232,.9); text-transform: uppercase;
+}
+
+/* ── Bottom slider zone ── */
+.ncd-bottom {
+  position: relative;
+  background: #faf6ee;
+  padding: 0 0 16px;
+  min-height: 260px;
+}
+
+/* Section label */
+.ncd-section-label {
+  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2.5px;
+  text-transform: uppercase; color: rgba(120,90,50,.4);
+  text-align: center; padding: 18px 0 12px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.ncd-section-label::before, .ncd-section-label::after {
+  content: '\2756'; font-size: 6px; color: rgba(200,170,100,.3);
+}
+
+/* Slider track */
+.ncd-slider {
+  position: relative;
+  overflow: hidden;
+}
+.ncd-slides {
+  display: flex;
+  transition: transform .4s cubic-bezier(.22,1,.36,1);
+  width: 400%; /* 4 slides */
+}
+.ncd-slide {
+  width: 25%; /* each slide is 1/4 of track */
+  flex-shrink: 0;
+  padding: 0 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 190px;
+}
+
+/* Arrows */
+.ncd-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(245,184,76,.25); border: 1.5px solid rgba(245,184,76,.45);
+  color: rgba(140,90,10,.85); font-size: 20px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 5; transition: all .2s;
+  box-shadow: 0 2px 10px rgba(245,184,76,.2);
+}
+.ncd-arrow:hover { background: rgba(245,184,76,.4); color: rgba(100,60,0,1); box-shadow: 0 4px 16px rgba(245,184,76,.35); }
+.ncd-arrow.left { left: 4px; }
+.ncd-arrow.right { right: 4px; }
+
+/* Dots */
+.ncd-dots {
+  display: flex; justify-content: center; gap: 6px; margin-top: 14px;
+}
+.ncd-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(180,150,100,.2); transition: all .3s; cursor: pointer;
+}
+.ncd-dot.on {
+  width: 20px; border-radius: 3px;
+  background: rgba(245,184,76,.7);
+}
+
+/* ── Slide 1: Drawing ── */
+.ncd-drawing-frame {
+  width: 220px; background: #fefcf6;
+  border: 1px solid rgba(200,180,140,.25); border-radius: 4px;
+  padding: 12px; position: relative;
+  box-shadow: 0 4px 16px rgba(120,90,50,.08);
+}
+.ncd-tape {
+  position: absolute; width: 28px; height: 10px;
+  background: rgba(245,220,150,.5); border-radius: 1px;
+  transform: rotate(-3deg);
+}
+.ncd-tape.tl { top: -4px; left: 14px; }
+.ncd-tape.tr { top: -4px; right: 14px; transform: rotate(4deg); }
+.ncd-drawing-img {
+  width: 100%; border-radius: 2px; display: block;
+}
+.ncd-drawing-attr {
+  font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: rgba(120,90,50,.35); text-align: center;
+  margin-top: 10px;
+}
+
+/* ── Slide 2: Quote ── */
+.ncd-quote-text {
+  font-family: 'Fraunces', serif; font-size: 20px; font-weight: 400;
+  color: rgba(40,25,10,.75); line-height: 1.45; text-align: center;
+  max-width: 260px;
+}
+.ncd-quote-attr {
+  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: rgba(120,90,50,.4); margin-top: 14px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ── Slide 3: Voice ── */
+.ncd-voice-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.ncd-voice-btn {
+  width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer;
+  background: linear-gradient(135deg, #F5B84C, #E8972A);
+  box-shadow: 0 4px 16px rgba(245,184,76,.35);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .15s, box-shadow .15s;
+}
+.ncd-voice-btn:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(245,184,76,.45); }
+.ncd-voice-btn svg { width: 22px; height: 22px; fill: #1a0800; }
+.ncd-waveform {
+  display: flex; align-items: center; gap: 2px; height: 32px;
+  padding: 6px 20px; background: rgba(245,184,76,.08);
+  border: 1px solid rgba(245,184,76,.15); border-radius: 16px;
+}
+.ncd-wave-bar {
+  width: 3px; border-radius: 2px; background: rgba(245,184,76,.5);
+  transition: height .15s;
+}
+.ncd-voice-label {
+  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase; color: rgba(120,90,50,.4); margin-top: 2px;
+}
+
+/* ── Slide 4: Tonight summary ── */
+.ncd-tonight-headline {
+  font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600;
+  color: rgba(40,25,10,.8); line-height: 1.3; text-align: center; margin-bottom: 8px;
+}
+.ncd-tonight-context {
+  font-family: 'Fraunces', serif; font-size: 14px; font-weight: 300; font-style: italic;
+  color: rgba(245,184,76,.7); line-height: 1.5; text-align: center; margin-bottom: 6px;
+}
+.ncd-tonight-note {
+  font-family: 'Nunito', sans-serif; font-size: 12px; color: rgba(60,40,20,.45);
+  line-height: 1.5; text-align: center; margin-bottom: 12px;
+}
+.ncd-tonight-meta {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1px;
+  color: rgba(120,90,50,.4);
+}
+.ncd-tonight-story-label {
+  font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 2px;
+  text-transform: uppercase; color: rgba(120,90,50,.3); margin-top: 12px;
+  border-top: 1px solid rgba(120,90,50,.08); padding-top: 8px; width: 100%; text-align: center;
+}
+
+/* ════════════════════════════════════════════
+   MID-PAGE CTA
+════════════════════════════════════════════ */
+.mid-cta {
+  padding: 48px 28px 56px;
+  display: flex; justify-content: center;
+  background: radial-gradient(ellipse at 50% 50%, rgba(245,184,76,.03), transparent 60%), #060912;
+}
+.mid-cta-inner { text-align: center; }
+
+/* ════════════════════════════════════════════
+   TRUST STRIP
+════════════════════════════════════════════ */
+.trust-strip {
+  display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
+  padding: 36px 28px; max-width: 600px; margin: 0 auto;
+}
+.trust-item {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Nunito', sans-serif; font-size: 12px; color: rgba(244,239,232,.45);
+}
+.trust-item span { font-size: 15px; }
+
+/* ════════════════════════════════════════════
+   FINAL CTA
+════════════════════════════════════════════ */
+.final {
+  position: relative; padding: 80px 28px 60px; display: flex; flex-direction: column;
+  align-items: center; text-align: center; overflow: hidden;
+}
+.final-elder { margin-bottom: 28px; }
+.final-elder img {
+  width: 160px; height: auto; object-fit: contain;
+  filter: drop-shadow(0 8px 32px rgba(120,100,200,.5)) drop-shadow(0 0 22px rgba(184,161,255,.3));
+  animation: elderFloat 4.5s ease-in-out infinite;
+}
+.final-headline {
+  font-family: 'Fraunces', serif; font-size: clamp(26px, 5.5vw, 40px); font-weight: 700;
+  color: #F4EFE8; line-height: 1.15; letter-spacing: -0.8px; margin-bottom: 14px; max-width: 460px;
+}
+.final-headline em { font-style: italic; color: #F5B84C; }
+.final-sub {
+  font-family: 'Fraunces', serif; font-size: 19px; font-weight: 300; font-style: italic;
+  color: rgba(234,242,255,.5); line-height: 1.6; margin-bottom: 36px;
+}
+.final-cta {
+  position: relative; padding: 19px 48px; border-radius: 18px; border: none;
+  background: linear-gradient(135deg, #F5B84C, #FFDFA3); color: #16110A;
+  font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700;
+  cursor: pointer; letter-spacing: -0.1px; box-shadow: 0 8px 32px rgba(245,184,76,.3);
+  overflow: hidden; margin-bottom: 16px; transition: transform .15s;
+}
+.final-cta:hover { transform: scale(1.03); box-shadow: 0 12px 40px rgba(245,184,76,.4); }
+.final-cta .shimmer {
+  position: absolute; inset: 0;
+  background: linear-gradient(108deg, transparent 30%, rgba(255,255,255,.22) 50%, transparent 70%);
+  animation: shimmer 5s infinite;
+}
+.final-trust {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(234,242,255,.22);
+  letter-spacing: 0.5px; margin-bottom: 48px;
+}
+.footer {
+  width: 100%; max-width: 520px; padding: 24px 0 0;
+  border-top: 1px solid rgba(255,255,255,.04);
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+}
+.footer-brand { font-family: 'Fraunces', serif; font-size: 12px; color: rgba(234,242,255,.2); }
+.footer-copy { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(234,242,255,.12); letter-spacing: 0.3px; }
+
+@media (max-width: 600px) {
+  .cinema { min-height: 500px; }
+  .cinema-phase { padding: 20px 24px; }
+  .phase-b-photo, .phase-b-glow, .phase-c-book-bg, .phase-d-nc-bg { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="nav-moon"></div>
+    <span class="nav-brand">SleepSeed</span>
+  </div>
+  <div class="nav-right">
+    <button class="btn-signin">Sign in</button>
+    <button class="btn-start">Start free</button>
+  </div>
+</nav>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-stars" id="hero-stars"></div>
+  <h1>Your child will say something <em>true</em> tonight.</h1>
+  <p class="hero-sub">
+    Every night before sleep, there's a window where they'll tell you
+    what they'd never say at dinner. SleepSeed opens it.
+  </p>
+  <button class="hero-cta">
+    <span style="position:relative;z-index:1">Start tonight — free</span>
+    <div class="shimmer"></div>
+  </button>
+  <div class="hero-trust">No credit card required</div>
+</section>
+
+<!-- ═══════════ PROBLEM + SOLUTION ═══════════ -->
+<section class="ps">
+  <div class="ps-grid">
+    <!-- Problem -->
+    <div class="reveal">
+      <div class="ps-kicker">Every night</div>
+      <div class="ps-q-row">
+        <span class="ps-q">"How was your day?"</span>
+        <span class="ps-a">"Fine."</span>
+      </div>
+      <div class="ps-q-row">
+        <span class="ps-q">"Are you nervous about school?"</span>
+        <span class="ps-a">[shrug]</span>
+      </div>
+      <div class="ps-q-row">
+        <span class="ps-q">"What are you thinking about?"</span>
+        <span class="ps-a">"Nothing."</span>
+      </div>
+      <div class="ps-punch">Children don't open up <em>on command.</em></div>
+    </div>
+
+    <!-- Solution -->
+    <div class="reveal d2">
+      <div class="ps-kicker">SleepSeed</div>
+      <div class="ps-sol-h">They open up to a <em>trusted friend</em>, in a story where they're the hero.</div>
+      <div class="ps-features">
+        <div class="ps-feat">
+          <div class="ps-feat-ico" style="background:rgba(245,184,76,.08);border:1px solid rgba(245,184,76,.15);">
+            <img src="/dreamkeepers/transparent/bunny.png" alt="">
+          </div>
+          <div>
+            <div class="ps-feat-title">A companion who asks what you can't</div>
+            <div class="ps-feat-desc">Your child's DreamKeeper joins every story &mdash; and your child tells it things they won't tell you directly.</div>
+          </div>
+        </div>
+        <div class="ps-feat">
+          <div class="ps-feat-ico" style="background:rgba(96,232,176,.06);border:1px solid rgba(96,232,176,.12);">
+            <span style="font-size:22px;">✨</span>
+          </div>
+          <div>
+            <div class="ps-feat-title">A story built from their real day</div>
+            <div class="ps-feat-desc">Personalised in seconds. Their name, their fears, their small victories &mdash; woven into the adventure.</div>
+          </div>
+        </div>
+        <div class="ps-feat">
+          <div class="ps-feat-ico" style="background:rgba(180,140,255,.06);border:1px solid rgba(180,140,255,.12);">
+            <span style="font-size:22px;">🌙</span>
+          </div>
+          <div>
+            <div class="ps-feat-title">A Night Card that captures the moment</div>
+            <div class="ps-feat-desc">What they said tonight. Saved forever. In ten years, you'll still have this.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CINEMATIC SLIDESHOW ═══════════ -->
+<section class="cinema" id="cinema">
+  <div class="cinema-glow" id="cinema-glow"></div>
+  <div class="cinema-purple-glow" id="cinema-purple"></div>
+
+  <div class="cinema-wrap">
+    <!-- PHASE A: DreamKeeper asks -->
+    <div class="cinema-phase" id="phase-a">
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div style="position:relative;">
+          <div class="owl-glow-ring"></div>
+          <div class="owl-wrap">
+            <svg width="180" height="212" viewBox="0 0 110 130" fill="none">
+              <ellipse cx="55" cy="80" rx="36" ry="44" fill="#0d1528"/>
+              <ellipse cx="55" cy="80" rx="36" ry="44" fill="url(#owlbg)" opacity="0.7"/>
+              <path d="M19 70 Q4 80 8 100 Q18 95 22 82 Z" fill="#0a1020"/>
+              <path d="M91 70 Q106 80 102 100 Q92 95 88 82 Z" fill="#0a1020"/>
+              <ellipse cx="55" cy="90" rx="20" ry="28" fill="#141e35" opacity="0.8"/>
+              <path d="M42 78 Q55 82 68 78" stroke="rgba(245,184,76,0.15)" stroke-width="1" fill="none"/>
+              <path d="M40 86 Q55 90 70 86" stroke="rgba(245,184,76,0.12)" stroke-width="1" fill="none"/>
+              <path d="M42 94 Q55 98 68 94" stroke="rgba(245,184,76,0.09)" stroke-width="1" fill="none"/>
+              <circle cx="55" cy="42" r="28" fill="#0d1528"/>
+              <path d="M34 22 L30 6 L40 18 Z" fill="#0d1528"/>
+              <path d="M76 22 L80 6 L70 18 Z" fill="#0d1528"/>
+              <ellipse cx="55" cy="44" rx="22" ry="20" fill="#111d30" opacity="0.9"/>
+              <circle cx="43" cy="42" r="11" fill="#060c18"/>
+              <circle cx="67" cy="42" r="11" fill="#060c18"/>
+              <g style="animation:blink 4s ease-in-out infinite;transform-origin:43px 42px;">
+                <circle cx="43" cy="42" r="9" fill="#E8972A"/>
+                <circle cx="43" cy="42" r="9" fill="url(#owleye1)" style="animation:eyeGlow 2.5s ease-in-out infinite;"/>
+                <circle cx="43" cy="42" r="5" fill="#030609"/>
+                <circle cx="46" cy="39" r="2" fill="rgba(255,255,255,0.6)"/>
+              </g>
+              <g style="animation:blink2 4s ease-in-out infinite 0.1s;transform-origin:67px 42px;">
+                <circle cx="67" cy="42" r="9" fill="#E8972A"/>
+                <circle cx="67" cy="42" r="9" fill="url(#owleye2)" style="animation:eyeGlow 2.5s ease-in-out infinite;"/>
+                <circle cx="67" cy="42" r="5" fill="#030609"/>
+                <circle cx="70" cy="39" r="2" fill="rgba(255,255,255,0.6)"/>
+              </g>
+              <path d="M51 50 L55 57 L59 50 Z" fill="#c4851c"/>
+              <path d="M42 122 L38 130 M42 122 L42 130 M42 122 L46 130" stroke="#c4851c" stroke-width="2" stroke-linecap="round"/>
+              <path d="M68 122 L64 130 M68 122 L68 130 M68 122 L72 130" stroke="#c4851c" stroke-width="2" stroke-linecap="round"/>
+              <defs>
+                <radialGradient id="owlbg" cx="50%" cy="30%"><stop offset="0%" stop-color="#1a2a4a"/><stop offset="100%" stop-color="#060912"/></radialGradient>
+                <radialGradient id="owleye1" cx="40%" cy="35%"><stop offset="0%" stop-color="#F5B84C"/><stop offset="60%" stop-color="#E8972A"/><stop offset="100%" stop-color="#7a4808"/></radialGradient>
+                <radialGradient id="owleye2" cx="40%" cy="35%"><stop offset="0%" stop-color="#F5B84C"/><stop offset="60%" stop-color="#E8972A"/><stop offset="100%" stop-color="#7a4808"/></radialGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+        <div class="owl-speech">
+          <span class="name">Sofia.</span><br>
+          You're back. I've been waiting.<br><br>
+          Tell me one thing.<br>
+          Big, small, silly, strange.<br>
+          <span class="name">Anything.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE B: Child's quote with faded photo -->
+    <div class="cinema-phase" id="phase-b">
+      <div class="phase-b-glow"></div>
+      <div class="phase-b-photo">
+        <img src="/sleepseed_sofia_nightcard.jpg" alt="">
+      </div>
+      <div class="phase-b-text">
+        <div class="phase-b-quote">
+          "I kept a caterpillar<br>in my pocket all day<br>so nobody would<br><em>step on it."</em>
+        </div>
+        <div class="phase-b-attr">Sofia &middot; age 6 &middot; what she said tonight</div>
+      </div>
+    </div>
+
+    <!-- PHASE C: Story title transform with book bg -->
+    <div class="cinema-phase" id="phase-c">
+      <div class="phase-c-book-bg">
+        <svg width="260" height="360" viewBox="0 0 200 280" fill="none">
+          <rect x="0" y="0" width="18" height="280" rx="3" fill="url(#spine)"/>
+          <rect x="18" y="0" width="182" height="280" rx="2" fill="url(#covergrd)"/>
+          <rect x="18" y="0" width="182" height="190" fill="url(#sky)"/>
+          <circle cx="60" cy="20" r="1.5" fill="rgba(255,240,180,0.9)"/>
+          <circle cx="110" cy="12" r="2" fill="rgba(255,240,180,0.95)"/>
+          <circle cx="150" cy="28" r="1.5" fill="rgba(255,240,180,0.8)"/>
+          <circle cx="80" cy="38" r="1" fill="rgba(255,240,180,0.7)"/>
+          <circle cx="170" cy="16" r="1.5" fill="rgba(255,240,180,0.85)"/>
+          <circle cx="162" cy="36" r="22" fill="url(#bookmoon)"/>
+          <rect x="18" y="162" width="182" height="28" fill="url(#ground)"/>
+          <path d="M88 160 Q84 140 80 130 Q94 126 108 130 Q104 140 100 160 Z" fill="#1a0828" opacity="0.8"/>
+          <rect x="88" y="112" width="12" height="18" rx="6" fill="#221035" opacity="0.8"/>
+          <circle cx="94" cy="108" r="9" fill="#1a0828" opacity="0.8"/>
+          <path d="M106 132 Q118 120 115 108" stroke="#221035" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.8"/>
+          <rect x="18" y="190" width="182" height="90" fill="#faf6ee"/>
+          <text x="30" y="212" font-family="Georgia,serif" font-size="13" font-weight="700" fill="#1a0f08" opacity="0.9">The Bravest Pocket</text>
+          <text x="30" y="228" font-family="Georgia,serif" font-size="13" font-weight="700" fill="#1a0f08" opacity="0.9">in the World</text>
+          <text x="30" y="248" font-family="monospace" font-size="8" fill="rgba(26,15,8,0.4)" letter-spacing="2">Sofia's story</text>
+          <circle cx="32" cy="264" r="6" fill="url(#logograd)"/>
+          <circle cx="32" cy="264" r="4" fill="#faf6ee"/>
+          <text x="42" y="268" font-family="Georgia,serif" font-size="8" font-weight="600" fill="rgba(26,15,8,0.4)">SleepSeed</text>
+          <rect x="190" y="0" width="10" height="280" fill="url(#pageedge)" opacity="0.4"/>
+          <defs>
+            <linearGradient id="spine" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#5a3008"/><stop offset="50%" stop-color="#c4851c"/><stop offset="100%" stop-color="#7a4808"/></linearGradient>
+            <linearGradient id="covergrd" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a2a5e"/><stop offset="100%" stop-color="#faf6ee"/></linearGradient>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a2a5e"/><stop offset="50%" stop-color="#2a3d7e"/><stop offset="100%" stop-color="#5a7ab8"/></linearGradient>
+            <radialGradient id="bookmoon" cx="40%" cy="38%"><stop offset="0%" stop-color="#F5D68A"/><stop offset="100%" stop-color="#c4851c"/></radialGradient>
+            <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d5a2d"/><stop offset="100%" stop-color="#1a3a1a"/></linearGradient>
+            <radialGradient id="logograd" cx="38%" cy="36%"><stop offset="0%" stop-color="#F5B84C"/><stop offset="100%" stop-color="#E8972A"/></radialGradient>
+            <linearGradient id="pageedge" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="rgba(200,190,170,0.3)"/><stop offset="100%" stop-color="rgba(200,190,170,0.7)"/></linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="phase-c-text">
+        <div class="phase-c-from">"I kept a caterpillar in my pocket..."</div>
+        <div class="phase-c-arrow"></div>
+        <div class="phase-c-title"><em>The Bravest Pocket</em><br>in the World</div>
+        <div class="phase-c-sub">Her story. Her words. Her adventure.</div>
+      </div>
+    </div>
+
+    <!-- PHASE D: She lit up + Night Card ghost -->
+    <div class="cinema-phase" id="phase-d">
+      <div class="phase-d-nc-bg">
+        <div class="phase-d-nc-inner">
+          <img class="phase-d-nc-photo" src="/sleepseed_sofia_nightcard.jpg" alt="">
+          <div class="phase-d-nc-body">
+            <div class="phase-d-nc-lbl">&#x2756; Night Card</div>
+            <div class="phase-d-nc-ttl">The Bravest Pocket in the World</div>
+            <div style="font-family:'Fraunces',serif;font-style:italic;font-size:10px;color:rgba(60,40,20,0.55);line-height:1.5;margin-top:2px;">
+              "I kept a caterpillar in my pocket..."
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:6px;border-top:1px solid rgba(60,40,20,0.08);font-family:'DM Mono',monospace;font-size:7px;color:rgba(60,40,20,0.3)">
+              <span>Sofia &middot; Apr 12</span><span>SleepSeed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phase-d-stack">
+        <div class="phase-d-line big">She <em>lit up.</em></div>
+        <div class="phase-d-rule"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div class="phase-d-line med">You keep that moment.</div>
+          <div class="phase-d-line med"><em>Forever.</em></div>
+        </div>
+        <div class="phase-d-meta">That's the whole thing. That's SleepSeed.</div>
+      </div>
+    </div>
+
+    <!-- Pills -->
+    <div class="cinema-pills">
+      <div class="cinema-pill on" id="pill-0"></div>
+      <div class="cinema-pill" id="pill-1"></div>
+      <div class="cinema-pill" id="pill-2"></div>
+      <div class="cinema-pill" id="pill-3"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ MID-PAGE CTA ═══════════ -->
+<section class="mid-cta">
+  <div class="mid-cta-inner reveal">
+    <button class="hero-cta" style="font-size:17px; padding:18px 44px;">
+      <span style="position:relative;z-index:1">Start tonight — free</span>
+      <div class="shimmer"></div>
+    </button>
+    <div class="hero-trust" style="margin-top:14px;">No credit card &middot; Ages 3&ndash;11 &middot; Works on any device</div>
+  </div>
+</section>
+
+<!-- ═══════════ INTERACTIVE NIGHT CARD ═══════════ -->
+<section class="nightcard">
+  <div class="nightcard-glow"></div>
+
+  <div class="nightcard-header reveal">
+    <div class="nightcard-subtitle" style="margin-bottom:6px;">This is a real Night Card. Swipe through it.</div>
+  </div>
+
+  <!-- The Card -->
+  <div class="ncd reveal d1" id="ncd">
+    <!-- Photo zone -->
+    <div class="ncd-photo">
+      <img src="/nightcard-demo.jpg" alt="">
+      <div class="ncd-photo-overlay"></div>
+      <div class="ncd-close">&times;</div>
+      <div class="ncd-night-badge">
+        <span class="ncd-night-badge-emoji">🥰</span>
+        <span class="ncd-night-badge-text">Night 1</span>
+      </div>
+    </div>
+
+    <!-- Bottom slider -->
+    <div class="ncd-bottom">
+      <!-- Section label (updates per slide) -->
+      <div class="ncd-section-label" id="ncd-label">Tonight</div>
+
+      <div class="ncd-slider">
+        <!-- Arrows -->
+        <div class="ncd-arrow left" onclick="ncSlide(-1)">&lsaquo;</div>
+        <div class="ncd-arrow right" onclick="ncSlide(1)">&rsaquo;</div>
+
+        <div class="ncd-slides" id="ncd-slides">
+          <!-- SLIDE 1: Tonight -->
+          <div class="ncd-slide">
+            <div class="ncd-tonight-headline">Cozy, and asking for more.</div>
+            <div class="ncd-tonight-context">It was a great day hanging out with my girls...</div>
+            <div class="ncd-tonight-note">Sofia curled up warm tonight, so cozy she kept calling for one more round.</div>
+            <div class="ncd-tonight-meta">
+              <span>🥰</span>
+              <span>&middot; APR 05</span>
+              <span>&middot; 8:17 PM</span>
+            </div>
+            <div class="ncd-tonight-story-label">Tonight's Story</div>
+          </div>
+
+          <!-- SLIDE 2: What She Said -->
+          <div class="ncd-slide">
+            <div class="ncd-quote-text">
+              "Riding my bike with Dodo and playing outside with daddy and then doing a spa day"
+            </div>
+            <div class="ncd-quote-attr">
+              Sofia &middot; Age 4 <span style="font-size:14px;">🎨</span>
+            </div>
+          </div>
+
+          <!-- SLIDE 3: Her Voice -->
+          <div class="ncd-slide">
+            <div class="ncd-voice-wrap">
+              <button class="ncd-voice-btn" id="ncd-voice-btn" onclick="event.stopPropagation(); playVoice();">
+                <svg viewBox="0 0 24 24" id="ncd-play-icon"><polygon points="8,5 19,12 8,19"/></svg>
+              </button>
+              <div class="ncd-waveform" id="ncd-waveform"></div>
+              <div class="ncd-voice-label" id="ncd-voice-label">Recorded</div>
+            </div>
+          </div>
+
+          <!-- SLIDE 4: What She Drew -->
+          <div class="ncd-slide">
+            <div class="ncd-drawing-frame">
+              <div class="ncd-tape tl"></div>
+              <div class="ncd-tape tr"></div>
+              <!-- Inline SVG drawing matching the screenshot -->
+              <svg class="ncd-drawing-img" viewBox="0 0 220 140" style="display:block;width:100%;">
+                <rect width="220" height="140" fill="#fefcf4"/>
+                <line x1="30" y1="20" x2="25" y2="125" stroke="#3366cc" stroke-width="4" stroke-linecap="round"/>
+                <line x1="50" y1="30" x2="40" y2="120" stroke="#33aa33" stroke-width="3.5" stroke-linecap="round"/>
+                <line x1="68" y1="18" x2="72" y2="80" stroke="#9933cc" stroke-width="3" stroke-linecap="round"/>
+                <line x1="72" y1="80" x2="60" y2="130" stroke="#9933cc" stroke-width="3" stroke-linecap="round"/>
+                <line x1="90" y1="25" x2="95" y2="75" stroke="#cc3333" stroke-width="3.5" stroke-linecap="round"/>
+                <line x1="95" y1="75" x2="85" y2="125" stroke="#cc3333" stroke-width="3.5" stroke-linecap="round"/>
+                <line x1="115" y1="22" x2="110" y2="128" stroke="#33aa33" stroke-width="3" stroke-linecap="round"/>
+                <line x1="135" y1="28" x2="140" y2="122" stroke="#eeaa00" stroke-width="4" stroke-linecap="round"/>
+                <line x1="158" y1="20" x2="155" y2="80" stroke="#ee6600" stroke-width="3.5" stroke-linecap="round"/>
+                <line x1="155" y1="80" x2="160" y2="130" stroke="#ee6600" stroke-width="3.5" stroke-linecap="round"/>
+                <line x1="180" y1="25" x2="185" y2="70" stroke="#cc2222" stroke-width="3" stroke-linecap="round"/>
+                <line x1="185" y1="70" x2="178" y2="125" stroke="#cc2222" stroke-width="3" stroke-linecap="round"/>
+                <line x1="200" y1="30" x2="195" y2="120" stroke="#3366cc" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+              <div class="ncd-drawing-attr">Sofia, Age 4-6</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dots -->
+      <div class="ncd-dots" id="ncd-dots">
+        <div class="ncd-dot on" onclick="ncGoTo(0)"></div>
+        <div class="ncd-dot" onclick="ncGoTo(1)"></div>
+        <div class="ncd-dot" onclick="ncGoTo(2)"></div>
+        <div class="ncd-dot" onclick="ncGoTo(3)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nightcard-caption reveal d2">
+    One day she'll be 16 and you'll open this card.<br>
+    You'll remember exactly how her voice sounded.
+  </div>
+</section>
+
+<!-- ═══════════ TRUST STRIP ═══════════ -->
+<div class="trust-strip reveal">
+  <div class="trust-item"><span>🔒</span> Private by design</div>
+  <div class="trust-item"><span>📵</span> No ads, ever</div>
+  <div class="trust-item"><span>🧒</span> Ages 3&ndash;11</div>
+  <div class="trust-item"><span>📱</span> Works on any device</div>
+</div>
+
+<!-- ═══════════ FINAL CTA ═══════════ -->
+<section class="final">
+  <div class="final-elder reveal">
+    <img src="/elder/transparent/elder.png" alt="The Elder DreamKeeper">
+  </div>
+  <div class="final-headline reveal d1">These nights are <em>happening right now.</em></div>
+  <div class="final-sub reveal d2">Will you be listening?</div>
+  <button class="final-cta reveal d3">
+    <span style="position:relative;z-index:1">Start tonight — free</span>
+    <div class="shimmer"></div>
+  </button>
+  <div class="final-trust reveal d4">No credit card required &middot; Cancel any time</div>
+  <div class="footer">
+    <div class="footer-brand">SleepSeed</div>
+    <div class="footer-copy">&copy; 2026 SleepSeed &middot; Privacy &middot; Terms</div>
+  </div>
+</section>
+
+<script>
+// ── Stars ──
+function makeStars(container, count) {
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = (Math.random() * 1.4 + 0.4).toFixed(1);
+    s.style.cssText = `
+      --star-s:${size}px; --star-o:${(Math.random()*.35+.05).toFixed(2)};
+      --star-dur:${(2.5+Math.random()*3).toFixed(1)}s; --star-del:${(Math.random()*4).toFixed(1)}s;
+      left:${(Math.random()*100).toFixed(1)}%; top:${(Math.random()*100).toFixed(1)}%;
+    `;
+    container.appendChild(s);
+  }
+}
+makeStars(document.getElementById('hero-stars'), 40);
+
+// ── Night Card Slider ──
+const SLIDE_LABELS = ['Tonight', 'What She Said', 'Her Voice', 'What She Drew'];
+let ncSlideIndex = 0;
+
+function ncGoTo(i) {
+  ncSlideIndex = Math.max(0, Math.min(3, i));
+  document.getElementById('ncd-slides').style.transform = 'translateX(-' + (ncSlideIndex * 25) + '%)';
+  document.getElementById('ncd-label').textContent = SLIDE_LABELS[ncSlideIndex];
+  const dots = document.querySelectorAll('.ncd-dot');
+  dots.forEach(function(d, j) { d.classList.toggle('on', j === ncSlideIndex); });
+}
+function ncSlide(dir) { ncGoTo(ncSlideIndex + dir); }
+
+// Build waveform bars
+var waveWrap = document.getElementById('ncd-waveform');
+var barHeights = [8,14,20,28,22,30,18,26,32,24,16,28,20,14,24,30,18,22,28,16,12,20,26,14,10];
+barHeights.forEach(function(h) {
+  var bar = document.createElement('div');
+  bar.className = 'ncd-wave-bar';
+  bar.style.height = h + 'px';
+  waveWrap.appendChild(bar);
+});
+
+// Touch swipe support
+var touchStartX = 0;
+var sliderEl = document.getElementById('ncd-slides');
+sliderEl.addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; }, { passive: true });
+sliderEl.addEventListener('touchend', function(e) {
+  var dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 40) ncSlide(dx < 0 ? 1 : -1);
+}, { passive: true });
+
+// ── Voice playback (TTS fallback or real file) ──
+var VOICE_AUDIO_URL = ''; // Set to '/sofia-voice.mp3' for real recording
+var VOICE_QUOTE = "Riding my bike with Dodo and playing outside with daddy and then doing a spa day";
+var voicePlaying = false;
+
+function playVoice() {
+  var labelEl = document.getElementById('ncd-voice-label');
+  var iconEl = document.getElementById('ncd-play-icon');
+  var bars = document.querySelectorAll('.ncd-wave-bar');
+
+  if (voicePlaying) {
+    speechSynthesis.cancel();
+    voicePlaying = false;
+    labelEl.textContent = 'Recorded';
+    iconEl.innerHTML = '<polygon points="8,5 19,12 8,19"/>';
+    bars.forEach(function(b) { b.style.background = 'rgba(245,184,76,.5)'; });
+    return;
+  }
+
+  if (VOICE_AUDIO_URL) {
+    var a = new Audio(VOICE_AUDIO_URL);
+    a.play(); voicePlaying = true;
+    labelEl.textContent = 'Playing...';
+    iconEl.innerHTML = '<rect x="7" y="5" width="3" height="14" rx="1"/><rect x="14" y="5" width="3" height="14" rx="1"/>';
+    animateWave(bars);
+    a.onended = function() {
+      voicePlaying = false; labelEl.textContent = 'Recorded';
+      iconEl.innerHTML = '<polygon points="8,5 19,12 8,19"/>';
+      bars.forEach(function(b) { b.style.background = 'rgba(245,184,76,.5)'; });
+    };
+    return;
+  }
+
+  // TTS fallback
+  if (!('speechSynthesis' in window)) { labelEl.textContent = 'Not supported'; return; }
+  var u = new SpeechSynthesisUtterance(VOICE_QUOTE);
+  var voices = speechSynthesis.getVoices();
+  var v = voices.find(function(v) { return /female|samantha|zira|karen|fiona|tessa/i.test(v.name) && /en/i.test(v.lang); })
+    || voices.find(function(v) { return /en/i.test(v.lang); }) || voices[0];
+  if (v) u.voice = v;
+  u.pitch = 1.6; u.rate = 0.85;
+  u.onstart = function() {
+    voicePlaying = true; labelEl.textContent = 'Playing...';
+    iconEl.innerHTML = '<rect x="7" y="5" width="3" height="14" rx="1"/><rect x="14" y="5" width="3" height="14" rx="1"/>';
+    animateWave(bars);
+  };
+  u.onend = function() {
+    voicePlaying = false; labelEl.textContent = 'Recorded';
+    iconEl.innerHTML = '<polygon points="8,5 19,12 8,19"/>';
+    bars.forEach(function(b) { b.style.background = 'rgba(245,184,76,.5)'; });
+  };
+  u.onerror = u.onend;
+  speechSynthesis.speak(u);
+}
+
+function animateWave(bars) {
+  (function run() {
+    if (!voicePlaying) return;
+    bars.forEach(function(b) {
+      b.style.height = (6 + Math.random() * 28) + 'px';
+      b.style.background = 'rgba(245,184,76,' + (0.4 + Math.random() * 0.4).toFixed(2) + ')';
+    });
+    requestAnimationFrame(run);
+  })();
+}
+
+if ('speechSynthesis' in window) {
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = function() { speechSynthesis.getVoices(); };
+}
+
+// ── Cinematic Slideshow (4-phase auto-play) ──
+let cinemaPlayed = false;
+const cinemaObs = new IntersectionObserver(([e]) => {
+  if (e.isIntersecting && !cinemaPlayed) {
+    cinemaPlayed = true;
+    runCinema();
+  }
+  if (e.boundingClientRect.top > window.innerHeight) {
+    cinemaPlayed = false;
+  }
+}, { threshold: 0.3 });
+cinemaObs.observe(document.getElementById('cinema'));
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function runCinema() {
+  const phases = ['phase-a','phase-b','phase-c','phase-d'];
+  const pills = ['pill-0','pill-1','pill-2','pill-3'];
+  const glow = document.getElementById('cinema-glow');
+  const purple = document.getElementById('cinema-purple');
+
+  // Reset all
+  phases.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.transition = 'opacity 0s'; el.style.opacity = '0'; }
+  });
+  pills.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('on','done'); }
+  });
+  if (glow) { glow.style.opacity = '0'; glow.style.transform = 'translate(-50%,-50%) scale(0.3)'; }
+  if (purple) { purple.style.opacity = '0'; }
+  await sleep(300);
+
+  // Phase A: DreamKeeper owl asks (3.2s)
+  const a = document.getElementById('phase-a');
+  a.style.transition = 'opacity 0.5s ease'; a.style.opacity = '1';
+  document.getElementById('pill-0').classList.add('on');
+  await sleep(3200);
+  a.style.transition = 'opacity 0.8s ease'; a.style.opacity = '0';
+  if (glow) { glow.style.opacity = '0.5'; glow.style.transform = 'translate(-50%,-50%) scale(1)'; }
+  await sleep(600);
+
+  // Phase B: Child's quote (4.5s)
+  const b = document.getElementById('phase-b');
+  b.style.transition = 'opacity 0.55s ease'; b.style.opacity = '1';
+  document.getElementById('pill-0').classList.remove('on');
+  document.getElementById('pill-0').classList.add('done');
+  document.getElementById('pill-1').classList.add('on');
+  await sleep(4500);
+  b.style.transition = 'opacity 1s ease'; b.style.opacity = '0';
+  await sleep(700);
+
+  // Phase C: Story title (4s)
+  const c = document.getElementById('phase-c');
+  c.style.transition = 'opacity 0.5s ease'; c.style.opacity = '1';
+  if (purple) purple.style.opacity = '0.5';
+  document.getElementById('pill-1').classList.remove('on');
+  document.getElementById('pill-1').classList.add('done');
+  document.getElementById('pill-2').classList.add('on');
+  await sleep(4000);
+  c.style.transition = 'opacity 0.8s ease'; c.style.opacity = '0';
+  if (glow) glow.style.opacity = '0.2';
+  if (purple) purple.style.opacity = '0.2';
+  await sleep(600);
+
+  // Phase D: She lit up (holds)
+  const d = document.getElementById('phase-d');
+  d.style.transition = 'opacity 0.5s ease'; d.style.opacity = '1';
+  document.getElementById('pill-2').classList.remove('on');
+  document.getElementById('pill-2').classList.add('done');
+  document.getElementById('pill-3').classList.add('on');
+}
+
+// ── Scroll Reveal ──
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('vis'); revealObs.unobserve(e.target); }
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -36px 0px' });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+</script>
+
+</body>
+</html>

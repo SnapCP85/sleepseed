@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SleepSeed Bookmark — Print Ready (2" x 7" @ 300dpi)</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── Print page definition ── */
+  @page { size: 2in 7in; margin: 0; }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    margin: 0;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ── Bookmark: 2in x 7in @ 300dpi = 600 x 2100px ── */
+  .bookmark {
+    width: 600px;
+    height: 2100px;
+    position: relative;
+    overflow: hidden;
+    background: #060912;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ══════════════════════════════════════
+     TOP HALF — Sky + Egg + QR
+  ══════════════════════════════════════ */
+  .hero {
+    position: relative;
+    width: 100%;
+    height: 1000px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  /* Night sky */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 140% 50% at 50% 5%, rgba(120,80,200,.3), transparent),
+      radial-gradient(ellipse 100% 40% at 25% 20%, rgba(80,50,160,.2), transparent),
+      radial-gradient(ellipse 90% 35% at 75% 35%, rgba(60,40,140,.15), transparent),
+      radial-gradient(ellipse 80% 30% at 50% 75%, rgba(245,184,76,.04), transparent),
+      linear-gradient(175deg, #0e1030 0%, #14103a 25%, #0e0b28 50%, #080614 75%, #060912 100%);
+    z-index: 0;
+  }
+
+  /* Stars */
+  .stars { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  .star { position: absolute; border-radius: 50%; background: #fff; }
+  .star.bright { box-shadow: 0 0 3px rgba(255,255,255,.4); }
+  .star.sparkle { animation: twinkle 3s ease-in-out infinite; }
+  @keyframes twinkle { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.7; } }
+
+  /* Mist */
+  .mist { position: absolute; border-radius: 50%; pointer-events: none; z-index: 2; }
+  .mist-1 {
+    width: 500px; height: 200px; bottom: 140px; left: -60px;
+    background: radial-gradient(ellipse, rgba(100,70,160,.08), transparent 70%);
+    filter: blur(30px);
+  }
+  .mist-2 {
+    width: 400px; height: 160px; bottom: 100px; right: -80px;
+    background: radial-gradient(ellipse, rgba(60,40,120,.06), transparent 70%);
+    filter: blur(25px);
+  }
+
+  /* Hero content */
+  .hero-content {
+    position: relative; z-index: 10;
+    display: flex; flex-direction: column; align-items: center;
+    padding-top: 48px; width: 100%;
+  }
+
+  /* Logo */
+  .logo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 36px; }
+  .logo-moon {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #f5c060, #c87020);
+    position: relative;
+    box-shadow: 0 0 14px rgba(245,184,76,.35);
+  }
+  .logo-moon::after {
+    content: ''; position: absolute;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #0e1030; top: -4px; left: -7px;
+  }
+  .logo-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px; font-weight: 500;
+    color: rgba(244,239,232,.65);
+    letter-spacing: 4px; text-transform: uppercase;
+  }
+
+  /* Headline */
+  .hero-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 58px; font-weight: 900;
+    color: #F4EFE8; line-height: 1.05;
+    letter-spacing: -1.5px; text-align: center;
+    max-width: 500px; margin-bottom: 6px;
+    text-shadow: 0 2px 30px rgba(0,0,0,.4);
+  }
+  .hero-headline em {
+    font-style: italic; color: #F5B84C;
+    text-shadow: 0 0 30px rgba(245,184,76,.25);
+  }
+  .hero-headline .line-small {
+    font-size: 44px; font-weight: 700; display: block;
+    color: rgba(244,239,232,.85);
+  }
+
+  /* Egg */
+  .egg-area {
+    position: relative; width: 260px; height: 290px;
+    margin: 10px auto 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .dream-egg {
+    position: relative; width: 155px; height: 190px;
+    animation: eggFloat 4s ease-in-out infinite;
+  }
+  @keyframes eggFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(1deg); }
+  }
+  .egg-glow {
+    position: absolute; inset: -30px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(246,197,111,.22) 0%, rgba(184,161,255,.14) 40%, transparent 70%);
+    filter: blur(20px);
+    animation: eggGlowPulse 3s ease-in-out infinite;
+  }
+  @keyframes eggGlowPulse {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.06); }
+  }
+  .egg-shell {
+    position: absolute; inset: 0;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    border: 1px solid rgba(255,255,255,.12); overflow: hidden;
+  }
+  .egg-inner {
+    position: absolute; inset: 8px;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    background: radial-gradient(circle at 35% 28%, rgba(255,243,214,.9) 0%, rgba(246,197,111,.7) 15%, rgba(184,161,255,.42) 34%, rgba(17,23,53,.96) 72%);
+    border: 1px solid rgba(255,255,255,.06);
+  }
+  .egg-spec {
+    position: absolute; inset: 0; border-radius: inherit;
+    background: radial-gradient(circle at 30% 24%, rgba(255,255,255,.4), transparent 28%);
+  }
+  .egg-bloom {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px; height: 100px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(246,197,111,.5) 0%, rgba(111,231,221,.15) 45%, transparent 70%);
+    filter: blur(18px);
+    animation: eggGlowPulse 2.5s ease-in-out infinite;
+  }
+  .egg-sprout {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -55%); z-index: 5; opacity: 0.85;
+  }
+  .egg-sprout svg { filter: drop-shadow(0 0 12px rgba(246,197,111,.6)); }
+  .egg-particle {
+    position: absolute; width: 5px; height: 5px;
+    border-radius: 50%; pointer-events: none;
+  }
+  @keyframes particleRise {
+    0% { opacity: 0; transform: translateY(0) scale(.6); }
+    30% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-60px) scale(0); }
+  }
+
+  /* QR Section */
+  .hero-qr-section {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 10px; margin-top: 14px;
+  }
+  .qr-box {
+    width: 112px; height: 112px;
+    background: #fff; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.08);
+    padding: 8px;
+  }
+  .qr-box img, .qr-box svg { width: 100%; height: 100%; display: block; }
+  .qr-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    color: rgba(244,239,232,.35);
+    letter-spacing: 2px; text-transform: uppercase;
+  }
+
+  /* Tagline */
+  .hero-tagline {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px; font-weight: 500;
+    color: rgba(244,239,232,.45);
+    letter-spacing: 3.5px; text-transform: uppercase;
+    margin-top: 20px; text-align: center;
+  }
+
+  /* ══════════════════════════════════════
+     DIVIDER
+  ══════════════════════════════════════ */
+  .panel-divider {
+    width: 100%; display: flex; align-items: center;
+    justify-content: center; gap: 14px; padding: 24px 0 20px;
+    position: relative; z-index: 5;
+  }
+  .panel-divider-line {
+    width: 120px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(245,184,76,.2), transparent);
+  }
+  .panel-divider-star {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px; color: rgba(245,184,76,.3);
+  }
+
+  /* ══════════════════════════════════════
+     BOTTOM HALF — Ritual steps + creature
+  ══════════════════════════════════════ */
+  .lower {
+    position: relative; z-index: 5; flex: 1;
+    width: 100%; display: flex; flex-direction: column;
+    align-items: center; padding: 0 48px;
+  }
+
+  .ritual-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px; font-weight: 700;
+    color: #F4EFE8; line-height: 1.15;
+    letter-spacing: -1px; text-align: left;
+    width: 100%; margin-bottom: 30px;
+  }
+  .ritual-headline em { font-style: italic; color: #F5B84C; }
+
+  /* Steps */
+  .step-block { width: 100%; margin-bottom: 24px; text-align: left; }
+  .step-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 4px; text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .step-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 40px; font-weight: 700; font-style: italic;
+    color: #F4EFE8; line-height: 1.15; letter-spacing: -0.5px;
+  }
+  .step-sub {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px; font-weight: 300;
+    color: rgba(234,242,255,.32); line-height: 1.5;
+    margin-top: 3px;
+  }
+
+  .lower-divider {
+    width: 50px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(245,184,76,.25), transparent);
+    margin: 8px 0 20px;
+  }
+
+  /* Closing */
+  .closing {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px; font-weight: 400;
+    color: rgba(244,239,232,.55);
+    line-height: 1.6; text-align: center; max-width: 420px;
+  }
+  .closing em { font-style: italic; color: rgba(245,184,76,.65); }
+
+  /* Creature scene */
+  .creature-scene {
+    margin-top: auto; width: 100%; height: 320px;
+    position: relative; overflow: hidden;
+  }
+  .creature-scene::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 100% 80% at 50% 90%, rgba(245,184,76,.06), transparent),
+      radial-gradient(ellipse 80% 60% at 30% 100%, rgba(140,100,60,.05), transparent);
+    pointer-events: none;
+  }
+  .creature-img {
+    position: absolute; bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 480px; height: auto; object-fit: contain;
+    mask-image: linear-gradient(to top, rgba(0,0,0,1) 20%, rgba(0,0,0,.9) 60%, transparent 95%),
+                linear-gradient(to right, transparent 2%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 85%, transparent 98%);
+    mask-composite: intersect;
+    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 20%, rgba(0,0,0,.9) 60%, transparent 95%),
+                        linear-gradient(to right, transparent 2%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 85%, transparent 98%);
+    -webkit-mask-composite: source-in;
+  }
+  .scene-moon {
+    position: absolute; top: 20px; right: 50px;
+    width: 42px; height: 42px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #f5d88a, #d4a030);
+    box-shadow: 0 0 30px rgba(245,200,90,.25), 0 0 60px rgba(245,200,90,.1);
+    z-index: 2;
+  }
+  .scene-moon::after {
+    content: ''; position: absolute;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #060912; top: -6px; left: -12px;
+  }
+
+  /* URL footer */
+  .bookmark-footer {
+    position: absolute; bottom: 20px; left: 0; right: 0;
+    text-align: center; z-index: 20;
+  }
+  .bookmark-footer span {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; font-weight: 500;
+    color: rgba(244,239,232,.25);
+    letter-spacing: 3px;
+  }
+
+  /* ── Print overrides ── */
+  @media print {
+    body { background: none; }
+    .bookmark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .star.sparkle { animation: none; opacity: 0.4; }
+    .dream-egg { animation: none; }
+    .egg-glow { animation: none; opacity: 0.85; }
+    .egg-bloom { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bookmark">
+
+  <!-- ═══════════ TOP: Hero ═══════════ -->
+  <div class="hero">
+    <div class="stars" id="stars"></div>
+    <div class="mist mist-1"></div>
+    <div class="mist mist-2"></div>
+
+    <div class="hero-content">
+
+      <!-- Logo -->
+      <div class="logo-row">
+        <div class="logo-moon"></div>
+        <span class="logo-text">SleepSeed</span>
+      </div>
+
+      <!-- Headline -->
+      <div class="hero-headline">
+        Adopt a<br>
+        <em>Dream Egg</em><br>
+        <span class="line-small">Tonight</span>
+      </div>
+
+      <!-- Dream Egg -->
+      <div class="egg-area">
+        <div class="dream-egg">
+          <div class="egg-glow"></div>
+          <div class="egg-shell">
+            <div class="egg-inner"><div class="egg-spec"></div></div>
+            <div class="egg-bloom"></div>
+            <div class="egg-sprout">
+              <svg width="36" height="44" viewBox="0 0 36 44" fill="none">
+                <path d="M18 42 V22" stroke="rgba(246,220,150,.7)" stroke-width="2" stroke-linecap="round"/>
+                <path d="M18 26 C18 18, 8 14, 4 8 C12 12, 17 16, 18 22" fill="rgba(180,220,160,.5)"/>
+                <path d="M18 24 C18 16, 28 12, 32 6 C24 10, 19 14, 18 20" fill="rgba(160,210,140,.45)"/>
+              </svg>
+            </div>
+            <div class="egg-particle" style="background:#F6C56F; box-shadow:0 0 8px rgba(246,197,111,.6); left:22%; top:20%; animation:particleRise 2.2s 0s ease-out infinite;"></div>
+            <div class="egg-particle" style="background:#B8A1FF; box-shadow:0 0 8px rgba(184,161,255,.6); left:65%; top:30%; animation:particleRise 2.0s 0.3s ease-out infinite;"></div>
+            <div class="egg-particle" style="background:#F6C56F; box-shadow:0 0 8px rgba(246,197,111,.6); left:40%; top:15%; animation:particleRise 2.4s 0.6s ease-out infinite;"></div>
+            <div class="egg-particle" style="background:#B8A1FF; box-shadow:0 0 8px rgba(184,161,255,.6); left:75%; top:45%; animation:particleRise 1.9s 0.9s ease-out infinite;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QR Code -->
+      <div class="hero-qr-section">
+        <div class="qr-box" id="qrBox">
+          <!-- QR code rendered by JS below -->
+        </div>
+        <span class="qr-hint">Scan to begin</span>
+      </div>
+
+      <!-- Tagline -->
+      <div class="hero-tagline">3 nights. One magical bond.</div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════ DIVIDER ═══════════ -->
+  <div class="panel-divider">
+    <div class="panel-divider-line"></div>
+    <div class="panel-divider-star">&#10022;</div>
+    <div class="panel-divider-line"></div>
+  </div>
+
+  <!-- ═══════════ BOTTOM: Ritual ═══════════ -->
+  <div class="lower">
+
+    <div class="ritual-headline">
+      Tonight,<br><em>something</em><br>begins.
+    </div>
+
+    <div class="step-block">
+      <div class="step-label" style="color: rgba(245,184,76,.55);">Step One</div>
+      <div class="step-headline">A moment.</div>
+      <div class="step-sub">Share what happened today.</div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-label" style="color: rgba(96,232,176,.5);">Step Two</div>
+      <div class="step-headline">A story.</div>
+      <div class="step-sub">They're the hero. Their friend is beside them.</div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-label" style="color: rgba(180,140,255,.55);">Step Three</div>
+      <div class="step-headline">A memory&mdash;kept.</div>
+      <div class="step-sub">What they said before sleep, saved forever.</div>
+    </div>
+
+    <div class="lower-divider"></div>
+
+    <div class="closing">
+      Each night, you'll create<br>
+      something they'll <em>carry forever.</em>
+    </div>
+
+    <!-- Creature scene -->
+    <div class="creature-scene">
+      <div class="scene-moon"></div>
+      <img class="creature-img" src="/dreamkeepers/cat.jpg" alt="DreamKeeper companion" />
+    </div>
+
+  </div>
+
+  <!-- URL footer -->
+  <div class="bookmark-footer">
+    <span>sleepseed.app</span>
+  </div>
+
+</div>
+
+<script>
+  // ── Starfield ──
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 90; i++) {
+    const s = document.createElement('div');
+    const r = Math.random();
+    let px, cls = 'star';
+    if (r < 0.55) { px = 0.8; }
+    else if (r < 0.82) { px = 1.3; cls += ' bright'; }
+    else { px = 2; cls += ' bright sparkle'; }
+    s.className = cls;
+    s.style.cssText = `width:${px}px;height:${px}px;left:${Math.random()*100}%;top:${Math.random()*100}%;opacity:${(Math.random()*0.4+0.08).toFixed(2)};${cls.includes('sparkle')?`animation-delay:${(Math.random()*4).toFixed(1)}s;animation-duration:${(2.5+Math.random()*2.5).toFixed(1)}s;`:''}`;
+    starsEl.appendChild(s);
+  }
+
+  // ── QR Code Generator (compact, no dependencies) ──
+  // Generates a simple QR-style matrix for the given URL
+  // For production print, replace this with a high-res QR image from a dedicated generator
+  (function generateQR() {
+    const url = 'https://sleepseed.app';
+    const box = document.getElementById('qrBox');
+
+    // Simple visual QR pattern — for actual scanning, replace with a real QR code image
+    // Using an API-generated QR as an image fallback
+    const img = document.createElement('img');
+    img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(url) + '&margin=0&format=svg';
+    img.alt = 'Scan to visit sleepseed.app';
+    img.style.cssText = 'width:100%;height:100%;display:block;';
+    img.onerror = function() {
+      // Fallback: show text if API unavailable
+      box.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:11px;color:#333;text-align:center;line-height:1.4;">QR CODE<br><span style="font-size:9px;color:#888;">sleepseed.app</span></div>';
+    };
+    box.appendChild(img);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,2 +1,2 @@
-// Re-export legacy homepage — the original pre-modular version
-export { default } from './PublicHomepage_LEGACY';
+// Live homepage — iframe wrapper around homepage-preview.html
+export { default } from './homepage/HomepageLive';
