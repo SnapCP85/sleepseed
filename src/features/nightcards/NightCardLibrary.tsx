@@ -620,7 +620,7 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
     const url = await generateShareLinkFn(nc);
     if (navigator.share) {
       // Share the link (with optional image attachment)
-      const shareData: ShareData = { title: `${nc.heroName}'s Night Card`, url: url || undefined, text: `${nc.headline || nc.storyTitle} — a bedtime memory` };
+      const shareData: ShareData = { title: `${nc.heroName}'s Night Card`, url: url || undefined, text: `${nc.headline || nc.storyTitle} — a bedtime memory\n${url || ''}` };
       const blob = await generateNightCardImage({ heroName: nc.heroName, headline: nc.headline || nc.storyTitle, quote: nc.quote, emoji: nc.emoji, date: nc.date, photo: nc.photo, nightNumber: nc.nightNumber, creatureEmoji: nc.creatureEmoji, creatureColor: nc.creatureColor, isOrigin: nc.isOrigin, whisper: nc.whisper });
       if (blob) {
         const file = new File([blob], `nightcard-${nc.heroName}-${nc.date}.png`, { type: 'image/png' });
