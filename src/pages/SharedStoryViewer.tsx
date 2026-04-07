@@ -216,7 +216,27 @@ export default function SharedStoryViewer({ token }: { token?: string } = {}) {
           Sweet dreams, {story.n}.<br />
           Tomorrow night, another adventure awaits…
         </div>
-        <div style={{ fontFamily: 'var(--serif2)', fontSize: 10, color: 'rgba(232,151,42,.3)', marginTop: 4 }}>
+        <button
+          onClick={async () => {
+            if (!story) return;
+            const { generateStoryPdf } = await import('../lib/shareUtils');
+            await generateStoryPdf({
+              title: story.t,
+              heroName: story.n,
+              refrain: story.r,
+              pages: story.p.map(pg => ({ text: typeof pg === 'string' ? pg : (pg.t || '') })),
+            });
+          }}
+          style={{
+            marginTop: 16, padding: '10px 24px', borderRadius: 50,
+            border: '1px solid rgba(245,184,76,.3)', background: 'rgba(245,184,76,.08)',
+            color: 'rgba(245,184,76,.8)', fontSize: 13, fontWeight: 600,
+            cursor: 'pointer', fontFamily: "var(--sans2)", transition: 'all .2s',
+          }}
+        >
+          📄 Download PDF
+        </button>
+        <div style={{ fontFamily: 'var(--serif2)', fontSize: 10, color: 'rgba(232,151,42,.3)', marginTop: 12 }}>
           🌙 SleepSeed
         </div>
       </div>

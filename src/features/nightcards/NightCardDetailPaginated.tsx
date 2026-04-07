@@ -78,7 +78,7 @@ const CSS = `
 .ncd-photo-zone {
   position: relative;
   width: 100%;
-  height: 320px;
+  height: min(320px, 45vh);
   border-radius: 5px;
   overflow: hidden;
   background: var(--ncd-night);
@@ -390,7 +390,7 @@ const CSS = `
   position: relative;
   overflow: hidden;
   min-width: 0;
-  min-height: 0;
+  min-height: 140px;
 }
 .ncd-page-track {
   position: absolute;
@@ -404,7 +404,8 @@ const CSS = `
   padding: 8px 10px 4px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
+  overflow-y: auto;
 }
 
 /* — NAV FOOTER: dots only — */
@@ -450,7 +451,7 @@ const CSS = `
 /* ============ PAGE: COVER ============ */
 .ncd-cover-page {
   text-align: center;
-  padding: 0 6px;
+  padding: 6px 6px 0;
 }
 .ncd-cover-headline {
   font-family: 'Fraunces', serif;

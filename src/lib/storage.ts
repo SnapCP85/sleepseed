@@ -188,6 +188,14 @@ export const getStories = async (userId: string): Promise<SavedStory[]> => {
   return local.sort((a, b) => b.date.localeCompare(a.date));
 };
 
+export const getStoryById = async (storyId: string): Promise<SavedStory | null> => {
+  try {
+    const { data, error } = await supabase.from('stories').select('*').eq('id', storyId).single();
+    if (error || !data) return null;
+    return dbToStory(data);
+  } catch (e) { console.error('[storage] getStoryById error:', e); return null; }
+};
+
 export const saveStory = async (s: SavedStory): Promise<void> => {
   const existing = lsGet<SavedStory>(LS_STORIES(s.userId)).filter(x => x.id !== s.id);
   lsSet(LS_STORIES(s.userId), [s, ...existing]);

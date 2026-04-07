@@ -214,8 +214,8 @@ const CSS = `
 .sl-card-fav.on{color:#F5B84C}
 
 /* ─── Menu ─── */
-.sl-card-menu-btn{position:absolute;top:6px;left:6px;font-size:14px;z-index:3;cursor:pointer;opacity:.18;transition:all .15s;background:rgba(0,0,0,.35);border:none;color:var(--ml-cream);padding:2px 5px;border-radius:6px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
-.sl-card-menu-btn:hover{opacity:.7;background:rgba(0,0,0,.5)}
+.sl-card-menu-btn{position:absolute;top:6px;left:6px;font-size:20px;z-index:3;cursor:pointer;opacity:.55;transition:all .15s;background:rgba(0,0,0,.45);border:none;color:var(--ml-cream);padding:6px 8px;border-radius:8px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);line-height:1}
+.sl-card-menu-btn:hover{opacity:.85;background:rgba(0,0,0,.6)}
 .sl-menu{position:absolute;top:26px;left:6px;background:rgba(6,9,18,.97);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:4px;z-index:10;min-width:140px;box-shadow:0 12px 40px rgba(0,0,0,.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);animation:slFadeUp .12s ease}
 .sl-menu-item{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;border:none;background:none;width:100%;text-align:left;color:rgba(244,239,232,.55);font-family:inherit;transition:all .12s}
 .sl-menu-item:hover{background:rgba(255,255,255,.06);color:var(--ml-cream)}
@@ -400,6 +400,21 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
               {friends.length > 0 && (
                 <button className="sl-menu-item" onClick={() => { setMenuOpen(null); setShareTarget(s); setShareMsg(''); setShareSent(false); }}>Send to friend</button>
               )}
+              <button className="sl-menu-item" onClick={async () => {
+                setMenuOpen(null);
+                const { generateStoryPdf } = await import('../../lib/shareUtils');
+                const bd = s.bookData || {};
+                await generateStoryPdf({
+                  title: s.title || bd.title || 'Story',
+                  heroName: s.heroName || bd.heroName || '',
+                  refrain: bd.refrain,
+                  pages: bd.pages,
+                  isAdventure: bd.isAdventure,
+                  setup_pages: bd.setup_pages,
+                  path_a: bd.path_a,
+                  path_b: bd.path_b,
+                });
+              }}>Download PDF</button>
               <button className="sl-menu-item danger" onClick={() => { setMenuOpen(null); setConfirmDelete(s); }}>Remove</button>
             </div>
           )}

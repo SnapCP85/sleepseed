@@ -2355,199 +2355,21 @@ export default function SleepSeed({
 
   // ── PDF Download — Keepsake-quality portrait storybook ──────────────
   const downloadStory = async () => {
-    if(!book) return;
-    try {
-      const { jsPDF } = await import("jspdf");
-      // A5 portrait — natural storybook feel
-      const doc = new jsPDF({ orientation:"portrait", unit:"mm", format:"a5" });
-      const W = 148, H = 210;
-
-      // Colours
-      const NAVY:  [number,number,number] = [13,  21,  53];
-      const GOLD:  [number,number,number] = [212, 160, 48];
-      const WHITE: [number,number,number] = [255, 255, 255];
-      const CREAM_BG:[number,number,number] = [253, 248, 242];
-      const INK:   [number,number,number] = [26,  20,  16];
-      const RULE:  [number,number,number] = [228, 220, 216];
-      const PG_NUM:[number,number,number] = [184, 168, 152];
-      const REFRAIN_C:[number,number,number]= [74,  56,  128];
-      const FOR_LBL:[number,number,number]= [176, 160, 144];
-      const PAD = 18;
-      const TW = W - PAD*2; // text width
-
-      // Moon crescent helper
-      const drawMoon = (cx:number, cy:number, r:number) => {
-        doc.setFillColor(...GOLD);
-        doc.circle(cx, cy, r, "F");
-        doc.setFillColor(...NAVY);
-        doc.circle(cx - r*0.35, cy - r*0.1, r*0.82, "F");
-      };
-
-      const rule = (x:number, y:number, w:number) => {
-        doc.setDrawColor(...RULE); doc.setLineWidth(0.3);
-        doc.line(x, y, x+w, y);
-      };
-
-      // ── COVER PAGE ────────────────────────────────────────────────────
-      doc.setFillColor(...NAVY);
-      doc.rect(0, 0, W, H, "F");
-
-      // Stars
-      for(let i=0;i<20;i++){
-        const sx=((i*37+13)%130)+9, sy=((i*53+7)%100)+10;
-        doc.setFillColor(238,232,255); doc.setGState(new (doc as any).GState({opacity:0.15+((i%5)*0.04)}));
-        doc.circle(sx,sy,0.5,"F");
-      }
-      doc.setGState(new (doc as any).GState({opacity:1}));
-
-      // Moon
-      drawMoon(W/2, 50, 10);
-
-      // SleepSeed
-      doc.setFont("times", "bold"); doc.setFontSize(12);
-      doc.setTextColor(...WHITE);
-      doc.text("SleepSeed", W/2, 68, { align:"center" });
-      doc.setFont("helvetica", "normal"); doc.setFontSize(6);
-      doc.setTextColor(...GOLD);
-      doc.text("BEDTIME STORIES", W/2, 74, { align:"center" });
-
-      // Gold rule
-      doc.setDrawColor(...GOLD); doc.setLineWidth(0.4);
-      doc.line(W/2-30, 82, W/2+30, 82);
-
-      // "A bedtime story for"
-      doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-      doc.setTextColor(...FOR_LBL);
-      doc.text("A bedtime story for", W/2, 94, { align:"center" });
-
-      // Hero name
-      doc.setFont("times", "bold"); doc.setFontSize(22);
-      doc.setTextColor(...WHITE);
-      doc.text(book.heroName, W/2, 106, { align:"center" });
-
-      // Title
-      doc.setFont("times", "normal"); doc.setFontSize(13);
-      doc.setTextColor(250, 233, 168);
-      const coverTitleLines = doc.splitTextToSize(book.title, TW);
-      doc.text(coverTitleLines, W/2, 120, { align:"center" });
-
-      // Creature
-      if (companionCreature?.creatureEmoji) {
-        doc.setFontSize(28);
-        doc.text(companionCreature.creatureEmoji, W/2, 160, { align:"center" });
-      }
-
-      // Footer
-      doc.setFont("helvetica", "normal"); doc.setFontSize(5.5);
-      doc.setTextColor(100, 100, 130);
-      doc.text("sleepseed.app", W/2, H-10, { align:"center" });
-
-      // ── STORY PAGES (one per page) ────────────────────────────────────
-      const allPages = book.isAdventure
-        ? [...(book.setup_pages||[]), ...(book.path_a||[]), ...(book.path_b||[])]
-        : (book.pages||[]);
-
-      allPages.forEach((pg: any, i: number) => {
-        doc.addPage();
-        const isEven = i % 2 === 0;
-        doc.setFillColor(...(isEven ? CREAM_BG : WHITE));
-        doc.rect(0, 0, W, H, "F");
-
-        // Page text
-        doc.setFont("times", "normal"); doc.setFontSize(11);
-        doc.setTextColor(...INK);
-        const lines = doc.splitTextToSize(pg.text||"", TW);
-        doc.text(lines, PAD, 24);
-
-        // Refrain on even pages
-        if(book.refrain && i % 2 === 1) {
-          rule(PAD, H - 36, TW);
-          doc.setFont("times", "italic"); doc.setFontSize(8.5);
-          doc.setTextColor(...REFRAIN_C);
-          const rLines = doc.splitTextToSize(`"${book.refrain}"`, TW);
-          doc.text(rLines, PAD, H - 30);
-        }
-
-        // Footer
-        rule(PAD, H - 16, TW);
-        doc.setFont("times", "italic"); doc.setFontSize(6.5);
-        doc.setTextColor(...PG_NUM);
-        doc.text(String(i+1), PAD, H - 11);
-        doc.setFont("helvetica", "normal"); doc.setFontSize(5.5);
-        doc.text("sleepseed.app", W - PAD, H - 11, { align:"right" });
-      });
-
-      // ── THE END PAGE ──────────────────────────────────────────────────
-      doc.addPage();
-      doc.setFillColor(...NAVY);
-      doc.rect(0, 0, W, H, "F");
-
-      drawMoon(W/2, 55, 8);
-
-      doc.setFont("times", "bold"); doc.setFontSize(22);
-      doc.setTextColor(...WHITE);
-      doc.text("The End", W/2, 78, { align:"center" });
-
-      doc.setDrawColor(...GOLD); doc.setLineWidth(0.4);
-      doc.line(W/2-25, 84, W/2+25, 84);
-
-      // Refrain prominently
-      if(book.refrain) {
-        doc.setFont("times", "italic"); doc.setFontSize(10);
-        doc.setTextColor(250, 233, 168);
-        const rLines = doc.splitTextToSize(`"${book.refrain}"`, TW - 10);
-        doc.text(rLines, W/2, 98, { align:"center" });
-      }
-
-      doc.setFont("times", "italic"); doc.setFontSize(9);
-      doc.setTextColor(...FOR_LBL);
-      doc.text(`Sweet dreams, ${book.heroName}.`, W/2, 130, { align:"center" });
-      doc.setFontSize(8);
-      doc.text("Tomorrow night, another adventure awaits.", W/2, 139, { align:"center" });
-
-      // ── NIGHT CARD PAGE (optional) ────────────────────────────────────
-      if (book.nightCard && v8rShareIncludeNightCard) {
-        const nc = book.nightCard;
-        doc.addPage();
-        doc.setFillColor(...CREAM_BG);
-        doc.rect(0, 0, W, H, "F");
-
-        doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-        doc.setTextColor(...FOR_LBL);
-        doc.text("TONIGHT'S NIGHT CARD", W/2, 20, { align:"center" });
-
-        doc.setFont("times", "bold"); doc.setFontSize(14);
-        doc.setTextColor(...INK);
-        const hlLines = doc.splitTextToSize(nc.headline||nc.storyTitle||'', TW);
-        doc.text(hlLines, W/2, 38, { align:"center" });
-
-        rule(PAD, 38 + hlLines.length*6 + 6, TW);
-
-        doc.setFont("times", "italic"); doc.setFontSize(11);
-        doc.setTextColor(74, 56, 40);
-        const qLines = doc.splitTextToSize(`"${nc.quote||''}"`, TW - 10);
-        doc.text(qLines, W/2, 58, { align:"center" });
-
-        if (nc.memory_line) {
-          doc.setFont("times", "normal"); doc.setFontSize(9);
-          doc.setTextColor(...FOR_LBL);
-          const mLines = doc.splitTextToSize(nc.memory_line, TW);
-          doc.text(mLines, W/2, 58 + qLines.length*6 + 14, { align:"center" });
-        }
-
-        // Footer
-        doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-        doc.setTextColor(...PG_NUM);
-        doc.text(`${nc.heroName}  ·  ${nc.date}`, W/2, H - 20, { align:"center" });
-        doc.setFontSize(6); doc.setTextColor(200, 189, 176);
-        doc.text("Night Card — SleepSeed", W/2, H - 13, { align:"center" });
-      }
-
-      doc.save(`${book.title.replace(/[^a-z0-9]/gi,"_").toLowerCase()}.pdf`);
-    } catch(err) {
-      console.error("PDF error:", err);
-      alert("Could not generate PDF — please try again.");
-    }
+    if (!book) return;
+    const { generateStoryPdf } = await import('./lib/shareUtils');
+    await generateStoryPdf({
+      title: book.title,
+      heroName: book.heroName,
+      refrain: book.refrain,
+      pages: book.pages,
+      isAdventure: book.isAdventure,
+      setup_pages: book.setup_pages,
+      path_a: book.path_a,
+      path_b: book.path_b,
+      nightCard: book.nightCard,
+      creatureEmoji: companionCreature?.creatureEmoji,
+      includeNightCard: v8rShareIncludeNightCard,
+    });
   };
 
   const addSparkle = useCallback((e) => {
@@ -4157,15 +3979,17 @@ Rules:
               </button>
               <div style={{display:'flex',gap:8}}>
                 <button onClick={shareStory} style={{flex:1,padding:'12px',borderRadius:14,border:'1px solid rgba(244,239,232,.12)',background:'rgba(244,239,232,.04)',color:'rgba(234,242,255,.5)',fontSize:12,fontWeight:600,fontFamily:"'Nunito',sans-serif",cursor:'pointer'}}>Share story</button>
-                {builderChoices?.path !== 'ritual' && (
-                  <button onClick={exitToHome} style={{flex:1,padding:'12px',borderRadius:14,border:'1px solid rgba(255,255,255,.06)',background:'transparent',color:'rgba(234,242,255,.25)',fontSize:12,fontFamily:"'Nunito',sans-serif",cursor:'pointer'}}>Skip for now</button>
-                )}
+                <button onClick={downloadStory} style={{flex:1,padding:'12px',borderRadius:14,border:'1px solid rgba(244,239,232,.12)',background:'rgba(244,239,232,.04)',color:'rgba(234,242,255,.5)',fontSize:12,fontWeight:600,fontFamily:"'Nunito',sans-serif",cursor:'pointer'}}>Download PDF</button>
               </div>
+              {builderChoices?.path !== 'ritual' && (
+                <button onClick={exitToHome} style={{width:'100%',padding:'10px',borderRadius:14,border:'1px solid rgba(255,255,255,.06)',background:'transparent',color:'rgba(234,242,255,.25)',fontSize:12,fontFamily:"'Nunito',sans-serif",cursor:'pointer'}}>Skip for now</button>
+              )}
             </>
           ) : (
             <div style={{display:'flex',gap:8}}>
               <button onClick={exitToHome} style={{flex:2,position:'relative',padding:'16px 20px',borderRadius:16,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif"}}>Home</button>
               <button onClick={shareStory} style={{flex:1,padding:'12px',borderRadius:14,border:'1px solid rgba(244,239,232,.12)',background:'rgba(244,239,232,.04)',color:'rgba(234,242,255,.5)',fontSize:12,fontWeight:600,fontFamily:"'Nunito',sans-serif",cursor:'pointer'}}>Share</button>
+              <button onClick={downloadStory} style={{flex:1,padding:'12px',borderRadius:14,border:'1px solid rgba(244,239,232,.12)',background:'rgba(244,239,232,.04)',color:'rgba(234,242,255,.5)',fontSize:12,fontWeight:600,fontFamily:"'Nunito',sans-serif",cursor:'pointer'}}>PDF</button>
             </div>
           )}
         </div>

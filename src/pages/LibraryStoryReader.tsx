@@ -721,6 +721,27 @@ export default function LibraryStoryReader({ slug }: Props) {
                 handleShare
               )}
             </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:7,marginBottom:14}}>
+              {shareBtn(
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="rgba(111,231,221,.85)" strokeWidth="1.8" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+                'Save PDF',
+                async () => {
+                  setV8rShareOpen(false);
+                  const { generateStoryPdf } = await import('../lib/shareUtils');
+                  const bd = story?.bookData || {};
+                  await generateStoryPdf({
+                    title: story?.title || bd.title || 'Story',
+                    heroName: story?.heroName || bd.heroName || '',
+                    refrain: story?.refrain || bd.refrain,
+                    pages: bd.pages,
+                    isAdventure: bd.isAdventure,
+                    setup_pages: bd.setup_pages,
+                    path_a: bd.path_a,
+                    path_b: bd.path_b,
+                  });
+                }
+              )}
+            </div>
             {v8rLinkCopied&&<div style={{fontSize:9,fontFamily:"'DM Mono',monospace",color:'rgba(20,216,144,.8)',textAlign:'center',marginBottom:8}}>✓ Link copied to clipboard</div>}
           </div>
         </div>
@@ -913,6 +934,24 @@ export default function LibraryStoryReader({ slug }: Props) {
         {/* Share */}
         <button className="lr-ghost-btn" onClick={handleShare}>
           {copied ? '\u2713 Copied!' : '\uD83D\uDCF1 Share this story'}
+        </button>
+
+        {/* Download PDF */}
+        <button className="lr-ghost-btn" onClick={async () => {
+          const { generateStoryPdf } = await import('../lib/shareUtils');
+          const bd = story?.bookData || {};
+          await generateStoryPdf({
+            title: story?.title || bd.title || 'Story',
+            heroName: story?.heroName || bd.heroName || '',
+            refrain: story?.refrain || bd.refrain,
+            pages: bd.pages,
+            isAdventure: bd.isAdventure,
+            setup_pages: bd.setup_pages,
+            path_a: bd.path_a,
+            path_b: bd.path_b,
+          });
+        }}>
+          {'\uD83D\uDCC4'} Download PDF
         </button>
 
         {/* Guest CTA */}

@@ -131,6 +131,8 @@ const CSS = `
 .lb-card-fav{display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(244,239,232,.15);transition:color .15s;background:none;border:none;padding:2px;font-size:15px;flex-shrink:0}
 .lb-card-fav:hover{color:var(--amber)}
 .lb-card-fav.on{color:#F5B84C}
+.lb-card-dl{display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(244,239,232,.15);transition:color .15s;background:none;border:none;padding:2px;font-size:13px;flex-shrink:0}
+.lb-card-dl:hover{color:var(--amber)}
 
 /* sort toggle */
 .lb-sort{display:flex;gap:2px;background:rgba(255,255,255,.025);border-radius:9px;padding:2px;border:1px solid rgba(255,255,255,.05);flex-shrink:0}
@@ -533,6 +535,28 @@ export default function LibraryHome() {
                             <span className="lb-card-pill">{VIBE_LABELS[s.vibe || s.mood || '']}</span>
                           )}
                         </div>
+                        <button className="lb-card-dl"
+                          title="Download PDF"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            const { getLibraryStoryBySlug } = await import('../lib/storage');
+                            const { generateStoryPdf } = await import('../lib/shareUtils');
+                            const full = await getLibraryStoryBySlug(s.librarySlug);
+                            if (!full?.bookData) { alert('Could not load story data.'); return; }
+                            const bd = full.bookData;
+                            await generateStoryPdf({
+                              title: full.title || s.title || 'Story',
+                              heroName: full.heroName || s.heroName || '',
+                              refrain: bd.refrain,
+                              pages: bd.pages,
+                              isAdventure: bd.isAdventure,
+                              setup_pages: bd.setup_pages,
+                              path_a: bd.path_a,
+                              path_b: bd.path_b,
+                            });
+                          }}>
+                          {'\u2B07'}
+                        </button>
                         <button className={`lb-card-fav${isFav ? ' on' : ''}`}
                           onClick={e => { e.stopPropagation(); toggleFav(s.id); }}>
                           {isFav ? '\u2605' : '\u2606'}

@@ -229,6 +229,27 @@ export default function BookComplete() {
         }} style={{ padding: '14px 20px', background: 'rgba(245,184,76,.15)', border: '1px solid rgba(245,184,76,.3)', color: '#F5B84C', borderRadius: 12, fontSize: 15, cursor: 'pointer', fontWeight: 600 }}>
           Share our book ✨
         </button>
+        <button onClick={async () => {
+          if (!result?.finalBookId) return;
+          const { getStoryById } = await import('../../lib/storage');
+          const { generateStoryPdf } = await import('../../lib/shareUtils');
+          const story = await getStoryById(result.finalBookId);
+          if (!story?.bookData) { alert('Could not load book data.'); return; }
+          const bd = story.bookData;
+          await generateStoryPdf({
+            title: story.title || result.finalTitle || 'Our Book',
+            heroName: story.heroName || '',
+            refrain: bd.refrain,
+            pages: bd.pages,
+            isAdventure: bd.isAdventure,
+            setup_pages: bd.setup_pages,
+            path_a: bd.path_a,
+            path_b: bd.path_b,
+            creatureEmoji: pendingCreature?.creatureEmoji,
+          });
+        }} style={{ padding: '14px 20px', background: 'rgba(111,231,221,.12)', border: '1px solid rgba(111,231,221,.3)', color: '#6FE7DD', borderRadius: 12, fontSize: 15, cursor: 'pointer', fontWeight: 600 }}>
+          Download PDF 📄
+        </button>
         <button onClick={() => setView('memory-reel')} style={{ padding: '14px 20px', background: 'rgba(154,127,212,.25)', border: '1px solid rgba(154,127,212,.4)', color: '#c8b8ff', borderRadius: 12, fontSize: 15, cursor: 'pointer', fontWeight: 600 }}>
           View our Memory Reel
         </button>
