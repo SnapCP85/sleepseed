@@ -3973,17 +3973,15 @@ Rules:
         <div style={{width:'100%',display:'flex',flexDirection:'column',gap:8,animation:'nc-fadeUp .5s .35s ease both'}}>
           {!book?.nightCard ? (
             <>
-              <button onClick={builderChoices?.path === 'ritual' ? exitToHome : enterNightCardFlow} style={{position:'relative',width:'100%',padding:'16px 20px',borderRadius:16,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 6px 20px rgba(245,184,76,.3)'}}>
+              <button onClick={enterNightCardFlow} style={{position:'relative',width:'100%',padding:'16px 20px',borderRadius:16,border:'none',cursor:'pointer',overflow:'hidden',background:'#F5B84C',color:'#172200',fontSize:15,fontWeight:700,fontFamily:"'Fraunces',serif",boxShadow:'0 6px 20px rgba(245,184,76,.3)'}}>
                 <div style={{position:'absolute',inset:0,background:'linear-gradient(108deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%)',animation:'nc-shimmer 5.5s infinite',pointerEvents:'none'}}/>
-                <span style={{position:'relative',zIndex:1}}>{builderChoices?.path === 'ritual' ? 'Continue tonight\u2019s ritual \u2192' : 'Save tonight\u2019s memory \u2192'}</span>
+                <span style={{position:'relative',zIndex:1}}>Save tonight{'\u2019'}s memory {'\u2192'}</span>
               </button>
               <div style={{display:'flex',gap:8}}>
                 <button onClick={shareStory} style={{flex:1,padding:'12px',borderRadius:14,border:'1px solid rgba(244,239,232,.12)',background:'rgba(244,239,232,.04)',color:'rgba(234,242,255,.5)',fontSize:12,fontWeight:600,fontFamily:"'Nunito',sans-serif",cursor:'pointer'}}>Share story</button>
                 <button onClick={downloadStory} style={{flex:1,padding:'12px',borderRadius:14,border:'1px solid rgba(244,239,232,.12)',background:'rgba(244,239,232,.04)',color:'rgba(234,242,255,.5)',fontSize:12,fontWeight:600,fontFamily:"'Nunito',sans-serif",cursor:'pointer'}}>Download PDF</button>
               </div>
-              {builderChoices?.path !== 'ritual' && (
-                <button onClick={exitToHome} style={{width:'100%',padding:'10px',borderRadius:14,border:'1px solid rgba(255,255,255,.06)',background:'transparent',color:'rgba(234,242,255,.25)',fontSize:12,fontFamily:"'Nunito',sans-serif",cursor:'pointer'}}>Skip for now</button>
-              )}
+              <button onClick={exitToHome} style={{width:'100%',padding:'10px',borderRadius:14,border:'1px solid rgba(255,255,255,.06)',background:'transparent',color:'rgba(234,242,255,.25)',fontSize:12,fontFamily:"'Nunito',sans-serif",cursor:'pointer'}}>Skip for now</button>
             </>
           ) : (
             <div style={{display:'flex',gap:8}}>
@@ -4543,7 +4541,11 @@ Rules:
                 <div style={{position:'absolute',inset:0,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 40%,rgba(60,30,120,.35),transparent 65%),radial-gradient(ellipse at 20% 80%,rgba(20,100,80,.2),transparent 50%)'}}/>
                 <div style={{position:'relative',zIndex:1,display:'flex',flexDirection:'column',alignItems:'center'}}>
                   <div style={{marginBottom:28,animation:'nc-floatY 3s ease-in-out infinite'}}>
-                    <div style={{fontSize:72,lineHeight:1}}>{companionCreature?.creatureEmoji??'🐰'}</div>
+                    {companionImageSrc ? (
+                      <img src={companionImageSrc} alt={companionCreature?.name||'DreamKeeper'} style={{width:100,height:100,objectFit:'contain',filter:'drop-shadow(0 0 20px rgba(245,184,76,.3))'}} />
+                    ) : (
+                      <div style={{fontSize:72,lineHeight:1}}>{companionCreature?.creatureEmoji??'🐰'}</div>
+                    )}
                   </div>
                   <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:20}}>
                     {[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:'50%',background:'#F5B84C',opacity:.8,animation:`nc-writingDot 1.4s ${i*.2}s ease-in-out infinite`}}/>)}
