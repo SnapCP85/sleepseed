@@ -110,11 +110,18 @@ export default function StoryCover({ slug, onReadStory }: Props) {
     <div className="sc-wrap">
       <style>{CSS}</style>
 
-      {/* Nav */}
-      <nav className="sc-nav">
-        <div className="sc-logo"><div className="sc-moon" />SleepSeed</div>
-        <div className="sc-badge">Shared story</div>
-      </nav>
+      {/* Back button */}
+      <button
+        onClick={() => window.history.length > 1 ? window.history.back() : (window.location.href = 'https://sleepseed.app')}
+        style={{
+          position: 'absolute', top: 16, left: 16, zIndex: 20,
+          padding: '8px 16px', borderRadius: 50,
+          border: '1px solid rgba(255,255,255,.1)', background: 'rgba(6,9,18,.7)',
+          backdropFilter: 'blur(12px)', color: 'rgba(244,239,232,.55)',
+          fontSize: 13, fontWeight: 600, cursor: 'pointer',
+          fontFamily: "'Nunito',sans-serif", transition: 'all .15s',
+        }}
+      >← Back</button>
 
       {/* Body */}
       <div className="sc-body">

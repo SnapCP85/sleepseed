@@ -234,10 +234,12 @@ export default function ReadAloudText({ text, theme = 'dark', style, className, 
     setRate(r => Math.max(0.5, Math.min(1.5, +(r + delta).toFixed(2))));
   }, [stopAll]);
 
-  // Auto-play
+  // Auto-play / auto-stop
   useEffect(() => {
     if (autoPlay && !isPlaying && !isPaused && !loading) {
       play();
+    } else if (!autoPlay && (isPlaying || loading)) {
+      stopAll();
     }
   }, [autoPlay]); // eslint-disable-line
 

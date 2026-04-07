@@ -1666,6 +1666,13 @@ export default function SleepSeed({
   const ssReaderRef      = useRef<HTMLDivElement>(null);
   const ssTouchStartX    = useRef(0);
   const ssChromeFadeRef  = useRef<ReturnType<typeof setTimeout>|null>(null);
+  // Cleanup audio on unmount
+  useEffect(() => () => {
+    window.speechSynthesis?.cancel();
+    if (elAudioRef.current) { (elAudioRef.current as any).pause(); elAudioRef.current = null; }
+    autoReadRef.current = false;
+  }, []);
+
   const [ssChromeVis,    setSsChromeVis]    = useState(true);
   const [ssSheetOpen,    setSsSheetOpen]    = useState(false);
 
