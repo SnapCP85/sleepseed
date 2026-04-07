@@ -377,9 +377,18 @@ export default function StoryLibrary({ userId, onBack, onReadStory, onCreateStor
               <button className="sl-menu-item" onClick={() => { setMenuOpen(null); onReadStory(s.bookData); }}>Read again</button>
               <button className="sl-menu-item" onClick={async () => {
                 setMenuOpen(null);
-                const text = `"${s.title}" — a bedtime story for ${s.heroName}\n${s.bookData?.refrain ? `"${s.bookData.refrain}"\n` : ''}\nsleepseed.app`;
-                try { await navigator.share?.({title: s.title, text, url: 'https://sleepseed.app'}); }
-                catch(_) { navigator.clipboard?.writeText(text); }
+                try {
+                  const { createStoryShareToken } = await import('../../lib/storage');
+                  const token = await createStoryShareToken(s.id);
+                  const shareUrl = `https://sleepseed.app/?story=${token}`;
+                  const text = `"${s.title}" — a bedtime story for ${s.heroName}\n${s.bookData?.refrain ? `"${s.bookData.refrain}"\n` : ''}`;
+                  try { await navigator.share?.({title: s.title, text, url: shareUrl}); }
+                  catch(_) { navigator.clipboard?.writeText(shareUrl); }
+                } catch (e) {
+                  console.error('Share story:', e);
+                  const text = `"${s.title}" — a bedtime story for ${s.heroName}\nsleepseed.app`;
+                  navigator.clipboard?.writeText(text);
+                }
               }}>Share</button>
               {canPublish && !s.isPublic && (
                 <button className="sl-menu-item" onClick={async () => {

@@ -69,10 +69,9 @@ export default class ErrorBoundary extends Component<Props, State> {
           </div>
           <button
             onClick={() => {
-              // Clear all sleepseed localStorage to break any loops
+              // Clear sleepseed app state but preserve auth (sb-* keys)
               try {
-                Object.keys(localStorage).filter(k => k.startsWith('sleepseed_') || k.startsWith('ss2_') || k.startsWith('ss_') || k.startsWith('sb-')).forEach(k => localStorage.removeItem(k));
-                sessionStorage.clear();
+                Object.keys(localStorage).filter(k => k.startsWith('sleepseed_') || k.startsWith('ss2_') || k.startsWith('ss_')).forEach(k => localStorage.removeItem(k));
               } catch {}
               this.setState({ hasError: false });
               window.location.href = window.location.origin;

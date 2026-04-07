@@ -610,8 +610,9 @@ function AppInner() {
   // Read a saved story directly — sets preloadedBook then routes to story-builder
   const openSavedStory = (bookData: any) => {
     console.log('[stories] Opening saved story:', bookData?.title, 'pages:', bookData?.pages?.length);
-    if (!bookData) {
-      console.error('[stories] bookData is null/undefined — cannot open story');
+    if (!bookData || (!bookData.pages?.length && !bookData.setup_pages?.length)) {
+      console.error('[stories] bookData is null/missing pages — cannot open story');
+      alert('This story could not be loaded. It may have been partially saved.');
       return;
     }
     setPreloadedBook(bookData);

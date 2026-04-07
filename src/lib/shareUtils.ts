@@ -993,10 +993,14 @@ export async function generateStoryPdf(opts: StoryPdfOpts): Promise<void> {
     const coverTitleLines = doc.splitTextToSize(opts.title, TW);
     doc.text(coverTitleLines, W / 2, 120, { align: 'center' });
 
-    if (opts.creatureEmoji) {
-      doc.setFontSize(28);
-      doc.text(opts.creatureEmoji, W / 2, 160, { align: 'center' });
-    }
+    // Decorative element (emoji not supported by jsPDF built-in fonts)
+    doc.setFillColor(...GOLD);
+    doc.circle(W / 2, 155, 3, 'F');
+    doc.setFillColor(...GOLD);
+    doc.setGState(new (doc as any).GState({ opacity: 0.4 }));
+    doc.circle(W / 2 - 12, 155, 1.5, 'F');
+    doc.circle(W / 2 + 12, 155, 1.5, 'F');
+    doc.setGState(new (doc as any).GState({ opacity: 1 }));
 
     doc.setFont('helvetica', 'normal'); doc.setFontSize(5.5);
     doc.setTextColor(100, 100, 130);
