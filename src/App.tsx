@@ -1348,6 +1348,21 @@ function AppInner() {
         userId={user!.id}
         onBack={goBack}
         filterCharacterId={nightCardFilter}
+        onOpenStory={async (card) => {
+          if (!card.storyId) return;
+          try {
+            const { getStoryById } = await import('./lib/storage');
+            const story = await getStoryById(card.storyId);
+            if (story?.bookData) {
+              openSavedStory(story.bookData);
+            } else {
+              alert('Could not load the story for this night card.');
+            }
+          } catch (e) {
+            console.error('[nightcard] openStory failed:', e);
+            alert('Could not load the story.');
+          }
+        }}
       />
     </AppLayout>
   );

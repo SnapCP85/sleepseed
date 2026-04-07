@@ -460,9 +460,9 @@ const CSS = `
    COMPONENT
    ═══════════════════════════════════════════════════════════ */
 
-interface Props { userId: string; onBack: () => void; filterCharacterId?: string; }
+interface Props { userId: string; onBack: () => void; filterCharacterId?: string; onOpenStory?: (card: SavedNightCard) => void; }
 
-export default function NightCardLibrary({ userId, onBack, filterCharacterId }: Props) {
+export default function NightCardLibrary({ userId, onBack, filterCharacterId, onOpenStory }: Props) {
   const [cards, setCards] = useState<SavedNightCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState<SavedNightCard | null>(null);
@@ -895,7 +895,7 @@ export default function NightCardLibrary({ userId, onBack, filterCharacterId }: 
           <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, pointerEvents: 'none', flexDirection: 'column' }}>
             <div style={{ position: 'absolute', top: '35%', left: '50%', transform: 'translate(-50%,-50%)', width: 320, height: 320, borderRadius: '50%', background: 'radial-gradient(circle,rgba(154,127,212,.12) 0%,transparent 70%)', pointerEvents: 'none', animation: 'mlFadeUp .4s ease both' }} />
             <div style={{ pointerEvents: 'all', width: '100%', maxWidth: 340, maxHeight: 'calc(100vh - 40px)', overflowY: 'auto', scrollbarWidth: 'none' as any, animation: 'mlCardIn .35s cubic-bezier(.2,.8,.3,1) both', position: 'relative', zIndex: 1 }}>
-              <NightCardDetailPaginated card={viewing} onClose={closeCard} />
+              <NightCardDetailPaginated card={viewing} onClose={closeCard} onOpenStory={onOpenStory} />
 
               {/* ── "More" trigger button ── */}
               <button className="ml-more-trigger" onClick={() => setActionsOpen(true)}>
