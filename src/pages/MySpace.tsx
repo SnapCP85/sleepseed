@@ -234,9 +234,11 @@ export default function MySpace({ onSignUp, onReadStory, onHatchReady }: Props) 
     setCardCount(filteredCards.length);
     setStreak(calcStreak(filteredCards));
 
-    const childCreature = allCreatures.find(cr => cr.characterId === childId);
-    if (childCreature && childCreature.id !== companionCreature?.id) {
-      setCompanionCreature(childCreature);
+    // Find the original DreamKeeper for this child (not just any creature)
+    const childCreatures = allCreatures.filter(cr => cr.characterId === childId);
+    const original = childCreatures.find(cr => cr.isOriginal) || childCreatures[childCreatures.length - 1];
+    if (original && original.id !== companionCreature?.id) {
+      setCompanionCreature(original);
     }
   }, [activeChild?.id, hasMultipleChildren, allStories, allCards, allCreatures]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -618,6 +620,9 @@ export default function MySpace({ onSignUp, onReadStory, onHatchReady }: Props) 
             </div>
           )}
 
+          {/* Greeting bubble */}
+          <CreatureGreeting childName={childName} creatureName={creatureName} rgb={rgb} cardCount={cardCount} />
+
           {/* Shard tracker — 7-night egg progress card */}
           {activeEgg && ritualDone && !isPreHatchEgg && (
             <div style={{
@@ -729,8 +734,6 @@ export default function MySpace({ onSignUp, onReadStory, onHatchReady }: Props) 
             </div>
           )}
 
-          {/* Greeting bubble */}
-          <CreatureGreeting childName={childName} creatureName={creatureName} rgb={rgb} cardCount={cardCount} />
         </div>
 
         {/* ═══ 3. PRIMARY CTA (single smart button, always) ═══ */}

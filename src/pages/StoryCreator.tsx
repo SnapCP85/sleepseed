@@ -443,13 +443,15 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   // ── Data ──
   const [loading, setLoading] = useState(true);
   const [creature, setCreature] = useState<HatchedCreature | null>(companionCreature);
+  const [companions, setCompanions] = useState<HatchedCreature[]>([]);
+  const [selectedCompanionIds, setSelectedCompanionIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user?.id) { setLoading(false); return; }
     let cancelled = false;
     (async () => {
       let chars: Character[] = [];
-      let creatures: any[] = [];
+      let creatures: HatchedCreature[] = [];
       try {
         [chars, creatures] = await Promise.all([
           getCharacters(user.id).catch(() => []),
@@ -467,15 +469,22 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
       const family = chars.filter(c => c.isFamily);
       setCharacters(family.length > 0 ? family : chars);
 
-      // Creature for this child, fallback to companion from context
+      // Separate original DreamKeeper from hatched companions
       if (creatures.length > 0) {
-        setCreature(creatures[0]);
+        const original = creatures.find(c => c.isOriginal) || creatures[creatures.length - 1];
+        const hatched = creatures.filter(c => c.id !== original.id);
+        setCreature(original);
+        setCompanions(hatched);
       } else if (!creature && companionCreature) {
         setCreature(companionCreature);
       } else if (!creature) {
-        // Last resort: try all creatures
         const all = await getAllHatchedCreatures(user.id);
-        if (!cancelled && all.length > 0) setCreature(all[0]);
+        if (!cancelled && all.length > 0) {
+          const original = all.find(c => c.isOriginal) || all[all.length - 1];
+          const hatched = all.filter(c => c.id !== original.id);
+          setCreature(original);
+          setCompanions(hatched);
+        }
       }
 
       setLoading(false);
@@ -735,7 +744,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
   // ── Cast helpers ──
   const isHero = (c: Character) => c.id === primaryChar?.id;
   const isInCast = (id: string) => selectedCast.some(c => c.id === id);
-  const castCount = selectedCast.length + (creatureSelected && creature ? 1 : 0);
+  const castCount = selectedCast.length + (creatureSelected && creature ? 1 : 0) + selectedCompanionIds.size;
   const atMax = castCount >= 5;
 
   const toggleCastChar = (c: Character) => {
@@ -787,7 +796,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
         note: c.weirdDetail || c.currentSituation || '',
       }));
 
-    // Add creature to chars — free mode uses dreamkeeperInStory toggle, other modes use creatureSelected
+    // Add DreamKeeper to chars — free mode uses dreamkeeperInStory toggle, other modes use creatureSelected
     const shouldIncludeCreature = mode === 'free' ? dreamkeeperInStory : creatureSelected;
     if (shouldIncludeCreature && creature) {
       castChars.push({
@@ -795,8 +804,21 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
         name: creature.name,
         note: creature.dreamAnswer
           ? `${creature.name} dreams about ${creature.dreamAnswer}`
-          : `${creature.name} is the child's magical companion`,
+          : `${creature.name} is the child's magical DreamKeeper`,
       });
+    }
+
+    // Add selected hatched companions
+    for (const comp of companions) {
+      if (selectedCompanionIds.has(comp.id)) {
+        castChars.push({
+          type: 'creature',
+          name: comp.name,
+          note: comp.dreamAnswer
+            ? `${comp.name} dreams about ${comp.dreamAnswer}`
+            : `${comp.name} is a hatched companion creature`,
+        });
+      }
     }
 
     // Build brief
@@ -878,14 +900,36 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
       <style>{CSS}</style>
       <div id="sc-stars" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }} />
 
-      {/* NAV */}
-      <nav className="sc-nav">
-        <div className="sc-logo">
-          <div className="sc-logo-moon" />
-          SleepSeed
-        </div>
-        <button className="sc-close" onClick={onBack}>{'\u2715'}</button>
-      </nav>
+      {/* Back button */}
+      <div style={{
+        position: 'absolute', top: 16, left: 16, zIndex: 20,
+      }}>
+        <button
+          onClick={() => {
+            if (isRitual && ritualEntryDone) {
+              setRitualEntryDone(false);
+              setBrief(''); setTranscript(''); setWorldChoice(''); setCustomWorld('');
+              setAdventureDetail(''); setFreeBrief(''); setFreeTranscript('');
+              setFreeStep(1); setFreeChars([]);
+            } else {
+              onBack();
+            }
+          }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '8px 14px 8px 10px', borderRadius: 24,
+            background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)',
+            color: 'rgba(244,239,232,.5)', fontSize: 12, fontWeight: 600,
+            cursor: 'pointer', fontFamily: "'Nunito',sans-serif",
+            transition: 'background .15s, color .15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.1)'; e.currentTarget.style.color = 'rgba(244,239,232,.8)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.05)'; e.currentTarget.style.color = 'rgba(244,239,232,.5)'; }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m15 18-6-6 6-6"/></svg>
+          Back
+        </button>
+      </div>
 
       <div className="sc-inner">
 
@@ -1597,6 +1641,55 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                 </div>
               </div>
             )}
+
+            {/* Companion toggles in free mode */}
+            {companions.length > 0 && freeHasContent && companions.map(comp => {
+              const isSelected = selectedCompanionIds.has(comp.id);
+              return (
+                <div
+                  key={comp.id}
+                  onClick={() => {
+                    setSelectedCompanionIds(prev => {
+                      const next = new Set(prev);
+                      if (next.has(comp.id)) next.delete(comp.id);
+                      else next.add(comp.id);
+                      return next;
+                    });
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 16px', borderRadius: 14, marginTop: 8, cursor: 'pointer',
+                    border: `1.5px solid ${isSelected ? 'rgba(246,197,111,.25)' : 'rgba(255,255,255,.06)'}`,
+                    background: isSelected ? 'rgba(246,197,111,.06)' : 'rgba(255,255,255,.02)',
+                    transition: 'all .2s',
+                  }}
+                >
+                  <span style={{ fontSize: 22 }}>{comp.creatureEmoji || '✨'}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{
+                      fontFamily: 'var(--body)', fontSize: 13, fontWeight: 700,
+                      color: isSelected ? '#F6C56F' : 'rgba(244,239,232,.4)',
+                      transition: 'color .2s',
+                    }}>
+                      {comp.name} joining too?
+                    </div>
+                  </div>
+                  <div style={{
+                    width: 40, height: 22, borderRadius: 11, padding: 2,
+                    background: isSelected ? 'rgba(246,197,111,.3)' : 'rgba(255,255,255,.08)',
+                    transition: 'background .2s',
+                    display: 'flex', alignItems: 'center',
+                  }}>
+                    <div style={{
+                      width: 18, height: 18, borderRadius: '50%',
+                      background: isSelected ? '#F6C56F' : 'rgba(255,255,255,.2)',
+                      transition: 'all .2s',
+                      transform: isSelected ? 'translateX(18px)' : 'translateX(0)',
+                    }} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -1698,7 +1791,7 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
               </div>
             )}
 
-            {/* Creature pill */}
+            {/* DreamKeeper pill */}
             {creature && (
               <div
                 className={`sc-cast-pill${creatureSelected ? ' on' : ''}${atMax && !creatureSelected ? ' dim' : ''}`}
@@ -1711,6 +1804,29 @@ export default function StoryCreator({ entryMode, onGenerate, onBack }: StoryCre
                 <span className="sc-cast-name">{creature.name}</span>
               </div>
             )}
+
+            {/* Hatched companion pills */}
+            {companions.map(comp => {
+              const isSelected = selectedCompanionIds.has(comp.id);
+              return (
+                <div
+                  key={comp.id}
+                  className={`sc-cast-pill${isSelected ? ' on' : ''}${atMax && !isSelected ? ' dim' : ''}`}
+                  onClick={() => {
+                    if (atMax && !isSelected) return;
+                    setSelectedCompanionIds(prev => {
+                      const next = new Set(prev);
+                      if (next.has(comp.id)) next.delete(comp.id);
+                      else next.add(comp.id);
+                      return next;
+                    });
+                  }}
+                >
+                  <span className="sc-cast-emoji">{comp.creatureEmoji || '✨'}</span>
+                  <span className="sc-cast-name">{comp.name}</span>
+                </div>
+              );
+            })}
 
             {/* Other characters */}
             {otherChars.map(c => (

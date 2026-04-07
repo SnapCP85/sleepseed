@@ -174,6 +174,7 @@ export default function EggHatchCeremony({ childName, characterId, creatureData,
       parentSecret: '',
       hatchedAt: now,
       weekNumber: 1,
+      isOriginal: false,
     };
 
     // Save to Supabase

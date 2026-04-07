@@ -17,6 +17,7 @@ const dbToCreature = (row: any): HatchedCreature => ({
   hatchedAt:         row.hatched_at,
   photoUrl:          row.photo_url ?? undefined,
   weekNumber:        row.week_number ?? 1,
+  isOriginal:        row.is_original ?? false,
 });
 
 const dbToEgg = (row: any): HatcheryEgg => ({
@@ -66,6 +67,7 @@ export const saveHatchedCreature = async (c: HatchedCreature): Promise<void> => 
     photo_url:          c.photoUrl ?? null,
     week_number:        c.weekNumber,
     hatched_at:         c.hatchedAt,
+    is_original:        c.isOriginal ?? false,
   };
   // Only include id if it looks like a valid uuid (contains dashes)
   if (c.id && c.id.includes('-')) row.id = c.id;

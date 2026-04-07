@@ -188,11 +188,14 @@ function AppInner() {
   const [testPhase, setTestPhase] = useState<'parent'|'child'|'done'>('parent');
   const [testChildProfile, setTestChildProfile] = useState<ParentSetupResult|null>(null);
 
-  // Load companion creature for story builder
+  // Load original DreamKeeper as companion (the onboarding creature, not the most recent hatch)
   useEffect(() => {
     if (!user || user.isGuest) return;
     getAllHatchedCreatures(user.id).then(creatures => {
-      if (creatures.length > 0) setCompanionCreature(creatures[0]);
+      if (creatures.length === 0) return;
+      // Prefer the original DreamKeeper (isOriginal flag, or oldest by hatchedAt)
+      const original = creatures.find(c => c.isOriginal) || creatures[creatures.length - 1];
+      setCompanionCreature(original);
     });
   }, [user]); // eslint-disable-line
 
@@ -265,7 +268,7 @@ function AppInner() {
                     ritualComplete: true,
                     eggState: 'hatched',
                     creatureName: creature.name || '',
-                    creatureEmoji: creature.creatureEmoji || creature.creature_emoji || '',
+                    creatureEmoji: creature.creatureEmoji || '',
                     creatureColor: creature.color || '',
                     childName: childChar?.name || '',
                   }));
@@ -427,7 +430,8 @@ function AppInner() {
     try { await saveCharacter(result.character); }
     catch (e) { console.error('[onboarding] saveCharacter failed:', e); errors.push('character'); }
 
-    // Step 2: Hatched creature
+    // Step 2: Hatched creature (mark as original DreamKeeper)
+    result.creature.isOriginal = true;
     try { await saveHatchedCreature(result.creature); }
     catch (e) { console.error('[onboarding] saveHatchedCreature failed:', e); errors.push('creature'); }
 
@@ -558,6 +562,7 @@ function AppInner() {
       parentSecret: profile?.parentSecret || '',
       hatchedAt: new Date().toISOString(),
       weekNumber: 1,
+      isOriginal: true,
     };
 
     const errors: string[] = [];
@@ -916,6 +921,7 @@ function AppInner() {
           parentSecret: '',
           hatchedAt: new Date().toISOString(),
           weekNumber: 1,
+          isOriginal: true,
         };
 
         try { await saveHatchedCreature(creature); } catch (e) { console.error('[hatch] saveHatchedCreature failed:', e); }
@@ -1219,7 +1225,7 @@ function AppInner() {
         if (freshRitual.creatureName) {
           try {
             const { updateCreatureName } = await import('./lib/hatchery');
-            await updateCreatureName(user!.id, freshRitual.creatureName);
+            await updateCreatureName(user!.id, companionCreature?.id ?? '', freshRitual.creatureName);
             // Update in-memory companion creature too
             if (companionCreature) {
               setCompanionCreature({ ...companionCreature, name: freshRitual.creatureName });
@@ -1260,9 +1266,10 @@ function AppInner() {
       childName={pendingHatchData.childName}
       characterId={pendingHatchData.characterId}
       creatureData={pendingHatchData.creatureData}
-      onComplete={(creature) => {
-        setCompanionCreature(creature);
+      onComplete={() => {
+        // Don't change companionCreature — keep the original DreamKeeper
         setPendingHatchData(null);
+        setDashKey(k => k + 1);
         setView('dashboard');
       }}
     />
@@ -1318,8 +1325,8 @@ function AppInner() {
     <CharacterBuilder
       userId={user!.id}
       initialCharacter={editingCharacter}
-      onSaved={() => { setEditingCharacter(null); setView('characters'); }}
-      onCancel={() => { setEditingCharacter(null); setView('characters'); }}
+      onSaved={() => { setEditingCharacter(null); setView('user-profile'); }}
+      onCancel={() => { setEditingCharacter(null); setView('user-profile'); }}
     />
   );
 

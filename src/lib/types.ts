@@ -268,6 +268,7 @@ export interface HatchedCreature {
   hatchedAt: string;
   photoUrl?: string;       // the family photo from onboarding
   weekNumber: number;
+  isOriginal?: boolean;    // true = the Night 3 onboarding DreamKeeper (permanent companion)
 }
 
 export interface HatcheryEgg {
@@ -355,6 +356,7 @@ export type AppView =
   | 'cinematic-transition' // Elder → egg → Night 1 bridge
   | 'story-cover'          // shared story landing page (before reader)
   | 'egg-hatch'            // post-7-night egg hatch cinematic (new creature)
+  | 'demo-onboarding'      // demo: play all 3 onboarding nights back-to-back
   | 'my-space';            // personal hub — creature, memories, stories
 
 // ══════════════════════════════════════════════════════════════════════════════

@@ -173,7 +173,12 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
   }, [userId]);
 
   // ── Derived ──
-  const primaryCreature = companionCreature || creatures[0] || null;
+  // Always show the original DreamKeeper as the primary creature
+  // isOriginal flag may not be in DB yet — fallback to oldest creature (last in DESC order)
+  const primaryCreature = companionCreature
+    || creatures.find(c => c.isOriginal)
+    || creatures[creatures.length - 1]
+    || null;
   const dk = resolveDreamKeeper(primaryCreature);
   const creatureImg = dk?.imageSrc;
   const creatureName = primaryCreature?.name || dk?.name || '';
@@ -309,32 +314,44 @@ export default function MySpaceHub({ onSignUp, onReadStory }: Props) {
         {/* Tracker */}
         <Tracker nightCards={nights} stories={storyCount} />
 
-        {/* ═══ Companions ═══ */}
-        {creatures.length > 1 && (
-          <div className="msh-companions">
-            <div className="msh-companions-label">Companions</div>
-            <div className="msh-companions-row">
-              {creatures.map(c => {
-                const isActive = c.id === primaryCreature?.id;
-                const cColor = c.color || '#F5B84C';
-                return (
-                  <div
-                    key={c.id}
-                    className={`msh-companion-avatar${isActive ? ' active' : ''}`}
-                    style={{
-                      borderColor: isActive ? cColor : 'rgba(255,255,255,.1)',
-                      boxShadow: isActive ? `0 0 12px ${cColor}40` : 'none',
-                    }}
-                    title={`${c.name} — ${c.creatureEmoji}`}
-                  >
-                    <span className="msh-companion-emoji">{c.creatureEmoji}</span>
-                    <div className="msh-companion-name">{c.name}</div>
-                  </div>
-                );
-              })}
+        {/* ═══ Companions (hatched only, not original DreamKeeper) ═══ */}
+        {(() => {
+          const companions = creatures.filter(c => c.id !== primaryCreature?.id);
+          if (companions.length === 0) return null;
+          return (
+            <div className="msh-companions">
+              <div className="msh-companions-label">Companions</div>
+              <div className="msh-companions-row">
+                {companions.map(c => {
+                  const cDk = getDreamKeeperById(c.creatureType);
+                  const cColor = c.color || '#F5B84C';
+                  return (
+                    <div
+                      key={c.id}
+                      className="msh-companion-avatar"
+                      style={{
+                        borderColor: `${cColor}40`,
+                        boxShadow: `0 0 10px ${cColor}20`,
+                      }}
+                      title={`${c.name} — ${cDk?.virtue || ''}`}
+                    >
+                      {cDk?.imageSrc ? (
+                        <img
+                          src={cDk.imageSrc}
+                          alt={c.name}
+                          style={{ width: 32, height: 38, objectFit: 'contain', filter: `drop-shadow(0 0 6px ${cColor}40)` }}
+                        />
+                      ) : (
+                        <span className="msh-companion-emoji">{c.creatureEmoji}</span>
+                      )}
+                      <div className="msh-companion-name">{c.name}</div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ═══ Insights ═══ */}
         {patterns && (
