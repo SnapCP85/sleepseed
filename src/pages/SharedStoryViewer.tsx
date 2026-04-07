@@ -101,7 +101,7 @@ export default function SharedStoryViewer({ token }: { token?: string } = {}) {
             t: data.title || 'A Story',
             n: data.heroName || '',
             r: data.refrain || '',
-            p: pages.map((pg: any) => typeof pg === 'string' ? pg : pg.text || ''),
+            p: pages.map((pg: any) => ({ t: typeof pg === 'string' ? pg : (pg.text || '') })),
             d: data.date,
           });
         }).catch(() => setError('Could not load this story.'));
