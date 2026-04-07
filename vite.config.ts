@@ -159,4 +159,14 @@ export default defineConfig({
   define: {
     __NARRATOR_VOICE_ID__: JSON.stringify(process.env.VITE_NARRATOR_VOICE_ID || ""),
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-pdf': ['jspdf'],
+          'vendor-canvas': ['html2canvas'],
+        },
+      },
+    },
+  },
 })

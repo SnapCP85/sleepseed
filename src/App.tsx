@@ -230,7 +230,7 @@ function AppInner() {
   useEffect(() => {
     if (view === 'story-builder' && wizardChoices && !preloadedBook && !activeChapterOutput) {
       setStoryHandoffDone(false);
-      const t = setTimeout(() => setStoryHandoffDone(true), 800);
+      const t = setTimeout(() => setStoryHandoffDone(true), 200);
       return () => clearTimeout(t);
     } else {
       setStoryHandoffDone(true);

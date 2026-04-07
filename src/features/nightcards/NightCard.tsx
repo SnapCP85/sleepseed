@@ -178,7 +178,7 @@ export default function NightCard({ card, size, onTap, flipped, onFlip, isPremiu
           )}
           <div className="nc-mini-sky" style={{ height: '55%', background: vs.skyGradient }}>
             {hasPhoto
-              ? <img src={card.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ? <img src={card.photo} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <span style={{ fontSize: 26, zIndex: 2 }}>{creatureEmoji}</span>}
             <div className="nc-mini-sky-bleed" style={{ background: `linear-gradient(transparent, ${vs.paperColor})` }} />
           </div>
@@ -212,7 +212,7 @@ export default function NightCard({ card, size, onTap, flipped, onFlip, isPremiu
             <div className="nc-sky" style={{ background: hasPhoto ? '#000' : vs.skyGradient }}>
               {hasPhoto ? (
                 <>
-                  <img className="nc-sky-photo" src={card.photo} alt="" />
+                  <img className="nc-sky-photo" src={card.photo} alt="" loading="lazy" />
                   <div className="nc-sky-photo-overlay" style={{ background: `linear-gradient(to bottom, transparent 40%, ${vs.paperColor} 100%)` }} />
                   <div className="nc-sky-grain" />
                   <div className="nc-sky-date">{formatDateStamp(card.date)}</div>
@@ -289,7 +289,7 @@ export default function NightCard({ card, size, onTap, flipped, onFlip, isPremiu
           <div className="nc-face nc-back" style={{ background: vs.paperColor, padding: '26px 22px 20px' }}>
             {hasPhoto && (
               <div className="nc-back-photo-thumb">
-                <img src={card.photo} alt="" />
+                <img src={card.photo} alt="" loading="lazy" />
               </div>
             )}
             <div style={{ marginLeft: hasPhoto ? 60 : 0, textAlign: hasPhoto ? 'left' : 'center' }}>
