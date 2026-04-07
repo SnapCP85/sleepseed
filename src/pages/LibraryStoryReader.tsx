@@ -839,8 +839,8 @@ export default function LibraryStoryReader({ slug }: Props) {
           <div className="lr-sp-fade" />
         </div>
         <div className="lr-sp-body">
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:2}}>
-            <div className="lr-sp-pgnum" style={{margin:0}}>{'\u00B7'} {pageNum} {'\u00B7'}{isTranslated ? ` ${lang.toUpperCase()}` : ''}</div>
+          <div className="lr-sp-pgnum">{'\u00B7'} {pageNum} {'\u00B7'}{isTranslated ? ` ${lang.toUpperCase()}` : ''}</div>
+          <div style={{display:'flex',justifyContent:'center',marginBottom:6,position:'relative',zIndex:10}}>
             <button
               onClick={() => {
                 if (readAloudActive && pgIndex === pageIdx) {
@@ -852,7 +852,7 @@ export default function LibraryStoryReader({ slug }: Props) {
               }}
               style={{
                 display:'flex',alignItems:'center',gap:6,
-                padding:'6px 14px',borderRadius:50,cursor:'pointer',
+                padding:'5px 14px',borderRadius:50,cursor:'pointer',
                 border: readAloudActive && pgIndex === pageIdx
                   ? '1px solid rgba(245,184,76,.35)'
                   : '1px solid rgba(255,255,255,.1)',
@@ -862,20 +862,18 @@ export default function LibraryStoryReader({ slug }: Props) {
                 transition:'all .2s',
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                stroke={readAloudActive && pgIndex === pageIdx ? '#F5B84C' : 'rgba(244,239,232,.45)'}
-                strokeWidth="2" strokeLinecap="round">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
                 {readAloudActive && pgIndex === pageIdx ? (
                   <>
-                    <rect x="6" y="4" width="4" height="16" rx="1" fill={readAloudActive ? '#F5B84C' : 'currentColor'} stroke="none" />
-                    <rect x="14" y="4" width="4" height="16" rx="1" fill={readAloudActive ? '#F5B84C' : 'currentColor'} stroke="none" />
+                    <rect x="6" y="4" width="4" height="16" rx="1" fill="#F5B84C" />
+                    <rect x="14" y="4" width="4" height="16" rx="1" fill="#F5B84C" />
                   </>
                 ) : (
-                  <polygon points="5,3 19,12 5,21" fill="rgba(244,239,232,.45)" stroke="none" />
+                  <polygon points="5,3 19,12 5,21" fill="rgba(244,239,232,.45)" />
                 )}
               </svg>
               <span style={{
-                fontSize:10,fontWeight:700,
+                fontSize:9,fontWeight:700,
                 fontFamily:"'Nunito',sans-serif",
                 color: readAloudActive && pgIndex === pageIdx ? 'rgba(245,184,76,.9)' : 'rgba(244,239,232,.4)',
               }}>
