@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SleepSeed — Onboarding Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400;1,9..144,600;1,9..144,700&family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700&family=DM+Mono:wght@400&family=Kalam:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --night:#060912;--night2:#0B1535;
+  --amber:#F5B84C;--amber-dk:#a06010;
+  --teal:#14d890;--cream:#F4EFE8;
+  --cream-dim:rgba(244,239,232,.45);
+  --purple:#9A7FD4;--purple-hi:#9482ff;
+  --pink:#ff82b8;
+  --serif:'Fraunces',Georgia,serif;
+  --sans:'Nunito',system-ui,sans-serif;
+  --mono:'DM Mono',monospace;
+  --ba:'Baloo 2',cursive;
+  --hand:'Kalam',cursive;
+}
+html,body{height:100%;overflow-x:hidden}
+body{background:#020408;font-family:var(--sans);color:var(--cream);display:flex;align-items:center;justify-content:center;flex-direction:column;-webkit-font-smoothing:antialiased;padding:10px 0 20px}
+
+/* ── Backdrop & Stars ── */
+.backdrop{position:fixed;inset:0;background:radial-gradient(ellipse 120% 80% at 50% 30%,#080c20,#020408 70%);z-index:0}
+.bk-star{position:fixed;border-radius:50%;background:#fff;pointer-events:none}
+@keyframes bkTwk{0%,100%{opacity:.06}50%{opacity:.5}}
+
+/* ── Header ── */
+.demo-header{position:relative;z-index:10;text-align:center;margin-bottom:14px;padding-top:10px}
+.demo-header-logo{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:4px}
+.demo-moon{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 32%,#F5C060,#C87020);position:relative;overflow:hidden}
+.demo-moon-sh{position:absolute;width:16px;height:16px;border-radius:50%;background:#020408;top:-4px;left:-6px}
+.demo-logo-text{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--cream)}
+.demo-title{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.06em;margin-bottom:2px}
+.demo-fire{font-family:var(--mono);font-size:8px;color:rgba(245,184,76,.35);letter-spacing:.1em;text-transform:uppercase}
+
+/* ── Phone Frame ── */
+.phone{position:relative;width:390px;height:820px;border-radius:44px;overflow:hidden;border:2px solid rgba(255,255,255,.08);background:var(--night);box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04) inset;z-index:2;flex-shrink:0}
+.phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:160px;height:28px;background:var(--night);border-radius:0 0 20px 20px;z-index:50}
+.phone-inner{position:absolute;inset:0;overflow:auto}
+.progress{position:absolute;bottom:0;left:0;right:0;height:4px;z-index:40;background:rgba(255,255,255,.06)}
+.progress-fill{height:4px;background:linear-gradient(90deg,var(--amber-dk),var(--amber));width:0%;transition:width .3s linear;border-radius:0 2px 2px 0}
+
+/* ── Slides ── */
+.slide{position:absolute;inset:0;opacity:0;transition:opacity .4s ease;pointer-events:none;overflow-y:auto;padding:48px 28px 32px}
+.slide::-webkit-scrollbar{display:none}
+.slide.on{opacity:1;pointer-events:auto}
+
+/* ── Controls ── */
+.controls{position:relative;z-index:10;display:flex;align-items:center;gap:10px;margin-top:14px}
+.ctrl-btn{padding:7px 18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:var(--cream);cursor:pointer;font-size:12px;font-family:var(--mono);transition:background .2s}
+.ctrl-btn:hover{background:rgba(255,255,255,.15)}
+.ctrl-play{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;font-size:14px}
+.counter{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.3)}
+
+/* ── Shared Slide Elements ── */
+.s-center{display:flex;flex-direction:column;align-items:center;text-align:center}
+.amber-btn{display:inline-block;padding:14px 36px;background:linear-gradient(135deg,var(--amber),#e0a030);color:#1a0800;border:none;border-radius:14px;font-family:var(--serif);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(245,184,76,.25)}
+.amber-btn-sm{padding:10px 24px;font-size:13px;border-radius:10px}
+.amber-btn-ghost{display:inline-block;padding:12px 32px;background:transparent;border:1.5px solid rgba(245,184,76,.3);border-radius:14px;font-family:var(--serif);font-size:14px;font-weight:700;color:var(--amber);cursor:pointer}
+.gold{color:var(--amber)}
+.dim{opacity:.45}
+.dim7{opacity:.7}
+.teal{color:var(--teal)}
+.purp{color:var(--purple)}
+.pink{color:var(--pink)}
+
+/* ── Input style ── */
+.demo-input{background:transparent;border:1.5px solid var(--amber);border-radius:12px;padding:12px 16px;font-family:var(--serif);font-size:24px;color:var(--cream);text-align:center;width:100%;outline:none}
+.demo-textarea{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 14px;font-family:var(--sans);font-size:13px;color:var(--cream);width:100%;outline:none;resize:none;line-height:1.6}
+
+/* ── Chip / pill ── */
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid rgba(255,255,255,.12);border-radius:10px;font-family:var(--mono);font-size:11px;color:var(--cream);cursor:pointer;background:transparent;transition:all .2s}
+.chip.sel{border-color:var(--amber);background:rgba(245,184,76,.12);color:var(--amber)}
+.chip.sel-purp{border-color:var(--purple-hi);background:rgba(148,130,255,.12);color:var(--purple-hi)}
+
+/* ── Progress dots ── */
+.dots{display:flex;gap:8px;justify-content:center}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.12)}
+.dot.on{background:var(--amber)}
+.dot.on-teal{background:var(--teal)}
+
+/* ── Pip indicators ── */
+.pips{display:flex;gap:6px;justify-content:center;margin-bottom:16px}
+.pip{width:24px;height:4px;border-radius:2px;background:rgba(255,255,255,.1)}
+.pip.done{background:var(--amber)}
+.pip.cur{background:var(--amber);opacity:.6}
+.pip.done-purp{background:var(--purple-hi)}
+.pip.cur-purp{background:var(--purple-hi);opacity:.6}
+
+/* ── Creature grid ── */
+.creature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+.creature-card{border:1.5px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 4px;text-align:center;background:transparent;cursor:pointer;transition:all .2s}
+.creature-card.sel{border-color:var(--amber);background:rgba(245,184,76,.08)}
+.creature-card .emoji{font-size:36px;display:block;margin-bottom:4px}
+.creature-card .name{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.05em}
+
+/* ── Choice card ── */
+.choice-card{border:1.5px solid rgba(255,255,255,.1);border-radius:14px;padding:16px 20px;text-align:center;font-family:var(--serif);font-size:16px;width:100%;cursor:pointer;background:transparent;color:var(--cream);transition:all .2s}
+.choice-card.sel{border-color:var(--amber);background:rgba(245,184,76,.08)}
+.choice-card.sel-purp{border-color:var(--purple-hi);background:rgba(148,130,255,.08)}
+.choice-or{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.2);margin:8px 0}
+
+/* ── Mood grid ── */
+.mood-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+.mood-card{border:1.5px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .2s}
+.mood-card.sel{border-color:var(--amber);background:rgba(245,184,76,.08)}
+.mood-card .emoji{font-size:28px;display:block;margin-bottom:4px}
+.mood-card .label{font-family:var(--sans);font-size:11px;color:rgba(255,255,255,.5)}
+
+/* ── Speech bubble ── */
+.speech{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px 18px;font-family:var(--serif);font-style:italic;font-size:13px;line-height:1.7;color:rgba(244,239,232,.85);text-align:left;position:relative}
+.speech::before{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:16px;height:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-bottom:none;border-right:none;transform:translateX(-50%) rotate(45deg)}
+
+/* ── Night card ── */
+.night-card{background:#F4EFE2;border-radius:14px;padding:18px 16px;color:#2A1A00;text-align:left;box-shadow:0 6px 30px rgba(0,0,0,.3);transform:rotate(-1.5deg);width:100%}
+.night-card .badge{font-family:var(--mono);font-size:7px;color:var(--amber-dk);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.night-card .title{font-family:Georgia,serif;font-size:12px;font-weight:bold;color:#2A1A00;margin-bottom:6px}
+.night-card .quote{font-family:Georgia,serif;font-size:10px;font-style:italic;color:#4A3000;margin-bottom:4px}
+.night-card .whisper{font-family:var(--hand);font-size:9px;color:#6A4800}
+.night-card .foot{display:flex;justify-content:space-between;font-family:var(--mono);font-size:7px;color:#8A7050;margin-top:8px}
+
+/* ── DreamEgg ── */
+.dream-egg{width:120px;height:150px;border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;background:radial-gradient(ellipse at 45% 35%,rgba(255,252,240,.85),rgba(246,197,111,.6) 20%,rgba(184,161,255,.4) 50%,rgba(20,16,60,.8) 85%,#060912);position:relative;box-shadow:0 0 40px rgba(246,197,111,.22),0 0 90px rgba(184,161,255,.14)}
+.dream-egg .spec{position:absolute;width:30px;height:20px;border-radius:50%;background:rgba(255,255,255,.25);top:28%;left:28%;transform:rotate(-30deg);filter:blur(3px)}
+
+/* ── Image styles ── */
+.elder-img{width:160px;height:auto;filter:drop-shadow(0 8px 32px rgba(120,100,200,.4)) drop-shadow(0 0 18px rgba(184,161,255,.25));animation:float 4.5s ease-in-out infinite}
+.elder-img-sm{width:100px;height:auto;filter:drop-shadow(0 6px 24px rgba(120,100,200,.35));animation:float 4s ease-in-out infinite}
+.elder-img-med{width:130px;height:auto;filter:drop-shadow(0 8px 28px rgba(120,100,200,.4));animation:float 4.5s ease-in-out infinite}
+.owl-img{width:120px;height:auto;filter:drop-shadow(0 0 20px rgba(154,127,212,.5));animation:float 3.5s ease-in-out infinite}
+.owl-img-lg{width:160px;height:auto;filter:drop-shadow(0 0 30px rgba(154,127,212,.6));animation:float 3.5s ease-in-out infinite}
+.owl-img-sm{width:60px;height:auto;filter:drop-shadow(0 0 12px rgba(154,127,212,.4))}
+
+/* ── Animations ── */
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 14px rgba(245,184,76,.3))}50%{filter:drop-shadow(0 0 32px rgba(245,184,76,.7))}}
+@keyframes rock{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+@keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+@keyframes breathe{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes shake{0%,100%{transform:rotate(0) scale(1.05)}20%{transform:rotate(-8deg) scale(1.08)}40%{transform:rotate(8deg) scale(1.08)}60%{transform:rotate(-8deg) scale(1.1)}80%{transform:rotate(8deg) scale(1.1)}}
+@keyframes burstExpand{0%{transform:scale(0);opacity:.9}100%{transform:scale(5);opacity:0}}
+@keyframes popIn{0%{transform:scale(0);opacity:0}60%{transform:scale(1.3)}100%{transform:scale(1);opacity:1}}
+@keyframes twinkle{0%,100%{opacity:.05}50%{opacity:.4}}
+@keyframes dotPulse{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes purpleGlow{0%,100%{filter:drop-shadow(0 0 12px rgba(154,127,212,.3))}50%{filter:drop-shadow(0 0 28px rgba(154,127,212,.6))}}
+@keyframes scatter{0%{transform:translate(0,0) scale(1);opacity:1}100%{opacity:0}}
+
+.anim-float{animation:float 3s ease-in-out infinite}
+.anim-glow{animation:glow 3s ease-in-out infinite}
+.anim-rock{animation:rock 2s ease-in-out infinite}
+.anim-pulse{animation:pulse 2s ease-in-out infinite}
+.anim-breathe{animation:breathe 3s ease-in-out infinite}
+.anim-shake{animation:shake 1s ease-in-out infinite}
+.anim-purpglow{animation:purpleGlow 3s ease-in-out infinite}
+
+/* ── Story text ── */
+.story-text{font-family:var(--serif);font-size:14px;line-height:1.7;color:rgba(244,239,232,.9);text-align:left}
+.story-text .dialogue{padding-left:14px;border-left:2px solid var(--amber);margin:10px 0}
+
+/* ── Reactions ── */
+.reactions{display:flex;gap:12px;justify-content:center}
+.react-btn{font-size:24px;background:transparent;border:1.5px solid rgba(255,255,255,.1);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.react-btn.sel{border-color:var(--amber);background:rgba(245,184,76,.1);box-shadow:0 0 14px rgba(245,184,76,.2)}
+
+/* ── Trait pills ── */
+.trait{display:inline-block;padding:4px 12px;border:1px solid rgba(255,255,255,.12);border-radius:20px;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.5);margin:3px}
+
+/* ── SVG ring ── */
+.ring-wrap{position:relative;display:inline-block}
+.ring-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:28px;color:var(--amber)}
+
+/* ── Burst particles ── */
+.burst-dot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--amber)}
+</style>
+</head>
+<body>
+
+<!-- Backdrop -->
+<div class="backdrop"></div>
+
+<!-- Header -->
+<div class="demo-header">
+  <div class="demo-header-logo">
+    <div class="demo-moon"><div class="demo-moon-sh"></div></div>
+    <span class="demo-logo-text">SleepSeed</span>
+  </div>
+  <div class="demo-title">Onboarding Demo</div>
+  <div class="demo-fire">FIRE CONSORTIUM &middot; VIBE MADNESS &middot; 2026</div>
+</div>
+
+<!-- Phone -->
+<div class="phone">
+  <div class="phone-notch"></div>
+  <div class="phone-inner">
+
+<!-- ════════ SLIDE 0: PARENT HOOK ════════ -->
+<div class="slide on" id="s0">
+  <div class="s-center" style="min-height:100%;justify-content:center;background:radial-gradient(ellipse at 50% 36%,rgba(14,8,46,.99),#060912 66%)">
+    <div style="width:8px;height:8px;border-radius:50%;background:#F6C56F;box-shadow:0 0 16px #F6C56F,0 0 40px rgba(246,197,111,.3);margin-bottom:32px"></div>
+    <p style="font-family:var(--serif);font-style:italic;font-size:28px;line-height:1.4;margin-bottom:20px;max-width:320px">What if bedtime was the moment they <span style="color:#F6C56F">looked forward to</span> most?</p>
+    <div style="width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--amber),transparent);margin-bottom:20px"></div>
+    <p style="font-family:var(--serif);font-style:italic;font-size:16px;line-height:1.6;color:rgba(244,239,232,.35);max-width:300px;margin-bottom:28px">Children don't remember the nights they fell asleep quickly. They remember the nights someone made something just for them.</p>
+    <p style="font-family:var(--mono);font-size:11px;color:rgba(245,184,76,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:28px">3 NIGHTS &middot; 3 MINUTES EACH</p>
+    <button class="amber-btn">Continue</button>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 1: CHILD SETUP ════════ -->
+<div class="slide" id="s1">
+  <div class="s-center" style="gap:18px;padding-top:20px">
+    <p style="font-family:var(--serif);font-size:24px;margin-bottom:4px">Your story begins with a name</p>
+    <input class="demo-input" value="Adina" readonly>
+    <div style="width:100%;text-align:left">
+      <p style="font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">AGE</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="chip">3</span><span class="chip">4</span><span class="chip">5</span>
+        <span class="chip sel">6</span><span class="chip">7</span><span class="chip">8</span>
+        <span class="chip">9</span><span class="chip">10</span>
+      </div>
+    </div>
+    <div style="width:100%;text-align:left">
+      <p style="font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">PRONOUN</p>
+      <div style="display:flex;gap:8px">
+        <span class="chip">he/him</span><span class="chip sel">she/her</span><span class="chip">they/them</span>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px;width:100%;text-align:center">
+      <p style="font-family:var(--serif);font-size:13px;color:rgba(244,239,232,.6)">&#10022; A DreamKeeper is waiting for Adina</p>
+    </div>
+    <button class="amber-btn" style="width:100%">Start Adina's first night</button>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 2: WELCOME CONSTELLATION ════════ -->
+<div class="slide" id="s2">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:20px">
+    <p style="font-family:var(--serif);font-style:italic;font-size:36px;color:#F6C56F">WELCOME</p>
+    <svg id="constellationSvg" width="220" height="60" viewBox="0 0 220 60" style="margin:8px 0"></svg>
+    <p style="font-family:var(--serif);font-style:italic;font-size:14px;color:rgba(244,239,232,.4)">Alright, Adina&hellip; We have been waiting to meet her.</p>
+    <img class="elder-img" src="/elder/transparent/elder.png" alt="Elder DreamKeeper">
+  </div>
+</div>
+
+<!-- ════════ SLIDE 3: ELDER WELCOME ════════ -->
+<div class="slide" id="s3">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:16px">
+    <p style="font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:.14em;text-transform:uppercase">NIGHT 1</p>
+    <img class="elder-img" src="/elder/transparent/elder.png" alt="Elder DreamKeeper">
+    <p style="font-family:var(--serif);font-size:24px;line-height:1.3">Welcome, Adina.</p>
+    <p style="font-family:var(--serif);font-style:italic;font-size:14px;color:rgba(244,239,232,.4)">We have been waiting for you.</p>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 4: ELDER LORE ════════ -->
+<div class="slide" id="s4">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:16px">
+    <img class="elder-img-med" src="/elder/transparent/elder.png" alt="Elder DreamKeeper">
+    <div class="speech" style="max-width:300px">There are beings called DreamKeepers. They don't belong to everyone. They choose someone &mdash; one child &mdash; and they stay.</div>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 5: NIGHT 1 QUESTION ════════ -->
+<div class="slide" id="s5">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:16px">
+    <img class="elder-img-sm" src="/elder/transparent/elder.png" alt="Elder DreamKeeper">
+    <p style="font-family:var(--serif);font-size:20px;max-width:280px">What made you smile today?</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:4px">
+      <span class="chip sel">&#x1F3C3; Playing</span>
+      <span class="chip">&#x1F46B; A friend</span>
+      <span class="chip">&#x1F923; Something funny</span>
+      <span class="chip">&#x1F46A; My family</span>
+      <span class="chip">&#x1F333; Being outside</span>
+      <span class="chip">&#x1F4DA; Learning something</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 6: STORY LOADING ════════ -->
+<div class="slide" id="s6">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:14px">
+    <img class="owl-img" src="/dreamkeepers/transparent/owl.png" alt="Owl DreamKeeper">
+    <p style="font-family:var(--serif);font-size:18px">Adina's story is loading&hellip;</p>
+    <p style="font-family:var(--sans);font-size:12px;color:rgba(244,239,232,.4)">Weaving in today's adventure&hellip;</p>
+    <div style="display:flex;gap:8px;margin:8px 0">
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--amber);animation:dotPulse 1.4s ease-in-out infinite"></span>
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--amber);animation:dotPulse 1.4s ease-in-out .2s infinite"></span>
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--amber);animation:dotPulse 1.4s ease-in-out .4s infinite"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 7: STORY — THE NIGHT YOU WERE FOUND ════════ -->
+<div class="slide" id="s7">
+  <div class="story-text" style="padding-top:8px">
+    <p style="font-family:var(--mono);font-size:9px;color:var(--amber);letter-spacing:.08em;margin-bottom:12px;text-align:center">NIGHT 1 &middot; THE NIGHT YOU WERE FOUND</p>
+    <p style="margin-bottom:14px">There is a place that exists only after dark. You can't find it on any map. It appears when the last light goes off and the world holds its breath.</p>
+    <p style="margin-bottom:14px">That place is called the SleepSeed. And tonight, for the very first time, it was waiting for Adina.</p>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 8: STORY — ELDER APPEARS ════════ -->
+<div class="slide" id="s8">
+  <div class="story-text" style="padding-top:8px">
+    <p style="margin-bottom:14px">Adina turned around.</p>
+    <p style="margin-bottom:14px">There, sitting on a soft patch of moonlight, was an owl. Not a regular one &mdash; this one had eyes like lanterns and feathers that shimmered, as though dusted with something old and golden.</p>
+    <div class="dialogue"><p>&ldquo;I know you,&rdquo; it said. &ldquo;I've known you for a while.&rdquo;</p></div>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 9: STORY — EGG GIFT ════════ -->
+<div class="slide" id="s9">
+  <div class="story-text" style="padding-top:8px">
+    <p style="margin-bottom:14px">Near the end of their walk, Moonlight stopped. She reached behind a star and pulled out an egg.</p>
+    <div class="dialogue"><p>&ldquo;This is yours,&rdquo; said Moonlight. &ldquo;Come back every night. Bring me your day.&rdquo;</p></div>
+    <div style="text-align:center;margin-top:20px">
+      <div class="dream-egg anim-glow" style="margin:0 auto">
+        <div class="spec"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 10: EGG CRACK — NIGHT 1 ════════ -->
+<div class="slide" id="s10">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:18px">
+    <div class="dream-egg anim-glow" style="margin:0 auto;width:150px;height:187px">
+      <div class="spec"></div>
+      <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 150 187">
+        <path d="M56 75 Q62 68 69 77 Q72 85 65 90" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <p style="font-family:var(--serif);font-style:italic;font-size:15px;line-height:1.6;max-width:280px">That crack appeared because you were here tonight.</p>
+    <p style="font-family:var(--serif);font-size:13px;color:rgba(244,239,232,.4)">You stayed.</p>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 11: NIGHT CARD 1 ════════ -->
+<div class="slide" id="s11">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:16px">
+    <div class="night-card">
+      <div class="badge">NIGHT 1 &middot; THE EGG FIRST LISTENED</div>
+      <div class="title">The night the garden went quiet.</div>
+      <div class="quote">&ldquo;Playing makes me smile the most.&rdquo;</div>
+      <div class="whisper">She didn't want to stop.</div>
+      <div class="foot"><span>Night 1 &middot; Adina &middot; Age 6</span><span>SleepSeed &#10022;</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 12: TUCK-IN 1 ════════ -->
+<div class="slide" id="s12">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:18px">
+    <p style="font-family:var(--serif);font-style:italic;font-size:18px;line-height:1.6;max-width:280px">That was your first story together. You stayed.</p>
+    <p style="font-family:var(--serif);font-size:14px;color:rgba(244,239,232,.35)">Come back tomorrow. It will be different.</p>
+    <button class="amber-btn-ghost">Goodnight &#10022;</button>
+    <div class="dots" style="margin-top:12px">
+      <span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+    <p style="font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.2)">Night 1 of 7</p>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 13: NIGHT 2 RETURN ════════ -->
+<div class="slide" id="s13">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:16px">
+    <p style="font-family:var(--mono);font-size:12px;color:var(--amber);letter-spacing:.15em">NIGHT 2</p>
+    <img class="elder-img-med" src="/elder/transparent/elder.png" alt="Elder DreamKeeper">
+    <p style="font-family:var(--serif);font-size:22px">Welcome back, Adina.</p>
+    <p style="font-family:var(--serif);font-style:italic;font-size:13px;color:rgba(244,239,232,.4)">You told me that playing made you smile. I remembered.</p>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 14: NIGHT 2 QUESTION ════════ -->
+<div class="slide" id="s14">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:16px">
+    <img class="elder-img-sm" src="/elder/transparent/elder.png" alt="Elder DreamKeeper">
+    <p style="font-family:var(--serif);font-size:20px;max-width:280px">What's something you're really good at?</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:4px">
+      <span class="chip sel">&#x1F49B; Being kind</span>
+      <span class="chip">&#x1F3A8; Drawing</span>
+      <span class="chip">&#x1F3C3; Running fast</span>
+      <span class="chip">&#x1F602; Making people laugh</span>
+      <span class="chip">&#x1F9F1; Building things</span>
+      <span class="chip">&#x1F4AA; Being brave</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 15: NIGHT 2 STORY PAGE ════════ -->
+<div class="slide" id="s15">
+  <div class="story-text" style="padding-top:8px">
+    <p style="font-family:var(--mono);font-size:9px;color:var(--amber);letter-spacing:.08em;margin-bottom:12px;text-align:center">NIGHT 2 &middot; THE GARDEN THAT REMEMBERED</p>
+    <p style="margin-bottom:14px">That evening, something strange happened in the garden of kind things &mdash; every flower that Adina had ever said a nice word to began to hum.</p>
+    <div class="dialogue"><p>&ldquo;Did you do that?&rdquo; asked Moonlight, eyes wide.</p></div>
+    <div class="dialogue"><p>&ldquo;I don't know,&rdquo; said Adina. &ldquo;I was just being kind.&rdquo;</p></div>
+    <div class="dialogue"><p>&ldquo;That's the most powerful thing there is,&rdquo; said Moonlight quietly.</p></div>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 16: NIGHT 2 EGG — DEEPER CRACKS ════════ -->
+<div class="slide" id="s16">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:16px">
+    <div class="dream-egg anim-glow" style="margin:0 auto;box-shadow:0 0 50px rgba(246,197,111,.3),0 0 100px rgba(184,161,255,.18)">
+      <div class="spec"></div>
+      <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 120 150">
+        <path d="M45 60 Q50 55 55 62 Q58 68 52 72" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/>
+        <path d="M62 50 Q66 46 70 54 Q72 60 66 62" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <p style="font-family:var(--serif);font-style:italic;font-size:15px;line-height:1.6;max-width:280px">It's learning. It's remembering more about you.</p>
+    <div style="background:rgba(20,216,144,.08);border:1px solid rgba(20,216,144,.2);border-radius:10px;padding:10px 14px;width:100%;text-align:center;margin-top:4px">
+      <p style="font-family:var(--mono);font-size:9px;color:var(--teal);text-transform:uppercase;letter-spacing:.06em">NIGHT 2 &middot; STILL LISTENING</p>
+    </div>
+    <div class="dots" style="margin-top:8px">
+      <span class="dot on"></span><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 17: NIGHT CARD 2 ════════ -->
+<div class="slide" id="s17">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:16px">
+    <div class="night-card" style="border-left:3px solid var(--teal)">
+      <div class="badge" style="color:var(--teal)">NIGHT 2 &middot; STILL LISTENING</div>
+      <div class="title">The night it learned her name.</div>
+      <div class="quote">&ldquo;Being kind to my friends is what I'm best at.&rdquo;</div>
+      <div class="whisper">Come back tomorrow. Something is about to change.</div>
+      <div class="foot"><span>Night 2 &middot; Adina &middot; Age 6</span><span>SleepSeed &#10022;</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 18: NIGHT 3 DASHBOARD ════════ -->
+<div class="slide" id="s18">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:16px">
+    <p style="font-family:var(--mono);font-size:12px;color:var(--amber);letter-spacing:.15em">NIGHT 3</p>
+    <p style="font-family:var(--serif);font-size:22px">Tonight is different.</p>
+    <div class="dream-egg anim-shake" style="margin:10px auto;box-shadow:0 0 60px rgba(246,197,111,.4),0 0 120px rgba(184,161,255,.2)">
+      <div class="spec"></div>
+      <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 120 150">
+        <path d="M45 55 Q50 48 58 58 Q62 68 52 75" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.8"/>
+        <path d="M62 45 Q68 40 74 52 Q76 62 68 65" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="1.5"/>
+        <path d="M50 80 Q55 76 60 84" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div class="ring-wrap" style="width:100px;height:100px;margin:8px auto">
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="5"/>
+        <circle cx="50" cy="50" r="42" fill="none" stroke="var(--amber)" stroke-width="5" stroke-dasharray="264" stroke-dashoffset="16" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+      </svg>
+      <div class="ring-text" style="font-size:22px">94%</div>
+    </div>
+    <p style="font-family:var(--serif);font-size:13px;color:rgba(244,239,232,.4)">The egg is ready.</p>
+    <button class="amber-btn">Begin Night 3</button>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 19: THE CHOOSING ════════ -->
+<div class="slide" id="s19">
+  <div class="story-text" style="padding-top:8px">
+    <p style="font-family:var(--mono);font-size:9px;color:var(--amber);letter-spacing:.08em;margin-bottom:12px;text-align:center">NIGHT 3 &middot; THE CHOOSING</p>
+    <p style="margin-bottom:14px">&ldquo;Tonight,&rdquo; the Elder said, &ldquo;is not like the other nights.&rdquo;</p>
+    <p style="margin-bottom:14px">The stars had gathered closer than usual. The SleepSeed was humming &mdash; a deep, warm sound, like a heart getting ready.</p>
+    <p style="margin-bottom:14px">&ldquo;Tonight, the egg will choose.&rdquo;</p>
+    <p style="font-style:italic;color:var(--amber);margin-top:16px">&ldquo;Are you ready, Adina?&rdquo;</p>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 20: HATCH CEREMONY ════════ -->
+<div class="slide" id="s20">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:16px;position:relative;overflow:hidden">
+    <div style="position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(246,197,111,.5),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation:burstExpand 2.5s ease-out forwards"></div>
+    <div class="burst-dot" style="top:45%;left:50%;animation-name:p0"></div>
+    <div class="burst-dot" style="top:45%;left:50%;animation-name:p1;animation-delay:.1s"></div>
+    <div class="burst-dot" style="top:45%;left:50%;animation-name:p2;animation-delay:.15s"></div>
+    <div class="burst-dot" style="top:45%;left:50%;animation-name:p3;animation-delay:.2s"></div>
+    <div class="burst-dot" style="top:45%;left:50%;animation-name:p4;animation-delay:.05s"></div>
+    <div class="burst-dot" style="top:45%;left:50%;animation-name:p5;animation-delay:.12s"></div>
+    <div class="burst-dot" style="top:45%;left:50%;animation-name:p6;animation-delay:.18s"></div>
+    <div class="burst-dot" style="top:45%;left:50%;animation-name:p7;animation-delay:.08s"></div>
+    <img class="owl-img-lg" src="/dreamkeepers/transparent/owl.png" alt="Owl DreamKeeper" style="animation:popIn 1s ease-out,purpleGlow 3s ease-in-out infinite 1s;position:relative;z-index:2">
+    <p style="font-family:var(--serif);font-style:italic;font-size:20px;color:var(--amber);position:relative;z-index:2">Hi, Adina&hellip;</p>
+    <p style="font-family:var(--serif);font-style:italic;font-size:16px;color:var(--amber);opacity:.7;position:relative;z-index:2">I've been waiting for you.</p>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 21: NAME YOUR DREAMKEEPER ════════ -->
+<div class="slide" id="s21">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:20px">
+    <img class="owl-img-lg" src="/dreamkeepers/transparent/owl.png" alt="Owl DreamKeeper" style="animation:float 3s ease-in-out infinite,purpleGlow 3s ease-in-out infinite">
+    <p style="font-family:var(--serif);font-style:italic;font-size:16px;color:rgba(244,239,232,.6)">What would you like to name me?</p>
+    <input class="demo-input" value="Moonlight" readonly>
+    <p style="font-family:var(--mono);font-size:11px;color:var(--amber)">Moonlight the Dusk Owl</p>
+    <button class="amber-btn amber-btn-sm">That's perfect &#10022;</button>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 22: NIGHT CARD 3 — HATCHED ════════ -->
+<div class="slide" id="s22">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:16px">
+    <div class="night-card" style="border-left:3px solid var(--pink)">
+      <div class="badge" style="color:var(--pink)">NIGHT 3 &middot; HATCHED</div>
+      <div style="text-align:center;margin:8px 0"><img class="owl-img-sm" src="/dreamkeepers/transparent/owl.png" alt="Owl DreamKeeper"></div>
+      <div class="title">The night Moonlight was born.</div>
+      <div class="quote">&ldquo;She chose me. She's mine.&rdquo;</div>
+      <div class="whisper">This one we'll remember forever.</div>
+      <div class="foot"><span>Night 3 &middot; Adina &middot; Age 6</span><span>Moonlight &#10022;</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 23: DREAMKEEPER INTRO ════════ -->
+<div class="slide" id="s23">
+  <div class="s-center" style="min-height:100%;justify-content:center;gap:16px">
+    <img class="owl-img-lg" src="/dreamkeepers/transparent/owl.png" alt="Owl DreamKeeper" style="animation:float 3s ease-in-out infinite,purpleGlow 3s ease-in-out infinite">
+    <p style="font-family:var(--mono);font-size:12px;color:var(--amber);text-transform:uppercase;letter-spacing:.08em">MOONLIGHT</p>
+    <p style="font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.3)">Dusk Owl &middot; Wisdom</p>
+    <div class="speech" style="max-width:300px">&ldquo;I see you. I see who you really are.&rdquo;</div>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <span class="trait" style="border-color:rgba(154,127,212,.25);color:var(--purple)">Curious</span>
+      <span class="trait" style="border-color:rgba(154,127,212,.25);color:var(--purple)">Calm</span>
+      <span class="trait" style="border-color:rgba(154,127,212,.25);color:var(--purple)">Wise</span>
+    </div>
+    <button class="amber-btn amber-btn-sm">Take me home &rarr;</button>
+  </div>
+</div>
+
+<!-- ════════ SLIDE 24: FINAL DASHBOARD ════════ -->
+<div class="slide" id="s24">
+  <div class="s-center" style="gap:12px;padding-top:16px">
+    <img class="owl-img" src="/dreamkeepers/transparent/owl.png" alt="Owl DreamKeeper" style="animation:float 3s ease-in-out infinite,purpleGlow 3s ease-in-out infinite">
+    <p style="font-family:var(--serif);font-size:18px;color:var(--amber)">Moonlight</p>
+    <p style="font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.35)">Dusk Owl &middot; Wisdom</p>
+    <div style="background:rgba(245,184,76,.08);border:1px solid rgba(245,184,76,.2);border-radius:20px;padding:4px 14px;display:inline-flex;align-items:center;gap:4px;margin:4px 0">
+      <span style="font-size:10px">&#10022;</span>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--amber)">3 nights</span>
+    </div>
+    <p style="font-family:var(--serif);font-style:italic;font-size:13px;color:rgba(244,239,232,.45);max-width:260px;margin:8px 0">Every night from here builds on the last.</p>
+    <div style="margin-top:20px;display:flex;align-items:center;gap:6px;justify-content:center">
+      <div class="demo-moon" style="width:14px;height:14px"><div class="demo-moon-sh" style="width:12px;height:12px;top:-3px;left:-5px"></div></div>
+      <span style="font-family:var(--serif);font-size:13px;color:rgba(244,239,232,.5)">SleepSeed</span>
+    </div>
+    <p style="font-family:var(--mono);font-size:7px;color:rgba(245,184,76,.25);text-transform:uppercase;letter-spacing:.1em;margin-top:4px">FIRE CONSORTIUM &middot; VIBE MADNESS &middot; 2026</p>
+  </div>
+</div>
+
+  </div><!-- /phone-inner -->
+  <div class="progress"><div class="progress-fill" id="pbar"></div></div>
+</div><!-- /phone -->
+
+<!-- Controls -->
+<div class="controls">
+  <button class="ctrl-btn" onclick="go(-1)">&larr; Prev</button>
+  <button class="ctrl-btn ctrl-play" id="playBtn" onclick="togglePlay()">&#10074;&#10074;</button>
+  <button class="ctrl-btn" onclick="go(1)">Next &rarr;</button>
+  <span class="counter" id="count">1 / 25</span>
+</div>
+
+<!-- Particle keyframes (generated per dot) -->
+<style>
+@keyframes p0{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(-80px,-100px) scale(0);opacity:0}}
+@keyframes p1{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(90px,-80px) scale(0);opacity:0}}
+@keyframes p2{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(-60px,90px) scale(0);opacity:0}}
+@keyframes p3{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(70px,100px) scale(0);opacity:0}}
+@keyframes p4{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(110px,-20px) scale(0);opacity:0}}
+@keyframes p5{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(-100px,30px) scale(0);opacity:0}}
+@keyframes p6{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(20px,-120px) scale(0);opacity:0}}
+@keyframes p7{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(-30px,110px) scale(0);opacity:0}}
+</style>
+
+<script>
+// ── Stars ──
+(function(){
+  var bd=document.querySelector('.backdrop');
+  for(var i=0;i<70;i++){
+    var s=document.createElement('div');
+    s.className='bk-star';
+    var sz=Math.random()*2+.5;
+    s.style.cssText='width:'+sz+'px;height:'+sz+'px;top:'+Math.random()*100+'%;left:'+Math.random()*100+'%;opacity:'+(Math.random()*.3+.04)+';animation:bkTwk '+(3+Math.random()*5)+'s ease-in-out '+(Math.random()*4)+'s infinite';
+    bd.appendChild(s);
+  }
+})();
+
+// ── Slide engine (proven pattern) ──
+var slides = document.querySelectorAll('.slide');
+var cur = 0;
+var total = slides.length;
+var playing = true;
+var timer;
+
+function show(n) {
+  if (n < 0 || n >= total) return;
+  slides[cur].classList.remove('on');
+  cur = n;
+  slides[cur].classList.add('on');
+  document.getElementById('count').textContent = (cur + 1) + ' / ' + total;
+  document.getElementById('pbar').style.width = ((cur + 1) / total * 100) + '%';
+  // Trigger constellation animation when slide 2 becomes active
+  if (n === 2) { constellationDrawn = false; animateConstellation(); }
+}
+
+function go(dir) {
+  show(cur + dir);
+  resetTimer();
+}
+
+function resetTimer() {
+  clearInterval(timer);
+  if (playing) {
+    timer = setInterval(function() {
+      if (cur < total - 1) show(cur + 1);
+      else { playing = false; updatePlayBtn(); clearInterval(timer); }
+    }, 5000);
+  }
+}
+
+function togglePlay() {
+  playing = !playing;
+  updatePlayBtn();
+  if (playing) {
+    if (cur >= total - 1) show(0);
+    resetTimer();
+  } else {
+    clearInterval(timer);
+  }
+}
+
+function updatePlayBtn() {
+  document.getElementById('playBtn').innerHTML = playing ? '&#10074;&#10074;' : '&#9654;';
+}
+
+// Keyboard
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+});
+
+// ── Constellation animation ──
+var constellationDrawn = false;
+function animateConstellation() {
+  var svg = document.getElementById('constellationSvg');
+  if (!svg || constellationDrawn) return;
+  constellationDrawn = true;
+  svg.innerHTML = '';
+  // ADINA letter data: each letter = {dots:[[x,y],...], lines:[[fromIdx,toIdx],...]}
+  var letters = [
+    {dots:[[15,45],[25,10],[35,45],[21,28],[29,28]], lines:[[0,1],[1,2],[3,4]]},       // A
+    {dots:[[52,10],[52,45],[66,12],[70,28],[66,44]], lines:[[0,1],[0,2],[2,3],[3,4],[4,1]]}, // D
+    {dots:[[86,10],[86,45]], lines:[[0,1]]},                                            // I
+    {dots:[[100,45],[100,10],[118,45],[118,10]], lines:[[0,1],[1,2],[2,3]]},             // N
+    {dots:[[135,45],[145,10],[155,45],[141,28],[149,28]], lines:[[0,1],[1,2],[3,4]]}     // A
+  ];
+  var allDots = [];
+  var allLines = [];
+  // Collect all elements with global timing
+  var dotDelay = 0;
+  for (var li = 0; li < letters.length; li++) {
+    var L = letters[li];
+    var baseIdx = allDots.length;
+    for (var di = 0; di < L.dots.length; di++) {
+      allDots.push({ x: L.dots[di][0], y: L.dots[di][1], delay: dotDelay });
+      dotDelay += 120;
+    }
+    for (var ei = 0; ei < L.lines.length; ei++) {
+      allLines.push({ from: baseIdx + L.lines[ei][0], to: baseIdx + L.lines[ei][1], delay: dotDelay - 200 });
+    }
+  }
+  // Draw dots with staggered appearance
+  allDots.forEach(function(d, i) {
+    var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', d.x);
+    c.setAttribute('cy', d.y);
+    c.setAttribute('r', '0');
+    c.setAttribute('fill', '#F6C56F');
+    c.style.filter = 'drop-shadow(0 0 4px rgba(246,197,111,.8))';
+    c.style.transition = 'r .4s ease-out';
+    svg.appendChild(c);
+    setTimeout(function() { c.setAttribute('r', '2.5'); }, d.delay);
+  });
+  // Draw lines with staggered appearance
+  allLines.forEach(function(ln) {
+    var from = allDots[ln.from];
+    var to = allDots[ln.to];
+    var dx = to.x - from.x, dy = to.y - from.y;
+    var len = Math.sqrt(dx * dx + dy * dy);
+    var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', from.x); line.setAttribute('y1', from.y);
+    line.setAttribute('x2', to.x); line.setAttribute('y2', to.y);
+    line.setAttribute('stroke', 'rgba(246,197,111,.3)');
+    line.setAttribute('stroke-width', '0.7');
+    line.setAttribute('stroke-dasharray', len);
+    line.setAttribute('stroke-dashoffset', len);
+    line.style.transition = 'stroke-dashoffset 0.6s ease-out';
+    svg.appendChild(line);
+    setTimeout(function() { line.setAttribute('stroke-dashoffset', '0'); }, ln.delay + 300);
+  });
+}
+
+// Start auto-advance
+resetTimer();
+</script>
+</body>
+</html>

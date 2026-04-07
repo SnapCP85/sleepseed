@@ -16,8 +16,11 @@ const CSS = `
 .auth-glow{position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:700px;height:500px;border-radius:50%;background:radial-gradient(ellipse,rgba(232,151,42,.05),transparent 65%);pointer-events:none}
 .auth-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:24px;padding:44px 40px;width:100%;max-width:440px;position:relative;z-index:1;animation:slideUp .5s cubic-bezier(.22,1,.36,1) both}
 @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-.auth-moon-wrap{text-align:center;margin-bottom:22px}
+.auth-moon-wrap{text-align:center;margin-bottom:22px;position:relative}
 .auth-moon{width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#F5C060,#C87020);margin:0 auto;box-shadow:0 0 32px 6px rgba(232,151,42,.12)}
+.auth-demos{position:absolute;top:-44px;right:-40px;display:flex;gap:6px}
+.auth-demo-btn{padding:5px 9px;border-radius:7px;border:1px solid rgba(232,151,42,.18);background:rgba(232,151,42,.05);color:rgba(245,184,76,.6);font-size:9px;font-weight:600;font-family:var(--mono);cursor:pointer;transition:all .2s;text-decoration:none;letter-spacing:.3px;white-space:nowrap}
+.auth-demo-btn:hover{background:rgba(232,151,42,.14);border-color:rgba(232,151,42,.4);color:var(--amber2)}
 .auth-headline{font-family:var(--serif);font-size:28px;font-weight:700;color:#F4EFE8;text-align:center;margin-bottom:6px;letter-spacing:-.02em}
 .auth-headline em{font-style:italic;color:var(--amber2)}
 .auth-sub{font-size:13px;color:rgba(244,239,232,.38);text-align:center;font-weight:300;margin-bottom:32px;line-height:1.65}
@@ -151,7 +154,13 @@ export default function Auth() {
       <div className="auth-body">
         <div className="auth-glow" />
         <div className="auth-card">
-          <div className="auth-moon-wrap"><div className="auth-moon" /></div>
+          <div className="auth-moon-wrap">
+            <div className="auth-moon" />
+            <div className="auth-demos">
+              <a className="auth-demo-btn" href="/onboarding-demo.html" target="_blank" rel="noopener">Onboarding Demo</a>
+              <a className="auth-demo-btn" href="/showcase-demo.html" target="_blank" rel="noopener">Showcase Demo</a>
+            </div>
+          </div>
 
           {screen === 'verify' && (
             <div className="auth-verify">
