@@ -839,7 +839,50 @@ export default function LibraryStoryReader({ slug }: Props) {
           <div className="lr-sp-fade" />
         </div>
         <div className="lr-sp-body">
-          <div className="lr-sp-pgnum">{'\u00B7'} {pageNum} {'\u00B7'}{isTranslated ? ` ${lang.toUpperCase()}` : ''}</div>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:2}}>
+            <div className="lr-sp-pgnum" style={{margin:0}}>{'\u00B7'} {pageNum} {'\u00B7'}{isTranslated ? ` ${lang.toUpperCase()}` : ''}</div>
+            <button
+              onClick={() => {
+                if (readAloudActive && pgIndex === pageIdx) {
+                  setReadAloudActive(false);
+                } else {
+                  setReadAloudActive(true);
+                  if (pgIndex !== pageIdx) goPage(pgIndex - pageIdx);
+                }
+              }}
+              style={{
+                display:'flex',alignItems:'center',gap:6,
+                padding:'6px 14px',borderRadius:50,cursor:'pointer',
+                border: readAloudActive && pgIndex === pageIdx
+                  ? '1px solid rgba(245,184,76,.35)'
+                  : '1px solid rgba(255,255,255,.1)',
+                background: readAloudActive && pgIndex === pageIdx
+                  ? 'rgba(245,184,76,.12)'
+                  : 'rgba(255,255,255,.04)',
+                transition:'all .2s',
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke={readAloudActive && pgIndex === pageIdx ? '#F5B84C' : 'rgba(244,239,232,.45)'}
+                strokeWidth="2" strokeLinecap="round">
+                {readAloudActive && pgIndex === pageIdx ? (
+                  <>
+                    <rect x="6" y="4" width="4" height="16" rx="1" fill={readAloudActive ? '#F5B84C' : 'currentColor'} stroke="none" />
+                    <rect x="14" y="4" width="4" height="16" rx="1" fill={readAloudActive ? '#F5B84C' : 'currentColor'} stroke="none" />
+                  </>
+                ) : (
+                  <polygon points="5,3 19,12 5,21" fill="rgba(244,239,232,.45)" stroke="none" />
+                )}
+              </svg>
+              <span style={{
+                fontSize:10,fontWeight:700,
+                fontFamily:"'Nunito',sans-serif",
+                color: readAloudActive && pgIndex === pageIdx ? 'rgba(245,184,76,.9)' : 'rgba(244,239,232,.4)',
+              }}>
+                {readAloudActive && pgIndex === pageIdx ? 'Stop' : 'Read aloud'}
+              </span>
+            </button>
+          </div>
           {translateError && (
             <div style={{fontSize:11,color:'rgba(180,80,20,.6)',fontStyle:'italic',marginBottom:6}}>{translateError}</div>
           )}

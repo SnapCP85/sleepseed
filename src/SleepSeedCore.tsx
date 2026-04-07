@@ -3533,7 +3533,36 @@ Rules:
       </div>
       <div className="ss-sp-body" style={{background:v8rTextBg,position:'relative'}}>
         {renderV8rNightfallStars()}
-        {renderV8rMoonDots()}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 4px'}}>
+          <div style={{flex:1}} />
+          {renderV8rMoonDots()}
+          <div style={{flex:1,display:'flex',justifyContent:'flex-end'}}>
+            <button
+              onClick={(e) => { e.stopPropagation(); const prog = totalPages > 1 ? pageIdx/(totalPages-1) : 0.5; toggleRead(getCurrentPageText(), prog); }}
+              style={{
+                display:'flex',alignItems:'center',gap:5,
+                padding:'5px 12px',borderRadius:50,cursor:'pointer',
+                border: isReading ? '1px solid rgba(245,184,76,.35)' : '1px solid rgba(255,255,255,.1)',
+                background: isReading ? 'rgba(245,184,76,.12)' : 'rgba(255,255,255,.04)',
+                transition:'all .2s',
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                {isReading ? (
+                  <>
+                    <rect x="6" y="4" width="4" height="16" rx="1" fill="#F5B84C" />
+                    <rect x="14" y="4" width="4" height="16" rx="1" fill="#F5B84C" />
+                  </>
+                ) : (
+                  <polygon points="5,3 19,12 5,21" fill="rgba(244,239,232,.45)" />
+                )}
+              </svg>
+              <span style={{fontSize:9,fontWeight:700,fontFamily:"'Nunito',sans-serif",color:isReading?'rgba(245,184,76,.9)':'rgba(244,239,232,.4)'}}>
+                {isReading ? 'Stop' : 'Listen'}
+              </span>
+            </button>
+          </div>
+        </div>
         {renderV8rStoryText(pg.text)}
         {refrain && (pgNum % 2 === 0 || pgNum === (book?.pages?.length || 0)) && (
           <div className="ss-sp-refrain">{'\u201C'}{refrain}{'\u201D'}</div>
